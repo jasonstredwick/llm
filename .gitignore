@@ -39,3 +39,9 @@
 
 # debug information files
 *.dwo
+
+# Project Specific
+build/
+deps/
+third_party_workspace/
+temp_download/
