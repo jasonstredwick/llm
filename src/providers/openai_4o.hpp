@@ -35,6 +35,11 @@ using MessageContentPart = std::variant<MessageContentPartText, MessageContentPa
 
 struct ChatCompletionMessage {
     Role role = Role::USER; // developer, system, user, assistant
+    
+    /**
+     * OpenAI Constraint: 'developer' and 'system' roles MUST be text-only (std::string).
+     * 'user' and 'assistant' roles can be multimodal (vector of parts).
+     */
     std::variant<std::string, std::vector<MessageContentPart>> content;
     std::optional<std::string> name;
 };

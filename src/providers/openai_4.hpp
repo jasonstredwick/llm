@@ -17,6 +17,10 @@ using namespace jai::llm::providers;
 
 struct ChatCompletionMessage {
     Role role = Role::USER; // system, user, assistant
+    
+    /**
+     * OpenAI Constraint: 'developer' and 'system' roles MUST be text-only (std::string).
+     */
     std::string content;
     std::optional<std::string> name;
 };

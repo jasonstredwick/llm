@@ -64,7 +64,7 @@ struct ToolConfig {
 };
 
 struct GenerateContentRequest {
-    std::optional<Content> system_instruction;
+    std::optional<std::string> system_instruction;
     std::vector<Content> contents;
 
     std::optional<GenerationConfig> generation_config;
