@@ -52,12 +52,31 @@ struct SafetySetting {
 };
 
 struct Tool {
-    struct GoogleSearchRetrieval {};
-    std::optional<GoogleSearchRetrieval> google_search_retrieval;
+    struct FunctionDeclaration {
+        std::string name;
+        std::string description;
+        std::string parameters; // JSON Schema string
+    };
+    std::vector<FunctionDeclaration> function_declarations;
+    
+    struct GoogleSearch {};
+    std::optional<GoogleSearch> google_search;
+
+    struct CodeExecution {};
+    std::optional<CodeExecution> code_execution;
 };
 
 struct ToolConfig {
-    // Function calling configuration
+    struct FunctionCallingConfig {
+        enum class Mode {
+            MODE_UNSPECIFIED,
+            AUTO,
+            ANY,
+            NONE
+        } mode = Mode::AUTO;
+        std::vector<std::string> allowed_function_names;
+    };
+    std::optional<FunctionCallingConfig> function_calling_config;
 };
 
 struct GenerateContentRequest {
@@ -68,13 +87,25 @@ struct GenerateContentRequest {
     std::vector<SafetySetting> safety_settings;
     std::vector<Tool> tools;
     std::optional<ToolConfig> tool_config;
+    std::optional<std::string> cached_content; // Resource name for explicit caching
 };
 
 struct UsageMetadata {
     uint32_t prompt_token_count = 0;
     uint32_t candidates_token_count = 0;
     uint32_t total_token_count = 0;
+    
     uint32_t reasoning_token_count = 0;
+    uint32_t cached_content_token_count = 0;
+
+    struct TokenCountDetails {
+        uint32_t text_token_count = 0;
+        uint32_t image_token_count = 0;
+        uint32_t video_token_count = 0;
+        uint32_t audio_token_count = 0;
+    };
+    TokenCountDetails prompt_token_count_details;
+    TokenCountDetails candidates_token_count_details;
 };
 
 struct Candidate {

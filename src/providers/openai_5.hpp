@@ -42,6 +42,24 @@ struct ChatCompletionMessage {
      */
     std::variant<std::string, std::vector<MessageContentPart>> content;
     std::optional<std::string> name;
+
+    struct ToolCall {
+        std::string id;
+        std::string type = "function";
+        struct Function {
+            std::string name;
+            std::string arguments; // JSON string
+        } function;
+    };
+    std::vector<ToolCall> tool_calls;
+    std::optional<std::string> tool_call_id; // For 'tool' role messages
+};
+
+struct ToolChoiceSpecific {
+    std::string type = "function";
+    struct Function {
+        std::string name;
+    } function;
 };
 
 struct ChatCompletionRequest {
@@ -59,10 +77,36 @@ struct ChatCompletionRequest {
     std::optional<std::string> verbosity;        // "concise", "medium", "detailed"
     std::optional<bool> compaction;             // Context compaction feature
 
+    // Prompt Caching Controls (GPT-5.2)
+    std::optional<std::string> prompt_cache_key; 
+    std::optional<std::string> prompt_cache_retention; // "in_memory", "24h"
+
     struct ResponseFormat {
         std::string type = "text"; // "text", "json_object", "json_schema"
     };
     std::optional<ResponseFormat> response_format;
+
+    struct Tool {
+        std::string type = "function"; // "function", "code_interpreter", "file_search"
+        struct Function {
+            std::string name;
+            std::optional<std::string> description;
+            std::string parameters; // JSON Schema as string
+            std::optional<bool> strict;
+        } function;
+        
+        // Built-in tools for GPT-5.2
+        struct CodeInterpreter {};
+        std::optional<CodeInterpreter> code_interpreter;
+        
+        struct FileSearch {
+            uint32_t max_num_results = 20;
+        };
+        std::optional<FileSearch> file_search;
+    };
+    std::vector<Tool> tools;
+    std::variant<std::monostate, std::string, struct ToolChoiceSpecific> tool_choice;
+    std::optional<bool> parallel_tool_calls;
 };
 
 struct UsageMetadata {
@@ -70,8 +114,14 @@ struct UsageMetadata {
     uint32_t completion_tokens = 0;
     uint32_t total_tokens = 0;
 
+    struct PromptTokensDetails {
+        uint32_t cached_tokens = 0;
+        uint32_t audio_tokens = 0;
+    } prompt_tokens_details;
+
     struct CompletionTokensDetails {
         uint32_t reasoning_tokens = 0;
+        uint32_t audio_tokens = 0;
         uint32_t accepted_prediction_tokens = 0;
         uint32_t rejected_prediction_tokens = 0;
     } completion_tokens_details;
@@ -91,6 +141,16 @@ struct ChatCompletionResponse {
             
             // GPT-5.2 Reasoning Summaries
             std::optional<std::string> reasoning_summary;
+
+            struct ToolCall {
+                std::string id;
+                std::string type = "function";
+                struct Function {
+                    std::string name;
+                    std::string arguments;
+                } function;
+            };
+            std::vector<ToolCall> tool_calls;
         } message;
         std::string finish_reason;
     };

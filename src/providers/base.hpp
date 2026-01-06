@@ -13,7 +13,9 @@ enum class Role {
     MODEL,
     SYSTEM,
     ASSISTANT,
-    DEVELOPER
+    DEVELOPER,
+    TOOL,
+    FUNCTION
 };
 
 struct TextPart {
@@ -50,6 +52,10 @@ struct CodeExecutionResult {
     std::string output;
 };
 
+struct ThoughtSignature {
+    std::string signature; // Encrypted reasoning state for multi-turn verification
+};
+
 using ContentPart = std::variant<
     TextPart, 
     InlineImagePart, 
@@ -57,7 +63,8 @@ using ContentPart = std::variant<
     FunctionCall, 
     FunctionResponse, 
     ExecutableCode, 
-    CodeExecutionResult
+    CodeExecutionResult,
+    ThoughtSignature
 >;
 
 struct Content {
@@ -75,7 +82,8 @@ enum class FinishReason {
     BLOCKLIST,
     PROHIBITED_CONTENT,
     SPII,
-    MALFORMED_FUNCTION_CALL
+    MALFORMED_FUNCTION_CALL,
+    TOOL_CALLS
 };
 
 } // namespace jai::llm::providers

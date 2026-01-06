@@ -42,6 +42,24 @@ struct ChatCompletionMessage {
      */
     std::variant<std::string, std::vector<MessageContentPart>> content;
     std::optional<std::string> name;
+
+    struct ToolCall {
+        std::string id;
+        std::string type = "function";
+        struct Function {
+            std::string name;
+            std::string arguments;
+        } function;
+    };
+    std::vector<ToolCall> tool_calls;
+    std::optional<std::string> tool_call_id;
+};
+
+struct ToolChoiceSpecific {
+    std::string type = "function";
+    struct Function {
+        std::string name;
+    } function;
 };
 
 struct ChatCompletionRequest {
@@ -52,6 +70,10 @@ struct ChatCompletionRequest {
     std::optional<double> temperature;
     std::optional<double> top_p;
     
+    // Prompt Caching Controls (GPT-4o)
+    std::optional<std::string> prompt_cache_key;
+    std::optional<std::string> prompt_cache_retention; // "in_memory", "24h"
+
     std::vector<std::string> stop;
     
     std::optional<double> presence_penalty;
@@ -64,6 +86,19 @@ struct ChatCompletionRequest {
         // json_schema structure omitted but supported in GPT-4o
     };
     std::optional<ResponseFormat> response_format;
+
+    struct Tool {
+        std::string type = "function";
+        struct Function {
+            std::string name;
+            std::optional<std::string> description;
+            std::string parameters; // JSON Schema string
+            std::optional<bool> strict;
+        } function;
+    };
+    std::vector<Tool> tools;
+    std::variant<std::monostate, std::string, struct ToolChoiceSpecific> tool_choice;
+    std::optional<bool> parallel_tool_calls;
 };
 
 struct UsageMetadata {
@@ -73,7 +108,13 @@ struct UsageMetadata {
 
     struct PromptTokensDetails {
         uint32_t cached_tokens = 0;
+        uint32_t audio_tokens = 0;
     } prompt_tokens_details;
+
+    struct CompletionTokensDetails {
+        uint32_t reasoning_tokens = 0;
+        uint32_t audio_tokens = 0;
+    } completion_tokens_details;
 };
 
 struct ChatCompletionResponse {
@@ -87,6 +128,16 @@ struct ChatCompletionResponse {
         struct Message {
             Role role = Role::ASSISTANT;
             std::optional<std::string> content;
+
+            struct ToolCall {
+                std::string id;
+                std::string type = "function";
+                struct Function {
+                    std::string name;
+                    std::string arguments;
+                } function;
+            };
+            std::vector<ToolCall> tool_calls;
         } message;
         std::string finish_reason;
     };

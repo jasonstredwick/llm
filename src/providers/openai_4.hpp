@@ -23,6 +23,17 @@ struct ChatCompletionMessage {
      */
     std::string content;
     std::optional<std::string> name;
+
+    struct ToolCall {
+        std::string id;
+        std::string type = "function";
+        struct Function {
+            std::string name;
+            std::string arguments;
+        } function;
+    };
+    std::vector<ToolCall> tool_calls;
+    std::optional<std::string> tool_call_id;
 };
 
 struct ChatCompletionRequest {
@@ -46,12 +57,26 @@ struct ChatCompletionRequest {
         std::string type = "text"; // "text", "json_object"
     };
     std::optional<ResponseFormat> response_format;
+
+    struct Tool {
+        std::string type = "function";
+        struct Function {
+            std::string name;
+            std::optional<std::string> description;
+            std::string parameters; // JSON Schema string
+        } function;
+    };
+    std::vector<Tool> tools;
 };
 
 struct UsageMetadata {
     uint32_t prompt_tokens = 0;
     uint32_t completion_tokens = 0;
     uint32_t total_tokens = 0;
+
+    struct PromptTokensDetails {
+        uint32_t cached_tokens = 0;
+    } prompt_tokens_details;
 };
 
 struct ChatCompletionResponse {
@@ -67,6 +92,16 @@ struct ChatCompletionResponse {
         struct Message {
             Role role = Role::ASSISTANT;
             std::optional<std::string> content;
+
+            struct ToolCall {
+                std::string id;
+                std::string type = "function";
+                struct Function {
+                    std::string name;
+                    std::string arguments;
+                } function;
+            };
+            std::vector<ToolCall> tool_calls;
         } message;
 
         std::string finish_reason; // "stop", "length", "content_filter"
