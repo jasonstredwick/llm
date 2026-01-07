@@ -43,12 +43,15 @@ struct GenerationConfig {
     std::optional<std::string> response_mime_type;
     std::optional<std::string> response_schema; // OpenAPI schema as JSON string
 
+    std::optional<bool> response_logprobs;
+    std::optional<uint32_t> logprobs; // Number of top candidates
+
     std::vector<std::string> stop_sequences;
 };
 
 struct SafetySetting {
-    std::string category;
-    std::string threshold;
+    std::string category; // e.g. "HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_CIVIC_INTEGRITY"
+    SafetyThreshold threshold = SafetyThreshold::BLOCK_MEDIUM_AND_ABOVE;
 };
 
 struct Tool {
@@ -108,6 +111,50 @@ struct UsageMetadata {
     TokenCountDetails candidates_token_count_details;
 };
 
+struct GroundingMetadata {
+    struct GroundingChunk {
+        struct Web {
+            std::string uri;
+            std::string title;
+        } web;
+    };
+    std::vector<GroundingChunk> grounding_chunks;
+    std::vector<std::string> web_search_queries;
+
+    struct GroundingSupport {
+        std::vector<uint32_t> grounding_chunk_indices;
+        uint32_t segment_start_index = 0;
+        uint32_t segment_end_index = 0;
+        double confidence_score = 0.0;
+    };
+    std::vector<GroundingSupport> grounding_supports;
+
+    struct SearchEntryPoint {
+        std::string rendered_content; // HTML/CSS for Search UI
+    };
+    std::optional<SearchEntryPoint> search_entry_point;
+};
+
+struct CitationMetadata {
+    struct CitationSource {
+        uint32_t start_index = 0;
+        uint32_t end_index = 0;
+        std::string uri;
+        std::string license;
+    };
+    std::vector<CitationSource> citation_sources;
+};
+
+struct LogprobsResult {
+    struct Candidate {
+        std::string token;
+        double log_probability = 0.0;
+        std::vector<uint8_t> bytes;
+    };
+    std::vector<Candidate> chosen_candidates;
+    std::vector<std::vector<Candidate>> top_candidates;
+};
+
 struct Candidate {
     Content content;
     FinishReason finish_reason = FinishReason::FINISH_REASON_UNSPECIFIED;
@@ -115,13 +162,21 @@ struct Candidate {
     // Reasoning chain text if available
     std::optional<std::string> thinking_process; 
     
+    std::vector<SafetyRating> safety_ratings;
+    std::optional<CitationMetadata> citation_metadata;
+    std::optional<GroundingMetadata> grounding_metadata;
     std::optional<UsageMetadata> usage_metadata;
+
+    std::optional<LogprobsResult> logprobs_result;
+    double avg_logprobs = 0.0;
 };
 
 struct GenerateContentResponse {
     std::vector<Candidate> candidates;
+    std::optional<PromptFeedback> prompt_feedback;
     std::optional<UsageMetadata> usage_metadata;
     std::optional<std::string> model_version;
+    std::optional<ResponseTelemetry> telemetry;
 };
 
 } // namespace jai::llm::providers::gemini_2_5

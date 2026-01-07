@@ -145,11 +145,26 @@ struct MessageResponse {
         std::optional<std::string> id;
         std::optional<std::string> name;
         std::optional<std::string> input;
+
+        struct Citation {
+            std::string type; // "char_location", "page_location"
+            struct Source {
+                std::string type; // "base64", "url"
+                std::string media_type;
+                std::string data;
+            } source;
+            uint32_t start_index = 0;
+            uint32_t end_index = 0;
+            std::optional<uint32_t> start_page;
+            std::optional<uint32_t> end_page;
+        };
+        std::vector<Citation> citations;
     };
     std::vector<ContentBlock> content;
 
-    std::optional<std::string> stop_reason;
+    std::optional<std::string> stop_reason; // "end_turn", "max_tokens", "stop_sequence", "tool_use", "refusal"
     UsageMetadata usage;
+    std::optional<ResponseTelemetry> telemetry;
 };
 
 } // namespace jai::llm::providers::anthropic_4_5_sonnet
