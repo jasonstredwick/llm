@@ -46,6 +46,7 @@ add_library(llm INTERFACE)
 # Add include directories (Unified Sysroot)
 target_include_directories(llm INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interface>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/deps/include>
 )
 
@@ -60,3 +61,9 @@ endif()
 # Verification Test
 add_executable(test_includes tests/test_includes.cpp)
 target_link_libraries(test_includes PRIVATE llm)
+
+# ODR Verification Test (Multi-Unit Linking)
+add_executable(test_odr tests/test_odr_1.cpp tests/test_odr_2.cpp)
+target_link_libraries(test_odr PRIVATE llm)
+
+install(TARGETS test_includes test_odr RUNTIME DESTINATION bin)

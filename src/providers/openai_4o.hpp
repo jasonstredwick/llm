@@ -7,6 +7,8 @@
 #include <vector>
 #include <variant>
 
+#include "../../interface/llm.hpp"
+
 namespace jai::llm::providers::openai_4o {
 
 /**
@@ -22,10 +24,6 @@ enum class ContentPartType { AUDIO, IMAGE_URL, TEXT, VIDEO };
 enum class FinishReason { CONTENT_FILTER, FINISH_REASON_UNSPECIFIED, LENGTH, STOP, TOOL_CALLS };
 enum class ImageDetail { AUTO, HIGH, LOW };
 enum class Modality { AUDIO, IMAGE, TEXT, VIDEO };
-enum class ModerationModel { 
-    OMNI_MODERATION_2024_09_26, OMNI_MODERATION_LATEST, 
-    TEXT_MODERATION_LATEST, TEXT_MODERATION_STABLE 
-};
 enum class ObjectType { CHAT_COMPLETION };
 enum class PredictionType { CONTENT };
 enum class ReasoningEffort { HIGH, LOW, MEDIUM, MINIMAL, NONE, XHIGH };
@@ -263,69 +261,117 @@ struct ChatCompletionResponse {
     std::optional<ResponseTelemetry> telemetry;
 };
 
-// --- Moderation Structures ---
-
-struct ModerationRequest {
-    struct ContentPart {
-        struct Image {
-            struct ImageUrl {
-                std::string url;
-                std::optional<ImageDetail> detail;
-            };
-            ContentPartType type = ContentPartType::IMAGE_URL;
-            ImageUrl image_url;
-        };
-        struct Text {
-            ContentPartType type = ContentPartType::TEXT;
-            std::string text;
-        };
-        using Part = std::variant<Text, Image>;
-    };
-
-    std::variant<std::string, std::vector<ContentPart::Part>> input;
-    ModerationModel model = ModerationModel::OMNI_MODERATION_LATEST;
-};
-
-struct ModerationResponse {
-    struct Result {
-        struct Categories {
-            bool hate = false;
-            bool hate_threatening = false;
-            bool harassment = false;
-            bool harassment_threatening = false;
-            bool self_harm = false;
-            bool self_harm_instructions = false;
-            bool self_harm_intent = false;
-            bool sexual = false;
-            bool sexual_minors = false;
-            bool violence = false;
-            bool violence_graphic = false;
-            bool illicit = false;
-            bool illicit_violent = false;
-        };
-        struct CategoryScores {
-            double hate = 0.0;
-            double hate_threatening = 0.0;
-            double harassment = 0.0;
-            double harassment_threatening = 0.0;
-            double self_harm = 0.0;
-            double self_harm_instructions = 0.0;
-            double self_harm_intent = 0.0;
-            double sexual = 0.0;
-            double sexual_minors = 0.0;
-            double violence = 0.0;
-            double violence_graphic = 0.0;
-            double illicit = 0.0;
-            double illicit_violent = 0.0;
-        };
-        Categories categories;
-        CategoryScores category_scores;
-        bool flagged = false;
-    };
-
-    std::string id;
-    std::string model;
-    std::vector<Result> results;
-};
-
 } // namespace jai::llm::providers::openai_4o
+
+namespace jai::llm {
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::Role val) {
+    switch (val) {
+        case providers::openai_4o::Role::USER: return "user";
+        case providers::openai_4o::Role::SYSTEM: return "system";
+        case providers::openai_4o::Role::ASSISTANT: return "assistant";
+        case providers::openai_4o::Role::TOOL: return "tool";
+        case providers::openai_4o::Role::DEVELOPER: return "developer";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::Modality val) {
+    switch (val) {
+        case providers::openai_4o::Modality::TEXT: return "text";
+        case providers::openai_4o::Modality::IMAGE: return "image";
+        case providers::openai_4o::Modality::VIDEO: return "video";
+        case providers::openai_4o::Modality::AUDIO: return "audio";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::FinishReason val) {
+    switch (val) {
+        case providers::openai_4o::FinishReason::STOP: return "stop";
+        case providers::openai_4o::FinishReason::LENGTH: return "length";
+        case providers::openai_4o::FinishReason::CONTENT_FILTER: return "content_filter";
+        case providers::openai_4o::FinishReason::TOOL_CALLS: return "tool_calls";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::ImageDetail val) {
+    switch (val) {
+        case providers::openai_4o::ImageDetail::AUTO: return "auto";
+        case providers::openai_4o::ImageDetail::LOW: return "low";
+        case providers::openai_4o::ImageDetail::HIGH: return "high";
+        default: return "auto";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::ContentPartType val) {
+    switch (val) {
+        case providers::openai_4o::ContentPartType::TEXT: return "text";
+        case providers::openai_4o::ContentPartType::IMAGE_URL: return "image_url";
+        case providers::openai_4o::ContentPartType::AUDIO: return "audio";
+        case providers::openai_4o::ContentPartType::VIDEO: return "video";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::ToolType val) {
+    switch (val) {
+        case providers::openai_4o::ToolType::FUNCTION: return "function";
+        case providers::openai_4o::ToolType::CODE_INTERPRETER: return "code_interpreter";
+        case providers::openai_4o::ToolType::FILE_SEARCH: return "file_search";
+        default: return "function";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::CacheRetention val) {
+    switch (val) {
+        case providers::openai_4o::CacheRetention::IN_MEMORY: return "in_memory";
+        case providers::openai_4o::CacheRetention::HOURS_24: return "24h";
+        default: return "in_memory";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::ResponseFormatType val) {
+    switch (val) {
+        case providers::openai_4o::ResponseFormatType::TEXT: return "text";
+        case providers::openai_4o::ResponseFormatType::JSON_OBJECT: return "json_object";
+        case providers::openai_4o::ResponseFormatType::JSON_SCHEMA: return "json_schema";
+        default: return "text";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::PredictionType val) {
+    switch (val) {
+        case providers::openai_4o::PredictionType::CONTENT: return "content";
+        default: return "content";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::ServiceTier val) {
+    switch (val) {
+        case providers::openai_4o::ServiceTier::SCALE: return "scale";
+        case providers::openai_4o::ServiceTier::DEFAULT: return "default";
+        default: return "default";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4o::ObjectType val) {
+    switch (val) {
+        case providers::openai_4o::ObjectType::CHAT_COMPLETION: return "chat.completion";
+        default: return "chat.completion";
+    }
+}
+
+} // namespace jai::llm

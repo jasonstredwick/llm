@@ -7,6 +7,8 @@
 #include <vector>
 #include <variant>
 
+#include "../../interface/llm.hpp"
+
 namespace jai::llm::providers::openai_5 {
 
 /**
@@ -241,7 +243,7 @@ struct ChatCompletionResponse {
         };
 
         uint32_t index = 0;
-        FinishReason finish_reason = FinishReason::FINISH_REASON_UNSPECIFIED;
+        FinishReason finish_reason = FinishReason::STOP;
         Message message;
         std::optional<Logprobs> logprobs;
     };
@@ -257,3 +259,139 @@ struct ChatCompletionResponse {
 };
 
 } // namespace jai::llm::providers::openai_5
+
+namespace jai::llm {
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::Role val) {
+    switch (val) {
+        case providers::openai_5::Role::USER: return "user";
+        case providers::openai_5::Role::SYSTEM: return "system";
+        case providers::openai_5::Role::ASSISTANT: return "assistant";
+        case providers::openai_5::Role::TOOL: return "tool";
+        case providers::openai_5::Role::DEVELOPER: return "developer";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::Modality val) {
+    switch (val) {
+        case providers::openai_5::Modality::TEXT: return "text";
+        case providers::openai_5::Modality::IMAGE: return "image";
+        case providers::openai_5::Modality::VIDEO: return "video";
+        case providers::openai_5::Modality::AUDIO: return "audio";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::FinishReason val) {
+    switch (val) {
+        case providers::openai_5::FinishReason::STOP: return "stop";
+        case providers::openai_5::FinishReason::LENGTH: return "length";
+        case providers::openai_5::FinishReason::CONTENT_FILTER: return "content_filter";
+        case providers::openai_5::FinishReason::TOOL_CALLS: return "tool_calls";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ImageDetail val) {
+    switch (val) {
+        case providers::openai_5::ImageDetail::AUTO: return "auto";
+        case providers::openai_5::ImageDetail::LOW: return "low";
+        case providers::openai_5::ImageDetail::HIGH: return "high";
+        default: return "auto";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ContentPartType val) {
+    switch (val) {
+        case providers::openai_5::ContentPartType::TEXT: return "text";
+        case providers::openai_5::ContentPartType::IMAGE_URL: return "image_url";
+        case providers::openai_5::ContentPartType::AUDIO: return "audio";
+        case providers::openai_5::ContentPartType::VIDEO: return "video";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ToolType val) {
+    switch (val) {
+        case providers::openai_5::ToolType::FUNCTION: return "function";
+        case providers::openai_5::ToolType::CODE_INTERPRETER: return "code_interpreter";
+        case providers::openai_5::ToolType::FILE_SEARCH: return "file_search";
+        default: return "function";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ReasoningEffort val) {
+    switch (val) {
+        case providers::openai_5::ReasoningEffort::NONE: return "none";
+        case providers::openai_5::ReasoningEffort::MINIMAL: return "minimal";
+        case providers::openai_5::ReasoningEffort::LOW: return "low";
+        case providers::openai_5::ReasoningEffort::MEDIUM: return "medium";
+        case providers::openai_5::ReasoningEffort::HIGH: return "high";
+        case providers::openai_5::ReasoningEffort::XHIGH: return "xhigh";
+        default: return "medium";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::Verbosity val) {
+    switch (val) {
+        case providers::openai_5::Verbosity::CONCISE: return "concise";
+        case providers::openai_5::Verbosity::MEDIUM: return "medium";
+        case providers::openai_5::Verbosity::DETAILED: return "detailed";
+        default: return "medium";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::CacheRetention val) {
+    switch (val) {
+        case providers::openai_5::CacheRetention::IN_MEMORY: return "in_memory";
+        case providers::openai_5::CacheRetention::HOURS_24: return "24h";
+        default: return "in_memory";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ResponseFormatType val) {
+    switch (val) {
+        case providers::openai_5::ResponseFormatType::TEXT: return "text";
+        case providers::openai_5::ResponseFormatType::JSON_OBJECT: return "json_object";
+        case providers::openai_5::ResponseFormatType::JSON_SCHEMA: return "json_schema";
+        default: return "text";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::PredictionType val) {
+    switch (val) {
+        case providers::openai_5::PredictionType::CONTENT: return "content";
+        default: return "content";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ServiceTier val) {
+    switch (val) {
+        case providers::openai_5::ServiceTier::SCALE: return "scale";
+        case providers::openai_5::ServiceTier::DEFAULT: return "default";
+        default: return "default";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_5::ObjectType val) {
+    switch (val) {
+        case providers::openai_5::ObjectType::CHAT_COMPLETION: return "chat.completion";
+        default: return "chat.completion";
+    }
+}
+
+} // namespace jai::llm

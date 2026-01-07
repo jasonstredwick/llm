@@ -7,7 +7,9 @@
 #include <vector>
 #include <variant>
 
-namespace jai::llm::providers::gemini {
+#include "../../interface/llm.hpp"
+
+namespace jai::llm::providers::gemini_3 {
 
 /**
  * Gemini 3.0 API (2026 Snapshot)
@@ -263,3 +265,164 @@ struct GenerateContentResponse {
 };
 
 } // namespace jai::llm::providers::gemini
+
+namespace jai::llm {
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::Role val) {
+    switch (val) {
+        case providers::gemini_3::Role::USER: return "user";
+        case providers::gemini_3::Role::MODEL: return "model";
+        case providers::gemini_3::Role::SYSTEM: return "system";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::CodeLanguage val) {
+    switch (val) {
+        case providers::gemini_3::CodeLanguage::PYTHON: return "python";
+        default: return "python";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::MediaType val) {
+    switch (val) {
+        case providers::gemini_3::MediaType::APPLICATION_PDF: return "application/pdf";
+        case providers::gemini_3::MediaType::AUDIO_AAC: return "audio/aac";
+        case providers::gemini_3::MediaType::AUDIO_FLAC: return "audio/flac";
+        case providers::gemini_3::MediaType::AUDIO_MP3: return "audio/mp3";
+        case providers::gemini_3::MediaType::AUDIO_MP4: return "audio/mp4";
+        case providers::gemini_3::MediaType::AUDIO_MPEG: return "audio/mpeg";
+        case providers::gemini_3::MediaType::AUDIO_OGG: return "audio/ogg";
+        case providers::gemini_3::MediaType::AUDIO_WAV: return "audio/wav";
+        case providers::gemini_3::MediaType::IMAGE_BMP: return "image/bmp";
+        case providers::gemini_3::MediaType::IMAGE_GIF: return "image/gif";
+        case providers::gemini_3::MediaType::IMAGE_JPEG: return "image/jpeg";
+        case providers::gemini_3::MediaType::IMAGE_PNG: return "image/png";
+        case providers::gemini_3::MediaType::IMAGE_WEBP: return "image/webp";
+        case providers::gemini_3::MediaType::VIDEO_MOV: return "video/mov";
+        case providers::gemini_3::MediaType::VIDEO_MPEG: return "video/mpeg";
+        case providers::gemini_3::MediaType::VIDEO_MP4: return "video/mp4";
+        case providers::gemini_3::MediaType::VIDEO_MPG: return "video/mpg";
+        case providers::gemini_3::MediaType::VIDEO_OGG: return "video/ogg";
+        case providers::gemini_3::MediaType::VIDEO_QT: return "video/quicktime";
+        case providers::gemini_3::MediaType::VIDEO_WEBM: return "video/webm";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::Modality val) {
+    switch (val) {
+        case providers::gemini_3::Modality::TEXT: return "text";
+        case providers::gemini_3::Modality::IMAGE: return "image";
+        case providers::gemini_3::Modality::VIDEO: return "video";
+        case providers::gemini_3::Modality::AUDIO: return "audio";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::ExecutionOutcome val) {
+    switch (val) {
+        case providers::gemini_3::ExecutionOutcome::OK: return "OUTCOME_OK";
+        case providers::gemini_3::ExecutionOutcome::FAILED: return "OUTCOME_FAILED";
+        case providers::gemini_3::ExecutionOutcome::DEADLINE_EXCEEDED: return "OUTCOME_DEADLINE_EXCEEDED";
+        default: return "OUTCOME_UNSPECIFIED";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::HarmCategory val) {
+    switch (val) {
+        case providers::gemini_3::HarmCategory::HARASSMENT: return "HARM_CATEGORY_HARASSMENT";
+        case providers::gemini_3::HarmCategory::HATE_SPEECH: return "HARM_CATEGORY_HATE_SPEECH";
+        case providers::gemini_3::HarmCategory::SEXUALLY_EXPLICIT: return "HARM_CATEGORY_SEXUALLY_EXPLICIT";
+        case providers::gemini_3::HarmCategory::DANGEROUS_CONTENT: return "HARM_CATEGORY_DANGEROUS_CONTENT";
+        case providers::gemini_3::HarmCategory::CIVIC_INTEGRITY: return "HARM_CATEGORY_CIVIC_INTEGRITY";
+        case providers::gemini_3::HarmCategory::MEDICAL: return "HARM_CATEGORY_MEDICAL";
+        case providers::gemini_3::HarmCategory::SEXUAL: return "HARM_CATEGORY_SEXUAL";
+        case providers::gemini_3::HarmCategory::PUBLIC_SAFETY: return "HARM_CATEGORY_PUBLIC_SAFETY";
+        case providers::gemini_3::HarmCategory::TOXICITY: return "HARM_CATEGORY_TOXICITY";
+        case providers::gemini_3::HarmCategory::DEROGATORY: return "HARM_CATEGORY_DEROGATORY";
+        case providers::gemini_3::HarmCategory::VIOLENT_CONTENT: return "HARM_CATEGORY_VIOLENT_CONTENT";
+        case providers::gemini_3::HarmCategory::SEXUAL_CONTENT: return "HARM_CATEGORY_SEXUAL_CONTENT";
+        case providers::gemini_3::HarmCategory::MEDICAL_ADVICE: return "HARM_CATEGORY_MEDICAL_ADVICE";
+        case providers::gemini_3::HarmCategory::CIVIC_INTEGRITY_ELECTIONS: return "HARM_CATEGORY_CIVIC_INTEGRITY_ELECTIONS";
+        case providers::gemini_3::HarmCategory::HATE_CONTENT: return "HARM_CATEGORY_HATE_CONTENT";
+        case providers::gemini_3::HarmCategory::HARASSMENT_CONTENT: return "HARM_CATEGORY_HARASSMENT_CONTENT";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::HarmProbability val) {
+    switch (val) {
+        case providers::gemini_3::HarmProbability::NEGLIGIBLE: return "NEGLIGIBLE";
+        case providers::gemini_3::HarmProbability::LOW: return "LOW";
+        case providers::gemini_3::HarmProbability::MEDIUM: return "MEDIUM";
+        case providers::gemini_3::HarmProbability::HIGH: return "HIGH";
+        default: return "UNSPECIFIED";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::FinishReason val) {
+    switch (val) {
+        case providers::gemini_3::FinishReason::STOP: return "STOP";
+        case providers::gemini_3::FinishReason::MAX_TOKENS: return "MAX_TOKENS";
+        case providers::gemini_3::FinishReason::SAFETY: return "SAFETY";
+        case providers::gemini_3::FinishReason::RECITATION: return "RECITATION";
+        case providers::gemini_3::FinishReason::OTHER: return "OTHER";
+        case providers::gemini_3::FinishReason::BLOCKLIST: return "BLOCKLIST";
+        case providers::gemini_3::FinishReason::PROHIBITED_CONTENT: return "PROHIBITED_CONTENT";
+        case providers::gemini_3::FinishReason::SPII: return "SPII";
+        case providers::gemini_3::FinishReason::MALFORMED_FUNCTION_CALL: return "MALFORMED_FUNCTION_CALL";
+        default: return "FINISH_REASON_UNSPECIFIED";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::ThinkingLevel val) {
+    switch (val) {
+        case providers::gemini_3::ThinkingLevel::MINIMAL: return "MINIMAL";
+        case providers::gemini_3::ThinkingLevel::LOW: return "LOW";
+        case providers::gemini_3::ThinkingLevel::MEDIUM: return "MEDIUM";
+        case providers::gemini_3::ThinkingLevel::HIGH: return "HIGH";
+        default: return "THINKING_LEVEL_UNSPECIFIED";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::MediaResolution val) {
+    switch (val) {
+        case providers::gemini_3::MediaResolution::LOW: return "LOW";
+        case providers::gemini_3::MediaResolution::MEDIUM: return "MEDIUM";
+        case providers::gemini_3::MediaResolution::HIGH: return "HIGH";
+        default: return "MEDIA_RESOLUTION_UNSPECIFIED";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::ResponseMimeType val) {
+    switch (val) {
+        case providers::gemini_3::ResponseMimeType::APPLICATION_JSON: return "application/json";
+        case providers::gemini_3::ResponseMimeType::TEXT_X_ENUM: return "text/x.enum";
+        case providers::gemini_3::ResponseMimeType::TEXT_PLAIN:
+        default: return "text/plain";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::gemini_3::FunctionCallingMode val) {
+    switch (val) {
+        case providers::gemini_3::FunctionCallingMode::AUTO: return "AUTO";
+        case providers::gemini_3::FunctionCallingMode::ANY: return "ANY";
+        case providers::gemini_3::FunctionCallingMode::NONE: return "NONE";
+        default: return "MODE_UNSPECIFIED";
+    }
+}
+
+} // namespace jai::llm

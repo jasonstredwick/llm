@@ -7,6 +7,8 @@
 #include <vector>
 #include <variant>
 
+#include "../../interface/llm.hpp"
+
 namespace jai::llm::providers::anthropic_4_5_opus {
 
 /**
@@ -218,3 +220,123 @@ struct MessageResponse {
 };
 
 } // namespace jai::llm::providers::anthropic_4_5_opus
+
+namespace jai::llm {
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::Role val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::Role::USER: return "user";
+        case providers::anthropic_4_5_opus::Role::ASSISTANT: return "assistant";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::MessageContentPartType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::MessageContentPartType::TEXT: return "text";
+        case providers::anthropic_4_5_opus::MessageContentPartType::IMAGE: return "image";
+        case providers::anthropic_4_5_opus::MessageContentPartType::AUDIO: return "audio";
+        case providers::anthropic_4_5_opus::MessageContentPartType::DOCUMENT: return "document";
+        case providers::anthropic_4_5_opus::MessageContentPartType::TOOL_USE: return "tool_use";
+        case providers::anthropic_4_5_opus::MessageContentPartType::TOOL_RESULT: return "tool_result";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::SourceType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::SourceType::BASE64: return "base64";
+        case providers::anthropic_4_5_opus::SourceType::URL: return "url";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::EffortLevel val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::EffortLevel::LOW: return "low";
+        case providers::anthropic_4_5_opus::EffortLevel::MEDIUM: return "medium";
+        case providers::anthropic_4_5_opus::EffortLevel::HIGH: return "high";
+        default: return "medium";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::ThinkingType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::ThinkingType::ENABLED: return "enabled";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::StopReason val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::StopReason::END_TURN: return "end_turn";
+        case providers::anthropic_4_5_opus::StopReason::MAX_TOKENS: return "max_tokens";
+        case providers::anthropic_4_5_opus::StopReason::STOP_SEQUENCE: return "stop_sequence";
+        case providers::anthropic_4_5_opus::StopReason::TOOL_USE: return "tool_use";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::ContentBlockType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::ContentBlockType::TEXT: return "text";
+        case providers::anthropic_4_5_opus::ContentBlockType::THINKING: return "thinking";
+        case providers::anthropic_4_5_opus::ContentBlockType::TOOL_USE: return "tool_use";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::MessageType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::MessageType::MESSAGE: return "message";
+        case providers::anthropic_4_5_opus::MessageType::ERROR: return "error";
+        default: return "message";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::ToolChoiceType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::ToolChoiceType::AUTO: return "auto";
+        case providers::anthropic_4_5_opus::ToolChoiceType::ANY: return "any";
+        case providers::anthropic_4_5_opus::ToolChoiceType::TOOL: return "tool";
+        default: return "auto";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::CacheType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::CacheType::EPHEMERAL: return "ephemeral";
+        default: return "ephemeral";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::ResponseFormatType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::ResponseFormatType::TEXT: return "text";
+        case providers::anthropic_4_5_opus::ResponseFormatType::JSON_OBJECT: return "json_object";
+        case providers::anthropic_4_5_opus::ResponseFormatType::JSON_SCHEMA: return "json_schema";
+        default: return "text";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_opus::CitationType val) {
+    switch (val) {
+        case providers::anthropic_4_5_opus::CitationType::CHAR_LOCATION: return "char_location";
+        case providers::anthropic_4_5_opus::CitationType::PAGE_LOCATION: return "page_location";
+        default: return "";
+    }
+}
+
+} // namespace jai::llm

@@ -5,6 +5,9 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <variant>
+
+#include "../../interface/llm.hpp"
 
 namespace jai::llm::providers::openai_4 {
 
@@ -144,3 +147,75 @@ struct ChatCompletionResponse {
 };
 
 } // namespace jai::llm::providers::openai_4
+
+namespace jai::llm {
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::Role val) {
+    switch (val) {
+        case providers::openai_4::Role::USER: return "user";
+        case providers::openai_4::Role::SYSTEM: return "system";
+        case providers::openai_4::Role::ASSISTANT: return "assistant";
+        case providers::openai_4::Role::TOOL: return "tool";
+        case providers::openai_4::Role::DEVELOPER: return "developer";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::ContentPartType val) {
+    switch (val) {
+        case providers::openai_4::ContentPartType::TEXT: return "text";
+        case providers::openai_4::ContentPartType::IMAGE_URL: return "image_url";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::ImageDetail val) {
+    switch (val) {
+        case providers::openai_4::ImageDetail::AUTO: return "auto";
+        case providers::openai_4::ImageDetail::LOW: return "low";
+        case providers::openai_4::ImageDetail::HIGH: return "high";
+        default: return "auto";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::FinishReason val) {
+    switch (val) {
+        case providers::openai_4::FinishReason::STOP: return "stop";
+        case providers::openai_4::FinishReason::LENGTH: return "length";
+        case providers::openai_4::FinishReason::CONTENT_FILTER: return "content_filter";
+        case providers::openai_4::FinishReason::TOOL_CALLS: return "tool_calls";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::ToolType val) {
+    switch (val) {
+        case providers::openai_4::ToolType::FUNCTION: return "function";
+        default: return "function";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::ResponseFormatType val) {
+    switch (val) {
+        case providers::openai_4::ResponseFormatType::TEXT: return "text";
+        case providers::openai_4::ResponseFormatType::JSON_OBJECT: return "json_object";
+        case providers::openai_4::ResponseFormatType::JSON_SCHEMA: return "json_schema";
+        default: return "text";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::openai_4::ObjectType val) {
+    switch (val) {
+        case providers::openai_4::ObjectType::CHAT_COMPLETION: return "chat.completion";
+        default: return "chat.completion";
+    }
+}
+
+} // namespace jai::llm

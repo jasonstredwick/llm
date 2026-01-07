@@ -7,6 +7,8 @@
 #include <vector>
 #include <variant>
 
+#include "../../interface/llm.hpp"
+
 namespace jai::llm::providers::anthropic_4_5_sonnet {
 
 /**
@@ -212,3 +214,113 @@ struct MessageResponse {
 };
 
 } // namespace jai::llm::providers::anthropic_4_5_sonnet
+
+namespace jai::llm {
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::Role val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::Role::USER: return "user";
+        case providers::anthropic_4_5_sonnet::Role::ASSISTANT: return "assistant";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::MessageContentPartType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::MessageContentPartType::TEXT: return "text";
+        case providers::anthropic_4_5_sonnet::MessageContentPartType::IMAGE: return "image";
+        case providers::anthropic_4_5_sonnet::MessageContentPartType::AUDIO: return "audio";
+        case providers::anthropic_4_5_sonnet::MessageContentPartType::DOCUMENT: return "document";
+        case providers::anthropic_4_5_sonnet::MessageContentPartType::TOOL_USE: return "tool_use";
+        case providers::anthropic_4_5_sonnet::MessageContentPartType::TOOL_RESULT: return "tool_result";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::SourceType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::SourceType::BASE64: return "base64";
+        case providers::anthropic_4_5_sonnet::SourceType::URL: return "url";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::ThinkingType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::ThinkingType::ENABLED: return "enabled";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::StopReason val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::StopReason::END_TURN: return "end_turn";
+        case providers::anthropic_4_5_sonnet::StopReason::MAX_TOKENS: return "max_tokens";
+        case providers::anthropic_4_5_sonnet::StopReason::STOP_SEQUENCE: return "stop_sequence";
+        case providers::anthropic_4_5_sonnet::StopReason::TOOL_USE: return "tool_use";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::ContentBlockType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::ContentBlockType::TEXT: return "text";
+        case providers::anthropic_4_5_sonnet::ContentBlockType::THINKING: return "thinking";
+        case providers::anthropic_4_5_sonnet::ContentBlockType::TOOL_USE: return "tool_use";
+        default: return "";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::MessageType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::MessageType::MESSAGE: return "message";
+        case providers::anthropic_4_5_sonnet::MessageType::ERROR: return "error";
+        default: return "message";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::ToolChoiceType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::ToolChoiceType::AUTO: return "auto";
+        case providers::anthropic_4_5_sonnet::ToolChoiceType::ANY: return "any";
+        case providers::anthropic_4_5_sonnet::ToolChoiceType::TOOL: return "tool";
+        default: return "auto";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::CacheType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::CacheType::EPHEMERAL: return "ephemeral";
+        default: return "ephemeral";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::ResponseFormatType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::ResponseFormatType::TEXT: return "text";
+        case providers::anthropic_4_5_sonnet::ResponseFormatType::JSON_OBJECT: return "json_object";
+        case providers::anthropic_4_5_sonnet::ResponseFormatType::JSON_SCHEMA: return "json_schema";
+        default: return "text";
+    }
+}
+
+template<>
+constexpr std::string_view to_string_view(providers::anthropic_4_5_sonnet::CitationType val) {
+    switch (val) {
+        case providers::anthropic_4_5_sonnet::CitationType::CHAR_LOCATION: return "char_location";
+        case providers::anthropic_4_5_sonnet::CitationType::PAGE_LOCATION: return "page_location";
+        default: return "";
+    }
+}
+
+} // namespace jai::llm
