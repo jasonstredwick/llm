@@ -29,10 +29,6 @@ int main() {
     std::print("\nOpenAI Header Verification:\n");
     openai_5::ChatCompletionRequest req_oa5;
     std::print(" - OpenAI 5.2 ok.\n");
-    
-    openai_5::ModerationRequest mod_req;
-    mod_req.model = openai_5::ModerationModel::OMNI_MODERATION_LATEST;
-    std::print(" - OpenAI Moderation ok (Model enum: {}).\n", openai_5::to_string(mod_req.model));
 
     openai_4::ChatCompletionResponse res_oa4;
     std::print(" - OpenAI 4.0 ok (Structural Enums: {}).\n", (res_oa4.object == openai_4::ObjectType::CHAT_COMPLETION ? "ok" : "fail"));

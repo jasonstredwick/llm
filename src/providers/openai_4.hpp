@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace jai::llm::providers::openai_4 {
@@ -11,6 +12,8 @@ namespace jai::llm::providers::openai_4 {
  * OpenAI GPT-4 - Chat Completions API
  * Isolated "Shared-Nothing" Header
  */
+
+constexpr std::string_view ENDPOINT = "https://api.openai.com/v1/chat/completions";
 
 // --- Type Glossary (Enums) ---
 enum class ContentPartType { IMAGE_URL, TEXT };

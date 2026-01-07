@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <variant>
 
@@ -12,6 +13,9 @@ namespace jai::llm::providers::anthropic_4_5_opus {
  * Anthropic Claude 4.5 Opus - Messages API (2026 Snapshot)
  * Isolated "Shared-Nothing" Header
  */
+
+constexpr std::string_view ENDPOINT = "https://api.anthropic.com/v1/messages";
+constexpr std::string_view API_VERSION = "2023-06-01"; // Default version for 4.5 series
 
 // --- Type Glossary (Enums) ---
 enum class CacheType { EPHEMERAL };

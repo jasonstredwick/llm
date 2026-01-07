@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <variant>
 
@@ -13,16 +14,14 @@ namespace jai::llm::providers::openai_5 {
  * Isolated "Shared-Nothing" Header
  */
 
+constexpr std::string_view ENDPOINT = "https://api.openai.com/v1/chat/completions";
+
 // --- Type Glossary (Enums) ---
 enum class CacheRetention { HOURS_24, IN_MEMORY };
 enum class ContentPartType { AUDIO, IMAGE_URL, TEXT, VIDEO };
 enum class FinishReason { CONTENT_FILTER, FINISH_REASON_UNSPECIFIED, LENGTH, STOP, TOOL_CALLS };
 enum class ImageDetail { AUTO, HIGH, LOW };
 enum class Modality { AUDIO, IMAGE, TEXT, VIDEO };
-enum class ModerationModel { 
-    OMNI_MODERATION_2024_09_26, OMNI_MODERATION_LATEST, 
-    TEXT_MODERATION_LATEST, TEXT_MODERATION_STABLE 
-};
 enum class ObjectType { CHAT_COMPLETION };
 enum class PredictionType { CONTENT };
 enum class ReasoningEffort { HIGH, LOW, MEDIUM, MINIMAL, NONE, XHIGH };
@@ -255,71 +254,6 @@ struct ChatCompletionResponse {
     UsageMetadata usage;
     std::optional<ServiceTier> service_tier;
     std::optional<ResponseTelemetry> telemetry;
-};
-
-// --- Moderation Structures ---
-
-struct ModerationRequest {
-    struct ContentPart {
-        struct Image {
-            struct ImageUrl {
-                std::string url;
-                std::optional<ImageDetail> detail;
-            };
-            ContentPartType type = ContentPartType::IMAGE_URL;
-            ImageUrl image_url;
-        };
-        struct Text {
-            ContentPartType type = ContentPartType::TEXT;
-            std::string text;
-        };
-        using Part = std::variant<Text, Image>;
-    };
-
-    std::variant<std::string, std::vector<ContentPart::Part>> input;
-    ModerationModel model = ModerationModel::OMNI_MODERATION_LATEST;
-};
-
-struct ModerationResponse {
-    struct Result {
-        struct Categories {
-            bool hate = false;
-            bool hate_threatening = false;
-            bool harassment = false;
-            bool harassment_threatening = false;
-            bool self_harm = false;
-            bool self_harm_instructions = false;
-            bool self_harm_intent = false;
-            bool sexual = false;
-            bool sexual_minors = false;
-            bool violence = false;
-            bool violence_graphic = false;
-            bool illicit = false;
-            bool illicit_violent = false;
-        };
-        struct CategoryScores {
-            double hate = 0.0;
-            double hate_threatening = 0.0;
-            double harassment = 0.0;
-            double harassment_threatening = 0.0;
-            double self_harm = 0.0;
-            double self_harm_instructions = 0.0;
-            double self_harm_intent = 0.0;
-            double sexual = 0.0;
-            double sexual_minors = 0.0;
-            double violence = 0.0;
-            double violence_graphic = 0.0;
-            double illicit = 0.0;
-            double illicit_violent = 0.0;
-        };
-        Categories categories;
-        CategoryScores category_scores;
-        bool flagged = false;
-    };
-
-    std::string id;
-    std::string model;
-    std::vector<Result> results;
 };
 
 } // namespace jai::llm::providers::openai_5

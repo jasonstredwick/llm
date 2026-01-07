@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <variant>
 
@@ -12,6 +13,8 @@ namespace jai::llm::providers::openai_4o {
  * OpenAI GPT-4o ("Omni") - Chat Completions API
  * Isolated "Shared-Nothing" Header
  */
+
+constexpr std::string_view ENDPOINT = "https://api.openai.com/v1/chat/completions";
 
 // --- Type Glossary (Enums) ---
 enum class CacheRetention { HOURS_24, IN_MEMORY };

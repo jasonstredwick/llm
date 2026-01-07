@@ -50,7 +50,6 @@ std::string_view to_string(ResponseFormatType val);
 std::string_view to_string(PredictionType val);
 std::string_view to_string(ServiceTier val);
 std::string_view to_string(ObjectType val);
-std::string_view to_string(ModerationModel val);
 }
 
 namespace openai_4o {
@@ -65,7 +64,6 @@ std::string_view to_string(ResponseFormatType val);
 std::string_view to_string(PredictionType val);
 std::string_view to_string(ServiceTier val);
 std::string_view to_string(ObjectType val);
-std::string_view to_string(ModerationModel val);
 }
 
 namespace openai_4 {

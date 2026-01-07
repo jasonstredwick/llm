@@ -310,15 +310,6 @@ std::string_view to_string(ObjectType val) {
         default: return "chat.completion";
     }
 }
-std::string_view to_string(ModerationModel val) {
-    switch (val) {
-        case ModerationModel::OMNI_MODERATION_LATEST: return "omni-moderation-latest";
-        case ModerationModel::OMNI_MODERATION_2024_09_26: return "omni-moderation-2024-09-26";
-        case ModerationModel::TEXT_MODERATION_LATEST: return "text-moderation-latest";
-        case ModerationModel::TEXT_MODERATION_STABLE: return "text-moderation-stable";
-        default: return "omni-moderation-latest";
-    }
-}
 } // namespace openai_5
 
 namespace openai_4o {
@@ -407,15 +398,6 @@ std::string_view to_string(ObjectType val) {
     switch (val) {
         case ObjectType::CHAT_COMPLETION: return "chat.completion";
         default: return "chat.completion";
-    }
-}
-std::string_view to_string(ModerationModel val) {
-    switch (val) {
-        case ModerationModel::OMNI_MODERATION_LATEST: return "omni-moderation-latest";
-        case ModerationModel::OMNI_MODERATION_2024_09_26: return "omni-moderation-2024-09-26";
-        case ModerationModel::TEXT_MODERATION_LATEST: return "text-moderation-latest";
-        case ModerationModel::TEXT_MODERATION_STABLE: return "text-moderation-stable";
-        default: return "omni-moderation-latest";
     }
 }
 } // namespace openai_4o
