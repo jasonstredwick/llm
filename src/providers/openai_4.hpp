@@ -1,114 +1,143 @@
 #pragma once
 
-#include "base.hpp"
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include <cstdint>
 
 namespace jai::llm::providers::openai_4 {
 
-using namespace jai::llm::providers;
-
 /**
- * OpenAI GPT-4 Chat Completions API Structures
- * Focused on text-only/simple multimodal inputs and text outputs.
+ * OpenAI GPT-4 - Chat Completions API
+ * Isolated "Shared-Nothing" Header
  */
 
+// --- Type Glossary (Enums) ---
+enum class ContentPartType { IMAGE_URL, TEXT };
+enum class FinishReason { CONTENT_FILTER, FINISH_REASON_UNSPECIFIED, LENGTH, STOP, TOOL_CALLS };
+enum class ImageDetail { AUTO, HIGH, LOW };
+enum class ObjectType { CHAT_COMPLETION };
+enum class ResponseFormatType { JSON_OBJECT, JSON_SCHEMA, TEXT };
+enum class Role { ASSISTANT, DEVELOPER, SYSTEM, TOOL, USER };
+enum class ToolType { FUNCTION };
+
+// --- Request Structures ---
+
+struct ToolCall {
+    struct Function {
+        std::string name;
+        std::string arguments; // JSON string
+    };
+    std::string id;
+    ToolType type = ToolType::FUNCTION;
+    Function function;
+};
+
 struct ChatCompletionMessage {
-    Role role = Role::USER; // system, user, assistant
-    
+    struct ContentPart {
+        struct Image {
+            struct ImageUrl {
+                std::string url;
+                std::optional<ImageDetail> detail;
+            };
+            ContentPartType type = ContentPartType::IMAGE_URL;
+            ImageUrl image_url;
+        };
+        struct Text {
+            ContentPartType type = ContentPartType::TEXT;
+            std::string text;
+        };
+
+        using Part = std::variant<Text, Image>;
+    };
+
+    Role role = Role::USER;
     /**
      * OpenAI Constraint: 'developer' and 'system' roles MUST be text-only (std::string).
+     * 'user' and 'assistant' roles can be multimodal (vector of parts).
      */
-    std::string content;
+    std::variant<std::string, std::vector<ContentPart::Part>> content;
     std::optional<std::string> name;
-
-    struct ToolCall {
-        std::string id;
-        std::string type = "function";
-        struct Function {
-            std::string name;
-            std::string arguments;
-        } function;
-    };
-    std::vector<ToolCall> tool_calls;
     std::optional<std::string> tool_call_id;
+    std::vector<ToolCall> tool_calls;
 };
 
 struct ChatCompletionRequest {
-    std::string model;
-    std::vector<ChatCompletionMessage> messages;
-
-    std::optional<uint32_t> max_tokens;
-    std::optional<double> temperature;
-    std::optional<double> top_p;
-    std::optional<uint32_t> n;
-    
-    std::vector<std::string> stop;
-    
-    std::optional<double> presence_penalty;
-    std::optional<double> frequency_penalty;
-    
-    std::optional<std::string> user;
-    std::optional<uint64_t> seed;
-
     struct ResponseFormat {
-        std::string type = "text"; // "text", "json_object"
+        struct JsonSchema {
+            std::string name;
+            std::optional<std::string> description;
+            std::string schema; // JSON Schema string
+            std::optional<bool> strict;
+        };
+        ResponseFormatType type = ResponseFormatType::TEXT;
+        std::optional<JsonSchema> json_schema;
     };
-    std::optional<ResponseFormat> response_format;
-
     struct Tool {
-        std::string type = "function";
         struct Function {
             std::string name;
             std::optional<std::string> description;
             std::string parameters; // JSON Schema string
-        } function;
+            std::optional<bool> strict;
+        };
+        ToolType type = ToolType::FUNCTION;
+        Function function;
     };
+
+    std::string model;
+    std::vector<ChatCompletionMessage> messages;
+    std::optional<uint32_t> max_tokens;
+    std::optional<double> temperature;
+    std::optional<double> top_p;
+    std::optional<uint32_t> n;
+    std::vector<std::string> stop;
+    std::optional<double> presence_penalty;
+    std::optional<double> frequency_penalty;
+    std::optional<std::string> user;
+    std::optional<uint64_t> seed;
+    std::optional<ResponseFormat> response_format;
     std::vector<Tool> tools;
 };
 
+// --- Response Structures ---
+
+struct ResponseTelemetry {
+    uint32_t processing_ms = 0;
+    std::string request_id;
+    std::optional<std::string> organization;
+    std::optional<std::string> version_header;
+};
+
 struct UsageMetadata {
+    struct PromptTokensDetails {
+        uint32_t cached_tokens = 0;
+    };
     uint32_t prompt_tokens = 0;
     uint32_t completion_tokens = 0;
     uint32_t total_tokens = 0;
-
-    struct PromptTokensDetails {
-        uint32_t cached_tokens = 0;
-    } prompt_tokens_details;
+    PromptTokensDetails prompt_tokens_details;
 };
 
 struct ChatCompletionResponse {
-    std::string id;
-    std::string object = "chat.completion";
-    uint64_t created = 0;
-    std::string model;
-    std::optional<std::string> system_fingerprint;
-
     struct Choice {
-        uint32_t index = 0;
-        
         struct Message {
             Role role = Role::ASSISTANT;
             std::optional<std::string> content;
-
-            struct ToolCall {
-                std::string id;
-                std::string type = "function";
-                struct Function {
-                    std::string name;
-                    std::string arguments;
-                } function;
-            };
             std::vector<ToolCall> tool_calls;
-        } message;
-
-        std::string finish_reason; // "stop", "length", "content_filter"
+        };
+        uint32_t index = 0;
+        FinishReason finish_reason = FinishReason::FINISH_REASON_UNSPECIFIED;
+        Message message;
     };
 
+    std::string id;
+    ObjectType object = ObjectType::CHAT_COMPLETION;
+    uint64_t created = 0;
+    std::string model;
+    std::optional<std::string> system_fingerprint;
     std::vector<Choice> choices;
     UsageMetadata usage;
+    std::optional<ResponseTelemetry> telemetry;
 };
 
 } // namespace jai::llm::providers::openai_4

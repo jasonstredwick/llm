@@ -1,127 +1,164 @@
 #pragma once
 
-#include "base.hpp"
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 #include <variant>
-#include <cstdint>
 
 namespace jai::llm::providers::anthropic_4_5_sonnet {
 
-using namespace jai::llm::providers;
-
 /**
- * Anthropic Claude 4.5 Sonnet Messages API Structures
- * Supports Extended Thinking but lacks the effort control of Opus.
+ * Anthropic Claude 4.5 Sonnet - Messages API (2026 Snapshot)
+ * Isolated "Shared-Nothing" Header
  */
 
-struct ImageSource {
-    std::string type = "base64";
-    std::string media_type;
-    std::string data;
+// --- Type Glossary (Enums) ---
+enum class CacheType { EPHEMERAL };
+enum class CitationType { CHAR_LOCATION, PAGE_LOCATION };
+enum class ContentBlockType { TEXT, THINKING, TOOL_USE };
+enum class MessageContentPartType { AUDIO, DOCUMENT, IMAGE, TEXT, TOOL_RESULT, TOOL_USE };
+enum class MessageType { ERROR, MESSAGE };
+enum class ResponseFormatType { JSON_OBJECT, JSON_SCHEMA, TEXT };
+enum class Role { ASSISTANT, USER };
+enum class SourceType { BASE64, URL };
+enum class StopReason { END_TURN, MAX_TOKENS, STOP_SEQUENCE, TOOL_USE };
+enum class ThinkingType { ENABLED };
+enum class ToolChoiceType { ANY, AUTO, TOOL };
+
+// --- Request Structures ---
+
+struct CacheControl {
+    CacheType type = CacheType::EPHEMERAL;
 };
 
-struct MessageContentPartText {
-    std::string type = "text";
-    std::string text;
-
-    struct CacheControl {
-        std::string type = "ephemeral";
-    };
-    std::optional<CacheControl> cache_control;
+struct ResponseFormat {
+    ResponseFormatType type = ResponseFormatType::TEXT;
+    std::optional<std::string> json_schema; // JSON Schema string
 };
-
-struct MessageContentPartImage {
-    std::string type = "image";
-    ImageSource source;
-
-    struct CacheControl {
-        std::string type = "ephemeral";
-    };
-    std::optional<CacheControl> cache_control;
-};
-
-struct MessageContentPartToolUse {
-    std::string type = "tool_use";
-    std::string id;
-    std::string name;
-    std::string input; // JSON string
-
-    struct CacheControl {
-        std::string type = "ephemeral";
-    };
-    std::optional<CacheControl> cache_control;
-};
-
-struct MessageContentPartToolResult {
-    std::string type = "tool_result";
-    std::string tool_use_id;
-    std::string content;
-    std::optional<bool> is_error;
-
-    struct CacheControl {
-        std::string type = "ephemeral";
-    };
-    std::optional<CacheControl> cache_control;
-};
-
-using MessageContentPart = std::variant<
-    MessageContentPartText, 
-    MessageContentPartImage,
-    MessageContentPartToolUse,
-    MessageContentPartToolResult
->;
 
 struct Message {
-    Role role = Role::USER;
-    std::variant<std::string, std::vector<MessageContentPart>> content;
-};
+    struct ContentPart {
+        struct Audio {
+            struct Source {
+                SourceType type = SourceType::BASE64;
+                std::string media_type;
+                std::string data;
+            };
+            MessageContentPartType type = MessageContentPartType::AUDIO;
+            Source source;
+            std::optional<CacheControl> cache_control;
+        };
+        struct Document {
+            struct Source {
+                SourceType type = SourceType::BASE64;
+                std::string media_type;
+                std::string data;
+            };
+            MessageContentPartType type = MessageContentPartType::DOCUMENT;
+            Source source;
+            std::optional<CacheControl> cache_control;
+        };
+        struct Image {
+            struct Source {
+                SourceType type = SourceType::BASE64;
+                std::optional<std::string> media_type;
+                std::optional<std::string> data;
+                std::optional<std::string> url;
+            };
+            MessageContentPartType type = MessageContentPartType::IMAGE;
+            Source source;
+            std::optional<CacheControl> cache_control;
+        };
+        struct Text {
+            MessageContentPartType type = MessageContentPartType::TEXT;
+            std::string text;
+            std::optional<CacheControl> cache_control;
+        };
+        struct ToolResult {
+            MessageContentPartType type = MessageContentPartType::TOOL_RESULT;
+            std::string tool_use_id;
+            std::string content;
+            std::optional<bool> is_error;
+            std::optional<CacheControl> cache_control;
+        };
+        struct ToolUse {
+            MessageContentPartType type = MessageContentPartType::TOOL_USE;
+            std::string id;
+            std::string name;
+            std::string input; // JSON string
+            std::optional<CacheControl> cache_control;
+        };
 
-struct ThinkingConfig {
-    std::string type = "enabled";
-    uint32_t budget_tokens = 0;
+        using Part = std::variant<Text, Image, Audio, Document, ToolUse, ToolResult>;
+    };
+
+    Role role = Role::USER;
+    std::variant<std::string, std::vector<ContentPart::Part>> content;
 };
 
 struct MessageRequest {
-    std::string model;
-    std::vector<Message> messages;
-    
     struct SystemPrompt {
         std::string text;
-        struct CacheControl {
-            std::string type = "ephemeral";
-        };
         std::optional<CacheControl> cache_control;
     };
-    std::variant<std::string, std::vector<SystemPrompt>> system;
+    struct ThinkingConfig {
+        ThinkingType type = ThinkingType::ENABLED;
+        uint32_t budget_tokens = 0;
+    };
+    struct Tool {
+        struct Custom {
+            std::string name;
+            std::string description;
+            std::string input_schema; // JSON Schema string
+        };
+        struct Computer {
+            std::string type = "computer_20241022";
+            std::string name = "computer";
+            uint32_t display_width_px = 0;
+            uint32_t display_height_px = 0;
+            std::optional<uint32_t> display_number;
+        };
+        struct Bash {
+            std::string type = "bash_20241022";
+            std::string name = "bash";
+        };
+        struct TextEditor {
+            std::string type = "text_editor_20250124";
+            std::string name = "str_replace_editor";
+        };
 
+        using Config = std::variant<Custom, Computer, Bash, TextEditor>;
+        Config config;
+        std::optional<CacheControl> cache_control;
+    };
+    struct ToolChoice {
+        ToolChoiceType type = ToolChoiceType::AUTO;
+        std::optional<std::string> name;
+        std::optional<bool> disable_parallel_tool_use;
+    };
+
+    std::string model;
+    std::vector<Message> messages;
+    std::variant<std::string, std::vector<SystemPrompt>> system;
     uint32_t max_tokens = 4096;
-    
-    std::optional<ThinkingConfig> thinking; // Sonnet 4.5 also supports thinking mode
-    
+    std::optional<ThinkingConfig> thinking; 
     std::vector<std::string> stop_sequences;
+    std::optional<ResponseFormat> response_format;
     std::optional<double> temperature;
     std::optional<double> top_p;
     std::optional<uint32_t> top_k;
-
-    struct Tool {
-        std::string name;
-        std::string description;
-        std::string input_schema; // JSON Schema as string
-
-        struct CacheControl {
-            std::string type = "ephemeral";
-        };
-        std::optional<CacheControl> cache_control;
-    };
     std::vector<Tool> tools;
-
-    struct ToolChoice {
-        std::string type; // "auto", "any", "tool"
-        std::optional<std::string> name;
-    };
     std::optional<ToolChoice> tool_choice;
+};
+
+// --- Response Structures ---
+
+struct ResponseTelemetry {
+    uint32_t processing_ms = 0;
+    std::string request_id;
+    std::optional<std::string> organization;
+    std::optional<std::string> version_header;
 };
 
 struct UsageMetadata {
@@ -133,36 +170,39 @@ struct UsageMetadata {
 };
 
 struct MessageResponse {
-    std::string id;
-    std::string model;
-
     struct ContentBlock {
-        std::string type; // "text", "thinking", "tool_use"
+        struct Citation {
+            struct Source {
+                SourceType type = SourceType::BASE64;
+                std::optional<std::string> media_type;
+                std::optional<std::string> data;
+                std::optional<std::string> file_id;
+            };
+            CitationType type = CitationType::CHAR_LOCATION;
+            Source source;
+            std::string cite;
+            uint32_t start_index = 0;
+            uint32_t end_index = 0;
+            std::optional<uint32_t> start_page_number;
+            std::optional<uint32_t> end_page_number;
+        };
+
+        ContentBlockType type = ContentBlockType::TEXT;
         std::optional<std::string> text;
         std::optional<std::string> thinking;
-
-        // tool_use specifically
         std::optional<std::string> id;
         std::optional<std::string> name;
         std::optional<std::string> input;
-
-        struct Citation {
-            std::string type; // "char_location", "page_location"
-            struct Source {
-                std::string type; // "base64", "url"
-                std::string media_type;
-                std::string data;
-            } source;
-            uint32_t start_index = 0;
-            uint32_t end_index = 0;
-            std::optional<uint32_t> start_page;
-            std::optional<uint32_t> end_page;
-        };
         std::vector<Citation> citations;
     };
-    std::vector<ContentBlock> content;
 
-    std::optional<std::string> stop_reason; // "end_turn", "max_tokens", "stop_sequence", "tool_use", "refusal"
+    std::string id;
+    MessageType type = MessageType::MESSAGE;
+    Role role = Role::ASSISTANT;
+    std::string model;
+    std::vector<ContentBlock> content;
+    std::optional<StopReason> stop_reason;
+    std::optional<std::string> stop_sequence;
     UsageMetadata usage;
     std::optional<ResponseTelemetry> telemetry;
 };
