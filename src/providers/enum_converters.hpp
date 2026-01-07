@@ -14,6 +14,8 @@ namespace jai::llm::providers {
 namespace gemini {
 std::string_view to_string(Role val);
 std::string_view to_string(Modality val);
+std::string_view to_string(CodeLanguage val);
+std::string_view to_string(MediaType val);
 std::string_view to_string(ExecutionOutcome val);
 std::string_view to_string(HarmCategory val);
 std::string_view to_string(HarmProbability val);
@@ -27,6 +29,8 @@ std::string_view to_string(FunctionCallingMode val);
 namespace gemini_2_5 {
 std::string_view to_string(Role val);
 std::string_view to_string(Modality val);
+std::string_view to_string(CodeLanguage val);
+std::string_view to_string(MediaType val);
 std::string_view to_string(ExecutionOutcome val);
 std::string_view to_string(HarmCategory val);
 std::string_view to_string(HarmProbability val);

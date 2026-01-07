@@ -18,6 +18,7 @@ constexpr std::string_view ENDPOINT_BASE = "https://generativelanguage.googleapi
 constexpr std::string_view ENDPOINT_VERTEX_BASE = "https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/{REGION}/publishers/google/models/{MODEL_ID}:generateContent";
 
 // --- Type Glossary (Enums) ---
+enum class CodeLanguage { PYTHON, UNSPECIFIED };
 enum class ExecutionOutcome { DEADLINE_EXCEEDED, FAILED, OK, UNSPECIFIED };
 enum class FinishReason { 
     BLOCKLIST, FINISH_REASON_UNSPECIFIED, MALFORMED_FUNCTION_CALL, MAX_TOKENS, 
@@ -32,6 +33,12 @@ enum class HarmCategory {
 };
 enum class HarmProbability { HIGH, LOW, MEDIUM, NEGLIGIBLE, UNSPECIFIED };
 enum class MediaResolution { HIGH, LOW, MEDIA_RESOLUTION_UNSPECIFIED, MEDIUM };
+enum class MediaType { 
+    APPLICATION_PDF, AUDIO_AAC, AUDIO_FLAC, AUDIO_MP3, AUDIO_MP4, AUDIO_MPEG, AUDIO_OGG, AUDIO_WAV,
+    IMAGE_BMP, IMAGE_GIF, IMAGE_JPEG, IMAGE_PNG, IMAGE_WEBP,
+    VIDEO_MOV, VIDEO_MPEG, VIDEO_MP4, VIDEO_MPG, VIDEO_OGG, VIDEO_QT, VIDEO_WEBM,
+    UNSPECIFIED 
+};
 enum class Modality { AUDIO, IMAGE, TEXT, UNSPECIFIED, VIDEO };
 enum class ResponseMimeType { APPLICATION_JSON, TEXT_PLAIN, TEXT_X_ENUM };
 enum class Role { MODEL, SYSTEM, USER };
@@ -50,11 +57,11 @@ struct Content {
             std::string output;
         };
         struct ExecutableCode {
-            std::string language;
+            CodeLanguage language = CodeLanguage::PYTHON;
             std::string code;
         };
         struct FileData {
-            std::string mime_type;
+            MediaType mime_type = MediaType::UNSPECIFIED;
             std::string file_uri;
         };
         struct FunctionCall {
@@ -66,7 +73,7 @@ struct Content {
             std::string response; // JSON string
         };
         struct InlineImagePart {
-            std::string mime_type;
+            MediaType mime_type = MediaType::UNSPECIFIED;
             std::string base64_data;
         };
         struct TextPart {

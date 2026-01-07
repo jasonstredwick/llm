@@ -11,6 +11,37 @@ std::string_view to_string(Role val) {
         default: return "";
     }
 }
+std::string_view to_string(CodeLanguage val) {
+    switch (val) {
+        case CodeLanguage::PYTHON: return "python";
+        default: return "python";
+    }
+}
+std::string_view to_string(MediaType val) {
+    switch (val) {
+        case MediaType::APPLICATION_PDF: return "application/pdf";
+        case MediaType::AUDIO_AAC: return "audio/aac";
+        case MediaType::AUDIO_FLAC: return "audio/flac";
+        case MediaType::AUDIO_MP3: return "audio/mp3";
+        case MediaType::AUDIO_MP4: return "audio/mp4";
+        case MediaType::AUDIO_MPEG: return "audio/mpeg";
+        case MediaType::AUDIO_OGG: return "audio/ogg";
+        case MediaType::AUDIO_WAV: return "audio/wav";
+        case MediaType::IMAGE_BMP: return "image/bmp";
+        case MediaType::IMAGE_GIF: return "image/gif";
+        case MediaType::IMAGE_JPEG: return "image/jpeg";
+        case MediaType::IMAGE_PNG: return "image/png";
+        case MediaType::IMAGE_WEBP: return "image/webp";
+        case MediaType::VIDEO_MOV: return "video/mov";
+        case MediaType::VIDEO_MPEG: return "video/mpeg";
+        case MediaType::VIDEO_MP4: return "video/mp4";
+        case MediaType::VIDEO_MPG: return "video/mpg";
+        case MediaType::VIDEO_OGG: return "video/ogg";
+        case MediaType::VIDEO_QT: return "video/quicktime";
+        case MediaType::VIDEO_WEBM: return "video/webm";
+        default: return "";
+    }
+}
 std::string_view to_string(Modality val) {
     switch (val) {
         case Modality::TEXT: return "text";
@@ -113,6 +144,37 @@ std::string_view to_string(Role val) {
         case Role::USER: return "user";
         case Role::MODEL: return "model";
         case Role::SYSTEM: return "system";
+        default: return "";
+    }
+}
+std::string_view to_string(CodeLanguage val) {
+    switch (val) {
+        case CodeLanguage::PYTHON: return "python";
+        default: return "python";
+    }
+}
+std::string_view to_string(MediaType val) {
+    switch (val) {
+        case MediaType::APPLICATION_PDF: return "application/pdf";
+        case MediaType::AUDIO_AAC: return "audio/aac";
+        case MediaType::AUDIO_FLAC: return "audio/flac";
+        case MediaType::AUDIO_MP3: return "audio/mp3";
+        case MediaType::AUDIO_MP4: return "audio/mp4";
+        case MediaType::AUDIO_MPEG: return "audio/mpeg";
+        case MediaType::AUDIO_OGG: return "audio/ogg";
+        case MediaType::AUDIO_WAV: return "audio/wav";
+        case MediaType::IMAGE_BMP: return "image/bmp";
+        case MediaType::IMAGE_GIF: return "image/gif";
+        case MediaType::IMAGE_JPEG: return "image/jpeg";
+        case MediaType::IMAGE_PNG: return "image/png";
+        case MediaType::IMAGE_WEBP: return "image/webp";
+        case MediaType::VIDEO_MOV: return "video/mov";
+        case MediaType::VIDEO_MPEG: return "video/mpeg";
+        case MediaType::VIDEO_MP4: return "video/mp4";
+        case MediaType::VIDEO_MPG: return "video/mpg";
+        case MediaType::VIDEO_OGG: return "video/ogg";
+        case MediaType::VIDEO_QT: return "video/quicktime";
+        case MediaType::VIDEO_WEBM: return "video/webm";
         default: return "";
     }
 }
