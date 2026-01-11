@@ -142,7 +142,7 @@ struct ChatCompletionRequest {
     std::optional<uint32_t> max_completion_tokens; // Replaces max_tokens for newer models
     std::optional<double> temperature;
     std::optional<double> top_p;
-    
+
     std::optional<ReasoningEffort> reasoning_effort;
     std::optional<Verbosity> verbosity;
     std::optional<bool> compaction;

@@ -27,7 +27,7 @@ using namespace jai::llm::providers;
 
 int main() {
     std::print("Provider Header Verification (C++Latest):\n");
-    
+
     std::print("\nGemini Header Verification:\n");
     gemini_3::GenerateContentRequest request_g3;
     request_g3.generation_config = gemini_3::GenerationConfig{};

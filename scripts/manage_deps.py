@@ -57,7 +57,7 @@ def build_dependency(name, version, platform, root, lock, current_sysroot):
     artifact_name = f"{name}-{version}_{platform}.zip"
     source_archive = f"{name}-{version}.zip"
     workspace = os.path.join(root, "third_party_workspace")
-    
+
     # Isolate build and install
     lib_build_parent = os.path.join(workspace, "build", name)
     lib_install_dir = os.path.join(workspace, "install", name)
@@ -76,7 +76,7 @@ def build_dependency(name, version, platform, root, lock, current_sysroot):
     # We'll just extract to lib_build_parent and find the single folder
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(lib_build_parent)
-    
+
     # Try to find the source dir within lib_build_parent
     # (some zips have a root folder, others don't)
     subdirs = [os.path.join(lib_build_parent, d) for d in os.listdir(lib_build_parent) if os.path.isdir(os.path.join(lib_build_parent, d))]
@@ -88,12 +88,12 @@ def build_dependency(name, version, platform, root, lock, current_sysroot):
     # Prepare build dir
     build_dir = os.path.join(extracted_src, "build")
     os.makedirs(build_dir, exist_ok=True)
-    
+
     # Resolve args
     common_args = lock.get("common", {}).get(platform, [])
     dep_config = next((d for d in lock["platform"][platform] if d["name"] == name), {})
     specific_args = dep_config.get("cmake_args", [])
-    
+
     all_args = common_args + specific_args
     resolved_args = []
     # For build phase, placeholders resolve to the *currently partially populated* sysroot
@@ -109,7 +109,7 @@ def build_dependency(name, version, platform, root, lock, current_sysroot):
     # Configure & Build
     cmake_cmd = ["cmake", "-S", extracted_src, "-B", build_dir] + resolved_args
     cmake_cmd.append(f"-DCMAKE_INSTALL_PREFIX={lib_install_dir.replace('\\', '/')}")
-    
+
     if run_cmd(cmake_cmd) != 0: return None
     if run_cmd(["cmake", "--build", build_dir, "--config", "Release"]) != 0: return None
     if run_cmd(["cmake", "--install", build_dir, "--config", "Release"]) != 0: return None
@@ -142,7 +142,7 @@ def sync(args):
     platform = args.platform
     sysroot = os.path.join(root, "deps")
     temp_dir = os.path.join(root, "temp_download")
-    
+
     with open(os.path.join(root, "deps.lock.json"), "r") as f:
         lock = json.load(f)
 
@@ -152,7 +152,7 @@ def sync(args):
 
     lock_deps = {d["name"]: d["version"] for d in lock["platform"][platform]}
     installed_manifest = get_installed_manifest(sysroot)
-    
+
     # Check if we need to sync
     needs_sync = (installed_manifest["platform"] != platform)
     if not needs_sync:
@@ -160,7 +160,7 @@ def sync(args):
             if installed_manifest["dependencies"].get(name) != version:
                 needs_sync = True
                 break
-    
+
     if not needs_sync:
         # Extra safety check: does the include dir exist?
         if os.path.exists(os.path.join(sysroot, "include")):
@@ -170,7 +170,7 @@ def sync(args):
             print("Missing sysroot contents, forcing sync...")
 
     print(f"Syncing dependencies for {platform}...")
-    
+
     # Wipe old sysroot
     if os.path.exists(sysroot):
         shutil.rmtree(sysroot)
@@ -180,7 +180,7 @@ def sync(args):
 
     for name, version in lock_deps.items():
         artifact_name = f"{name}-{version}_{platform}.zip"
-        
+
         # 1. Try download binary
         artifact_path = None
         if download_artifact(ARTIFACT_RELEASE, artifact_name, temp_dir, expected_file=artifact_name):
@@ -197,9 +197,9 @@ def sync(args):
         print(f"Installing {name}-{version} to sysroot...")
         with zipfile.ZipFile(artifact_path, 'r') as zip_ref:
             zip_ref.extractall(sysroot)
-        
+
         new_manifest["dependencies"][name] = version
-        
+
         # Cleanup temp artifact
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)

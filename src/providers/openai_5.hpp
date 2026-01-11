@@ -143,13 +143,13 @@ struct ChatCompletionRequest {
     std::optional<double> temperature;
     std::optional<double> top_p;
     std::optional<uint64_t> seed;
-    
+
     std::optional<ReasoningEffort> reasoning_effort;
     std::optional<Verbosity> verbosity;
     std::optional<bool> compaction;
 
     // Prompt Caching Controls
-    std::optional<std::string> prompt_cache_key; 
+    std::optional<std::string> prompt_cache_key;
     std::optional<CacheRetention> prompt_cache_retention;
 
     std::optional<ResponseFormat> response_format;
@@ -235,7 +235,7 @@ struct ChatCompletionResponse {
             Role role = Role::ASSISTANT;
             std::optional<std::string> content;
             std::optional<std::string> reasoning_summary;
-            std::optional<std::string> reasoning_content; 
+            std::optional<std::string> reasoning_content;
             std::optional<std::string> refusal;
             std::vector<Annotation> annotations;
             std::optional<Audio> audio;

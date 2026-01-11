@@ -22,31 +22,31 @@ constexpr std::string_view ENDPOINT_VERTEX_BASE = "https://{REGION}-aiplatform.g
 // --- Type Glossary (Enums) ---
 enum class CodeLanguage { PYTHON, UNSPECIFIED };
 enum class ExecutionOutcome { DEADLINE_EXCEEDED, FAILED, OK, UNSPECIFIED };
-enum class FinishReason { 
-    BLOCKLIST, FINISH_REASON_UNSPECIFIED, MALFORMED_FUNCTION_CALL, MAX_TOKENS, 
-    OTHER, PROHIBITED_CONTENT, RECITATION, SAFETY, SPII, STOP 
+enum class FinishReason {
+    BLOCKLIST, FINISH_REASON_UNSPECIFIED, MALFORMED_FUNCTION_CALL, MAX_TOKENS,
+    OTHER, PROHIBITED_CONTENT, RECITATION, SAFETY, SPII, STOP
 };
 enum class FunctionCallingMode { ANY, AUTO, MODE_UNSPECIFIED, NONE };
-enum class HarmCategory { 
-    CIVIC_INTEGRITY, CIVIC_INTEGRITY_ELECTIONS, DANGEROUS_CONTENT, DEROGATORY, 
-    HARASSMENT, HARASSMENT_CONTENT, HATE_CONTENT, HATE_SPEECH, MEDICAL, 
-    MEDICAL_ADVICE, PUBLIC_SAFETY, SEXUAL, SEXUAL_CONTENT, SEXUALLY_EXPLICIT, 
-    TOXICITY, UNSPECIFIED, VIOLENT_CONTENT 
+enum class HarmCategory {
+    CIVIC_INTEGRITY, CIVIC_INTEGRITY_ELECTIONS, DANGEROUS_CONTENT, DEROGATORY,
+    HARASSMENT, HARASSMENT_CONTENT, HATE_CONTENT, HATE_SPEECH, MEDICAL,
+    MEDICAL_ADVICE, PUBLIC_SAFETY, SEXUAL, SEXUAL_CONTENT, SEXUALLY_EXPLICIT,
+    TOXICITY, UNSPECIFIED, VIOLENT_CONTENT
 };
 enum class HarmProbability { HIGH, LOW, MEDIUM, NEGLIGIBLE, UNSPECIFIED };
 enum class MediaResolution { HIGH, LOW, MEDIA_RESOLUTION_UNSPECIFIED, MEDIUM };
-enum class MediaType { 
+enum class MediaType {
     APPLICATION_PDF, AUDIO_AAC, AUDIO_FLAC, AUDIO_MP3, AUDIO_MP4, AUDIO_MPEG, AUDIO_OGG, AUDIO_WAV,
     IMAGE_BMP, IMAGE_GIF, IMAGE_JPEG, IMAGE_PNG, IMAGE_WEBP,
     VIDEO_MOV, VIDEO_MPEG, VIDEO_MP4, VIDEO_MPG, VIDEO_OGG, VIDEO_QT, VIDEO_WEBM,
-    UNSPECIFIED 
+    UNSPECIFIED
 };
 enum class Modality { AUDIO, IMAGE, TEXT, UNSPECIFIED, VIDEO };
 enum class ResponseMimeType { APPLICATION_JSON, TEXT_PLAIN, TEXT_X_ENUM };
 enum class Role { MODEL, SYSTEM, USER };
-enum class SafetyThreshold { 
-    BLOCK_LOW_AND_ABOVE, BLOCK_MEDIUM_AND_ABOVE, BLOCK_NONE, 
-    BLOCK_ONLY_HIGH, OFF 
+enum class SafetyThreshold {
+    BLOCK_LOW_AND_ABOVE, BLOCK_MEDIUM_AND_ABOVE, BLOCK_NONE,
+    BLOCK_ONLY_HIGH, OFF
 };
 
 // --- Request Structures ---
@@ -85,7 +85,7 @@ struct Content {
         };
 
         using Part = std::variant<
-            TextPart, InlineImagePart, FileData, FunctionCall, 
+            TextPart, InlineImagePart, FileData, FunctionCall,
             FunctionResponse, ExecutableCode, CodeExecutionResult, ThoughtSignature
         >;
     };
@@ -133,7 +133,7 @@ struct ToolConfig {
         struct FunctionDeclaration {
             std::string name;
             std::optional<std::string> description;
-            std::optional<std::string> parameters; 
+            std::optional<std::string> parameters;
         };
         struct GoogleSearch {
             struct DynamicRetrievalConfig {
@@ -245,7 +245,7 @@ struct LogprobsResult {
 struct Candidate {
     Content content;
     FinishReason finish_reason = FinishReason::FINISH_REASON_UNSPECIFIED;
-    std::optional<std::string> thinking_process; 
+    std::optional<std::string> thinking_process;
     std::optional<CitationMetadata> citation_metadata;
     std::optional<GroundingMetadata> grounding_metadata;
     std::vector<SafetyRating> safety_ratings;

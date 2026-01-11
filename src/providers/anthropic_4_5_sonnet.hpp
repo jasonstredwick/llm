@@ -148,7 +148,7 @@ struct MessageRequest {
     std::vector<Message> messages;
     std::variant<std::string, std::vector<SystemPrompt>> system;
     uint32_t max_tokens = 4096;
-    std::optional<ThinkingConfig> thinking; 
+    std::optional<ThinkingConfig> thinking;
     std::vector<std::string> stop_sequences;
     std::optional<ResponseFormat> response_format;
     std::optional<double> temperature;
