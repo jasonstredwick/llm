@@ -40,22 +40,38 @@ if(NOT DEPS_RESULT EQUAL 0)
     message(FATAL_ERROR "Dependency management failed with exit code ${DEPS_RESULT}")
 endif()
 
-# Define the library as header-only (INTERFACE) for now
-add_library(llm INTERFACE)
+# Define the library (Now OBJECT or STATIC because it has source)
+add_library(llm STATIC
+    src/http_manager.cpp
+)
 
 # Add include directories (Unified Sysroot)
-target_include_directories(llm INTERFACE
+target_include_directories(llm PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interface>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/deps/include>
 )
 
+# Link dependencies (Curl, nghttp2, etc. are needed by http_manager)
+target_link_libraries(llm PUBLIC 
+    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libcurl.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/nghttp2.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/zlibstatic.lib"
+    # Winsock for Curl
+    ws2_32
+    crypt32
+    wldap32
+    normaliz
+    secur32
+    iphlpapi
+)
+
 # Basic compiler warnings configuration
 if(MSVC)
-    target_compile_options(llm INTERFACE /W4 /WX)
-    target_compile_definitions(llm INTERFACE NGHTTP2_STATICLIB NGHTTP2_NO_SSIZE_T)
+    target_compile_options(llm PRIVATE /W4 /WX)
+    target_compile_definitions(llm PUBLIC NGHTTP2_STATICLIB CURL_STATICLIB NOMINMAX)
 else()
-    target_compile_options(llm INTERFACE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(llm PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 # Verification Test
@@ -67,3 +83,7 @@ add_executable(test_odr tests/test_odr_1.cpp tests/test_odr_2.cpp)
 target_link_libraries(test_odr PRIVATE llm)
 
 install(TARGETS test_includes test_odr RUNTIME DESTINATION bin)
+
+# HTTP Manager Verification
+add_executable(test_http_simple tests/test_http_simple.cpp)
+target_link_libraries(test_http_simple PRIVATE llm)

@@ -2,6 +2,17 @@
 #include <string>
 #include <string_view>
 
+#if defined(_WIN32)
+#include <cstdint>
+typedef intptr_t ssize_t;
+#endif
+#include <nghttp2/nghttp2.h>
+#include <curl/curl.h>
+#if defined(_WIN32)
+#undef MIN
+#undef MAX
+#undef ERROR
+#endif
 
 #include "../src/providers/openai_4.hpp"
 #include "../src/providers/openai_4o.hpp"
