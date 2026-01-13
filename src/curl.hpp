@@ -15,9 +15,29 @@
 #include <vector>
 
 #include "../interface/policy.hpp"
+#include "http.hpp"
 
 
 namespace jai::llm::curl {
+
+
+class HeaderList {
+private:
+    using Handle_t = std::unique_ptr<curl_slist, decltype(&curl_slist_free_all)>;
+
+    Handle_t list{nullptr, &curl_slist_free_all};
+
+public:
+    explicit HeaderList(const http::Headers& headers) {
+        for (const auto& header : headers.GetHeaders()) {
+            auto* next = curl_slist_append(list.get(), header.c_str());
+            if (!next) { throw std::runtime_error("Failed to create HeaderList."); }
+            list.reset(next);
+        }
+    }
+
+    curl_slist* Get() const noexcept { return list.get(); }
+};
 
 
 class Attempt {
@@ -33,7 +53,6 @@ private:
 
 private:
     const AttemptPolicy& policy;
-    const std::vector<std::string>& request_headers;
     const std::string& request_body;
 
     Handle_t handle;
@@ -48,10 +67,9 @@ private:
 public:
     explicit Attempt(CURLM* multi,
                      const AttemptPolicy& policy_,
-                     const std::vector<std::string>& headers,
+                     const HeaderList& headers,
                      const std::string& body)
     : policy{policy_},
-      request_headers{headers},
       request_body{body},
       handle{curl_easy_init(), &curl_easy_cleanup}
     {
@@ -89,6 +107,8 @@ public:
         policy.forbid_connection_reuse.and_then([&SetOpt](auto v) { SetOpt(CURLOPT_FORBID_REUSE,      v ? 1L : 0L); });
         policy.fail_on_http_error     .and_then([&SetOpt](auto v) { SetOpt(CURLOPT_FAILONERROR,       v ? 1L : 0L); });
 
+        SetOpt(CURLOPT_HTTPHEADER, header_list.Get());
+        SetOpt(CURLOPT_NOSIGNAL, 1L);
         SetOpt(CURLOPT_WRITEFUNCTION, WriteCallback);
         SetOpt(CURLOPT_WRITEDATA, this);
         SetOpt(CURLOPT_HEADERFUNCTION, HeaderCallback);

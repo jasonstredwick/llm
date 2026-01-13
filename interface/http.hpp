@@ -5,17 +5,15 @@
 
 #pragma once
 
-#include <string_view>
-
-#include "http.hpp"
-#include "policy.hpp"
-
 
 namespace jai::llm {
 
 
-template<typename T>
-constexpr std::string_view to_string_view(T val);
+struct DroppedHeader {
+    enum class Reason { MissingColon, ContainsNewline };
+    std::string header;
+    Reason reason;
+};
 
 
 } // namespace jai::llm
