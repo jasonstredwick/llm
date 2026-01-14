@@ -6,6 +6,11 @@
 #pragma once
 
 
+#include <chrono>
+#include <optional>
+#include <string>
+
+
 namespace jai::llm {
 
 

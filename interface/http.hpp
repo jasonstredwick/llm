@@ -6,7 +6,22 @@
 #pragma once
 
 
-namespace jai::llm {
+#include <string>
+
+
+namespace jai::llm::http {
+
+
+enum class Method {
+    GET,
+    POST,
+    PUT,
+    DELETE,
+    PATCH,
+    HEAD,
+    OPTIONS,
+    TRACE
+};
 
 
 struct DroppedHeader {
@@ -16,4 +31,4 @@ struct DroppedHeader {
 };
 
 
-} // namespace jai::llm
+} // namespace jai::llm::http
