@@ -5,7 +5,7 @@ std::vector<Attempt*> Orchestrator::SyncAttempt(Attempt& attempt)
 {
     std::vector<Attempt*> all_completed_attempts{};
     while (!attempt.IsDone()) {
-        std::vector<Attempt*> completed_attempts{ExecOnce()};
+        std::vector<Attempt*> completed_attempts{interface.ExecOnce()};
         for (Attempt* completed_attempt : completed_attempts) {
             if (!completed_attempt->IsDone()) { continue; }
             auto it = std::ranges::find(all_completed_attempts, completed_attempt);

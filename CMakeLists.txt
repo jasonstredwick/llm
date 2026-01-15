@@ -6,6 +6,12 @@ project(llm
     LANGUAGES C CXX
 )
 
+# Default to Release mode if no build type is specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "No build type selected, defaulting to Release")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
+endif()
+
 # Standards baseline
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -42,10 +48,8 @@ endif()
 
 # Define the library
 add_library(llm STATIC
-    src/http_manager.cpp
-    src/admission_controller.cpp
-    src/providers/openai/openai_client.cpp
-    src/operation_group.cpp
+    src/http.cpp
+    src/curl.cpp
 )
 
 # Add include directories (Unified Sysroot)
@@ -103,3 +107,10 @@ target_link_libraries(test_openai PRIVATE llm)
 
 add_executable(test_operations tests/test_operations.cpp)
 target_link_libraries(test_operations PRIVATE llm)
+
+# New Unit Tests
+add_executable(unit_test_http tests/unit_test_http.cpp)
+target_link_libraries(unit_test_http PRIVATE llm)
+
+add_executable(unit_test_curl tests/unit_test_curl.cpp)
+target_link_libraries(unit_test_curl PRIVATE llm)

@@ -1,17 +1,16 @@
-#include "curl.hpp"
-
-
 #include <curl/curl.h>
 #if defined(_WIN32)
 #   undef min
 #   undef max
 #   undef ERROR
 #   undef DELETE
+#   undef interface
 #endif
-
+#include "curl.hpp"
 
 #include <algorithm>
 #include <ranges>
+#include <print>
 
 
 namespace jai::llm::curl {
@@ -73,22 +72,23 @@ template <typename T> T* ToCurl(void* ptr) { return static_cast<T*>(ptr); }
 /**
  * HeaderList
  */
-void DeleteHeaderListHandle(void* ptr) { curl_slist_free_all(ToCurl<curl_slist>(ptr)); }
+void DeleteHeaderListHandle(void* ptr) { if (ptr) { curl_slist_free_all(ToCurl<curl_slist>(ptr)); } }
 
 
 HeaderList::HeaderList(const http::Headers& headers) : list{nullptr, &DeleteHeaderListHandle} {
+    curl_slist* new_header_list = nullptr;
     for (const auto& header : headers.GetHeaders()) {
-        auto* new_list = curl_slist_append(ToCurl<curl_slist>(list.get()), header.c_str());
-        if (!new_list) { throw std::runtime_error("Failed to create HeaderList."); }
-        list.reset(static_cast<void*>(new_list));
+        new_header_list = curl_slist_append(new_header_list, header.c_str());
+        if (!new_header_list) { throw std::runtime_error("Failed to create HeaderList."); }
     }
+    list.reset(static_cast<void*>(new_header_list));
 }
 
 
 /**
  * Attempt
  */
-void AttemptEasyCleanup(void* ptr) { curl_easy_cleanup(ToCurl<CURL>(ptr)); }
+void AttemptEasyCleanup(void* ptr) { if (ptr) { curl_easy_cleanup(ToCurl<CURL>(ptr)); } }
 
 
 Attempt::Attempt(Interface& interface,
@@ -322,7 +322,7 @@ int Attempt::OnXferInfo(int64_t dltotal, int64_t dlnow, int64_t ultotal, int64_t
 /**
  * Interface
  */
-void InterfaceMultiCleanup(void* ptr) { curl_multi_cleanup(ToCurl<CURLM>(ptr)); }
+void InterfaceMultiCleanup(void* ptr) { if (ptr) { curl_multi_cleanup(ToCurl<CURLM>(ptr)); } }
 
 
 Interface::Interface(const ConnectionPolicy& policy)
@@ -392,7 +392,7 @@ std::vector<Attempt*> Interface::ExecOnce() {
             error_str = std::string{"Attempt failed: "} + curl_easy_strerror(result);
         }
 
-        attempt->Finalize(curlm_ptr, error_str);
+        attempt->Finalize(*this, error_str);
     }
 
     return attempts;

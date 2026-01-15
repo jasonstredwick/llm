@@ -18,6 +18,9 @@
 namespace jai::llm::curl {
 
 
+class Interface;
+
+
 class HeaderList {
 private:
     using Handle_t = std::unique_ptr<void, void(*)(void*)>;

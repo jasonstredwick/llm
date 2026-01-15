@@ -41,7 +41,10 @@
 *.dwo
 
 # Project Specific
-build/
 deps/
+build/
 third_party_workspace/
 temp_download/
+.vscode/
+.venv/
+venv/
