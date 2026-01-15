@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -14,17 +15,12 @@
 #include "http.hpp"
 
 
-struct CURL;
-struct CURLM;
-struct curl_slist;
-
-
 namespace jai::llm::curl {
 
 
 class HeaderList {
 private:
-    using Handle_t = std::unique_ptr<curl_slist, void(*)(curl_slist*)>;
+    using Handle_t = std::unique_ptr<void, void(*)(void*)>;
 
     Handle_t list;
 
@@ -37,7 +33,7 @@ public:
     HeaderList& operator=(HeaderList&&) noexcept = default;
     ~HeaderList() noexcept = default;
 
-    curl_slist* Get() const noexcept { return list.get(); }
+    void* Get() const noexcept { return list.get(); }
 };
 
 
@@ -81,7 +77,7 @@ struct Response {
 
 class Attempt {
 private:
-    using Handle_t = std::unique_ptr<CURL, void(*)(CURL*)>;
+    using Handle_t = std::unique_ptr<void, void(*)(void*)>;
 
 private:
     Handle_t handle;
@@ -92,7 +88,7 @@ private:
     bool unhooked{true};
 
 public:
-    explicit Attempt(CURLM* multi,
+    explicit Attempt(Interface& interface,
                      const AttemptPolicy& policy,
                      http::Method method,
                      const std::string& url,
@@ -106,7 +102,7 @@ public:
     Attempt& operator=(Attempt&&) noexcept = delete;
     ~Attempt() noexcept = default;
 
-    void Finalize(CURLM* multi, CURLcode result) noexcept;
+    void Finalize(Interface& interface, const std::string& result_error_str) noexcept;
 
     const std::string& GetErrorMessage() const { return response.error_message; }
     const Response& GetResponse() const { return response; }
@@ -127,53 +123,32 @@ private:
     }
 
     // Callback Handlers
-    int OnDebug(CURL* debug_handle, curl_infotype type, std::byte *data, size_t size);
-    size_t OnHeader(std::byte* ptr, size_t size, size_t nmemb);
-    size_t OnRead(std::byte* ptr, size_t size, size_t nmemb);
-    size_t OnWrite(std::byte* ptr, size_t size, size_t nmemb);
-    int OnXferInfo(curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow);
+    struct RawHandlers;
+    friend struct RawHandlers;
 
-private:
-    // Raw callbacks
-    static int DebugCallback(CURL* debug_handle, curl_infotype type, char* data, size_t size, void* userdata) {
-        auto attempt = static_cast<Attempt*>(userdata);
-        return attempt->OnDebug(debug_handle, type, static_cast<std::byte*>(data), size);
-    }
-
-    static size_t HeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-        auto attempt = static_cast<Attempt*>(userdata);
-        return attempt->OnHeader(static_cast<std::byte*>(ptr), size, nmemb);
-    }
-
-    static size_t ReadCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-        auto attempt = static_cast<Attempt*>(userdata);
-        return attempt->OnRead(static_cast<std::byte*>(ptr), size, nmemb);
-    }
-
-    static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-        auto attempt = static_cast<Attempt*>(userdata);
-        return attempt->OnWrite(static_cast<std::byte*>(ptr), size, nmemb);
-    }
-
-    static int XferInfoCallback(void* userdata,
-                                curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-        auto attempt = static_cast<Attempt*>(userdata);
-        return attempt->OnXferInfo(dltotal, dlnow, ultotal, ulnow);
-    }
+    size_t OnHeader(std::span<const std::byte> ptr);
+    size_t OnRead(std::span<const std::byte> ptr);
+    size_t OnWrite(std::span<const std::byte> ptr);
+    int OnXferInfo(int64_t dltotal, int64_t dlnow, int64_t ultotal, int64_t ulnow);
 };
 
 
 class Interface {
 private:
-    using Handle_t = std::unique_ptr<CURLM, decltype(&curl_multi_cleanup)>;
+    using Handle_t = std::unique_ptr<void, void(*)(void*)>;
+
+    struct Global {
+        Global();
+        ~Global() noexcept;
+    };
 
 private:
-    inline static Global global{};
+    static Global global;
 
     Handle_t handle;
 
 public:
-    explicit Interface(const ConnectionPolicy& policy_);
+    explicit Interface(const ConnectionPolicy& policy);
 
     Interface() = delete;
     Interface(const Interface&) = delete;
@@ -182,33 +157,9 @@ public:
     Interface& operator=(Interface&&) noexcept = delete;
     ~Interface() noexcept = default;
 
-    Attempt MakeAttempt(const AttemptPolicy& policy,
-                        http::Method method,
-                        const std::string& url,
-                        const HeaderList& header_list,
-                        const std::vector<std::byte>& body) const
-    {
-        return Attempt{handle.get(), policy, method, url, header_list, body};
-    }
-
-    Attempt MakeAttemptSync(const AttemptPolicy& policy,
-                            http::Method method,
-                            const std::string& url,
-                            const HeaderList& header_list,
-                            const std::vector<std::byte>& body) const
-    {
-        Attempt attempt{handle.get(), policy, method, url, header_list, body};
-        while (!attempt.IsDone()) { ExecOnce(); }
-        return attempt;
-    }
-
+    std::string AddHandle(void* curl_easy_handle);
     std::vector<Attempt*> ExecOnce();
-
-private:
-    struct Global {
-        Global();
-        ~Global() noexcept;
-    };
+    std::string RemoveHandle(void* curl_easy_handle);
 };
 
 

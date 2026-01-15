@@ -38,13 +38,13 @@ public:
 private:
     void AddHeader(std::string_view header) {
         auto reason = IsNotValidHeader(header);
-        if (reason) { dropped_headers.push_back({header, reason.value()}); }
-        else        { headers.push_back(header); }
+        if (reason) { dropped_headers.push_back({std::string{header}, reason.value()}); }
+        else        { headers.push_back(std::string{header}); }
     }
 
-    std::vector<std::string> ExtractKeys(const std::vector<std::string>& headers) const;
+    std::vector<std::string> ExtractKeys(const std::vector<std::string>& headers_) const;
     std::optional<DroppedHeader::Reason> IsNotValidHeader(std::string_view header) const;
-    void ProcessDefaultHeaders(const std::vector<std::string>& default_headers);
+    void ProcessDefaultHeaders(const std::vector<std::string>& default_headers_);
 };
 
 

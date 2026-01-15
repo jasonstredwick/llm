@@ -17,24 +17,27 @@ Headers::Headers(const std::vector<std::string_view>& headers_) {
 }
 
 
-std::vector<std::string> Headers::ExtractKeys(const std::vector<std::string>& headers) const {
-    return  headers |
+std::vector<std::string> Headers::ExtractKeys(const std::vector<std::string>& headers_) const {
+    return  headers_ |
             std::views::transform([](const auto& header) {
                 auto pos = header.find(':');
                 auto key = header.substr(0, pos);
 
                 auto first = key.find_first_not_of(WHITESPACE);
-                if (first == std::string_view::npos) { return ""sv; }
+                if (first == std::string_view::npos) { return std::string{}; }
                 auto last = key.find_last_not_of(WHITESPACE);
                 auto len = last - first + 1;
                 auto trimmed_key = key.substr(first, len);
 
                 return trimmed_key |
-                        std::views::transform([](unsigned char c) {
-                            if (c >= 'A' && c <= 'Z') { return c + ('a' - 'A'); }
-                            return c;
-                        }) |
-                        std::ranges::to<std::string>();
+                       std::views::transform([](char c) {
+                           unsigned char uc = static_cast<unsigned char>(c);
+                           if (uc >= 'A' && uc <= 'Z') {
+                               return static_cast<char>(uc + ('a' - 'A'));
+                           }
+                           return c;
+                       }) |
+                       std::ranges::to<std::string>();
             }) |
             std::ranges::to<std::vector<std::string>>();
 }
@@ -52,10 +55,11 @@ std::optional<DroppedHeader::Reason> Headers::IsNotValidHeader(std::string_view 
 }
 
 
-void Headers::ProcessDefaultHeaders(const std::vector<std::string>& default_headers) {
+void Headers::ProcessDefaultHeaders(const std::vector<std::string>& default_headers_) {
     auto IsValidHeaderFunc = [this](std::string_view header) { return !IsNotValidHeader(header); };
-    auto valid_default_headers = std::ranges::filter(default_headers, IsValidHeaderFunc) |
-                                    std::ranges::to<std::vector<std::string>>();
+    auto valid_default_headers = default_headers_ |
+                                 std::views::filter(IsValidHeaderFunc) |
+                                 std::ranges::to<std::vector<std::string>>();
     if (valid_default_headers.empty()) { return; }
 
     auto keys = ExtractKeys(headers);
