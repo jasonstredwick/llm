@@ -25,9 +25,9 @@ template <typename T> T* ToCurl(void* ptr) { return static_cast<T*>(ptr); }
  struct Attempt::RawHandlers {
     static int DebugCallback(CURL* debug_handle, curl_infotype type, char* data, size_t size, void* userdata) {
         auto OnDebug = []([[maybe_unused]] Attempt* attempt,
-                        [[maybe_unused]] CURL* debug_handle,
-                        [[maybe_unused]] curl_infotype type,
-                        [[maybe_unused]] std::span<const std::byte> data) -> int
+                          [[maybe_unused]] CURL* debug_handle,
+                          [[maybe_unused]] curl_infotype type,
+                          [[maybe_unused]] std::span<const std::byte> data) -> int
         {
             // See https://curl.se/libcurl/c/CURLOPT_DEBUGFUNCTION.html
             return 0;
@@ -62,9 +62,9 @@ template <typename T> T* ToCurl(void* ptr) { return static_cast<T*>(ptr); }
     static int XferInfoCallback(void* userdata, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
         auto attempt = static_cast<Attempt*>(userdata);
         return attempt->OnXferInfo(static_cast<int64_t>(dltotal),
-                                static_cast<int64_t>(dlnow),
-                                static_cast<int64_t>(ultotal),
-                                static_cast<int64_t>(ulnow));
+                                   static_cast<int64_t>(dlnow),
+                                   static_cast<int64_t>(ultotal),
+                                   static_cast<int64_t>(ulnow));
     }
  };
 
@@ -217,7 +217,7 @@ void Attempt::Finalize(Interface& interface, const std::string& result_error_str
 }
 
 
-void Attempt::ExtractMetadata() {
+void Attempt::ExtractMetadata() noexcept {
     CURL* curl_ptr = ToCurl<CURL>(handle.get());
 
     char* url{nullptr};
@@ -399,7 +399,7 @@ std::vector<Attempt*> Interface::ExecOnce() {
 }
 
 
-std::string Interface::RemoveHandle(void* curl_easy_handle) {
+std::string Interface::RemoveHandle(void* curl_easy_handle) noexcept {
     CURLM* curlm_ptr = ToCurl<CURLM>(handle.get());
     CURL* curl_ptr = ToCurl<CURL>(curl_easy_handle);
     CURLMcode code = curl_multi_remove_handle(curlm_ptr, curl_ptr);

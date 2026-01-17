@@ -52,7 +52,7 @@ struct Response {
     enum class Availability : uint32_t {
         NOT_INITIALIZED,   // available: state, data_state, error_message
         STARTED,           // available: current_leg_* // estimates
-        UPLOAD_COMPLETE,   
+        UPLOAD_COMPLETE,   //
         DOWNLOAD_COMPLETE, // available: body, headers, abnormal_headers
         FINAL              // available: status_code, http_version, redirect_count, total_time_us, effective_url,
                            //            total_wire_bytes_downloaded, total_wire_bytes_uploaded
@@ -98,7 +98,7 @@ public:
                      const HeaderList& header_list,
                      const std::vector<std::byte>& body);
 
-    Attempt() = delete;
+    // No copy/move constructors; this pointer locked by libcurl.
     Attempt(const Attempt&) = delete;
     Attempt(Attempt&&) noexcept = delete;
     Attempt& operator=(const Attempt&) = delete;
@@ -117,7 +117,7 @@ public:
     bool IsUnhooked() const { return unhooked; }
 
 private:
-    void ExtractMetadata();
+    void ExtractMetadata() noexcept;
 
     void Fail(const std::string message, bool should_raise = false) {
         response.state = Response::State::FAILED;
@@ -162,7 +162,7 @@ public:
 
     std::string AddHandle(void* curl_easy_handle);
     std::vector<Attempt*> ExecOnce();
-    std::string RemoveHandle(void* curl_easy_handle);
+    std::string RemoveHandle(void* curl_easy_handle) noexcept;
 };
 
 
