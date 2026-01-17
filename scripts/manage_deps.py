@@ -27,7 +27,7 @@ def check_gh_auth():
 
 def download_artifact(release, pattern, dest_dir, expected_file=None):
     os.makedirs(dest_dir, exist_ok=True)
-    ret = run_cmd(["gh", "release", "download", release, "-R", REPO, "-p", pattern, "--dir", dest_dir])
+    ret = run_cmd(["gh", "release", "download", release, "-R", REPO, "-p", pattern, "--dir", dest_dir, "--clobber"])
     if ret != 0:
         return False
     if expected_file:
@@ -112,7 +112,7 @@ def build_dependency(name, version, platform, root, lock, current_sysroot):
 
     if run_cmd(cmake_cmd) != 0: return None
     if run_cmd(["cmake", "--build", build_dir, "--config", "Release"]) != 0: return None
-    if run_cmd(["cmake", "--install", build_dir, "--config", "Release"]) != 0: return None
+    if run_cmd(["cmake", "--install", build_dir, "--config", "Release", "--prefix", lib_install_dir.replace('\\', '/')]) != 0: return None
 
     # Package individual artifact
     artifact_zip = os.path.join(workspace, "artifacts", artifact_name)

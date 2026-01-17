@@ -64,9 +64,17 @@ void Headers::ProcessDefaultHeaders(const std::vector<std::string>& default_head
 
     auto keys = ExtractKeys(headers);
     auto default_keys = ExtractKeys(valid_default_headers);
+#if defined(__cpp_lib_ranges_enumerate) && __cpp_lib_ranges_enumerate >= 202302L
     for (auto const [index, key] : std::views::enumerate(default_keys)) {
         if (std::ranges::find(keys, key) == keys.end()) { headers.push_back(valid_default_headers[index]); }
     }
+#else
+    for (size_t i = 0; i < default_keys.size(); ++i) {
+        if (std::ranges::find(keys, default_keys[i]) == keys.end()) {
+            headers.push_back(valid_default_headers[i]);
+        }
+    }
+#endif
 }
 
 

@@ -6,6 +6,20 @@
             "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
             "-G",
             "NMake Makefiles"
+        ],
+        "macos-arm64": [
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_CXX_COMPILER=clang++"
+        ],
+        "macos-x64": [
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=x86_64",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_CXX_COMPILER=clang++"
         ]
     },
     "platform": {
@@ -55,6 +69,8 @@
                     "-DCURL_USE_OPENSSL=OFF",
                     "-DCURL_ENABLE_ARES=ON",
                     "-DCURL_DISABLE_LDAP=ON",
+                    "-DCURL_BROTLI=OFF",
+                    "-DCURL_ZSTD=OFF",
                     "-DCURL_USE_LIBPSL=OFF",
                     "-DBUILD_TESTING=OFF",
                     "-DBUILD_EXAMPLES=OFF",
@@ -68,6 +84,129 @@
                     "-DZLIB_LIBRARY={{zlib_DIR}}/lib/zlibstatic.lib"
                 ]
             }
+        ],
+        "macos-arm64": [
+            {
+                "name": "simdjson",
+                "version": "4.2.4",
+                "cmake_args": [
+                    "-DSIMDJSON_CXX_STANDARD=23"
+                ]
+            },
+            {
+                "name": "zlib",
+                "version": "1.3.1"
+            },
+            {
+                "name": "c-ares",
+                "version": "1.34.6",
+                "cmake_args": [
+                    "-DCARES_SHARED=OFF",
+                    "-DCARES_STATIC=ON",
+                    "-DCARES_BUILD_TESTS=OFF",
+                    "-DCARES_BUILD_TOOLS=OFF"
+                ]
+            },
+            {
+                "name": "nghttp2",
+                "version": "1.68.0",
+                "cmake_args": [
+                    "-DBUILD_STATIC_LIBS=ON",
+                    "-DBUILD_TESTING=OFF",
+                    "-DENABLE_APPS=OFF",
+                    "-DENABLE_EXAMPLES=OFF",
+                    "-DENABLE_HPACK_TOOLS=OFF",
+                    "-DENABLE_ASIO_LIB=OFF",
+                    "-DENABLE_FAILMALLOC=OFF",
+                    "-DENABLE_DEBUG=OFF"
+                ]
+            },
+            {
+                "name": "curl",
+                "version": "8.17.0",
+                "cmake_args": [
+                    "-DNGHTTP2_STATICLIB=ON",
+                    "-DCURL_USE_SECTRANSP=ON",
+                    "-DCURL_USE_OPENSSL=OFF",
+                    "-DCURL_ENABLE_ARES=ON",
+                    "-DCURL_DISABLE_LDAP=ON",
+                    "-DCURL_BROTLI=OFF",
+                    "-DCURL_ZSTD=OFF",
+                    "-DCURL_USE_LIBPSL=OFF",
+                    "-DBUILD_TESTING=OFF",
+                    "-DBUILD_EXAMPLES=OFF",
+                    "-DBUILD_CURL_EXE=OFF",
+                    "-DBUILD_LIBCURL_DOCS=OFF",
+                    "-DCARES_INCLUDE_DIR={{c-ares_DIR}}/include",
+                    "-DCARES_LIBRARY={{c-ares_DIR}}/lib/libcares.a",
+                    "-DNGHTTP2_INCLUDE_DIR={{nghttp2_DIR}}/include",
+                    "-DNGHTTP2_LIBRARY={{nghttp2_DIR}}/lib/libnghttp2.a",
+                    "-DZLIB_INCLUDE_DIR={{zlib_DIR}}/include",
+                    "-DZLIB_LIBRARY={{zlib_DIR}}/lib/libz.a"
+                ]
+            }
+        ],
+        "macos-x64": [
+            {
+                "name": "simdjson",
+                "version": "4.2.4",
+                "cmake_args": [
+                    "-DSIMDJSON_CXX_STANDARD=23"
+                ]
+            },
+            {
+                "name": "zlib",
+                "version": "1.3.1"
+            },
+            {
+                "name": "c-ares",
+                "version": "1.34.6",
+                "cmake_args": [
+                    "-DCARES_SHARED=OFF",
+                    "-DCARES_STATIC=ON",
+                    "-DCARES_BUILD_TESTS=OFF",
+                    "-DCARES_BUILD_TOOLS=OFF"
+                ]
+            },
+            {
+                "name": "nghttp2",
+                "version": "1.68.0",
+                "cmake_args": [
+                    "-DBUILD_STATIC_LIBS=ON",
+                    "-DBUILD_TESTING=OFF",
+                    "-DENABLE_APPS=OFF",
+                    "-DENABLE_EXAMPLES=OFF",
+                    "-DENABLE_HPACK_TOOLS=OFF",
+                    "-DENABLE_ASIO_LIB=OFF",
+                    "-DENABLE_FAILMALLOC=OFF",
+                    "-DENABLE_DEBUG=OFF"
+                ]
+            },
+            {
+                "name": "curl",
+                "version": "8.17.0",
+                "cmake_args": [
+                    "-DNGHTTP2_STATICLIB=ON",
+                    "-DCURL_USE_SECTRANSP=ON",
+                    "-DCURL_USE_OPENSSL=OFF",
+                    "-DCURL_ENABLE_ARES=ON",
+                    "-DCURL_DISABLE_LDAP=ON",
+                    "-DCURL_BROTLI=OFF",
+                    "-DCURL_ZSTD=OFF",
+                    "-DCURL_USE_LIBPSL=OFF",
+                    "-DBUILD_TESTING=OFF",
+                    "-DBUILD_EXAMPLES=OFF",
+                    "-DBUILD_CURL_EXE=OFF",
+                    "-DBUILD_LIBCURL_DOCS=OFF",
+                    "-DCARES_INCLUDE_DIR={{c-ares_DIR}}/include",
+                    "-DCARES_LIBRARY={{c-ares_DIR}}/lib/libcares.a",
+                    "-DNGHTTP2_INCLUDE_DIR={{nghttp2_DIR}}/include",
+                    "-DNGHTTP2_LIBRARY={{nghttp2_DIR}}/lib/libnghttp2.a",
+                    "-DZLIB_INCLUDE_DIR={{zlib_DIR}}/include",
+                    "-DZLIB_LIBRARY={{zlib_DIR}}/lib/libz.a"
+                ]
+            }
         ]
     }
 }
+

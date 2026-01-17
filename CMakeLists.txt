@@ -13,7 +13,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Standards baseline
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -26,7 +26,11 @@ message(STATUS "Found Python3: ${Python3_EXECUTABLE} (version ${Python3_VERSION}
 if(WIN32)
     set(LLM_PLATFORM "win11-x64")
 elseif(APPLE)
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+    if(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
+        set(LLM_PLATFORM "macos-x64")
+    elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+        set(LLM_PLATFORM "macos-arm64")
+    elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
         set(LLM_PLATFORM "macos-arm64")
     else()
         set(LLM_PLATFORM "macos-x64")
@@ -60,19 +64,39 @@ target_include_directories(llm PUBLIC
 )
 
 # Link dependencies
-target_link_libraries(llm PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libcurl.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/nghttp2.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/zlibstatic.lib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/simdjson.lib"
-    # Winsock for Curl
-    ws2_32
-    crypt32
-    wldap32
-    normaliz
-    secur32
-    iphlpapi
-)
+if(WIN32)
+    target_link_libraries(llm PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libcurl.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/nghttp2.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/zlibstatic.lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/simdjson.lib"
+        # Winsock for Curl
+        ws2_32
+        crypt32
+        wldap32
+        normaliz
+        secur32
+        iphlpapi
+    )
+elseif(APPLE)
+    target_link_libraries(llm PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libcurl.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libnghttp2.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libz.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libsimdjson.a"
+        "-framework Security"
+        "-framework CoreFoundation"
+        "-framework SystemConfiguration"
+    )
+else()
+    target_link_libraries(llm PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libcurl.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libnghttp2.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libz.a"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/libsimdjson.a"
+    )
+endif()
+
 
 # Basic compiler warnings configuration
 if(MSVC)
