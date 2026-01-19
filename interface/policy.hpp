@@ -69,4 +69,10 @@ struct ConnectionPolicy {
 };
 
 
+struct ClientPolicy {
+    AttemptPolicy attempt_policy{};
+    ConnectionPolicy connection_policy{};
+};
+
+
 }
