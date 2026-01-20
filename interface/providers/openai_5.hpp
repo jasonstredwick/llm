@@ -318,12 +318,12 @@ public:
     Client& operator=(const Client&) = default;
     Client& operator=(Client&&) noexcept = default;
 
-    ResponseAsync GenerateTextAsync(const Request& r) const;
-    Response      GenerateTextSync(const Request& r) const;
+    AsyncTask<Response> GenerateTextAsync(const Request& r) const;
+    Response GenerateTextSync(const Request& r) const;
 };
 
 
-} // namespace jai::llm::openai_5
+}
 
 
 namespace jai::llm {
@@ -461,4 +461,4 @@ constexpr std::string_view to_string_view(openai_5::ObjectType val) {
 }
 
 
-} // namespace jai::llm
+}

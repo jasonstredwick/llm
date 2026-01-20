@@ -7,6 +7,8 @@
 #include <string>
 #include <variant>
 
+#include "async.hpp"
+
 
 namespace jai::llm {
 

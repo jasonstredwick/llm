@@ -1,14 +1,12 @@
 #pragma once
 
 
-#include <algorithm>
+#include <cstddef>
 #include <optional>
 #include <ranges>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "../interface/http.hpp"
 
 
 using namespace std::literals::string_view_literals;
@@ -17,7 +15,67 @@ using namespace std::literals::string_view_literals;
 namespace jai::llm::http {
 
 
-class Headers {
+template <typename T> concept CharString_c = std::convertible_to<T, std::string_view>;
+template <typename T> concept Utf8String_c = std::convertible_to<T, std::u8string_view>;
+template <typename T> concept HeaderValue_c = CharString_c<T> || Utf8String_c<T>;
+template <typename R>
+concept HeaderKVRange_c = std::ranges::input_range<R> &&
+                          requires(std::ranges::range_reference_t<R> e) {
+                              { std::get<0>(e) } -> CharString_c;  // key (ASCII text)
+                              { std::get<1>(e) } -> HeaderValue_c; // value (ASCII / UTF-8)
+                          };
+template <typename R>
+concept MergedHeaderRange_c = std::ranges::input_range<R> && CharString_c<std::ranges::range_reference_t<R>>;
+
+
+enum class Method {
+    GET,
+    POST,
+    PUT,
+    DELETE,
+    PATCH,
+    HEAD,
+    OPTIONS,
+    TRACE
+};
+
+
+struct DroppedHeader {
+    enum class Reason { MissingColon, ContainsNewline };
+    std::string header;
+    Reason reason;
+};
+
+
+class RequestHeaders {
+private:
+    std::vector<std::string> entries{};
+
+public:
+    RequestHeaders() = default;
+    explicit RequestHeaders(MergedHeaderRange_c auto const& in) : entries{RequestHeaders::FromSeq(in)} {}
+    explicit RequestHeaders(HeaderKVRange_c auto const& in) : entries{RequestHeaders::FromKVRange(in)} {}
+    RequestHeaders(const RequestHeaders&) = default;
+    RequestHeaders(RequestHeaders&&) noexcept = default;
+    ~RequestHeaders() = default;
+    RequestHeaders& operator=(const RequestHeaders&) = default;
+    RequestHeaders& operator=(RequestHeaders&&) noexcept = default;
+
+    friend auto operator<=>(RequestHeaders const&, RequestHeaders const&) = default;
+
+    bool Empty() const { return entries.empty(); }
+    const auto& Entries() const { return entries; }
+    size_t Size() const { return entries.size(); }
+
+private:
+    static std::vector<std::string> FromKVRange(HeaderKVRange_c auto const& in);
+    static std::vector<std::string> FromSeq(MergedHeaderRange_c auto const& in);
+    static void SecurityCheck(std::string_view sv);
+    static std::string ToValueStr(auto const& v);
+};
+
+
+class ResponseHeaders {
 private:
     inline static const std::string_view WHITESPACE{" \t\f\v"sv};
 
@@ -25,9 +83,9 @@ private:
     std::vector<DroppedHeader> dropped_headers{};
 
 public:
-    Headers() = default;
-    explicit Headers(const std::vector<std::string>& headers_);
-    explicit Headers(const std::vector<std::string_view>& headers_);
+    ResponseHeaders() = default;
+    explicit ResponseHeaders(const std::vector<std::string>& headers_);
+    explicit ResponseHeaders(const std::vector<std::string_view>& headers_);
 
     void AddDefaultHeader(const std::string& header) { ProcessDefaultHeaders(std::vector<std::string>{header}); }
     void AddDefaultHeaders(const std::vector<std::string>& headers_) { ProcessDefaultHeaders(headers_); }
@@ -45,6 +103,14 @@ private:
     std::vector<std::string> ExtractKeys(const std::vector<std::string>& headers_) const;
     std::optional<DroppedHeader::Reason> IsNotValidHeader(std::string_view header) const;
     void ProcessDefaultHeaders(const std::vector<std::string>& default_headers_);
+};
+
+
+struct Request {
+    RequestHeaders headers;
+    Method method;
+    std::string url;
+    std::vector<std::byte> body;
 };
 
 

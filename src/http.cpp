@@ -2,48 +2,102 @@
 
 #include <algorithm>
 #include <ranges>
+#include <stdexcept>
 
 
 namespace jai::llm::http {
 
 
-Headers::Headers(const std::vector<std::string>& headers_) {
+std::vector<std::string> RequestHeaders::FromKVRange(HeaderKVRange_c auto const& in) {
+    return
+        in |
+        std::views::transform([](auto const& kv) {
+            auto const& [k, v] = kv;
+            std::string str{};
+            std::string_view key{k};
+            std::string value = RequestHeaders::ToValueStr(v);
+
+            str.reserve(key.size() + 2 + value.size());
+            str += key;
+            str += ": ";
+            str += value;
+
+            RequestHeaders::SecurityCheck(str);
+
+            return str;
+        }) |
+        std::ranges::to<std::vector<std::string>>();
+}
+
+
+std::vector<std::string> RequestHeaders::FromSeq(MergedHeaderRange_c auto const& in) {
+    return
+        in |
+        std::views::transform([](std::string_view sv) {
+            std::string str{sv};
+            RequestHeaders::SecurityCheck(str);
+            return str;
+        }) |
+        std::ranges::to<std::vector<std::string>>();
+}
+
+
+void RequestHeaders::SecurityCheck(std::string_view sv) {
+    if (sv.find('\0') != std::string_view::npos) {
+        throw std::invalid_argument(std::string{"Header contains embedded NUL (\\0) character."});
+    }
+}
+
+
+std::string RequestHeaders::ToValueStr(auto const& v) {
+    if constexpr (std::convertible_to<decltype(v), std::string_view>) {
+        return std::string{std::string_view{v}};
+    } else {
+        std::u8string_view sv{v};
+        return std::string{reinterpret_cast<const char*>(sv.data()), sv.size()};
+    }
+}
+
+
+ResponseHeaders::ResponseHeaders(const std::vector<std::string>& headers_) {
     std::ranges::for_each(headers_, [this](const auto& header) { AddHeader(header); });
 }
 
 
-Headers::Headers(const std::vector<std::string_view>& headers_) {
+ResponseHeaders::ResponseHeaders(const std::vector<std::string_view>& headers_) {
     std::ranges::for_each(headers_, [this](const auto& header) { AddHeader(header); });
 }
 
 
-std::vector<std::string> Headers::ExtractKeys(const std::vector<std::string>& headers_) const {
-    return  headers_ |
-            std::views::transform([](const auto& header) {
-                auto pos = header.find(':');
-                auto key = header.substr(0, pos);
+std::vector<std::string> ResponseHeaders::ExtractKeys(const std::vector<std::string>& headers_) const {
+    return 
+        headers_ |
+        std::views::transform([](const auto& header) {
+            auto pos = header.find(':');
+            auto key = header.substr(0, pos);
 
-                auto first = key.find_first_not_of(WHITESPACE);
-                if (first == std::string_view::npos) { return std::string{}; }
-                auto last = key.find_last_not_of(WHITESPACE);
-                auto len = last - first + 1;
-                auto trimmed_key = key.substr(first, len);
+            auto first = key.find_first_not_of(WHITESPACE);
+            if (first == std::string_view::npos) { return std::string{}; }
+            auto last = key.find_last_not_of(WHITESPACE);
+            auto len = last - first + 1;
+            auto trimmed_key = key.substr(first, len);
 
-                return trimmed_key |
-                       std::views::transform([](char c) {
-                           unsigned char uc = static_cast<unsigned char>(c);
-                           if (uc >= 'A' && uc <= 'Z') {
-                               return static_cast<char>(uc + ('a' - 'A'));
-                           }
-                           return c;
-                       }) |
-                       std::ranges::to<std::string>();
-            }) |
-            std::ranges::to<std::vector<std::string>>();
+            return
+                trimmed_key |
+                std::views::transform([](char c) {
+                    unsigned char uc = static_cast<unsigned char>(c);
+                    if (uc >= 'A' && uc <= 'Z') {
+                        return static_cast<char>(uc + ('a' - 'A'));
+                    }
+                    return c;
+                }) |
+                std::ranges::to<std::string>();
+        }) |
+        std::ranges::to<std::vector<std::string>>();
 }
 
 
-std::optional<DroppedHeader::Reason> Headers::IsNotValidHeader(std::string_view header) const {
+std::optional<DroppedHeader::Reason> ResponseHeaders::IsNotValidHeader(std::string_view header) const {
     auto pos = header.find_first_of(":\n\r"sv);
     if (pos == std::string_view::npos || header[pos] != ':') {
         return DroppedHeader::Reason::MissingColon;
@@ -55,7 +109,7 @@ std::optional<DroppedHeader::Reason> Headers::IsNotValidHeader(std::string_view 
 }
 
 
-void Headers::ProcessDefaultHeaders(const std::vector<std::string>& default_headers_) {
+void ResponseHeaders::ProcessDefaultHeaders(const std::vector<std::string>& default_headers_) {
     auto IsValidHeaderFunc = [this](std::string_view header) { return !IsNotValidHeader(header); };
     auto valid_default_headers = default_headers_ |
                                  std::views::filter(IsValidHeaderFunc) |

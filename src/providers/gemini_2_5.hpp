@@ -1,13 +1,22 @@
 #pragma once
 
-#include <string_view>
+#include "../../interface/providers/gemini_2_5.hpp"
+
+#include "../http.hpp"
+
+#include <cstddef>
+#include <string>
+#include <vector>
 
 
-namespace jai::llm::providers::gemini_2_5 {
+namespace jai::llm::gemini_2_5 {
 
 
-constexpr std::string_view ENDPOINT_BASE = "https://generativelanguage.googleapis.com/v1beta/models/{MODEL_ID}:generateContent";
-constexpr std::string_view ENDPOINT_VERTEX_BASE = "https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/{REGION}/publishers/google/models/{MODEL_ID}:generateContent";
+http::Method GenMethod(const Request&);
+http::RequestHeaders GenRequestHeaders(const Request&);
+std::string GenUrl(const Request&);
+Response Deserialize(const std::vector<std::byte>& raw_response_bytes);
+std::vector<std::byte> Serialize(const Request&);
 
 
-} // namespace jai::llm::providers::gemini_2_5
+}

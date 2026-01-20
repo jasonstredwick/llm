@@ -1,12 +1,22 @@
 #pragma once
 
-#include <string_view>
+#include "../../interface/providers/openai_4o.hpp"
+
+#include "../http.hpp"
+
+#include <cstddef>
+#include <string>
+#include <vector>
 
 
 namespace jai::llm::openai_4o {
 
 
-constexpr std::string_view ENDPOINT = "https://api.openai.com/v1/chat/completions";
+http::Method GenMethod(const Request&);
+http::RequestHeaders GenRequestHeaders(const Request&);
+std::string GenUrl(const Request&);
+Response Deserialize(const std::vector<std::byte>& raw_response_bytes);
+std::vector<std::byte> Serialize(const Request&);
 
 
-} // namespace jai::llm::openai_4o
+}

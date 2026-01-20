@@ -277,12 +277,12 @@ public:
     Client& operator=(const Client&) = default;
     Client& operator=(Client&&) noexcept = default;
 
-    ResponseAsync GenerateTextAsync(const Request& r) const;
-    Response      GenerateTextSync(const Request& r) const;
+    AsyncTask<Response> GenerateTextAsync(const Request& r) const;
+    Response GenerateTextSync(const Request& r) const;
 };
 
 
-} // namespace jai::llm::anthropic_4_5_opus
+}
 
 
 namespace jai::llm {
@@ -404,4 +404,4 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::ToolChoiceType val
 }
 
 
-} // namespace jai::llm
+}

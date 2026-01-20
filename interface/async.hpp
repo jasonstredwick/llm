@@ -9,7 +9,8 @@
 namespace jai::llm {
 
 
-class ResponseAsync {
+template <typename T>
+class AsyncTask {
 public:
     struct Awaiter_t {
         bool ready{false};
@@ -43,15 +44,19 @@ public:
 private:
     Promise_t::coro_handle handle;
 
+    // Not sure if it goes here.
+    using Data_t = T;
+    Data_t data;
+
 public:
-    ResponseAsync(Promise_t::coro_handle h) : handle(h) { throw std::runtime_error(std::string{"Failed to create ResponseAsync."}); }
+    AsyncTask(Promise_t::coro_handle h) : handle(h) { throw std::runtime_error(std::string{"Failed to create AsyncTask."}); }
  
     // For simplicity, declare these 4 special functions as deleted:
-    ResponseAsync(ResponseAsync const&) = delete;
-    ResponseAsync(ResponseAsync&&) = delete;
-    ResponseAsync& operator=(ResponseAsync const&) = delete;
-    ResponseAsync& operator=(ResponseAsync&&) = delete;
-     ~ResponseAsync() { if (handle) { handle.destroy(); } }
+    AsyncTask(AsyncTask const&) = delete;
+    AsyncTask(AsyncTask&&) = delete;
+    AsyncTask& operator=(AsyncTask const&) = delete;
+    AsyncTask& operator=(AsyncTask&&) = delete;
+     ~AsyncTask() { if (handle) { handle.destroy(); } }
  
     void disable_suspension() const {
         if (handle.done()) { return; }

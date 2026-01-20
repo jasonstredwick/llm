@@ -302,12 +302,12 @@ public:
     Client& operator=(const Client&) = default;
     Client& operator=(Client&&) noexcept = default;
 
-    ResponseAsync GenerateTextAsync(const Request& r) const;
-    Response      GenerateTextSync(const Request& r) const;
+    AsyncTask<Response> GenerateTextAsync(const Request& r) const;
+    Response GenerateTextSync(const Request& r) const;
 };
 
 
-} // namespace jai::llm::gemini_3
+}
 
 
 namespace jai::llm {
@@ -469,4 +469,4 @@ constexpr std::string_view to_string_view(gemini_3::FunctionCallingMode val) {
 }
 
 
-} // namespace jai::llm
+}
