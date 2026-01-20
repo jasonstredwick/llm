@@ -313,22 +313,101 @@ public:
 namespace jai::llm {
 
 
-constexpr std::string_view to_string_view(gemini_3::Role val) {
-    switch (val) {
-        case gemini_3::Role::USER: return "user";
-        case gemini_3::Role::MODEL: return "model";
-        case gemini_3::Role::SYSTEM: return "system";
-        default: return "";
-    }
-}
-
-
 constexpr std::string_view to_string_view(gemini_3::CodeLanguage val) {
     switch (val) {
         case gemini_3::CodeLanguage::PYTHON: return "python";
         default: return "python";
     }
 }
+
+
+constexpr std::string_view to_string_view(gemini_3::ExecutionOutcome val) {
+    switch (val) {
+        case gemini_3::ExecutionOutcome::OK: return "OUTCOME_OK";
+        case gemini_3::ExecutionOutcome::FAILED: return "OUTCOME_FAILED";
+        case gemini_3::ExecutionOutcome::DEADLINE_EXCEEDED: return "OUTCOME_DEADLINE_EXCEEDED";
+        default: return "OUTCOME_UNSPECIFIED";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_3::FinishReason val) {
+    switch (val) {
+        case gemini_3::FinishReason::STOP: return "STOP";
+        case gemini_3::FinishReason::MAX_TOKENS: return "MAX_TOKENS";
+        case gemini_3::FinishReason::SAFETY: return "SAFETY";
+        case gemini_3::FinishReason::RECITATION: return "RECITATION";
+        case gemini_3::FinishReason::OTHER: return "OTHER";
+        case gemini_3::FinishReason::BLOCKLIST: return "BLOCKLIST";
+        case gemini_3::FinishReason::PROHIBITED_CONTENT: return "PROHIBITED_CONTENT";
+        case gemini_3::FinishReason::SPII: return "SPII";
+        case gemini_3::FinishReason::MALFORMED_FUNCTION_CALL: return "MALFORMED_FUNCTION_CALL";
+        default: return "FINISH_REASON_UNSPECIFIED";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_3::FunctionCallingMode val) {
+    switch (val) {
+        case gemini_3::FunctionCallingMode::AUTO: return "AUTO";
+        case gemini_3::FunctionCallingMode::ANY: return "ANY";
+        case gemini_3::FunctionCallingMode::NONE: return "NONE";
+        default: return "MODE_UNSPECIFIED";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_3::HarmCategory val) {
+    switch (val) {
+        case gemini_3::HarmCategory::HARASSMENT: return "HARM_CATEGORY_HARASSMENT";
+        case gemini_3::HarmCategory::HATE_SPEECH: return "HARM_CATEGORY_HATE_SPEECH";
+        case gemini_3::HarmCategory::SEXUALLY_EXPLICIT: return "HARM_CATEGORY_SEXUALLY_EXPLICIT";
+        case gemini_3::HarmCategory::DANGEROUS_CONTENT: return "HARM_CATEGORY_DANGEROUS_CONTENT";
+        case gemini_3::HarmCategory::CIVIC_INTEGRITY: return "HARM_CATEGORY_CIVIC_INTEGRITY";
+        case gemini_3::HarmCategory::MEDICAL: return "HARM_CATEGORY_MEDICAL";
+        case gemini_3::HarmCategory::SEXUAL: return "HARM_CATEGORY_SEXUAL";
+        case gemini_3::HarmCategory::PUBLIC_SAFETY: return "HARM_CATEGORY_PUBLIC_SAFETY";
+        case gemini_3::HarmCategory::TOXICITY: return "HARM_CATEGORY_TOXICITY";
+        case gemini_3::HarmCategory::DEROGATORY: return "HARM_CATEGORY_DEROGATORY";
+        case gemini_3::HarmCategory::VIOLENT_CONTENT: return "HARM_CATEGORY_VIOLENT_CONTENT";
+        case gemini_3::HarmCategory::SEXUAL_CONTENT: return "HARM_CATEGORY_SEXUAL_CONTENT";
+        case gemini_3::HarmCategory::MEDICAL_ADVICE: return "HARM_CATEGORY_MEDICAL_ADVICE";
+        case gemini_3::HarmCategory::CIVIC_INTEGRITY_ELECTIONS: return "HARM_CATEGORY_CIVIC_INTEGRITY_ELECTIONS";
+        case gemini_3::HarmCategory::HATE_CONTENT: return "HARM_CATEGORY_HATE_CONTENT";
+        case gemini_3::HarmCategory::HARASSMENT_CONTENT: return "HARM_CATEGORY_HARASSMENT_CONTENT";
+        default: return "";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_3::HarmProbability val) {
+    switch (val) {
+        case gemini_3::HarmProbability::NEGLIGIBLE: return "NEGLIGIBLE";
+        case gemini_3::HarmProbability::LOW: return "LOW";
+        case gemini_3::HarmProbability::MEDIUM: return "MEDIUM";
+        case gemini_3::HarmProbability::HIGH: return "HIGH";
+        default: return "UNSPECIFIED";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_3::Tool::GoogleSearch::DynamicRetrievalConfig::Mode val) {
+    switch (val) {
+        case gemini_3::Tool::GoogleSearch::DynamicRetrievalConfig::Mode::DYNAMIC: return "DYNAMIC";
+        default: return "MODE_UNSPECIFIED";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_3::MediaResolution val) {
+    switch (val) {
+        case gemini_3::MediaResolution::LOW: return "LOW";
+        case gemini_3::MediaResolution::MEDIUM: return "MEDIUM";
+        case gemini_3::MediaResolution::HIGH: return "HIGH";
+        default: return "MEDIA_RESOLUTION_UNSPECIFIED";
+    }
+}
+
 
 constexpr std::string_view to_string_view(gemini_3::MediaType val) {
     switch (val) {
@@ -368,62 +447,34 @@ constexpr std::string_view to_string_view(gemini_3::Modality val) {
 }
 
 
-constexpr std::string_view to_string_view(gemini_3::ExecutionOutcome val) {
+constexpr std::string_view to_string_view(gemini_3::ResponseMimeType val) {
     switch (val) {
-        case gemini_3::ExecutionOutcome::OK: return "OUTCOME_OK";
-        case gemini_3::ExecutionOutcome::FAILED: return "OUTCOME_FAILED";
-        case gemini_3::ExecutionOutcome::DEADLINE_EXCEEDED: return "OUTCOME_DEADLINE_EXCEEDED";
-        default: return "OUTCOME_UNSPECIFIED";
+        case gemini_3::ResponseMimeType::APPLICATION_JSON: return "application/json";
+        case gemini_3::ResponseMimeType::TEXT_X_ENUM: return "text/x.enum";
+        case gemini_3::ResponseMimeType::TEXT_PLAIN:
+        default: return "text/plain";
     }
 }
 
 
-constexpr std::string_view to_string_view(gemini_3::HarmCategory val) {
+constexpr std::string_view to_string_view(gemini_3::Role val) {
     switch (val) {
-        case gemini_3::HarmCategory::HARASSMENT: return "HARM_CATEGORY_HARASSMENT";
-        case gemini_3::HarmCategory::HATE_SPEECH: return "HARM_CATEGORY_HATE_SPEECH";
-        case gemini_3::HarmCategory::SEXUALLY_EXPLICIT: return "HARM_CATEGORY_SEXUALLY_EXPLICIT";
-        case gemini_3::HarmCategory::DANGEROUS_CONTENT: return "HARM_CATEGORY_DANGEROUS_CONTENT";
-        case gemini_3::HarmCategory::CIVIC_INTEGRITY: return "HARM_CATEGORY_CIVIC_INTEGRITY";
-        case gemini_3::HarmCategory::MEDICAL: return "HARM_CATEGORY_MEDICAL";
-        case gemini_3::HarmCategory::SEXUAL: return "HARM_CATEGORY_SEXUAL";
-        case gemini_3::HarmCategory::PUBLIC_SAFETY: return "HARM_CATEGORY_PUBLIC_SAFETY";
-        case gemini_3::HarmCategory::TOXICITY: return "HARM_CATEGORY_TOXICITY";
-        case gemini_3::HarmCategory::DEROGATORY: return "HARM_CATEGORY_DEROGATORY";
-        case gemini_3::HarmCategory::VIOLENT_CONTENT: return "HARM_CATEGORY_VIOLENT_CONTENT";
-        case gemini_3::HarmCategory::SEXUAL_CONTENT: return "HARM_CATEGORY_SEXUAL_CONTENT";
-        case gemini_3::HarmCategory::MEDICAL_ADVICE: return "HARM_CATEGORY_MEDICAL_ADVICE";
-        case gemini_3::HarmCategory::CIVIC_INTEGRITY_ELECTIONS: return "HARM_CATEGORY_CIVIC_INTEGRITY_ELECTIONS";
-        case gemini_3::HarmCategory::HATE_CONTENT: return "HARM_CATEGORY_HATE_CONTENT";
-        case gemini_3::HarmCategory::HARASSMENT_CONTENT: return "HARM_CATEGORY_HARASSMENT_CONTENT";
+        case gemini_3::Role::USER: return "user";
+        case gemini_3::Role::MODEL: return "model";
+        case gemini_3::Role::SYSTEM: return "system";
         default: return "";
     }
 }
 
 
-constexpr std::string_view to_string_view(gemini_3::HarmProbability val) {
+constexpr std::string_view to_string_view(gemini_3::SafetyThreshold val) {
     switch (val) {
-        case gemini_3::HarmProbability::NEGLIGIBLE: return "NEGLIGIBLE";
-        case gemini_3::HarmProbability::LOW: return "LOW";
-        case gemini_3::HarmProbability::MEDIUM: return "MEDIUM";
-        case gemini_3::HarmProbability::HIGH: return "HIGH";
-        default: return "UNSPECIFIED";
-    }
-}
-
-
-constexpr std::string_view to_string_view(gemini_3::FinishReason val) {
-    switch (val) {
-        case gemini_3::FinishReason::STOP: return "STOP";
-        case gemini_3::FinishReason::MAX_TOKENS: return "MAX_TOKENS";
-        case gemini_3::FinishReason::SAFETY: return "SAFETY";
-        case gemini_3::FinishReason::RECITATION: return "RECITATION";
-        case gemini_3::FinishReason::OTHER: return "OTHER";
-        case gemini_3::FinishReason::BLOCKLIST: return "BLOCKLIST";
-        case gemini_3::FinishReason::PROHIBITED_CONTENT: return "PROHIBITED_CONTENT";
-        case gemini_3::FinishReason::SPII: return "SPII";
-        case gemini_3::FinishReason::MALFORMED_FUNCTION_CALL: return "MALFORMED_FUNCTION_CALL";
-        default: return "FINISH_REASON_UNSPECIFIED";
+        case gemini_3::SafetyThreshold::BLOCK_LOW_AND_ABOVE: return "BLOCK_LOW_AND_ABOVE";
+        case gemini_3::SafetyThreshold::BLOCK_MEDIUM_AND_ABOVE: return "BLOCK_MEDIUM_AND_ABOVE";
+        case gemini_3::SafetyThreshold::BLOCK_NONE: return "BLOCK_NONE";
+        case gemini_3::SafetyThreshold::BLOCK_ONLY_HIGH: return "BLOCK_ONLY_HIGH";
+        case gemini_3::SafetyThreshold::OFF: return "OFF";
+        default: return "SAFETY_THRESHOLD_UNSPECIFIED";
     }
 }
 
@@ -435,36 +486,6 @@ constexpr std::string_view to_string_view(gemini_3::ThinkingLevel val) {
         case gemini_3::ThinkingLevel::MEDIUM: return "MEDIUM";
         case gemini_3::ThinkingLevel::HIGH: return "HIGH";
         default: return "THINKING_LEVEL_UNSPECIFIED";
-    }
-}
-
-
-constexpr std::string_view to_string_view(gemini_3::MediaResolution val) {
-    switch (val) {
-        case gemini_3::MediaResolution::LOW: return "LOW";
-        case gemini_3::MediaResolution::MEDIUM: return "MEDIUM";
-        case gemini_3::MediaResolution::HIGH: return "HIGH";
-        default: return "MEDIA_RESOLUTION_UNSPECIFIED";
-    }
-}
-
-
-constexpr std::string_view to_string_view(gemini_3::ResponseMimeType val) {
-    switch (val) {
-        case gemini_3::ResponseMimeType::APPLICATION_JSON: return "application/json";
-        case gemini_3::ResponseMimeType::TEXT_X_ENUM: return "text/x.enum";
-        case gemini_3::ResponseMimeType::TEXT_PLAIN:
-        default: return "text/plain";
-    }
-}
-
-
-constexpr std::string_view to_string_view(gemini_3::FunctionCallingMode val) {
-    switch (val) {
-        case gemini_3::FunctionCallingMode::AUTO: return "AUTO";
-        case gemini_3::FunctionCallingMode::ANY: return "ANY";
-        case gemini_3::FunctionCallingMode::NONE: return "NONE";
-        default: return "MODE_UNSPECIFIED";
     }
 }
 

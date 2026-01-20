@@ -1,7 +1,9 @@
 #pragma once
 
 
-#include <chrono>
+#include "../interface/policy.hpp"
+#include "http.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -9,10 +11,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "../interface/http.hpp"
-#include "../interface/policy.hpp"
-#include "http.hpp"
 
 
 namespace jai::llm::curl {
@@ -28,7 +26,7 @@ private:
     Handle_t list;
 
 public:
-    explicit HeaderList(const http::Headers& headers);
+    explicit HeaderList(const http::RequestHeaders& headers);
 
     HeaderList(const HeaderList&) = delete;
     HeaderList(HeaderList&&) noexcept = default;
@@ -166,4 +164,4 @@ public:
 };
 
 
-} // namespace jai::llm::curl
+}

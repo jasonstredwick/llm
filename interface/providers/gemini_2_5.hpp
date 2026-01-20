@@ -413,6 +413,14 @@ constexpr std::string_view to_string_view(gemini_2_5::HarmProbability val) {
 }
 
 
+constexpr std::string_view to_string_view(gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode val) {
+    switch (val) {
+        case gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode::DYNAMIC: return "DYNAMIC";
+        default: return "MODE_UNSPECIFIED";
+    }
+}
+
+
 constexpr std::string_view to_string_view(gemini_2_5::MediaResolution val) {
     switch (val) {
         case gemini_2_5::MediaResolution::LOW: return "LOW";
@@ -467,6 +475,18 @@ constexpr std::string_view to_string_view(gemini_2_5::ResponseMimeType val) {
         case gemini_2_5::ResponseMimeType::TEXT_X_ENUM: return "text/x.enum";
         case gemini_2_5::ResponseMimeType::TEXT_PLAIN:
         default: return "text/plain";
+    }
+}
+
+
+constexpr std::string_view to_string_view(gemini_2_5::SafetyThreshold val) {
+    switch (val) {
+        case gemini_2_5::SafetyThreshold::BLOCK_LOW_AND_ABOVE: return "BLOCK_LOW_AND_ABOVE";
+        case gemini_2_5::SafetyThreshold::BLOCK_MEDIUM_AND_ABOVE: return "BLOCK_MEDIUM_AND_ABOVE";
+        case gemini_2_5::SafetyThreshold::BLOCK_NONE: return "BLOCK_NONE";
+        case gemini_2_5::SafetyThreshold::BLOCK_ONLY_HIGH: return "BLOCK_ONLY_HIGH";
+        case gemini_2_5::SafetyThreshold::OFF: return "OFF";
+        default: return "SAFETY_THRESHOLD_UNSPECIFIED";
     }
 }
 

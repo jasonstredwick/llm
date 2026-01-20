@@ -49,7 +49,9 @@ private:
     Data_t data;
 
 public:
-    AsyncTask(Promise_t::coro_handle h) : handle(h) { throw std::runtime_error(std::string{"Failed to create AsyncTask."}); }
+    AsyncTask(Promise_t::coro_handle h)
+    : handle(h)
+    { throw std::runtime_error(std::string{"Failed to create AsyncTask."}); }
  
     // For simplicity, declare these 4 special functions as deleted:
     AsyncTask(AsyncTask const&) = delete;
@@ -71,4 +73,4 @@ public:
 };
 
 
-} // namespace jai::llm
+}

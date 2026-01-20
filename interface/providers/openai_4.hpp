@@ -43,13 +43,11 @@ struct Image {
         std::optional<ImageDetail> detail{};
     };
 
-    ContentPartType type{ContentPartType::IMAGE_URL};
     ImageUrl image_url;
 };
 
 
 struct Text {
-    ContentPartType type{ContentPartType::TEXT};
     std::string text;
 };
 
@@ -60,7 +58,6 @@ struct ToolCall {
         std::string arguments{}; // JSON string
     };
 
-    ToolType type{ToolType::FUNCTION};
     std::string id;
     Function function;
 };
@@ -82,15 +79,16 @@ struct Message {
 
 
 struct ResponseFormat {
+    struct JsonObject {};
     struct JsonSchema {
         std::string name;
         std::optional<std::string> description{};
         std::string schema; // JSON Schema string
         std::optional<bool> strict{};
     };
+    struct Text {};
 
-    ResponseFormatType type{ResponseFormatType::TEXT};
-    std::optional<JsonSchema> json_schema{};
+    std::variant<Text, JsonObject, JsonSchema> detail{Text{}};
 };
 
 
@@ -102,7 +100,6 @@ struct Tool {
         std::optional<bool> strict{};
     };
 
-    ToolType type{ToolType::FUNCTION};
     Function function{};
 };
 
@@ -159,7 +156,6 @@ struct Response {
     };
 
     std::string id;
-    ObjectType object{ObjectType::CHAT_COMPLETION};
     uint64_t created{0};
     std::string model;
     std::optional<std::string> system_fingerprint{};

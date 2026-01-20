@@ -49,7 +49,6 @@ struct Audio {
         std::string format;
     };
 
-    ContentPartType type{ContentPartType::AUDIO};
     AudioData audio;
 };
 
@@ -66,13 +65,11 @@ struct Image {
         std::optional<ImageDetail> detail{};
     };
 
-    ContentPartType type{ContentPartType::IMAGE_URL};
     ImageUrl image_url;
 };
 
 
 struct Text {
-    ContentPartType type{ContentPartType::TEXT};
     std::string text;
 };
 
@@ -83,7 +80,6 @@ struct ToolCall {
         std::string arguments{}; // JSON string
     };
 
-    ToolType type{ToolType::FUNCTION};
     std::string id;
     Function function;
 };
@@ -94,7 +90,7 @@ struct Video {
         std::string url;
         std::optional<ImageDetail> detail{};
     };
-    ContentPartType type{ContentPartType::VIDEO};
+
     VideoUrl video_url;
 };
 
@@ -121,21 +117,21 @@ struct Metadata {
 
 
 struct Prediction {
-    PredictionType type{PredictionType::CONTENT};
     std::variant<std::string, std::vector<Message::Part>> content;
 };
 
 
 struct ResponseFormat {
+    struct JsonObject {};
     struct JsonSchema {
         std::string name;
         std::optional<std::string> description{};
         std::string schema{}; // JSON Schema string
         std::optional<bool> strict{};
     };
+    struct Text {};
 
-    ResponseFormatType type{ResponseFormatType::TEXT}; // "text", "json_object", "json_schema"
-    std::optional<JsonSchema> json_schema{};
+    std::variant<Text, JsonObject, JsonSchema> detail{Text{}};
 };
 
 
@@ -153,17 +149,12 @@ struct Tool {
         std::optional<bool> strict{};
     };
 
-    ToolType type{ToolType::FUNCTION};
-    Function function{};
-    std::optional<CodeInterpreter> code_interpreter{};
-    std::optional<FileSearch> file_search{};
+    std::variant<Function, CodeInterpreter, FileSearch> detail{Function{}};
 };
 
 
 struct ToolChoiceSpecific {
     struct Function { std::string name; };
-
-    ToolType type{ToolType::FUNCTION};
     Function function;
 };
 

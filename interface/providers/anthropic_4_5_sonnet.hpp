@@ -53,7 +53,6 @@ struct Audio {
         std::string data;
     };
 
-    MessageContentPartType type{MessageContentPartType::AUDIO};
     Source source;
     std::optional<CacheControl> cache_control{};
 };
@@ -66,7 +65,6 @@ struct Document {
         std::string data;
     };
 
-    MessageContentPartType type{MessageContentPartType::DOCUMENT};
     Source source;
     std::optional<CacheControl> cache_control{};
 };
@@ -74,27 +72,30 @@ struct Document {
 
 struct Image {
     struct Source {
-        SourceType type{SourceType::BASE64};
-        std::optional<std::string> media_type{};
-        std::optional<std::string> data{};
-        std::optional<std::string> url{};
+        struct Base64 {
+            std::string media_type;
+            std::string data;
+        };
+
+        struct URL {
+            std::string url;
+        };
+
+        std::variant<Base64, URL> detail;
     };
 
-    MessageContentPartType type{MessageContentPartType::IMAGE};
     Source source;
     std::optional<CacheControl> cache_control{};
 };
 
 
 struct Text {
-    MessageContentPartType type{MessageContentPartType::TEXT};
     std::string text;
     std::optional<CacheControl> cache_control{};
 };
 
 
 struct ToolResult {
-    MessageContentPartType type{MessageContentPartType::TOOL_RESULT};
     std::string tool_use_id;
     std::string content;
     std::optional<bool> is_error{};
@@ -103,7 +104,6 @@ struct ToolResult {
 
 
 struct ToolUse {
-    MessageContentPartType type{MessageContentPartType::TOOL_USE};
     std::string id;
     std::string name;
     std::string input; // JSON string
@@ -120,19 +120,25 @@ struct Message {
 
 
 struct ResponseFormat {
-    ResponseFormatType type{ResponseFormatType::TEXT};
-    std::optional<std::string> json_schema{};
+    struct JsonObject {};
+    struct JsonSchema { std::string schema; };
+    struct Text {};
+
+    std::variant<Text, JsonObject, JsonSchema> detail{Text{}};
 };
+
 
 struct SystemPrompt {
     std::string text;
     std::optional<CacheControl> cache_control{};
 };
 
+
 struct ThinkingConfig {
     ThinkingType type{ThinkingType::ENABLED};
     uint32_t budget_tokens{0};
 };
+
 
 struct Tool {
     struct Bash {
@@ -239,7 +245,6 @@ struct UsageMetadata {
 
 struct Response {
     std::string id;
-    MessageType type{MessageType::MESSAGE};
     Role role{Role::ASSISTANT};
     std::string model;
     std::vector<ContentBlock> content;

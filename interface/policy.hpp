@@ -7,8 +7,8 @@
 
 
 #include <chrono>
+#include <filesystem>
 #include <optional>
-#include <string>
 
 
 namespace jai::llm {
@@ -45,9 +45,9 @@ struct AttemptPolicy {
     std::optional<size_t> max_redirects{};
 
     // TLS requirements
-    std::optional<std::string> ca_bundle_path{};
-    std::optional<std::string> client_cert_path{};
-    std::optional<std::string> client_key_path{};
+    std::optional<std::filesystem::path> ca_bundle_path{};
+    std::optional<std::filesystem::path> client_cert_path{};
+    std::optional<std::filesystem::path> client_key_path{};
     std::optional<TLSVersion> tls_min_version{};
     std::optional<bool> verify_peer{};
     std::optional<bool> verify_host{};

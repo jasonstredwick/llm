@@ -2,7 +2,6 @@
 
 
 #include <array>
-#include <cstdint>
 #include <cstddef>
 #include <string>
 #include <variant>
@@ -95,4 +94,4 @@ public:
 };
 
 
-} // namespace jai::llm
+}
