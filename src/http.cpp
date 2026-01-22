@@ -53,7 +53,7 @@ std::string RequestHeaders::ToValueStr(auto const& v) {
     if constexpr (std::convertible_to<decltype(v), std::string_view>) {
         return std::string{std::string_view{v}};
     } else {
-        std::u8string_view sv{v};
+        std::string_view sv{v};
         return std::string{reinterpret_cast<const char*>(sv.data()), sv.size()};
     }
 }

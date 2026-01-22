@@ -4,6 +4,8 @@
 
 #include <simdjson.h>
 
+#include "../curl.hpp"
+
 
 namespace jai::llm::openai_5 {
 
@@ -38,9 +40,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("messages");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.messages.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            const auto& m = r.messages[i];
+        for (bool first = true; const auto& m : r.messages) {
+            if (!first) sb.append_comma();
+            first = false;
+
             sb.start_object();
             sb.append_key_value("role", jai::llm::to_string_view(m.role));
             
@@ -53,9 +56,10 @@ std::vector<std::byte> Serialize(const Request& r) {
                     sb.escape_and_append_with_quotes("content");
                     sb.append_colon();
                     sb.start_array();
-                    for (size_t j = 0; j < content.size(); ++j) {
-                        if (j > 0) sb.append_comma();
-                        const auto& part = content[j];
+                    for (bool f = true; const auto& part : content) {
+                        if (!f) sb.append_comma();
+                        f = false;
+
                         sb.start_object();
                         std::visit([&sb](auto const& p) {
                             using PT = std::decay_t<decltype(p)>;
@@ -69,7 +73,7 @@ std::vector<std::byte> Serialize(const Request& r) {
                                  sb.escape_and_append_with_quotes("image_url");
                                  sb.append_colon();
                                  sb.start_object();
-                                 sb.append_key_value("url", p.image_url.url);
+                                 sb.append_key_value("url", p.image_url.url.View());
                                  if (p.image_url.detail) {
                                      sb.append_comma();
                                      sb.append_key_value("detail", jai::llm::to_string_view(*p.image_url.detail));
@@ -91,7 +95,7 @@ std::vector<std::byte> Serialize(const Request& r) {
                                  sb.escape_and_append_with_quotes("video_url");
                                  sb.append_colon();
                                  sb.start_object();
-                                 sb.append_key_value("url", p.video_url.url);
+                                 sb.append_key_value("url", p.video_url.url.View());
                                  sb.end_object();
                              }
                         }, part);
@@ -115,9 +119,10 @@ std::vector<std::byte> Serialize(const Request& r) {
                 sb.escape_and_append_with_quotes("tool_calls");
                 sb.append_colon();
                 sb.start_array();
-                for (size_t j = 0; j < m.tool_calls.size(); ++j) {
-                    if (j > 0) sb.append_comma();
-                    const auto& tc = m.tool_calls[j];
+                for (bool f = true; const auto& tc : m.tool_calls) {
+                    if (!f) sb.append_comma();
+                    f = false;
+
                     sb.start_object();
                     sb.append_key_value("id", tc.id);
                     sb.append_comma();
@@ -218,9 +223,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("tools");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.tools.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            const auto& t = r.tools[i];
+        for (bool first = true; const auto& t : r.tools) {
+            if (!first) sb.append_comma();
+            first = false;
+
             sb.start_object();
             std::visit([&sb](auto const& det) {
                 using DT = std::decay_t<decltype(det)>;
@@ -302,9 +308,10 @@ std::vector<std::byte> Serialize(const Request& r) {
                 sb.escape_and_append_with_quotes("content");
                 sb.append_colon();
                 sb.start_array();
-                for (size_t j = 0; j < content.size(); ++j) {
-                    if (j > 0) sb.append_comma();
-                    const auto& part = content[j];
+                for (bool f = true; const auto& part : content) {
+                    if (!f) sb.append_comma();
+                    f = false;
+
                     sb.start_object();
                     std::visit([&sb](auto const& p) {
                         using PT = std::decay_t<decltype(p)>;
@@ -318,7 +325,7 @@ std::vector<std::byte> Serialize(const Request& r) {
                              sb.escape_and_append_with_quotes("image_url");
                              sb.append_colon();
                              sb.start_object();
-                             sb.append_key_value("url", p.image_url.url);
+                             sb.append_key_value("url", p.image_url.url.View());
                              sb.end_object();
                          }
                     }, part);
@@ -346,9 +353,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("modalities");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.modalities.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            sb.escape_and_append_with_quotes(jai::llm::to_string_view(r.modalities[i]));
+        for (bool first = true; const auto& m : r.modalities) {
+            if (!first) sb.append_comma();
+            first = false;
+            sb.escape_and_append_with_quotes(jai::llm::to_string_view(m));
         }
         sb.end_array();
     }
@@ -363,9 +371,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("metadata");
         sb.append_colon();
         sb.start_object();
-        for (size_t i = 0; i < r.metadata.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            sb.append_key_value(r.metadata[i].key, r.metadata[i].value);
+        for (bool first = true; const auto& meta : r.metadata) {
+            if (!first) sb.append_comma();
+            first = false;
+            sb.append_key_value(meta.key, meta.value);
         }
         sb.end_object();
     }
@@ -380,78 +389,96 @@ std::vector<std::byte> Serialize(const Request& r) {
 }
 
 
-Response Deserialize(const std::vector<std::byte>& raw_response_bytes) {
-    std::string json(reinterpret_cast<const char*>(raw_response_bytes.data()), raw_response_bytes.size());
-    Response out;
-    simdjson::ondemand::parser parser;
+Response Deserialize(const curl::Response& response) {
+    if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
+        throw std::runtime_error("Simdjson padding check failed");
+    }
+
+    static thread_local simdjson::dom::parser parser{};
+    Response out{};
     try {
-        auto doc = parser.iterate(json.data(), json.size(), json.size() + simdjson::SIMDJSON_PADDING);
+        simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body_len);
 
-        out.id = std::string(doc["id"].get_string().value());
-        out.model = std::string(doc["model"].get_string().value());
-        out.created = doc["created"].get_uint64().value();
+        if (std::string_view id; doc["id"].get(id) == simdjson::SUCCESS) {
+            out.id = std::string(id);
+        }
+        if (std::string_view model; doc["model"].get(model) == simdjson::SUCCESS) {
+            out.model = std::string(model);
+        }
+        if (uint64_t created; doc["created"].get(created) == simdjson::SUCCESS) {
+            out.created = created;
+        }
         
-        auto fingerprint = doc["system_fingerprint"];
-        if (fingerprint.error() == simdjson::SUCCESS && !fingerprint.is_null()) {
-            out.system_fingerprint = std::string(fingerprint.get_string().value());
+        if (std::string_view system_fingerprint; doc["system_fingerprint"].get(system_fingerprint) == simdjson::SUCCESS) {
+            out.system_fingerprint = std::string(system_fingerprint);
         }
 
-        auto choices = doc["choices"].get_array();
-        for (auto choice : choices) {
-            Choice c;
-            c.index = static_cast<uint32_t>(choice["index"].get_uint64().value());
-            
-            std::string_view fr = choice["finish_reason"].get_string().value();
-            if (fr == "stop") c.finish_reason = FinishReason::STOP;
-            else if (fr == "length") c.finish_reason = FinishReason::LENGTH;
-            else if (fr == "content_filter") c.finish_reason = FinishReason::CONTENT_FILTER;
-            else if (fr == "tool_calls") c.finish_reason = FinishReason::TOOL_CALLS;
-            else c.finish_reason = FinishReason::FINISH_REASON_UNSPECIFIED;
+        if (std::string_view service_tier; doc["service_tier"].get(service_tier) == simdjson::SUCCESS) {
+            out.service_tier = from_string_view<ServiceTier>(service_tier);
+        }
 
-            auto msg = choice["message"];
-            c.message.role = Role::ASSISTANT;
-            
-            auto content = msg["content"];
-            if (content.error() == simdjson::SUCCESS && !content.is_null()) {
-                c.message.content = std::string(content.get_string().value());
-            }
-
-            auto summary = msg["reasoning_summary"];
-            if (summary.error() == simdjson::SUCCESS && !summary.is_null()) {
-                c.message.reasoning_summary = std::string(summary.get_string().value());
-            }
-
-            auto res_content = msg["reasoning_content"];
-            if (res_content.error() == simdjson::SUCCESS && !res_content.is_null()) {
-                c.message.reasoning_content = std::string(res_content.get_string().value());
-            }
-            
-            auto refusal = msg["refusal"];
-            if (refusal.error() == simdjson::SUCCESS && !refusal.is_null()) {
-                c.message.refusal = std::string(refusal.get_string().value());
-            }
-
-            auto tool_calls = msg["tool_calls"];
-            if (tool_calls.error() == simdjson::SUCCESS && tool_calls.type() == simdjson::ondemand::json_type::array) {
-                for (auto tc : tool_calls.get_array()) {
-                    ToolCall call;
-                    call.id = std::string(tc["id"].get_string().value());
-                    call.function.name = std::string(tc["function"]["name"].get_string().value());
-                    call.function.arguments = std::string(tc["function"]["arguments"].get_string().value());
-                    c.message.tool_calls.push_back(std::move(call));
+        if (simdjson::dom::array choices; doc["choices"].get(choices) == simdjson::SUCCESS) {
+            for (auto choice : choices) {
+                Choice c{};
+                if (uint64_t idx; choice["index"].get(idx) == simdjson::SUCCESS) {
+                    c.index = static_cast<uint32_t>(idx);
                 }
+                
+                if (std::string_view fr; choice["finish_reason"].get(fr) == simdjson::SUCCESS) {
+                    c.finish_reason = from_string_view<FinishReason>(fr).value_or(FinishReason::FINISH_REASON_UNSPECIFIED);
+                }
+
+                if (simdjson::dom::element msg; choice["message"].get(msg) == simdjson::SUCCESS) {
+                     if (std::string_view role; msg["role"].get(role) == simdjson::SUCCESS) {
+                        c.message.role = from_string_view<Role>(role).value_or(Role::ASSISTANT);
+                    }
+                    if (std::string_view content; msg["content"].get(content) == simdjson::SUCCESS) {
+                        c.message.content = std::string(content);
+                    }
+                    if (std::string_view refusal; msg["refusal"].get(refusal) == simdjson::SUCCESS) {
+                        c.message.refusal = std::string(refusal);
+                    }
+                    if (std::string_view reasoning_sum; msg["reasoning_summary"].get(reasoning_sum) == simdjson::SUCCESS) {
+                        c.message.reasoning_summary = std::string(reasoning_sum);
+                    }
+                    if (std::string_view reasoning_content; msg["reasoning_content"].get(reasoning_content) == simdjson::SUCCESS) {
+                        c.message.reasoning_content = std::string(reasoning_content);
+                    }
+                    
+                    if (simdjson::dom::array tool_calls; msg["tool_calls"].get(tool_calls) == simdjson::SUCCESS) {
+                        for (auto tc : tool_calls) {
+                            ToolCall call{};
+                            if (std::string_view id; tc["id"].get(id) == simdjson::SUCCESS) call.id = std::string(id);
+                            
+                            if (simdjson::dom::element func; tc["function"].get(func) == simdjson::SUCCESS) {
+                                if (std::string_view name; func["name"].get(name) == simdjson::SUCCESS) call.function.name = std::string(name);
+                                if (std::string_view args; func["arguments"].get(args) == simdjson::SUCCESS) call.function.arguments = std::string(args);
+                            }
+                            c.message.tool_calls.push_back(std::move(call));
+                        }
+                    }
+                }
+                out.choices.push_back(std::move(c));
             }
-            out.choices.push_back(std::move(c));
         }
 
-        auto usage = doc["usage"];
-        out.usage.prompt_tokens = static_cast<uint32_t>(usage["prompt_tokens"].get_uint64().value());
-        out.usage.completion_tokens = static_cast<uint32_t>(usage["completion_tokens"].get_uint64().value());
-        out.usage.total_tokens = static_cast<uint32_t>(usage["total_tokens"].get_uint64().value());
-        
-        auto prompt_details = usage["prompt_tokens_details"];
-        if (prompt_details.error() == simdjson::SUCCESS && !prompt_details.is_null()) {
-             out.usage.prompt_tokens_details.cached_tokens = static_cast<uint32_t>(prompt_details["cached_tokens"].get_uint64().value());
+        if (simdjson::dom::element usage; doc["usage"].get(usage) == simdjson::SUCCESS) {
+            if (uint64_t val; usage["prompt_tokens"].get(val) == simdjson::SUCCESS) out.usage.prompt_tokens = static_cast<uint32_t>(val);
+            if (uint64_t val; usage["completion_tokens"].get(val) == simdjson::SUCCESS) out.usage.completion_tokens = static_cast<uint32_t>(val);
+            if (uint64_t val; usage["total_tokens"].get(val) == simdjson::SUCCESS) out.usage.total_tokens = static_cast<uint32_t>(val);
+            
+            if (simdjson::dom::element prompt_details; usage["prompt_tokens_details"].get(prompt_details) == simdjson::SUCCESS) {
+                 if (uint64_t val; prompt_details["cached_tokens"].get(val) == simdjson::SUCCESS) out.usage.prompt_tokens_details.cached_tokens = static_cast<uint32_t>(val);
+                 if (uint64_t val; prompt_details["audio_tokens"].get(val) == simdjson::SUCCESS) out.usage.prompt_tokens_details.audio_tokens = static_cast<uint32_t>(val);
+                 if (uint64_t val; prompt_details["image_tokens"].get(val) == simdjson::SUCCESS) out.usage.prompt_tokens_details.image_tokens = static_cast<uint32_t>(val);
+                 if (uint64_t val; prompt_details["video_tokens"].get(val) == simdjson::SUCCESS) out.usage.prompt_tokens_details.video_tokens = static_cast<uint32_t>(val);
+            }
+             if (simdjson::dom::element completion_details; usage["completion_tokens_details"].get(completion_details) == simdjson::SUCCESS) {
+                 if (uint64_t val; completion_details["reasoning_tokens"].get(val) == simdjson::SUCCESS) out.usage.completion_tokens_details.reasoning_tokens = static_cast<uint32_t>(val);
+                 if (uint64_t val; completion_details["audio_tokens"].get(val) == simdjson::SUCCESS) out.usage.completion_tokens_details.audio_tokens = static_cast<uint32_t>(val);
+                 if (uint64_t val; completion_details["accepted_prediction_tokens"].get(val) == simdjson::SUCCESS) out.usage.completion_tokens_details.accepted_prediction_tokens = static_cast<uint32_t>(val);
+                 if (uint64_t val; completion_details["rejected_prediction_tokens"].get(val) == simdjson::SUCCESS) out.usage.completion_tokens_details.rejected_prediction_tokens = static_cast<uint32_t>(val);
+            }
         }
 
     } catch (const std::exception&) {

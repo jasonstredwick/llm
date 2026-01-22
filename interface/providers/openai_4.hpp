@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -9,6 +10,7 @@
 
 #include "../async.hpp"
 #include "../policy.hpp"
+#include "../url.hpp"
 
 
 namespace jai::llm::openai_4 {
@@ -23,7 +25,7 @@ class Response;
 
 
 /***
- * Vocabulary - jai::llm::to_string_view conversions defined below.
+ * Vocabulary - jai::llm::to_string_view/from_string_view conversions defined below.
  */
 enum class ContentPartType { IMAGE_URL, TEXT };
 enum class FinishReason { CONTENT_FILTER, FINISH_REASON_UNSPECIFIED, LENGTH, STOP, TOOL_CALLS };
@@ -39,7 +41,7 @@ enum class ToolType { FUNCTION };
  */
 struct Image {
     struct ImageUrl {
-        std::string url;
+        EncodedUrl url;
         std::optional<ImageDetail> detail{};
     };
 
@@ -107,7 +109,7 @@ struct Tool {
 struct Request {
     std::string model;
     std::vector<Message> messages;
-    std::optional<uint32_t> max_tokens{};
+    std::optional<uint64_t> max_tokens{};
     std::optional<double> temperature{};
     std::optional<double> top_p{};
     std::optional<uint32_t> n{};
@@ -125,7 +127,7 @@ struct Request {
  * Response
  */
 struct ResponseTelemetry {
-    uint32_t processing_ms{0};
+    uint64_t processing_ms{0};
     std::string request_id;
     std::optional<std::string> organization{};
     std::optional<std::string> version_header{};
@@ -133,12 +135,12 @@ struct ResponseTelemetry {
 
 struct UsageMetadata {
     struct PromptTokensDetails {
-        uint32_t cached_tokens{0};
+        uint64_t cached_tokens{0};
     };
 
-    uint32_t prompt_tokens{0};
-    uint32_t completion_tokens{0};
-    uint32_t total_tokens{0};
+    uint64_t prompt_tokens{0};
+    uint64_t completion_tokens{0};
+    uint64_t total_tokens{0};
     PromptTokensDetails prompt_tokens_details{};
 };
 
@@ -192,15 +194,68 @@ public:
 namespace jai::llm {
 
 
-constexpr std::string_view to_string_view(openai_4::Role val) {
-    switch (val) {
-        case openai_4::Role::USER: return "user";
-        case openai_4::Role::SYSTEM: return "system";
-        case openai_4::Role::ASSISTANT: return "assistant";
-        case openai_4::Role::TOOL: return "tool";
-        case openai_4::Role::DEVELOPER: return "developer";
-        default: return "";
-    }
+template <typename T>
+constexpr std::optional<T> from_string_view(std::string_view sv);
+
+
+template <>
+constexpr std::optional<openai_4::ContentPartType> from_string_view<openai_4::ContentPartType>(std::string_view sv) {
+    if (sv == "text") return openai_4::ContentPartType::TEXT;
+    if (sv == "image_url") return openai_4::ContentPartType::IMAGE_URL;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4::FinishReason> from_string_view<openai_4::FinishReason>(std::string_view sv) {
+    if (sv == "stop") return openai_4::FinishReason::STOP;
+    if (sv == "length") return openai_4::FinishReason::LENGTH;
+    if (sv == "content_filter") return openai_4::FinishReason::CONTENT_FILTER;
+    if (sv == "tool_calls") return openai_4::FinishReason::TOOL_CALLS;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4::ImageDetail> from_string_view<openai_4::ImageDetail>(std::string_view sv) {
+    if (sv == "auto") return openai_4::ImageDetail::AUTO;
+    if (sv == "low") return openai_4::ImageDetail::LOW;
+    if (sv == "high") return openai_4::ImageDetail::HIGH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4::ObjectType> from_string_view<openai_4::ObjectType>(std::string_view sv) {
+    if (sv == "chat.completion") return openai_4::ObjectType::CHAT_COMPLETION;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4::ResponseFormatType> from_string_view<openai_4::ResponseFormatType>(std::string_view sv) {
+    if (sv == "text") return openai_4::ResponseFormatType::TEXT;
+    if (sv == "json_object") return openai_4::ResponseFormatType::JSON_OBJECT;
+    if (sv == "json_schema") return openai_4::ResponseFormatType::JSON_SCHEMA;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4::Role> from_string_view<openai_4::Role>(std::string_view sv) {
+    if (sv == "user") return openai_4::Role::USER;
+    if (sv == "system") return openai_4::Role::SYSTEM;
+    if (sv == "assistant") return openai_4::Role::ASSISTANT;
+    if (sv == "tool") return openai_4::Role::TOOL;
+    if (sv == "developer") return openai_4::Role::DEVELOPER;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4::ToolType> from_string_view<openai_4::ToolType>(std::string_view sv) {
+    if (sv == "function") return openai_4::ToolType::FUNCTION;
+    return std::nullopt;
 }
 
 
@@ -208,17 +263,7 @@ constexpr std::string_view to_string_view(openai_4::ContentPartType val) {
     switch (val) {
         case openai_4::ContentPartType::TEXT: return "text";
         case openai_4::ContentPartType::IMAGE_URL: return "image_url";
-        default: return "";
-    }
-}
-
-
-constexpr std::string_view to_string_view(openai_4::ImageDetail val) {
-    switch (val) {
-        case openai_4::ImageDetail::AUTO: return "auto";
-        case openai_4::ImageDetail::LOW: return "low";
-        case openai_4::ImageDetail::HIGH: return "high";
-        default: return "auto";
+        default: throw std::logic_error("invalid openai_4::ContentPartType");
     }
 }
 
@@ -229,15 +274,25 @@ constexpr std::string_view to_string_view(openai_4::FinishReason val) {
         case openai_4::FinishReason::LENGTH: return "length";
         case openai_4::FinishReason::CONTENT_FILTER: return "content_filter";
         case openai_4::FinishReason::TOOL_CALLS: return "tool_calls";
-        default: return "";
+        default: throw std::logic_error("invalid openai_4::FinishReason");
     }
 }
 
 
-constexpr std::string_view to_string_view(openai_4::ToolType val) {
+constexpr std::string_view to_string_view(openai_4::ImageDetail val) {
     switch (val) {
-        case openai_4::ToolType::FUNCTION: return "function";
-        default: return "function";
+        case openai_4::ImageDetail::AUTO: return "auto";
+        case openai_4::ImageDetail::LOW: return "low";
+        case openai_4::ImageDetail::HIGH: return "high";
+        default: throw std::logic_error("invalid openai_4::ImageDetail");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4::ObjectType val) {
+    switch (val) {
+        case openai_4::ObjectType::CHAT_COMPLETION: return "chat.completion";
+        default: throw std::logic_error("invalid openai_4::ObjectType");
     }
 }
 
@@ -247,15 +302,27 @@ constexpr std::string_view to_string_view(openai_4::ResponseFormatType val) {
         case openai_4::ResponseFormatType::TEXT: return "text";
         case openai_4::ResponseFormatType::JSON_OBJECT: return "json_object";
         case openai_4::ResponseFormatType::JSON_SCHEMA: return "json_schema";
-        default: return "text";
+        default: throw std::logic_error("invalid openai_4::ResponseFormatType");
     }
 }
 
 
-constexpr std::string_view to_string_view(openai_4::ObjectType val) {
+constexpr std::string_view to_string_view(openai_4::Role val) {
     switch (val) {
-        case openai_4::ObjectType::CHAT_COMPLETION: return "chat.completion";
-        default: return "chat.completion";
+        case openai_4::Role::USER: return "user";
+        case openai_4::Role::SYSTEM: return "system";
+        case openai_4::Role::ASSISTANT: return "assistant";
+        case openai_4::Role::TOOL: return "tool";
+        case openai_4::Role::DEVELOPER: return "developer";
+        default: throw std::logic_error("invalid openai_4::Role");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4::ToolType val) {
+    switch (val) {
+        case openai_4::ToolType::FUNCTION: return "function";
+        default: throw std::logic_error("invalid openai_4::ToolType");
     }
 }
 

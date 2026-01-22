@@ -2,13 +2,16 @@
 
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 #include <variant>
 
 #include "../async.hpp"
 #include "../policy.hpp"
+#include "../url.hpp"
 
 
 namespace jai::llm::anthropic_4_5_opus {
@@ -23,7 +26,7 @@ class Response;
 
 
 /***
- * Vocabulary - jai::llm::to_string_view conversions defined below.
+ * Vocabulary - jai::llm::to_string_view/from_string_view conversions defined below.
  */
 enum class CacheType { EPHEMERAL };
 enum class CitationType { CHAR_LOCATION, PAGE_LOCATION };
@@ -79,7 +82,7 @@ struct Image {
         };
 
         struct URL {
-            std::string url;
+            EncodedUrl url;
         };
 
         std::variant<Base64, URL> detail;
@@ -137,7 +140,7 @@ struct SystemPrompt {
 
 struct ThinkingConfig {
     ThinkingType type{ThinkingType::ENABLED};
-    uint32_t budget_tokens{0};
+    uint64_t budget_tokens{0};
 };
 
 
@@ -184,14 +187,14 @@ struct Request {
     std::string model;
     std::vector<Message> messages;
     std::variant<std::string, std::vector<SystemPrompt>> system;
-    uint32_t max_tokens{4096};
+    uint64_t max_tokens{4096};
     std::optional<ThinkingConfig> thinking{};
     std::optional<EffortLevel> effort{};
     std::vector<std::string> stop_sequences{};
     std::optional<ResponseFormat> response_format{};
     std::optional<double> temperature{};
     std::optional<double> top_p{};
-    std::optional<uint32_t> top_k{};
+    std::optional<uint64_t> top_k{};
     std::vector<Tool> tools{};
     std::optional<ToolChoice> tool_choice{};
 };
@@ -201,36 +204,35 @@ struct Request {
  * Response
  */
 struct Citation {
-    struct Source {
-        SourceType type{SourceType::BASE64};
-        std::optional<std::string> media_type{};
-        std::optional<std::string> data{};
-        std::optional<std::string> file_id{};
-    };
-
     CitationType type{CitationType::CHAR_LOCATION};
-    Source source{};
+    std::optional<uint64_t> document_index{};
+    std::optional<std::string> document_title{};
     std::string cite{};
-    uint32_t start_index{0};
-    uint32_t end_index{0};
-    std::optional<uint32_t> start_page_number{};
-    std::optional<uint32_t> end_page_number{};
+    uint64_t start_index{0};
+    uint64_t end_index{0};
+    std::optional<uint64_t> start_page_number{};
+    std::optional<uint64_t> end_page_number{};
 };
 
 
 struct ContentBlock {
-    ContentBlockType type{ContentBlockType::TEXT};
-    std::optional<std::string> text{};
-    std::optional<std::string> thinking{};
-    std::optional<std::string> id{};
-    std::optional<std::string> name{};
-    std::optional<std::string> input{};
+    struct Text { std::string text{}; };
+    struct Thinking { std::string thinking{}; std::string signature{}; };
+    struct ToolUse { std::string id{}; std::string name{}; std::string input{}; };
+
+    std::variant<Text, Thinking, ToolUse> detail;
     std::vector<Citation> citations{};
 };
 
 
+struct Stop {
+    std::optional<StopReason> reason{};
+    std::optional<std::string> sequence{};
+};
+
+
 struct Telemetry {
-    uint32_t processing_ms{0};
+    uint64_t processing_ms{0};
     std::string request_id;
     std::optional<std::string> organization{};
     std::optional<std::string> version_header{};
@@ -238,11 +240,11 @@ struct Telemetry {
 
 
 struct UsageMetadata {
-    uint32_t input_tokens{0};
-    uint32_t output_tokens{0};
-    uint32_t thinking_tokens{0};
-    uint32_t cache_read_input_tokens{0};
-    uint32_t cache_creation_input_tokens{0};
+    uint64_t input_tokens{0};
+    uint64_t output_tokens{0};
+    uint64_t thinking_tokens{0};
+    uint64_t cache_read_input_tokens{0};
+    uint64_t cache_creation_input_tokens{0};
 };
 
 
@@ -251,8 +253,7 @@ struct Response {
     Role role{Role::ASSISTANT};
     std::string model;
     std::vector<ContentBlock> content{};
-    std::optional<StopReason> stop_reason{};
-    std::optional<std::string> stop_sequence{};
+    std::optional<Stop> stop{};
     std::optional<Telemetry> telemetry{};
     UsageMetadata usage{};
 };
@@ -285,10 +286,118 @@ public:
 namespace jai::llm {
 
 
+template <typename T>
+constexpr std::optional<T> from_string_view(std::string_view sv);
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::CacheType> from_string_view<anthropic_4_5_opus::CacheType>(std::string_view sv) {
+    if (sv == "ephemeral") return anthropic_4_5_opus::CacheType::EPHEMERAL;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::CitationType> from_string_view<anthropic_4_5_opus::CitationType>(std::string_view sv) {
+    if (sv == "char_location") return anthropic_4_5_opus::CitationType::CHAR_LOCATION;
+    if (sv == "page_location") return anthropic_4_5_opus::CitationType::PAGE_LOCATION;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::ContentBlockType> from_string_view<anthropic_4_5_opus::ContentBlockType>(std::string_view sv) {
+    if (sv == "text") return anthropic_4_5_opus::ContentBlockType::TEXT;
+    if (sv == "thinking") return anthropic_4_5_opus::ContentBlockType::THINKING;
+    if (sv == "tool_use") return anthropic_4_5_opus::ContentBlockType::TOOL_USE;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::EffortLevel> from_string_view<anthropic_4_5_opus::EffortLevel>(std::string_view sv) {
+    if (sv == "low") return anthropic_4_5_opus::EffortLevel::LOW;
+    if (sv == "medium") return anthropic_4_5_opus::EffortLevel::MEDIUM;
+    if (sv == "high") return anthropic_4_5_opus::EffortLevel::HIGH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::MessageContentPartType> from_string_view<anthropic_4_5_opus::MessageContentPartType>(std::string_view sv) {
+    if (sv == "text") return anthropic_4_5_opus::MessageContentPartType::TEXT;
+    if (sv == "image") return anthropic_4_5_opus::MessageContentPartType::IMAGE;
+    if (sv == "audio") return anthropic_4_5_opus::MessageContentPartType::AUDIO;
+    if (sv == "document") return anthropic_4_5_opus::MessageContentPartType::DOCUMENT;
+    if (sv == "tool_use") return anthropic_4_5_opus::MessageContentPartType::TOOL_USE;
+    if (sv == "tool_result") return anthropic_4_5_opus::MessageContentPartType::TOOL_RESULT;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::MessageType> from_string_view<anthropic_4_5_opus::MessageType>(std::string_view sv) {
+    if (sv == "message") return anthropic_4_5_opus::MessageType::MESSAGE;
+    if (sv == "error") return anthropic_4_5_opus::MessageType::ERROR;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::Role> from_string_view<anthropic_4_5_opus::Role>(std::string_view sv) {
+    if (sv == "user") return anthropic_4_5_opus::Role::USER;
+    if (sv == "assistant") return anthropic_4_5_opus::Role::ASSISTANT;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::ResponseFormatType> from_string_view<anthropic_4_5_opus::ResponseFormatType>(std::string_view sv) {
+    if (sv == "text") return anthropic_4_5_opus::ResponseFormatType::TEXT;
+    if (sv == "json_object") return anthropic_4_5_opus::ResponseFormatType::JSON_OBJECT;
+    if (sv == "json_schema") return anthropic_4_5_opus::ResponseFormatType::JSON_SCHEMA;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::SourceType> from_string_view<anthropic_4_5_opus::SourceType>(std::string_view sv) {
+    if (sv == "base64") return anthropic_4_5_opus::SourceType::BASE64;
+    if (sv == "url") return anthropic_4_5_opus::SourceType::URL;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::StopReason> from_string_view<anthropic_4_5_opus::StopReason>(std::string_view sv) {
+    if (sv == "end_turn") return anthropic_4_5_opus::StopReason::END_TURN;
+    if (sv == "max_tokens") return anthropic_4_5_opus::StopReason::MAX_TOKENS;
+    if (sv == "stop_sequence") return anthropic_4_5_opus::StopReason::STOP_SEQUENCE;
+    if (sv == "tool_use") return anthropic_4_5_opus::StopReason::TOOL_USE;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::ThinkingType> from_string_view<anthropic_4_5_opus::ThinkingType>(std::string_view sv) {
+    if (sv == "enabled") return anthropic_4_5_opus::ThinkingType::ENABLED;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<anthropic_4_5_opus::ToolChoiceType> from_string_view<anthropic_4_5_opus::ToolChoiceType>(std::string_view sv) {
+    if (sv == "auto") return anthropic_4_5_opus::ToolChoiceType::AUTO;
+    if (sv == "any") return anthropic_4_5_opus::ToolChoiceType::ANY;
+    if (sv == "tool") return anthropic_4_5_opus::ToolChoiceType::TOOL;
+    return std::nullopt;
+}
+
+
 constexpr std::string_view to_string_view(anthropic_4_5_opus::CacheType val) {
     switch (val) {
         case anthropic_4_5_opus::CacheType::EPHEMERAL: return "ephemeral";
-        default: return "ephemeral";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::CacheType");
     }
 }
 
@@ -297,7 +406,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::CitationType val) 
     switch (val) {
         case anthropic_4_5_opus::CitationType::CHAR_LOCATION: return "char_location";
         case anthropic_4_5_opus::CitationType::PAGE_LOCATION: return "page_location";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::CitationType");
     }
 }
 
@@ -307,7 +416,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::ContentBlockType v
         case anthropic_4_5_opus::ContentBlockType::TEXT: return "text";
         case anthropic_4_5_opus::ContentBlockType::THINKING: return "thinking";
         case anthropic_4_5_opus::ContentBlockType::TOOL_USE: return "tool_use";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::ContentBlockType");
     }
 }
 
@@ -317,7 +426,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::EffortLevel val) {
         case anthropic_4_5_opus::EffortLevel::LOW: return "low";
         case anthropic_4_5_opus::EffortLevel::MEDIUM: return "medium";
         case anthropic_4_5_opus::EffortLevel::HIGH: return "high";
-        default: return "medium";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::EffortLevel");
     }
 }
 
@@ -330,7 +439,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::MessageContentPart
         case anthropic_4_5_opus::MessageContentPartType::DOCUMENT: return "document";
         case anthropic_4_5_opus::MessageContentPartType::TOOL_USE: return "tool_use";
         case anthropic_4_5_opus::MessageContentPartType::TOOL_RESULT: return "tool_result";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::MessageContentPartType");
     }
 }
 
@@ -339,7 +448,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::MessageType val) {
     switch (val) {
         case anthropic_4_5_opus::MessageType::MESSAGE: return "message";
         case anthropic_4_5_opus::MessageType::ERROR: return "error";
-        default: return "message";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::MessageType");
     }
 }
 
@@ -348,7 +457,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::Role val) {
     switch (val) {
         case anthropic_4_5_opus::Role::USER: return "user";
         case anthropic_4_5_opus::Role::ASSISTANT: return "assistant";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::Role");
     }
 }
 
@@ -358,7 +467,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::ResponseFormatType
         case anthropic_4_5_opus::ResponseFormatType::TEXT: return "text";
         case anthropic_4_5_opus::ResponseFormatType::JSON_OBJECT: return "json_object";
         case anthropic_4_5_opus::ResponseFormatType::JSON_SCHEMA: return "json_schema";
-        default: return "text";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::ResponseFormatType");
     }
 }
 
@@ -367,7 +476,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::SourceType val) {
     switch (val) {
         case anthropic_4_5_opus::SourceType::BASE64: return "base64";
         case anthropic_4_5_opus::SourceType::URL: return "url";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::SourceType");
     }
 }
 
@@ -378,7 +487,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::StopReason val) {
         case anthropic_4_5_opus::StopReason::MAX_TOKENS: return "max_tokens";
         case anthropic_4_5_opus::StopReason::STOP_SEQUENCE: return "stop_sequence";
         case anthropic_4_5_opus::StopReason::TOOL_USE: return "tool_use";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::StopReason");
     }
 }
 
@@ -386,7 +495,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::StopReason val) {
 constexpr std::string_view to_string_view(anthropic_4_5_opus::ThinkingType val) {
     switch (val) {
         case anthropic_4_5_opus::ThinkingType::ENABLED: return "enabled";
-        default: return "";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::ThinkingType");
     }
 }
 
@@ -396,7 +505,7 @@ constexpr std::string_view to_string_view(anthropic_4_5_opus::ToolChoiceType val
         case anthropic_4_5_opus::ToolChoiceType::AUTO: return "auto";
         case anthropic_4_5_opus::ToolChoiceType::ANY: return "any";
         case anthropic_4_5_opus::ToolChoiceType::TOOL: return "tool";
-        default: return "auto";
+        default: throw std::logic_error("invalid anthropic_4_5_opus::ToolChoiceType");
     }
 }
 

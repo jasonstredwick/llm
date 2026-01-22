@@ -9,11 +9,15 @@
 #include "curl.hpp"
 
 #include <algorithm>
-#include <ranges>
-#include <print>
+
+#include <simdjson.h>
 
 
 namespace jai::llm::curl {
+
+
+
+constexpr size_t JSON_POST_END_PADDING = simdjson::SIMDJSON_PADDING;
 
 
 template <typename T> T* ToCurl(void* ptr) { return static_cast<T*>(ptr); }
@@ -75,9 +79,9 @@ template <typename T> T* ToCurl(void* ptr) { return static_cast<T*>(ptr); }
 void DeleteHeaderListHandle(void* ptr) { if (ptr) { curl_slist_free_all(ToCurl<curl_slist>(ptr)); } }
 
 
-HeaderList::HeaderList(const http::Headers& headers) : list{nullptr, &DeleteHeaderListHandle} {
+HeaderList::HeaderList(const http::RequestHeaders& headers) : list{nullptr, &DeleteHeaderListHandle} {
     curl_slist* new_header_list = nullptr;
-    for (const auto& header : headers.GetHeaders()) {
+    for (const auto& header : headers.Entries()) {
         new_header_list = curl_slist_append(new_header_list, header.c_str());
         if (!new_header_list) { throw std::runtime_error("Failed to create HeaderList."); }
     }
@@ -210,6 +214,8 @@ void Attempt::Finalize(Interface& interface, const std::string& result_error_str
     if (!remove_handle_error_str.empty()) { Fail(remove_handle_error_str); }
     else { unhooked = true; }
     if (!result_error_str.empty()) { Fail(result_error_str); }
+    response.body_len = response.body.size();
+    response.body.resize(response.body_len + JSON_POST_END_PADDING);
     ExtractMetadata();
     handle.reset();
     response.availability = Response::Availability::FINAL;
@@ -301,6 +307,7 @@ size_t Attempt::OnWrite(std::span<const std::byte> data) {
     } catch (...) { return 0; }
     return data.size();
 }
+
 
 int Attempt::OnXferInfo(int64_t dltotal, int64_t dlnow, int64_t ultotal, int64_t ulnow) {
     response.current_leg_download_progress_bytes = dlnow;

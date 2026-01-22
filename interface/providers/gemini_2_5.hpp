@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -9,6 +10,7 @@
 
 #include "../async.hpp"
 #include "../policy.hpp"
+#include "../url.hpp"
 
 
 namespace jai::llm::gemini_2_5 {
@@ -23,7 +25,7 @@ class Response;
 
 
 /***
- * Vocabulary - jai::llm::to_string_view conversions defined below.
+ * Vocabulary - jai::llm::to_string_view/from_string_view conversions defined below.
  */
 enum class CodeLanguage { PYTHON, UNSPECIFIED };
 enum class ExecutionOutcome { DEADLINE_EXCEEDED, FAILED, OK, UNSPECIFIED };
@@ -60,19 +62,19 @@ enum class SafetyThreshold {
  */
 struct Config {
     struct ThinkingConfig {
-        int32_t thinking_budget{-1};
+        int64_t thinking_budget{-1};
         bool include_thoughts{false};
     };
 
     std::optional<double> frequency_penalty{};
     std::optional<uint32_t> logprobs{}; // Number of top candidates
-    std::optional<uint32_t> max_output_tokens{};
+    std::optional<uint64_t> max_output_tokens{};
     std::optional<MediaResolution> media_resolution{};
     std::optional<double> presence_penalty{};
     std::optional<bool> response_logprobs{};
     std::optional<ResponseMimeType> response_mime_type{};
     std::optional<std::string> response_schema{}; // OpenAPI schema as JSON string
-    std::optional<uint32_t> seed{};
+    std::optional<uint64_t> seed{};
     std::vector<std::string> stop_sequences{};
     std::optional<double> temperature{};
     std::optional<ThinkingConfig> thinking_config{};
@@ -95,7 +97,7 @@ struct Content {
 
         struct FileData {
             MediaType mime_type{MediaType::UNSPECIFIED};
-            std::string file_uri;
+            EncodedUrl file_uri;
         };
 
         struct FunctionCall {
@@ -116,13 +118,16 @@ struct Content {
             std::string text;
         };
 
+        struct Thought {
+            std::string text;
+        };
         struct ThoughtSignature {
             std::string signature;
         };
 
         using Part = std::variant<
             TextPart, InlineImagePart, FileData, FunctionCall,
-            FunctionResponse, ExecutableCode, CodeExecutionResult, ThoughtSignature
+            FunctionResponse, ExecutableCode, CodeExecutionResult, Thought, ThoughtSignature
         >;
     };
 
@@ -191,7 +196,7 @@ struct CitationMetadata {
     struct CitationSource {
         uint32_t start_index{0};
         uint32_t end_index{0};
-        std::string uri{};
+        EncodedUrl uri;
         std::string license{};
     };
 
@@ -202,17 +207,18 @@ struct CitationMetadata {
 struct GroundingMetadata {
     struct GroundingChunk {
         struct Web {
-            std::string uri{};
+            EncodedUrl uri;
             std::string title{};
         };
 
-        Web web{};
+        Web web;
     };
 
     struct GroundingSupport {
         std::vector<uint32_t> grounding_chunk_indices{};
         uint32_t segment_start_index{0};
         uint32_t segment_end_index{0};
+        std::optional<std::string> segment_text{};
         double confidence_score{0.0};
     };
 
@@ -248,17 +254,17 @@ struct SafetyRating {
 
 struct UsageMetadata {
     struct TokenCountDetails {
-        uint32_t text_token_count{0};
-        uint32_t image_token_count{0};
-        uint32_t video_token_count{0};
-        uint32_t audio_token_count{0};
+        uint64_t text_token_count{0};
+        uint64_t image_token_count{0};
+        uint64_t video_token_count{0};
+        uint64_t audio_token_count{0};
     };
 
-    uint32_t prompt_token_count{0};
-    uint32_t candidates_token_count{0};
-    uint32_t total_token_count{0};
-    uint32_t reasoning_token_count{0};
-    uint32_t cached_content_token_count{0};
+    uint64_t prompt_token_count{0};
+    uint64_t candidates_token_count{0};
+    uint64_t total_token_count{0};
+    uint64_t reasoning_token_count{0};
+    uint64_t cached_content_token_count{0};
     std::vector<TokenCountDetails> prompt_token_count_details{};
     std::vector<TokenCountDetails> candidates_token_count_details{};
 };
@@ -267,13 +273,13 @@ struct UsageMetadata {
 struct Candidate {
     Content content;
     FinishReason finish_reason{FinishReason::FINISH_REASON_UNSPECIFIED};
-    std::optional<std::string> thinking_process{};
+    std::optional<std::string> thought{};
     std::optional<CitationMetadata> citation_metadata{};
     std::optional<GroundingMetadata> grounding_metadata{};
     std::vector<SafetyRating> safety_ratings{};
-    std::optional<UsageMetadata> usage_metadata{};
     std::optional<LogprobsResult> logprobs_result{};
     double avg_logprobs{0.0};
+    uint32_t index{0};
 };
 
 
@@ -281,18 +287,11 @@ struct PromptFeedback {
     struct SafetyRatingDetail {
         HarmCategory category{HarmCategory::UNSPECIFIED};
         HarmProbability probability{HarmProbability::UNSPECIFIED};
+        bool blocked{false};
     };
 
     std::vector<SafetyRatingDetail> safety_ratings{};
     std::optional<std::string> block_reason{};
-};
-
-
-struct Telemetry {
-    uint32_t processing_ms{0};
-    std::string request_id;
-    std::optional<std::string> organization{};
-    std::optional<std::string> version_header{};
 };
 
 
@@ -301,7 +300,6 @@ struct Response {
     std::optional<PromptFeedback> prompt_feedback{};
     std::optional<UsageMetadata> usage_metadata{};
     std::optional<std::string> model_version{};
-    std::optional<Telemetry> telemetry{};
 };
 
 
@@ -335,10 +333,167 @@ public:
 namespace jai::llm {
 
 
+template <typename T>
+constexpr std::optional<T> from_string_view(std::string_view sv);
+
+
+template <>
+constexpr std::optional<gemini_2_5::CodeLanguage> from_string_view<gemini_2_5::CodeLanguage>(std::string_view sv) {
+    if (sv == "python") return gemini_2_5::CodeLanguage::PYTHON;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::ExecutionOutcome> from_string_view<gemini_2_5::ExecutionOutcome>(std::string_view sv) {
+    if (sv == "OUTCOME_OK") return gemini_2_5::ExecutionOutcome::OK;
+    if (sv == "OUTCOME_FAILED") return gemini_2_5::ExecutionOutcome::FAILED;
+    if (sv == "OUTCOME_DEADLINE_EXCEEDED") return gemini_2_5::ExecutionOutcome::DEADLINE_EXCEEDED;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::FinishReason> from_string_view<gemini_2_5::FinishReason>(std::string_view sv) {
+    if (sv == "STOP") return gemini_2_5::FinishReason::STOP;
+    if (sv == "MAX_TOKENS") return gemini_2_5::FinishReason::MAX_TOKENS;
+    if (sv == "SAFETY") return gemini_2_5::FinishReason::SAFETY;
+    if (sv == "RECITATION") return gemini_2_5::FinishReason::RECITATION;
+    if (sv == "OTHER") return gemini_2_5::FinishReason::OTHER;
+    if (sv == "BLOCKLIST") return gemini_2_5::FinishReason::BLOCKLIST;
+    if (sv == "PROHIBITED_CONTENT") return gemini_2_5::FinishReason::PROHIBITED_CONTENT;
+    if (sv == "SPII") return gemini_2_5::FinishReason::SPII;
+    if (sv == "MALFORMED_FUNCTION_CALL") return gemini_2_5::FinishReason::MALFORMED_FUNCTION_CALL;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::FunctionCallingMode> from_string_view<gemini_2_5::FunctionCallingMode>(std::string_view sv) {
+    if (sv == "AUTO") return gemini_2_5::FunctionCallingMode::AUTO;
+    if (sv == "ANY") return gemini_2_5::FunctionCallingMode::ANY;
+    if (sv == "NONE") return gemini_2_5::FunctionCallingMode::NONE;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::HarmCategory> from_string_view<gemini_2_5::HarmCategory>(std::string_view sv) {
+    if (sv == "HARM_CATEGORY_HARASSMENT") return gemini_2_5::HarmCategory::HARASSMENT;
+    if (sv == "HARM_CATEGORY_HATE_SPEECH") return gemini_2_5::HarmCategory::HATE_SPEECH;
+    if (sv == "HARM_CATEGORY_SEXUALLY_EXPLICIT") return gemini_2_5::HarmCategory::SEXUALLY_EXPLICIT;
+    if (sv == "HARM_CATEGORY_DANGEROUS_CONTENT") return gemini_2_5::HarmCategory::DANGEROUS_CONTENT;
+    if (sv == "HARM_CATEGORY_CIVIC_INTEGRITY") return gemini_2_5::HarmCategory::CIVIC_INTEGRITY;
+    if (sv == "HARM_CATEGORY_MEDICAL") return gemini_2_5::HarmCategory::MEDICAL;
+    if (sv == "HARM_CATEGORY_SEXUAL") return gemini_2_5::HarmCategory::SEXUAL;
+    if (sv == "HARM_CATEGORY_PUBLIC_SAFETY") return gemini_2_5::HarmCategory::PUBLIC_SAFETY;
+    if (sv == "HARM_CATEGORY_TOXICITY") return gemini_2_5::HarmCategory::TOXICITY;
+    if (sv == "HARM_CATEGORY_DEROGATORY") return gemini_2_5::HarmCategory::DEROGATORY;
+    if (sv == "HARM_CATEGORY_VIOLENT_CONTENT") return gemini_2_5::HarmCategory::VIOLENT_CONTENT;
+    if (sv == "HARM_CATEGORY_SEXUAL_CONTENT") return gemini_2_5::HarmCategory::SEXUAL_CONTENT;
+    if (sv == "HARM_CATEGORY_MEDICAL_ADVICE") return gemini_2_5::HarmCategory::MEDICAL_ADVICE;
+    if (sv == "HARM_CATEGORY_CIVIC_INTEGRITY_ELECTIONS") return gemini_2_5::HarmCategory::CIVIC_INTEGRITY_ELECTIONS;
+    if (sv == "HARM_CATEGORY_HATE_CONTENT") return gemini_2_5::HarmCategory::HATE_CONTENT;
+    if (sv == "HARM_CATEGORY_HARASSMENT_CONTENT") return gemini_2_5::HarmCategory::HARASSMENT_CONTENT;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::HarmProbability> from_string_view<gemini_2_5::HarmProbability>(std::string_view sv) {
+    if (sv == "NEGLIGIBLE") return gemini_2_5::HarmProbability::NEGLIGIBLE;
+    if (sv == "LOW") return gemini_2_5::HarmProbability::LOW;
+    if (sv == "MEDIUM") return gemini_2_5::HarmProbability::MEDIUM;
+    if (sv == "HIGH") return gemini_2_5::HarmProbability::HIGH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode> from_string_view<gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode>(std::string_view sv) {
+    if (sv == "DYNAMIC") return gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode::DYNAMIC;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::MediaResolution> from_string_view<gemini_2_5::MediaResolution>(std::string_view sv) {
+    if (sv == "LOW") return gemini_2_5::MediaResolution::LOW;
+    if (sv == "MEDIUM") return gemini_2_5::MediaResolution::MEDIUM;
+    if (sv == "HIGH") return gemini_2_5::MediaResolution::HIGH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::MediaType> from_string_view<gemini_2_5::MediaType>(std::string_view sv) {
+    if (sv == "application/pdf") return gemini_2_5::MediaType::APPLICATION_PDF;
+    if (sv == "audio/aac") return gemini_2_5::MediaType::AUDIO_AAC;
+    if (sv == "audio/flac") return gemini_2_5::MediaType::AUDIO_FLAC;
+    if (sv == "audio/mp3") return gemini_2_5::MediaType::AUDIO_MP3;
+    if (sv == "audio/mp4") return gemini_2_5::MediaType::AUDIO_MP4;
+    if (sv == "audio/mpeg") return gemini_2_5::MediaType::AUDIO_MPEG;
+    if (sv == "audio/ogg") return gemini_2_5::MediaType::AUDIO_OGG;
+    if (sv == "audio/wav") return gemini_2_5::MediaType::AUDIO_WAV;
+    if (sv == "image/bmp") return gemini_2_5::MediaType::IMAGE_BMP;
+    if (sv == "image/gif") return gemini_2_5::MediaType::IMAGE_GIF;
+    if (sv == "image/jpeg") return gemini_2_5::MediaType::IMAGE_JPEG;
+    if (sv == "image/png") return gemini_2_5::MediaType::IMAGE_PNG;
+    if (sv == "image/webp") return gemini_2_5::MediaType::IMAGE_WEBP;
+    if (sv == "video/mov") return gemini_2_5::MediaType::VIDEO_MOV;
+    if (sv == "video/mpeg") return gemini_2_5::MediaType::VIDEO_MPEG;
+    if (sv == "video/mp4") return gemini_2_5::MediaType::VIDEO_MP4;
+    if (sv == "video/mpg") return gemini_2_5::MediaType::VIDEO_MPG;
+    if (sv == "video/ogg") return gemini_2_5::MediaType::VIDEO_OGG;
+    if (sv == "video/quicktime") return gemini_2_5::MediaType::VIDEO_QT;
+    if (sv == "video/webm") return gemini_2_5::MediaType::VIDEO_WEBM;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::Modality> from_string_view<gemini_2_5::Modality>(std::string_view sv) {
+    if (sv == "text") return gemini_2_5::Modality::TEXT;
+    if (sv == "image") return gemini_2_5::Modality::IMAGE;
+    if (sv == "video") return gemini_2_5::Modality::VIDEO;
+    if (sv == "audio") return gemini_2_5::Modality::AUDIO;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::ResponseMimeType> from_string_view<gemini_2_5::ResponseMimeType>(std::string_view sv) {
+    if (sv == "application/json") return gemini_2_5::ResponseMimeType::APPLICATION_JSON;
+    if (sv == "text/x.enum") return gemini_2_5::ResponseMimeType::TEXT_X_ENUM;
+    if (sv == "text/plain") return gemini_2_5::ResponseMimeType::TEXT_PLAIN;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::SafetyThreshold> from_string_view<gemini_2_5::SafetyThreshold>(std::string_view sv) {
+    if (sv == "BLOCK_LOW_AND_ABOVE") return gemini_2_5::SafetyThreshold::BLOCK_LOW_AND_ABOVE;
+    if (sv == "BLOCK_MEDIUM_AND_ABOVE") return gemini_2_5::SafetyThreshold::BLOCK_MEDIUM_AND_ABOVE;
+    if (sv == "BLOCK_NONE") return gemini_2_5::SafetyThreshold::BLOCK_NONE;
+    if (sv == "BLOCK_ONLY_HIGH") return gemini_2_5::SafetyThreshold::BLOCK_ONLY_HIGH;
+    if (sv == "OFF") return gemini_2_5::SafetyThreshold::OFF;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<gemini_2_5::Role> from_string_view<gemini_2_5::Role>(std::string_view sv) {
+    if (sv == "user") return gemini_2_5::Role::USER;
+    if (sv == "model") return gemini_2_5::Role::MODEL;
+    if (sv == "system") return gemini_2_5::Role::SYSTEM;
+    return std::nullopt;
+}
+
+
 constexpr std::string_view to_string_view(gemini_2_5::CodeLanguage val) {
     switch (val) {
         case gemini_2_5::CodeLanguage::PYTHON: return "python";
-        default: return "python";
+        default: throw std::logic_error("invalid gemini_2_5::CodeLanguage");
     }
 }
 
@@ -348,7 +503,7 @@ constexpr std::string_view to_string_view(gemini_2_5::ExecutionOutcome val) {
         case gemini_2_5::ExecutionOutcome::OK: return "OUTCOME_OK";
         case gemini_2_5::ExecutionOutcome::FAILED: return "OUTCOME_FAILED";
         case gemini_2_5::ExecutionOutcome::DEADLINE_EXCEEDED: return "OUTCOME_DEADLINE_EXCEEDED";
-        default: return "OUTCOME_UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::ExecutionOutcome");
     }
 }
 
@@ -364,7 +519,7 @@ constexpr std::string_view to_string_view(gemini_2_5::FinishReason val) {
         case gemini_2_5::FinishReason::PROHIBITED_CONTENT: return "PROHIBITED_CONTENT";
         case gemini_2_5::FinishReason::SPII: return "SPII";
         case gemini_2_5::FinishReason::MALFORMED_FUNCTION_CALL: return "MALFORMED_FUNCTION_CALL";
-        default: return "FINISH_REASON_UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::FinishReason");
     }
 }
 
@@ -374,7 +529,7 @@ constexpr std::string_view to_string_view(gemini_2_5::FunctionCallingMode val) {
         case gemini_2_5::FunctionCallingMode::AUTO: return "AUTO";
         case gemini_2_5::FunctionCallingMode::ANY: return "ANY";
         case gemini_2_5::FunctionCallingMode::NONE: return "NONE";
-        default: return "MODE_UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::FunctionCallingMode");
     }
 }
 
@@ -397,7 +552,7 @@ constexpr std::string_view to_string_view(gemini_2_5::HarmCategory val) {
         case gemini_2_5::HarmCategory::CIVIC_INTEGRITY_ELECTIONS: return "HARM_CATEGORY_CIVIC_INTEGRITY_ELECTIONS";
         case gemini_2_5::HarmCategory::HATE_CONTENT: return "HARM_CATEGORY_HATE_CONTENT";
         case gemini_2_5::HarmCategory::HARASSMENT_CONTENT: return "HARM_CATEGORY_HARASSMENT_CONTENT";
-        default: return "";
+        default: throw std::logic_error("invalid gemini_2_5::HarmCategory");
     }
 }
 
@@ -408,7 +563,7 @@ constexpr std::string_view to_string_view(gemini_2_5::HarmProbability val) {
         case gemini_2_5::HarmProbability::LOW: return "LOW";
         case gemini_2_5::HarmProbability::MEDIUM: return "MEDIUM";
         case gemini_2_5::HarmProbability::HIGH: return "HIGH";
-        default: return "UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::HarmProbability");
     }
 }
 
@@ -416,7 +571,7 @@ constexpr std::string_view to_string_view(gemini_2_5::HarmProbability val) {
 constexpr std::string_view to_string_view(gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode val) {
     switch (val) {
         case gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode::DYNAMIC: return "DYNAMIC";
-        default: return "MODE_UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::Tool::GoogleSearch::DynamicRetrievalConfig::Mode");
     }
 }
 
@@ -426,7 +581,7 @@ constexpr std::string_view to_string_view(gemini_2_5::MediaResolution val) {
         case gemini_2_5::MediaResolution::LOW: return "LOW";
         case gemini_2_5::MediaResolution::MEDIUM: return "MEDIUM";
         case gemini_2_5::MediaResolution::HIGH: return "HIGH";
-        default: return "MEDIA_RESOLUTION_UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::MediaResolution");
     }
 }
 
@@ -453,7 +608,7 @@ constexpr std::string_view to_string_view(gemini_2_5::MediaType val) {
         case gemini_2_5::MediaType::VIDEO_OGG: return "video/ogg";
         case gemini_2_5::MediaType::VIDEO_QT: return "video/quicktime";
         case gemini_2_5::MediaType::VIDEO_WEBM: return "video/webm";
-        default: return "";
+        default: throw std::logic_error("invalid gemini_2_5::MediaType");
     }
 }
 
@@ -464,7 +619,7 @@ constexpr std::string_view to_string_view(gemini_2_5::Modality val) {
         case gemini_2_5::Modality::IMAGE: return "image";
         case gemini_2_5::Modality::VIDEO: return "video";
         case gemini_2_5::Modality::AUDIO: return "audio";
-        default: return "";
+        default: throw std::logic_error("invalid gemini_2_5::Modality");
     }
 }
 
@@ -473,8 +628,8 @@ constexpr std::string_view to_string_view(gemini_2_5::ResponseMimeType val) {
     switch (val) {
         case gemini_2_5::ResponseMimeType::APPLICATION_JSON: return "application/json";
         case gemini_2_5::ResponseMimeType::TEXT_X_ENUM: return "text/x.enum";
-        case gemini_2_5::ResponseMimeType::TEXT_PLAIN:
-        default: return "text/plain";
+        case gemini_2_5::ResponseMimeType::TEXT_PLAIN: return "text/plain";
+        default: throw std::logic_error("invalid gemini_2_5::ResponseMimeType");
     }
 }
 
@@ -486,7 +641,7 @@ constexpr std::string_view to_string_view(gemini_2_5::SafetyThreshold val) {
         case gemini_2_5::SafetyThreshold::BLOCK_NONE: return "BLOCK_NONE";
         case gemini_2_5::SafetyThreshold::BLOCK_ONLY_HIGH: return "BLOCK_ONLY_HIGH";
         case gemini_2_5::SafetyThreshold::OFF: return "OFF";
-        default: return "SAFETY_THRESHOLD_UNSPECIFIED";
+        default: throw std::logic_error("invalid gemini_2_5::SafetyThreshold");
     }
 }
 
@@ -496,7 +651,7 @@ constexpr std::string_view to_string_view(gemini_2_5::Role val) {
         case gemini_2_5::Role::USER: return "user";
         case gemini_2_5::Role::MODEL: return "model";
         case gemini_2_5::Role::SYSTEM: return "system";
-        default: return "";
+        default: throw std::logic_error("invalid gemini_2_5::Role");
     }
 }
 

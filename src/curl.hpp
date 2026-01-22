@@ -51,9 +51,11 @@ struct Response {
         NOT_INITIALIZED,   // available: state, data_state, error_message
         STARTED,           // available: current_leg_* // estimates
         UPLOAD_COMPLETE,   //
-        DOWNLOAD_COMPLETE, // available: body, headers, abnormal_headers
+        DOWNLOAD_COMPLETE, // available: headers, abnormal_headers
         FINAL              // available: status_code, http_version, redirect_count, total_time_us, effective_url,
-                           //            total_wire_bytes_downloaded, total_wire_bytes_uploaded
+                           //            body, body_len, total_wire_bytes_downloaded, total_wire_bytes_uploaded
+                           // NOTE: body is available in FINAL because of the requirement to add padding bytes
+                           //       for simdjson (or other JSONs as they all require padding)
     };
 
     State state{State::NOT_INITIALIZED};
@@ -68,6 +70,7 @@ struct Response {
     int64_t total_time_us{-1};
     int64_t total_wire_bytes_downloaded{-1};
     int64_t total_wire_bytes_uploaded{-1};
+    size_t body_len{0};
     std::string effective_url{};
     std::vector<std::byte> body{};
     std::vector<std::vector<std::byte>> headers{};
@@ -103,6 +106,8 @@ public:
     Attempt& operator=(Attempt&&) noexcept = delete;
     ~Attempt() noexcept = default;
 
+    // Finalize is called exactly once for every Attempt when libcurl reports CURLMSG_DONE.
+    // It must be safe to call for both success and failure results.
     void Finalize(Interface& interface, const std::string& result_error_str) noexcept;
 
     const std::string& GetErrorMessage() const { return response.error_message; }

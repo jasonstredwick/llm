@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -9,6 +10,7 @@
 
 #include "../async.hpp"
 #include "../policy.hpp"
+#include "../url.hpp"
 
 
 namespace jai::llm::openai_4o {
@@ -23,7 +25,7 @@ class Response;
 
 
 /***
- * Vocabulary - jai::llm::to_string_view conversions defined below.
+ * Vocabulary - jai::llm::to_string_view/from_string_view conversions defined below.
  */
 enum class CacheRetention { HOURS_24, IN_MEMORY };
 enum class ContentPartType { AUDIO, IMAGE_URL, TEXT, VIDEO };
@@ -61,7 +63,7 @@ struct AudioConfig {
 
 struct Image {
     struct ImageUrl {
-        std::string url;
+        EncodedUrl url;
         std::optional<ImageDetail> detail{};
     };
 
@@ -87,7 +89,7 @@ struct ToolCall {
 
 struct Video {
     struct VideoUrl {
-        std::string url;
+        EncodedUrl url;
         std::optional<ImageDetail> detail{};
     };
 
@@ -162,7 +164,7 @@ struct ToolChoiceSpecific {
 struct Request {
     std::string model;
     std::vector<Message> messages;
-    std::optional<uint32_t> max_completion_tokens{}; // Replaces max_tokens for newer models
+    std::optional<uint64_t> max_completion_tokens{}; // Replaces max_tokens for newer models
     std::optional<double> temperature{};
     std::optional<double> top_p{};
     std::optional<ReasoningEffort> reasoning_effort{};
@@ -217,7 +219,7 @@ struct ResponseMessage {
         };
 
         struct UrlCitation {
-            std::string url;
+            EncodedUrl url;
             std::string title;
         };
 
@@ -253,7 +255,7 @@ struct Choice {
 
 
 struct Telemetry {
-    uint32_t processing_ms{0};
+    uint64_t processing_ms{0};
     std::string request_id;
     std::optional<std::string> organization{};
     std::optional<std::string> version_header{};
@@ -262,22 +264,22 @@ struct Telemetry {
 
 struct UsageMetadata {
     struct PromptTokensDetails {
-        uint32_t cached_tokens{0};
-        uint32_t audio_tokens{0};
-        uint32_t image_tokens{0};
-        uint32_t video_tokens{0};
+        uint64_t cached_tokens{0};
+        uint64_t audio_tokens{0};
+        uint64_t image_tokens{0};
+        uint64_t video_tokens{0};
     };
 
     struct CompletionTokensDetails {
-        uint32_t reasoning_tokens{0};
-        uint32_t audio_tokens{0};
-        uint32_t accepted_prediction_tokens{0};
-        uint32_t rejected_prediction_tokens{0};
+        uint64_t reasoning_tokens{0};
+        uint64_t audio_tokens{0};
+        uint64_t accepted_prediction_tokens{0};
+        uint64_t rejected_prediction_tokens{0};
     };
 
-    uint32_t prompt_tokens{0};
-    uint32_t completion_tokens{0};
-    uint32_t total_tokens{0};
+    uint64_t prompt_tokens{0};
+    uint64_t completion_tokens{0};
+    uint64_t total_tokens{0};
     PromptTokensDetails prompt_tokens_details{};
     CompletionTokensDetails completion_tokens_details{};
 };
@@ -322,46 +324,134 @@ public:
 namespace jai::llm {
 
 
-constexpr std::string_view to_string_view(openai_4o::Role val) {
-    switch (val) {
-        case openai_4o::Role::USER: return "user";
-        case openai_4o::Role::SYSTEM: return "system";
-        case openai_4o::Role::ASSISTANT: return "assistant";
-        case openai_4o::Role::TOOL: return "tool";
-        case openai_4o::Role::DEVELOPER: return "developer";
-        default: return "";
-    }
+template <typename T>
+constexpr std::optional<T> from_string_view(std::string_view sv);
+
+
+template <>
+constexpr std::optional<openai_4o::CacheRetention> from_string_view<openai_4o::CacheRetention>(std::string_view sv) {
+    if (sv == "in_memory") return openai_4o::CacheRetention::IN_MEMORY;
+    if (sv == "24h") return openai_4o::CacheRetention::HOURS_24;
+    return std::nullopt;
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::Modality val) {
-    switch (val) {
-        case openai_4o::Modality::TEXT: return "text";
-        case openai_4o::Modality::IMAGE: return "image";
-        case openai_4o::Modality::VIDEO: return "video";
-        case openai_4o::Modality::AUDIO: return "audio";
-        default: return "";
-    }
+template <>
+constexpr std::optional<openai_4o::ContentPartType> from_string_view<openai_4o::ContentPartType>(std::string_view sv) {
+    if (sv == "text") return openai_4o::ContentPartType::TEXT;
+    if (sv == "image_url") return openai_4o::ContentPartType::IMAGE_URL;
+    if (sv == "audio") return openai_4o::ContentPartType::AUDIO;
+    if (sv == "video") return openai_4o::ContentPartType::VIDEO;
+    return std::nullopt;
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::FinishReason val) {
-    switch (val) {
-        case openai_4o::FinishReason::STOP: return "stop";
-        case openai_4o::FinishReason::LENGTH: return "length";
-        case openai_4o::FinishReason::CONTENT_FILTER: return "content_filter";
-        case openai_4o::FinishReason::TOOL_CALLS: return "tool_calls";
-        default: return "";
-    }
+template <>
+constexpr std::optional<openai_4o::FinishReason> from_string_view<openai_4o::FinishReason>(std::string_view sv) {
+    if (sv == "stop") return openai_4o::FinishReason::STOP;
+    if (sv == "length") return openai_4o::FinishReason::LENGTH;
+    if (sv == "content_filter") return openai_4o::FinishReason::CONTENT_FILTER;
+    if (sv == "tool_calls") return openai_4o::FinishReason::TOOL_CALLS;
+    return std::nullopt;
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::ImageDetail val) {
+template <>
+constexpr std::optional<openai_4o::ImageDetail> from_string_view<openai_4o::ImageDetail>(std::string_view sv) {
+    if (sv == "auto") return openai_4o::ImageDetail::AUTO;
+    if (sv == "low") return openai_4o::ImageDetail::LOW;
+    if (sv == "high") return openai_4o::ImageDetail::HIGH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::Modality> from_string_view<openai_4o::Modality>(std::string_view sv) {
+    if (sv == "text") return openai_4o::Modality::TEXT;
+    if (sv == "image") return openai_4o::Modality::IMAGE;
+    if (sv == "video") return openai_4o::Modality::VIDEO;
+    if (sv == "audio") return openai_4o::Modality::AUDIO;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::ObjectType> from_string_view<openai_4o::ObjectType>(std::string_view sv) {
+    if (sv == "chat.completion") return openai_4o::ObjectType::CHAT_COMPLETION;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::PredictionType> from_string_view<openai_4o::PredictionType>(std::string_view sv) {
+    if (sv == "content") return openai_4o::PredictionType::CONTENT;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::ReasoningEffort> from_string_view<openai_4o::ReasoningEffort>(std::string_view sv) {
+    if (sv == "none") return openai_4o::ReasoningEffort::NONE;
+    if (sv == "minimal") return openai_4o::ReasoningEffort::MINIMAL;
+    if (sv == "low") return openai_4o::ReasoningEffort::LOW;
+    if (sv == "medium") return openai_4o::ReasoningEffort::MEDIUM;
+    if (sv == "high") return openai_4o::ReasoningEffort::HIGH;
+    if (sv == "xhigh") return openai_4o::ReasoningEffort::XHIGH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::ResponseFormatType> from_string_view<openai_4o::ResponseFormatType>(std::string_view sv) {
+    if (sv == "text") return openai_4o::ResponseFormatType::TEXT;
+    if (sv == "json_object") return openai_4o::ResponseFormatType::JSON_OBJECT;
+    if (sv == "json_schema") return openai_4o::ResponseFormatType::JSON_SCHEMA;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::Role> from_string_view<openai_4o::Role>(std::string_view sv) {
+    if (sv == "user") return openai_4o::Role::USER;
+    if (sv == "system") return openai_4o::Role::SYSTEM;
+    if (sv == "assistant") return openai_4o::Role::ASSISTANT;
+    if (sv == "tool") return openai_4o::Role::TOOL;
+    if (sv == "developer") return openai_4o::Role::DEVELOPER;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::ServiceTier> from_string_view<openai_4o::ServiceTier>(std::string_view sv) {
+    if (sv == "scale") return openai_4o::ServiceTier::SCALE;
+    if (sv == "default") return openai_4o::ServiceTier::DEFAULT;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::ToolType> from_string_view<openai_4o::ToolType>(std::string_view sv) {
+    if (sv == "function") return openai_4o::ToolType::FUNCTION;
+    if (sv == "code_interpreter") return openai_4o::ToolType::CODE_INTERPRETER;
+    if (sv == "file_search") return openai_4o::ToolType::FILE_SEARCH;
+    return std::nullopt;
+}
+
+
+template <>
+constexpr std::optional<openai_4o::Verbosity> from_string_view<openai_4o::Verbosity>(std::string_view sv) {
+    if (sv == "concise") return openai_4o::Verbosity::CONCISE;
+    if (sv == "medium") return openai_4o::Verbosity::MEDIUM;
+    if (sv == "detailed") return openai_4o::Verbosity::DETAILED;
+    return std::nullopt;
+}
+
+
+constexpr std::string_view to_string_view(openai_4o::CacheRetention val) {
     switch (val) {
-        case openai_4o::ImageDetail::AUTO: return "auto";
-        case openai_4o::ImageDetail::LOW: return "low";
-        case openai_4o::ImageDetail::HIGH: return "high";
-        default: return "auto";
+        case openai_4o::CacheRetention::IN_MEMORY: return "in_memory";
+        case openai_4o::CacheRetention::HOURS_24: return "24h";
+        default: throw std::logic_error("invalid openai_4o::CacheRetention");
     }
 }
 
@@ -372,26 +462,68 @@ constexpr std::string_view to_string_view(openai_4o::ContentPartType val) {
         case openai_4o::ContentPartType::IMAGE_URL: return "image_url";
         case openai_4o::ContentPartType::AUDIO: return "audio";
         case openai_4o::ContentPartType::VIDEO: return "video";
-        default: return "";
+        default: throw std::logic_error("invalid openai_4o::ContentPartType");
     }
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::ToolType val) {
+constexpr std::string_view to_string_view(openai_4o::FinishReason val) {
     switch (val) {
-        case openai_4o::ToolType::FUNCTION: return "function";
-        case openai_4o::ToolType::CODE_INTERPRETER: return "code_interpreter";
-        case openai_4o::ToolType::FILE_SEARCH: return "file_search";
-        default: return "function";
+        case openai_4o::FinishReason::STOP: return "stop";
+        case openai_4o::FinishReason::LENGTH: return "length";
+        case openai_4o::FinishReason::CONTENT_FILTER: return "content_filter";
+        case openai_4o::FinishReason::TOOL_CALLS: return "tool_calls";
+        default: throw std::logic_error("invalid openai_4o::FinishReason");
     }
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::CacheRetention val) {
+constexpr std::string_view to_string_view(openai_4o::ImageDetail val) {
     switch (val) {
-        case openai_4o::CacheRetention::IN_MEMORY: return "in_memory";
-        case openai_4o::CacheRetention::HOURS_24: return "24h";
-        default: return "in_memory";
+        case openai_4o::ImageDetail::AUTO: return "auto";
+        case openai_4o::ImageDetail::LOW: return "low";
+        case openai_4o::ImageDetail::HIGH: return "high";
+        default: throw std::logic_error("invalid openai_4o::ImageDetail");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4o::Modality val) {
+    switch (val) {
+        case openai_4o::Modality::TEXT: return "text";
+        case openai_4o::Modality::IMAGE: return "image";
+        case openai_4o::Modality::VIDEO: return "video";
+        case openai_4o::Modality::AUDIO: return "audio";
+        default: throw std::logic_error("invalid openai_4o::Modality");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4o::ObjectType val) {
+    switch (val) {
+        case openai_4o::ObjectType::CHAT_COMPLETION: return "chat.completion";
+        default: throw std::logic_error("invalid openai_4o::ObjectType");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4o::PredictionType val) {
+    switch (val) {
+        case openai_4o::PredictionType::CONTENT: return "content";
+        default: throw std::logic_error("invalid openai_4o::PredictionType");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4o::ReasoningEffort val) {
+    switch (val) {
+        case openai_4o::ReasoningEffort::NONE: return "none";
+        case openai_4o::ReasoningEffort::MINIMAL: return "minimal";
+        case openai_4o::ReasoningEffort::LOW: return "low";
+        case openai_4o::ReasoningEffort::MEDIUM: return "medium";
+        case openai_4o::ReasoningEffort::HIGH: return "high";
+        case openai_4o::ReasoningEffort::XHIGH: return "xhigh";
+        default: throw std::logic_error("invalid openai_4o::ReasoningEffort");
     }
 }
 
@@ -401,15 +533,19 @@ constexpr std::string_view to_string_view(openai_4o::ResponseFormatType val) {
         case openai_4o::ResponseFormatType::TEXT: return "text";
         case openai_4o::ResponseFormatType::JSON_OBJECT: return "json_object";
         case openai_4o::ResponseFormatType::JSON_SCHEMA: return "json_schema";
-        default: return "text";
+        default: throw std::logic_error("invalid openai_4o::ResponseFormatType");
     }
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::PredictionType val) {
+constexpr std::string_view to_string_view(openai_4o::Role val) {
     switch (val) {
-        case openai_4o::PredictionType::CONTENT: return "content";
-        default: return "content";
+        case openai_4o::Role::USER: return "user";
+        case openai_4o::Role::SYSTEM: return "system";
+        case openai_4o::Role::ASSISTANT: return "assistant";
+        case openai_4o::Role::TOOL: return "tool";
+        case openai_4o::Role::DEVELOPER: return "developer";
+        default: throw std::logic_error("invalid openai_4o::Role");
     }
 }
 
@@ -418,15 +554,27 @@ constexpr std::string_view to_string_view(openai_4o::ServiceTier val) {
     switch (val) {
         case openai_4o::ServiceTier::SCALE: return "scale";
         case openai_4o::ServiceTier::DEFAULT: return "default";
-        default: return "default";
+        default: throw std::logic_error("invalid openai_4o::ServiceTier");
     }
 }
 
 
-constexpr std::string_view to_string_view(openai_4o::ObjectType val) {
+constexpr std::string_view to_string_view(openai_4o::ToolType val) {
     switch (val) {
-        case openai_4o::ObjectType::CHAT_COMPLETION: return "chat.completion";
-        default: return "chat.completion";
+        case openai_4o::ToolType::FUNCTION: return "function";
+        case openai_4o::ToolType::CODE_INTERPRETER: return "code_interpreter";
+        case openai_4o::ToolType::FILE_SEARCH: return "file_search";
+        default: throw std::logic_error("invalid openai_4o::ToolType");
+    }
+}
+
+
+constexpr std::string_view to_string_view(openai_4o::Verbosity val) {
+    switch (val) {
+        case openai_4o::Verbosity::CONCISE: return "concise";
+        case openai_4o::Verbosity::MEDIUM: return "medium";
+        case openai_4o::Verbosity::DETAILED: return "detailed";
+        default: throw std::logic_error("invalid openai_4o::Verbosity");
     }
 }
 

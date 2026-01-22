@@ -4,6 +4,8 @@
 
 #include <simdjson.h>
 
+#include "../curl.hpp"
+
 
 namespace jai::llm::anthropic_4_5_sonnet {
 
@@ -42,9 +44,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("messages");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.messages.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            const auto& m = r.messages[i];
+        for (bool first = true; const auto& m : r.messages) {
+            if (!first) sb.append_comma();
+            first = false;
+
             sb.start_object();
             sb.append_key_value("role", jai::llm::to_string_view(m.role));
             
@@ -57,9 +60,10 @@ std::vector<std::byte> Serialize(const Request& r) {
                     sb.escape_and_append_with_quotes("content");
                     sb.append_colon();
                     sb.start_array();
-                    for (size_t j = 0; j < content.size(); ++j) {
-                        if (j > 0) sb.append_comma();
-                        const auto& part = content[j];
+                    for (bool f = true; const auto& part : content) {
+                        if (!f) sb.append_comma();
+                        f = false;
+
                         sb.start_object();
                         std::visit([&sb](auto const& p) {
                             using PT = std::decay_t<decltype(p)>;
@@ -84,7 +88,7 @@ std::vector<std::byte> Serialize(const Request& r) {
                                     } else {
                                         sb.append_key_value("type", "url");
                                         sb.append_comma();
-                                        sb.append_key_value("url", src.url);
+                                        sb.append_key_value("url", src.url.View());
                                     }
                                 }, p.source.detail);
                                 sb.end_object();
@@ -166,18 +170,20 @@ std::vector<std::byte> Serialize(const Request& r) {
                 sb.escape_and_append_with_quotes("system");
                 sb.append_colon();
                 sb.start_array();
-                for (size_t i = 0; i < sys.size(); ++i) {
-                    if (i > 0) sb.append_comma();
+                for (bool first = true; const auto& item : sys) {
+                    if (!first) sb.append_comma();
+                    first = false;
+
                     sb.start_object();
                     sb.append_key_value("type", "text");
                     sb.append_comma();
-                    sb.append_key_value("text", sys[i].text);
-                    if (sys[i].cache_control) {
+                    sb.append_key_value("text", item.text);
+                    if (item.cache_control) {
                         sb.append_comma();
                         sb.escape_and_append_with_quotes("cache_control");
                         sb.append_colon();
                         sb.start_object();
-                        sb.append_key_value("type", jai::llm::to_string_view(sys[i].cache_control->type));
+                        sb.append_key_value("type", jai::llm::to_string_view(item.cache_control->type));
                         sb.end_object();
                     }
                     sb.end_object();
@@ -235,9 +241,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("stop_sequences");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.stop_sequences.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            sb.escape_and_append_with_quotes(r.stop_sequences[i]);
+        for (bool first = true; const auto& s : r.stop_sequences) {
+            if (!first) sb.append_comma();
+            first = false;
+            sb.escape_and_append_with_quotes(s);
         }
         sb.end_array();
     }
@@ -247,9 +254,10 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("tools");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.tools.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            const auto& t = r.tools[i];
+        for (bool first = true; const auto& t : r.tools) {
+            if (!first) sb.append_comma();
+            first = false;
+
             sb.start_object();
             std::visit([&sb](auto const& cfg) {
                 using T = std::decay_t<decltype(cfg)>;
@@ -323,59 +331,111 @@ std::vector<std::byte> Serialize(const Request& r) {
 }
 
 
-Response Deserialize(const std::vector<std::byte>& raw_response_bytes) {
-    std::string json(reinterpret_cast<const char*>(raw_response_bytes.data()), raw_response_bytes.size());
-    Response out;
-    simdjson::ondemand::parser parser;
-    try {
-        auto doc = parser.iterate(json.data(), json.size(), json.size() + simdjson::SIMDJSON_PADDING);
+Response Deserialize(const curl::Response& response) {
+    if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
+        throw std::runtime_error("Simdjson padding check failed");
+    }
 
-        out.id = std::string(doc["id"].get_string().value());
-        out.model = std::string(doc["model"].get_string().value());
+    static thread_local simdjson::ondemand::parser parser;
+    Response out{};
+
+    try {
+        const char* data_ptr = reinterpret_cast<const char*>(response.body.data());
+        auto doc = parser.iterate(data_ptr, response.body_len, response.body.size());
+
+        out.id = doc["id"].get_string().value();
+        out.model = doc["model"].get_string().value();
         
-        std::string_view role = doc["role"].get_string().value();
-        if (role == "assistant") out.role = Role::ASSISTANT;
-        else out.role = Role::USER;
+        if (auto role = doc["role"].get_string(); role.error() == simdjson::SUCCESS) {
+            out.role = from_string_view<Role>(role.value()).value_or(Role::ASSISTANT);
+        }
 
         auto content = doc["content"].get_array();
         for (auto block : content) {
-            ContentBlock b;
-            std::string_view type = block["type"].get_string().value();
-            if (type == "text") {
-                b.type = ContentBlockType::TEXT;
-                b.text = std::string(block["text"].get_string().value());
-            } else if (type == "thinking") {
-                b.type = ContentBlockType::THINKING;
-                b.thinking = std::string(block["thinking"].get_string().value());
-            } else if (type == "tool_use") {
-                b.type = ContentBlockType::TOOL_USE;
-                b.id = std::string(block["id"].get_string().value());
-                b.name = std::string(block["name"].get_string().value());
-                b.input = std::string(simdjson::to_json_string(block["input"]).value());
+            std::optional<ContentBlockType> type{};
+            if (auto type_str = block["type"].get_string(); type_str.error() == simdjson::SUCCESS) {
+                type = from_string_view<ContentBlockType>(type_str.value());
             }
-            out.content.push_back(std::move(b));
+
+            if (!type) { continue; }
+
+            if (type == ContentBlockType::TEXT) {
+                out.content.emplace_back(ContentBlock::Text{std::string(block["text"].get_string().value())});
+            } else if (type == ContentBlockType::THINKING) {
+                std::string signature{};
+                if (auto sig = block["signature"].get_string(); sig.error() == simdjson::SUCCESS) {
+                    signature = sig.value();
+                }
+                out.content.emplace_back(ContentBlock::Thinking{
+                    .thinking{std::string(block["thinking"].get_string().value())},
+                    .signature{std::move(signature)}
+                });
+            } else if (type == ContentBlockType::TOOL_USE) {
+                out.content.emplace_back(ContentBlock::ToolUse{
+                    .id{std::string(block["id"].get_string().value())},
+                    .name{std::string(block["name"].get_string().value())},
+                    .input{simdjson::to_json_string(block["input"]).value()}
+                });
+            }
+
+            if (auto citations = block["citations"]; citations.error() == simdjson::SUCCESS) {
+                auto& back = out.content.back();
+                for (auto cit : citations) {
+                    auto& c = back.citations.emplace_back();
+                    if (auto type_str = cit["type"].get_string(); type_str.error() == simdjson::SUCCESS) {
+                        c.type = from_string_view<CitationType>(type_str.value()).value_or(CitationType::CHAR_LOCATION);
+                    }
+                    if (auto cited_text = cit["cited_text"].get_string(); cited_text.error() == simdjson::SUCCESS) {
+                        c.cite = cited_text.value();
+                    }
+                    if (auto doc_idx = cit["document_index"].get_uint64(); doc_idx.error() == simdjson::SUCCESS) {
+                        c.document_index = doc_idx.value();
+                    }
+                    if (auto doc_title = cit["document_title"].get_string(); doc_title.error() == simdjson::SUCCESS) {
+                        c.document_title = std::string(doc_title.value());
+                    }
+                    if (auto start_index = cit["start_char_index"].get_uint64(); start_index.error() == simdjson::SUCCESS) {
+                        c.start_index = start_index.value();
+                    }
+                    if (auto end_index = cit["end_char_index"].get_uint64(); end_index.error() == simdjson::SUCCESS) {
+                        c.end_index = end_index.value();
+                    }
+                    if (auto start_page = cit["start_page_number"].get_uint64(); start_page.error() == simdjson::SUCCESS) {
+                        c.start_page_number = start_page.value();
+                    }
+                    if (auto end_page = cit["end_page_number"].get_uint64(); end_page.error() == simdjson::SUCCESS) {
+                        c.end_page_number = end_page.value();
+                    }
+                }
+            }
         }
 
-        auto stop_reason = doc["stop_reason"];
-        if (stop_reason.error() == simdjson::SUCCESS && !stop_reason.is_null()) {
-            std::string_view sr = stop_reason.get_string().value();
-            if (sr == "end_turn") out.stop_reason = StopReason::END_TURN;
-            else if (sr == "max_tokens") out.stop_reason = StopReason::MAX_TOKENS;
-            else if (sr == "stop_sequence") out.stop_reason = StopReason::STOP_SEQUENCE;
-            else if (sr == "tool_use") out.stop_reason = StopReason::TOOL_USE;
+        Stop stop{};
+        if (auto stop_reason = doc["stop_reason"]; stop_reason.error() == simdjson::SUCCESS && !stop_reason.is_null()) {
+            stop.reason = from_string_view<StopReason>(stop_reason.get_string().value());
+        }
+        if (auto stop_seq = doc["stop_sequence"]; stop_seq.error() == simdjson::SUCCESS && !stop_seq.is_null()) {
+            stop.sequence = stop_seq.get_string().value();
+        }
+        if (stop.reason.has_value() || stop.sequence.has_value()) {
+            out.stop = std::move(stop);
         }
 
         auto usage = doc["usage"];
-        out.usage.input_tokens = static_cast<uint32_t>(usage["input_tokens"].get_uint64().value());
-        out.usage.output_tokens = static_cast<uint32_t>(usage["output_tokens"].get_uint64().value());
-        
-        auto thinking_tokens = usage["thinking_tokens"];
-        if (thinking_tokens.error() == simdjson::SUCCESS) {
-            out.usage.thinking_tokens = static_cast<uint32_t>(thinking_tokens.get_uint64().value());
+        out.usage.input_tokens = usage["input_tokens"].get_uint64().value();
+        out.usage.output_tokens = usage["output_tokens"].get_uint64().value();
+        if (auto thinking_tokens = usage["thinking_tokens"]; thinking_tokens.error() == simdjson::SUCCESS) {
+            out.usage.thinking_tokens = thinking_tokens.get_uint64().value();
         }
-
+        if (auto cache_create = usage["cache_creation_input_tokens"]; cache_create.error() == simdjson::SUCCESS) {
+            out.usage.cache_creation_input_tokens = cache_create.get_uint64().value();
+        }
+        if (auto cache_read = usage["cache_read_input_tokens"]; cache_read.error() == simdjson::SUCCESS) {
+            out.usage.cache_read_input_tokens = cache_read.get_uint64().value();
+        }
     } catch (const std::exception&) {
     }
+
     return out;
 }
 

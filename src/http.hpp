@@ -16,13 +16,11 @@ namespace jai::llm::http {
 
 
 template <typename T> concept CharString_c = std::convertible_to<T, std::string_view>;
-template <typename T> concept Utf8String_c = std::convertible_to<T, std::u8string_view>;
-template <typename T> concept HeaderValue_c = CharString_c<T> || Utf8String_c<T>;
 template <typename R>
 concept HeaderKVRange_c = std::ranges::input_range<R> &&
                           requires(std::ranges::range_reference_t<R> e) {
-                              { std::get<0>(e) } -> CharString_c;  // key (ASCII text)
-                              { std::get<1>(e) } -> HeaderValue_c; // value (ASCII / UTF-8)
+                              { std::get<0>(e) } -> CharString_c; // key   (ASCII text)
+                              { std::get<1>(e) } -> CharString_c; // value (ASCII / UTF-8)
                           };
 template <typename R>
 concept MergedHeaderRange_c = std::ranges::input_range<R> && CharString_c<std::ranges::range_reference_t<R>>;

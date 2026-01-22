@@ -4,6 +4,8 @@
 
 #include <simdjson.h>
 
+#include "../curl.hpp"
+
 
 namespace jai::llm::gemini_2_5 {
 
@@ -43,18 +45,20 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("contents");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.contents.size(); ++i) {
-            if (i > 0) sb.append_comma();
-            const auto& c = r.contents[i];
+        for (bool first = true; const auto& c : r.contents) {
+            if (!first) sb.append_comma();
+            first = false;
+
             sb.start_object();
             sb.append_key_value("role", jai::llm::to_string_view(c.role));
             sb.append_comma();
             sb.escape_and_append_with_quotes("parts");
             sb.append_colon();
             sb.start_array();
-            for (size_t j = 0; j < c.parts.size(); ++j) {
-                if (j > 0) sb.append_comma();
-                const auto& p = c.parts[j];
+            for (bool f = true; const auto& p : c.parts) {
+                if (!f) sb.append_comma();
+                f = false;
+
                 sb.start_object();
                 std::visit([&sb](auto const& part) {
                     using T = std::decay_t<decltype(part)>;
@@ -74,7 +78,7 @@ std::vector<std::byte> Serialize(const Request& r) {
                         sb.start_object();
                         sb.append_key_value("mimeType", jai::llm::to_string_view(part.mime_type));
                         sb.append_comma();
-                        sb.append_key_value("fileUri", part.file_uri);
+                        sb.append_key_value("fileUri", part.file_uri.View());
                         sb.end_object();
                     } else if constexpr (std::is_same_v<T, Content::ContentPart::FunctionCall>) {
                         sb.escape_and_append_with_quotes("functionCall");
@@ -178,9 +182,10 @@ std::vector<std::byte> Serialize(const Request& r) {
             sb.escape_and_append_with_quotes("stopSequences");
             sb.append_colon();
             sb.start_array();
-            for (size_t i = 0; i < r.config->stop_sequences.size(); ++i) {
-                if (i > 0) sb.append_comma();
-                sb.escape_and_append_with_quotes(r.config->stop_sequences[i]);
+            for (bool f = true; const auto& s : r.config->stop_sequences) {
+                if (!f) sb.append_comma();
+                f = false;
+                sb.escape_and_append_with_quotes(s);
             }
             sb.end_array();
             first = false;
@@ -218,12 +223,13 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("safetySettings");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.safety_settings.size(); ++i) {
-            if (i > 0) sb.append_comma();
+        for (bool first = true; const auto& s : r.safety_settings) {
+            if (!first) sb.append_comma();
+            first = false;
             sb.start_object();
-            sb.append_key_value("category", jai::llm::to_string_view(r.safety_settings[i].category));
+            sb.append_key_value("category", jai::llm::to_string_view(s.category));
             sb.append_comma();
-            sb.append_key_value("threshold", jai::llm::to_string_view(r.safety_settings[i].threshold));
+            sb.append_key_value("threshold", jai::llm::to_string_view(s.threshold));
             sb.end_object();
         }
         sb.end_array();
@@ -234,17 +240,19 @@ std::vector<std::byte> Serialize(const Request& r) {
         sb.escape_and_append_with_quotes("tools");
         sb.append_colon();
         sb.start_array();
-        for (size_t i = 0; i < r.tools.size(); ++i) {
-            if (i > 0) sb.append_comma();
+        for (bool first = true; const auto& tool : r.tools) {
+            if (!first) sb.append_comma();
+            first = false;
+
             sb.start_object();
             bool tool_first = true;
-            if (!r.tools[i].function_declarations.empty()) {
+            if (!tool.function_declarations.empty()) {
                 sb.escape_and_append_with_quotes("functionDeclarations");
                 sb.append_colon();
                 sb.start_array();
-                for (size_t j = 0; j < r.tools[i].function_declarations.size(); ++j) {
-                    if (j > 0) sb.append_comma();
-                    const auto& fd = r.tools[i].function_declarations[j];
+                for (bool f = true; const auto& fd : tool.function_declarations) {
+                    if (!f) sb.append_comma();
+                    f = false;
                     sb.start_object();
                     sb.append_key_value("name", fd.name);
                     if (fd.description) {
@@ -262,7 +270,7 @@ std::vector<std::byte> Serialize(const Request& r) {
                 sb.end_array();
                 tool_first = false;
             }
-            if (r.tools[i].code_execution) {
+            if (tool.code_execution) {
                 if (!tool_first) sb.append_comma();
                 sb.escape_and_append_with_quotes("codeExecution");
                 sb.append_colon();
@@ -270,19 +278,19 @@ std::vector<std::byte> Serialize(const Request& r) {
                 sb.end_object();
                 tool_first = false;
             }
-            if (r.tools[i].google_search) {
+            if (tool.google_search) {
                 if (!tool_first) sb.append_comma();
                 sb.escape_and_append_with_quotes("googleSearch");
                 sb.append_colon();
                 sb.start_object();
-                if (r.tools[i].google_search->dynamic_retrieval_config) {
+                if (tool.google_search->dynamic_retrieval_config) {
                     sb.escape_and_append_with_quotes("dynamicRetrievalConfig");
                     sb.append_colon();
                     sb.start_object();
-                    sb.append_key_value("mode", jai::llm::to_string_view(r.tools[i].google_search->dynamic_retrieval_config->mode));
-                    if (r.tools[i].google_search->dynamic_retrieval_config->dynamic_threshold) {
+                    sb.append_key_value("mode", jai::llm::to_string_view(tool.google_search->dynamic_retrieval_config->mode));
+                    if (tool.google_search->dynamic_retrieval_config->dynamic_threshold) {
                         sb.append_comma();
-                        sb.append_key_value("dynamicThreshold", *r.tools[i].google_search->dynamic_retrieval_config->dynamic_threshold);
+                        sb.append_key_value("dynamicThreshold", *tool.google_search->dynamic_retrieval_config->dynamic_threshold);
                     }
                     sb.end_object();
                 }
@@ -308,9 +316,10 @@ std::vector<std::byte> Serialize(const Request& r) {
             sb.escape_and_append_with_quotes("allowedFunctionNames");
             sb.append_colon();
             sb.start_array();
-            for (size_t i = 0; i < r.tool_config->function_calling_config->allowed_function_names.size(); ++i) {
-                if (i > 0) sb.append_comma();
-                sb.escape_and_append_with_quotes(r.tool_config->function_calling_config->allowed_function_names[i]);
+            for (bool first = true; const auto& name : r.tool_config->function_calling_config->allowed_function_names) {
+                if (!first) sb.append_comma();
+                first = false;
+                sb.escape_and_append_with_quotes(name);
             }
             sb.end_array();
         }
@@ -333,79 +342,241 @@ std::vector<std::byte> Serialize(const Request& r) {
 }
 
 
-Response Deserialize(const std::vector<std::byte>& raw_response_bytes) {
-    std::string json(reinterpret_cast<const char*>(raw_response_bytes.data()), raw_response_bytes.size());
-    Response out;
-    simdjson::ondemand::parser parser;
+Response Deserialize(const curl::Response& response) {
+    if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
+        throw std::runtime_error("Simdjson padding check failed");
+    }
+
+    static thread_local simdjson::dom::parser parser{};
+    Response out{};
+
     try {
-        auto doc = parser.iterate(json.data(), json.size(), json.size() + simdjson::SIMDJSON_PADDING);
+        simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body_len);
 
-        auto candidates = doc["candidates"].get_array();
-        for (auto cand : candidates) {
-            Candidate c;
-            
-            auto finish_reason = cand["finishReason"];
-            if (finish_reason.error() == simdjson::SUCCESS) {
-                std::string_view fr = finish_reason.get_string().value();
-                if (fr == "STOP") c.finish_reason = FinishReason::STOP;
-                else if (fr == "MAX_TOKENS") c.finish_reason = FinishReason::MAX_TOKENS;
-                else if (fr == "SAFETY") c.finish_reason = FinishReason::SAFETY;
-                else if (fr == "RECITATION") c.finish_reason = FinishReason::RECITATION;
-                else if (fr == "OTHER") c.finish_reason = FinishReason::OTHER;
-                else if (fr == "BLOCKLIST") c.finish_reason = FinishReason::BLOCKLIST;
-                else if (fr == "PROHIBITED_CONTENT") c.finish_reason = FinishReason::PROHIBITED_CONTENT;
-                else if (fr == "SPII") c.finish_reason = FinishReason::SPII;
-                else if (fr == "MALFORMED_FUNCTION_CALL") c.finish_reason = FinishReason::MALFORMED_FUNCTION_CALL;
-                else c.finish_reason = FinishReason::FINISH_REASON_UNSPECIFIED;
-            }
+        if (simdjson::dom::array candidates_arr; doc["candidates"].get(candidates_arr) == simdjson::SUCCESS) {
+            for (auto cand : candidates_arr) {
+                Candidate& c = out.candidates.emplace_back();
 
-            auto content = cand["content"];
-            if (content.error() == simdjson::SUCCESS) {
-                std::string_view role = content["role"].get_string().value();
-                if (role == "user") c.content.role = Role::USER;
-                else if (role == "model") c.content.role = Role::MODEL;
-                else if (role == "system") c.content.role = Role::SYSTEM;
+                if (uint64_t idx; cand["index"].get(idx) == simdjson::SUCCESS) {
+                    c.index = static_cast<uint32_t>(idx);
+                }
 
-                auto parts = content["parts"].get_array();
-                for (auto part : parts) {
-                    auto text = part["text"];
-                    if (text.error() == simdjson::SUCCESS) {
-                        Content::ContentPart::TextPart tp;
-                        tp.text = std::string(text.get_string().value());
-                        c.content.parts.push_back(tp);
+                if (std::string_view fr; cand["finishReason"].get(fr) == simdjson::SUCCESS) {
+                    c.finish_reason = from_string_view<FinishReason>(fr).value_or(FinishReason::FINISH_REASON_UNSPECIFIED);
+                }
+
+                if (simdjson::dom::element content; cand["content"].get(content) == simdjson::SUCCESS) {
+                    c.content.role = Role::MODEL;
+                    if (std::string_view role; content["role"].get(role) == simdjson::SUCCESS) {
+                        c.content.role = from_string_view<Role>(role).value_or(Role::MODEL);
                     }
-                    
-                    auto func_call = part["functionCall"];
-                    if (func_call.error() == simdjson::SUCCESS) {
-                        Content::ContentPart::FunctionCall fc;
-                        fc.name = std::string(func_call["name"].get_string().value());
-                        auto args_obj = func_call["args"];
-                        fc.args = std::string(simdjson::to_json_string(args_obj).value());
-                        c.content.parts.push_back(fc);
+                    if (simdjson::dom::array parts; content["parts"].get(parts) == simdjson::SUCCESS) {
+                        for (auto part : parts) {
+                            if (std::string_view text; part["text"].get(text) == simdjson::SUCCESS) {
+                                c.content.parts.push_back(Content::ContentPart::TextPart{std::string(text)});
+                            } else if (simdjson::dom::element func_call; part["functionCall"].get(func_call) == simdjson::SUCCESS) {
+                                Content::ContentPart::FunctionCall fc{};
+                                if (std::string_view name; func_call["name"].get(name) == simdjson::SUCCESS) {
+                                    fc.name = std::string(name);
+                                }
+                                if (simdjson::dom::element args; func_call["args"].get(args) == simdjson::SUCCESS) {
+                                    fc.args = std::string(simdjson::minify(args));
+                                }
+                                c.content.parts.push_back(std::move(fc));
+                            } else if (simdjson::dom::element exec_code; part["executableCode"].get(exec_code) == simdjson::SUCCESS) {
+                                Content::ContentPart::ExecutableCode ec{};
+                                if (std::string_view lang; exec_code["language"].get(lang) == simdjson::SUCCESS) {
+                                    ec.language = from_string_view<CodeLanguage>(lang).value_or(CodeLanguage::UNSPECIFIED);
+                                }
+                                if (std::string_view code; exec_code["code"].get(code) == simdjson::SUCCESS) {
+                                    ec.code = std::string(code);
+                                }
+                                c.content.parts.push_back(std::move(ec));
+                            } else if (std::string_view thought_text; part["thought"].get(thought_text) == simdjson::SUCCESS) {
+                                c.content.parts.push_back(Content::ContentPart::Thought{std::string(thought_text)});
+                                // Also populate the top-level thought member for convenience
+                                c.thought = std::string(thought_text);
+                            } else if (simdjson::dom::element thought_sig; part["thoughtSignature"].get(thought_sig) == simdjson::SUCCESS) {
+                                Content::ContentPart::ThoughtSignature ts{};
+                                if (std::string_view sig; thought_sig["signature"].get(sig) == simdjson::SUCCESS) {
+                                    ts.signature = std::string(sig);
+                                }
+                                c.content.parts.push_back(std::move(ts));
+                            }
+                        }
                     }
                 }
-            }
-            
-            auto thinking = cand["thinkingProcess"];
-            if (thinking.error() == simdjson::SUCCESS) {
-                c.thinking_process = std::string(thinking.get_string().value());
-            }
 
-            out.candidates.push_back(std::move(c));
+                if (simdjson::dom::array ratings; cand["safetyRatings"].get(ratings) == simdjson::SUCCESS) {
+                    for (auto rating : ratings) {
+                        SafetyRating sr{};
+                        if (std::string_view cat; rating["category"].get(cat) == simdjson::SUCCESS) {
+                            sr.category = from_string_view<HarmCategory>(cat).value_or(HarmCategory::UNSPECIFIED);
+                        }
+                        if (std::string_view prob; rating["probability"].get(prob) == simdjson::SUCCESS) {
+                            sr.probability = from_string_view<HarmProbability>(prob).value_or(HarmProbability::UNSPECIFIED);
+                        }
+                        if (bool blocked; rating["blocked"].get(blocked) == simdjson::SUCCESS) {
+                            sr.blocked = blocked;
+                        }
+                        c.safety_ratings.push_back(std::move(sr));
+                    }
+                }
+
+                if (simdjson::dom::element citation_meta; cand["citationMetadata"].get(citation_meta) == simdjson::SUCCESS) {
+                    CitationMetadata cm{};
+                    if (simdjson::dom::array sources; citation_meta["citationSources"].get(sources) == simdjson::SUCCESS) {
+                        for (auto src : sources) {
+                            uint32_t start = 0, end = 0;
+                            std::string uri_str{}, license{};
+                            if (uint64_t val; src["startIndex"].get(val) == simdjson::SUCCESS) start = static_cast<uint32_t>(val);
+                            if (uint64_t val; src["endIndex"].get(val) == simdjson::SUCCESS) end = static_cast<uint32_t>(val);
+                            if (std::string_view val; src["uri"].get(val) == simdjson::SUCCESS) uri_str = std::string(val);
+                            if (std::string_view val; src["license"].get(val) == simdjson::SUCCESS) license = std::string(val);
+                            
+                            if (!uri_str.empty()) {
+                                cm.citation_sources.emplace_back(start, end, EncodedUrl{uri_str},std::move(license));
+                            }
+                        }
+                    }
+                    c.citation_metadata = std::move(cm);
+                }
+
+                if (simdjson::dom::element grounding_meta; cand["groundingMetadata"].get(grounding_meta) == simdjson::SUCCESS) {
+                    GroundingMetadata gm{};
+                    if (simdjson::dom::array chunks; grounding_meta["groundingChunks"].get(chunks) == simdjson::SUCCESS) {
+                        for (auto chunk : chunks) {
+                            if (simdjson::dom::element web; chunk["web"].get(web) == simdjson::SUCCESS) {
+                                std::string uri_str{}, title{};
+                                if (std::string_view val; web["uri"].get(val) == simdjson::SUCCESS) uri_str = std::string(val);
+                                if (std::string_view val; web["title"].get(val) == simdjson::SUCCESS) title = std::string(val);
+                                if (!uri_str.empty()) {
+                                    gm.grounding_chunks.push_back(GroundingMetadata::GroundingChunk{
+                                        .web = { .uri = EncodedUrl{uri_str}, .title = std::move(title) }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    if (simdjson::dom::array supports; grounding_meta["groundingSupports"].get(supports) == simdjson::SUCCESS) {
+                        for (auto support : supports) {
+                            GroundingMetadata::GroundingSupport gs{};
+                            if (simdjson::dom::array indices; support["groundingChunkIndices"].get(indices) == simdjson::SUCCESS) {
+                                for (auto idx : indices) {
+                                    uint64_t val; 
+                                    if (idx.get(val) == simdjson::SUCCESS) gs.grounding_chunk_indices.push_back(static_cast<uint32_t>(val));
+                                }
+                            }
+                            if (double score; support["confidenceScore"].get(score) == simdjson::SUCCESS) gs.confidence_score = score;
+                            if (uint64_t val; support["segment"]["startIndex"].get(val) == simdjson::SUCCESS) gs.segment_start_index = static_cast<uint32_t>(val);
+                            if (uint64_t val; support["segment"]["endIndex"].get(val) == simdjson::SUCCESS) gs.segment_end_index = static_cast<uint32_t>(val);
+                            if (std::string_view val; support["segment"]["text"].get(val) == simdjson::SUCCESS) gs.segment_text = std::string(val);
+                            gm.grounding_supports.push_back(std::move(gs));
+                        }
+                    }
+                    if (simdjson::dom::array queries; grounding_meta["webSearchQueries"].get(queries) == simdjson::SUCCESS) {
+                        for (auto query : queries) {
+                            std::string_view q;
+                            if (query.get(q) == simdjson::SUCCESS) gm.web_search_queries.emplace_back(q);
+                        }
+                    }
+                    if (simdjson::dom::element sep; grounding_meta["searchEntryPoint"].get(sep) == simdjson::SUCCESS) {
+                        GroundingMetadata::SearchEntryPoint s{};
+                        if (std::string_view val; sep["renderedContent"].get(val) == simdjson::SUCCESS) s.rendered_content = std::string(val);
+                        gm.search_entry_point = std::move(s);
+                    }
+                    c.grounding_metadata = std::move(gm);
+                }
+
+                if (simdjson::dom::element logprobs_json; cand["logprobsResult"].get(logprobs_json) == simdjson::SUCCESS) {
+                    LogprobsResult lr{};
+                    auto parse_lpc = [](simdjson::dom::element json_obj) -> LogprobsResult::LogprobCandidate {
+                        LogprobsResult::LogprobCandidate lpc{};
+                        if (std::string_view val; json_obj["token"].get(val) == simdjson::SUCCESS) lpc.token = std::string(val);
+                        if (double lp; json_obj["logProbability"].get(lp) == simdjson::SUCCESS) lpc.log_probability = lp;
+                        if (simdjson::dom::array b; json_obj["bytes"].get(b) == simdjson::SUCCESS) {
+                            for (auto byte_val : b) {
+                                uint64_t v;
+                                if (byte_val.get(v) == simdjson::SUCCESS) lpc.bytes.push_back(static_cast<uint8_t>(v));
+                            }
+                        }
+                        return lpc;
+                    };
+                    if (simdjson::dom::array chosen; logprobs_json["chosenCandidates"].get(chosen) == simdjson::SUCCESS) {
+                        for (auto cand_obj : chosen) lr.chosen_candidates.push_back(parse_lpc(cand_obj));
+                    }
+                    if (simdjson::dom::array top; logprobs_json["topCandidates"].get(top) == simdjson::SUCCESS) {
+                        for (auto top_step : top) {
+                            auto& out_vec = lr.top_candidates.emplace_back();
+                            if (simdjson::dom::array candidates; top_step["candidates"].get(candidates) == simdjson::SUCCESS) {
+                                for (auto cand_obj : candidates) out_vec.push_back(parse_lpc(cand_obj));
+                            }
+                        }
+                    }
+                    c.logprobs_result = std::move(lr);
+                }
+
+                if (double avg_lp; cand["avgLogprobs"].get(avg_lp) == simdjson::SUCCESS) {
+                    c.avg_logprobs = avg_lp;
+                }
+
+                if (std::string_view thought; cand["thought"].get(thought) == simdjson::SUCCESS) {
+                    c.thought = std::string(thought);
+                }
+            }
         }
 
-        auto usage = doc["usageMetadata"];
-        if (usage.error() == simdjson::SUCCESS) {
-            UsageMetadata um;
-            um.prompt_token_count = static_cast<uint32_t>(usage["promptTokenCount"].get_uint64().value());
-            um.candidates_token_count = static_cast<uint32_t>(usage["candidatesTokenCount"].get_uint64().value());
-            um.total_token_count = static_cast<uint32_t>(usage["totalTokenCount"].get_uint64().value());
-            
-            auto reasoning = usage["reasoningTokenCount"];
-            if (reasoning.error() == simdjson::SUCCESS) {
-                um.reasoning_token_count = static_cast<uint32_t>(reasoning.get_uint64().value());
+        if (simdjson::dom::element feedback; doc["promptFeedback"].get(feedback) == simdjson::SUCCESS) {
+            PromptFeedback pf{};
+            if (std::string_view br; feedback["blockReason"].get(br) == simdjson::SUCCESS) {
+                pf.block_reason = std::string(br);
             }
-            out.usage_metadata = um;
+            if (simdjson::dom::array ratings; feedback["safetyRatings"].get(ratings) == simdjson::SUCCESS) {
+                for (auto rating : ratings) {
+                    PromptFeedback::SafetyRatingDetail srd{};
+                    if (std::string_view val; rating["category"].get(val) == simdjson::SUCCESS) {
+                        srd.category = from_string_view<HarmCategory>(val).value_or(HarmCategory::UNSPECIFIED);
+                    }
+                    if (std::string_view val; rating["probability"].get(val) == simdjson::SUCCESS) {
+                        srd.probability = from_string_view<HarmProbability>(val).value_or(HarmProbability::UNSPECIFIED);
+                    }
+                    if (bool blocked; rating["blocked"].get(blocked) == simdjson::SUCCESS) {
+                        srd.blocked = blocked;
+                    }
+                    pf.safety_ratings.push_back(std::move(srd));
+                }
+            }
+            out.prompt_feedback = std::move(pf);
+        }
+
+        if (simdjson::dom::element usage; doc["usageMetadata"].get(usage) == simdjson::SUCCESS) {
+            UsageMetadata um{};
+            if (uint64_t val; usage["promptTokenCount"].get(val) == simdjson::SUCCESS) um.prompt_token_count = val;
+            if (uint64_t val; usage["candidatesTokenCount"].get(val) == simdjson::SUCCESS) um.candidates_token_count = val;
+            if (uint64_t val; usage["totalTokenCount"].get(val) == simdjson::SUCCESS) um.total_token_count = val;
+            if (uint64_t val; usage["reasoningTokenCount"].get(val) == simdjson::SUCCESS) um.reasoning_token_count = val;
+            if (uint64_t val; usage["cachedContentTokenCount"].get(val) == simdjson::SUCCESS) um.cached_content_token_count = val;
+            
+            auto parse_details = [](simdjson::dom::element json_arr_elem, std::vector<UsageMetadata::TokenCountDetails>& out_vec) {
+                simdjson::dom::array arr;
+                if (json_arr_elem.get(arr) != simdjson::SUCCESS) return;
+                for (auto details : arr) {
+                    UsageMetadata::TokenCountDetails d{};
+                    if (uint64_t v; details["textTokenCount"].get(v) == simdjson::SUCCESS) d.text_token_count = v;
+                    if (uint64_t v; details["imageTokenCount"].get(v) == simdjson::SUCCESS) d.image_token_count = v;
+                    if (uint64_t v; details["videoTokenCount"].get(v) == simdjson::SUCCESS) d.video_token_count = v;
+                    if (uint64_t v; details["audioTokenCount"].get(v) == simdjson::SUCCESS) d.audio_token_count = v;
+                    out_vec.push_back(d);
+                }
+            };
+            parse_details(usage["promptTokenCountDetails"], um.prompt_token_count_details);
+            parse_details(usage["candidatesTokenCountDetails"], um.candidates_token_count_details);
+            
+            out.usage_metadata = std::move(um);
+        }
+
+        if (std::string_view val; doc["modelVersion"].get(val) == simdjson::SUCCESS) {
+            out.model_version = std::string(val);
         }
 
     } catch (const std::exception&) {
