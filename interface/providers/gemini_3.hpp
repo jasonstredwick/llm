@@ -312,7 +312,7 @@ namespace jai::llm {
 
 
 template <typename T>
-constexpr std::optional<T> from_string_view(std::string_view sv);
+constexpr std::optional<T> from_string_view(std::string_view sv) = delete;
 
 
 template <>
