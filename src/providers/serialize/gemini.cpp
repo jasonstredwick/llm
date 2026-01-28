@@ -399,6 +399,7 @@ namespace jai::llm::gemini {
 std::vector<std::byte> Serialize(const Request& request) {
     static thread_local simdjson::builder::string_builder builder{};
 
+    builder.clear();
     jai::llm::tag_invoke(serialize_tag{}, builder, request);
     builder.validate_unicode();
     std::string_view json_str = builder.view();

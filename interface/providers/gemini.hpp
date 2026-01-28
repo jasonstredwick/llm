@@ -140,7 +140,7 @@ struct RequestContent {
 
         Data data;
         json::Object partMetadata;
-        std::optional<Metadata> metadata{};
+        Metadata metadata;
         std::optional<std::string> thoughtSignature{};
     };
 
