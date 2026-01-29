@@ -933,10 +933,10 @@ using ToolChoice = std::variant<
 
 
 /***
- * ResponseRequest (Block 7)
+ * Request (Block 7)
  */
 
-struct ResponseRequest {
+struct Request {
     std::optional<bool> background{};
     std::optional<std::variant<std::string, ConversationRef>> conversation{};
     std::optional<std::vector<std::string>> include{};

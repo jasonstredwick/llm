@@ -448,7 +448,7 @@ struct ThinkingConfigDisabled {
 
 using ThinkingConfig = std::variant<ThinkingConfigEnabled, ThinkingConfigDisabled>;
 
-struct MessageRequest {
+struct Request {
     int64_t max_tokens;
     std::vector<MessageParam> messages;
     std::string model;
@@ -465,7 +465,7 @@ struct MessageRequest {
     std::optional<double> top_p{};
 };
 
-struct MessageResponse {
+struct Response {
     std::string id;
     std::vector<ContentBlock> content;
     std::string model;
