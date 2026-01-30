@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../interface/providers/gemini.hpp"
+#include "../../interface/protocols/gemini/generate_content.hpp"
 
 #include "../http.hpp"
 

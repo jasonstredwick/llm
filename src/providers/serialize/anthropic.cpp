@@ -1,12 +1,12 @@
-#include "../../interface/providers/anthropic.hpp"
-#include "../../interface/providers/strings/anthropic.hpp"
-#include "base.hpp"
-
 #include <cstddef>
 #include <ranges>
 #include <vector>
 
 #include <simdjson.h>
+
+#include "../../interface/protocols/anthropic/messages.hpp"
+#include "../../interface/protocols/anthropic/strings.hpp" // must include before base.hpp
+#include "base.hpp"
 
 
 using namespace simdjson;

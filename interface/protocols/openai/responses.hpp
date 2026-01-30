@@ -16,7 +16,8 @@
 #include <variant>
 #include <map>
 
-#include "../types.hpp"
+#include "../../core/types.hpp"
+#include "../../core/url.hpp"
 
 
 namespace jai::llm::openai {
@@ -65,6 +66,7 @@ enum class ComputerCallOutputKind { COMPUTER_CALL_OUTPUT };
 enum class ComputerScreenshotKind { COMPUTER_SCREENSHOT };
 enum class ComputerUseToolKind { COMPUTER_USE_PREVIEW };
 enum class ContainerFileCitationKind { CONTAINER_FILE_CITATION };
+enum class ContainerConfigKind { AUTO };
 enum class CreateFileOperationKind { CREATE_FILE };
 enum class CustomToolCallKind { CUSTOM_TOOL_CALL };
 enum class CustomToolCallOutputKind { CUSTOM_TOOL_CALL_OUTPUT };
@@ -113,6 +115,7 @@ enum class RefusalKind { REFUSAL };
 enum class ScreenshotActionKind { SCREENSHOT };
 enum class ScrollActionKind { SCROLL };
 enum class SearchActionKind { SEARCH };
+enum class SearchActionSourceKind { URL };
 enum class ShellCallKind { SHELL_CALL };
 enum class ShellCallOutputKind { SHELL_CALL_OUTPUT };
 enum class ShellExitOutcomeKind { EXIT };
@@ -218,14 +221,14 @@ struct InputImage {
     Detail detail; // Required defaults to auto, but marked required in doc
     InputImageKind type = InputImageKind::INPUT_IMAGE;
     std::optional<std::string> file_id{};
-    std::optional<std::string> image_url{};
+    std::optional<EncodedUrl> image_url{};
 };
 
 struct InputFile {
     InputFileKind type = InputFileKind::INPUT_FILE;
     std::optional<std::string> file_data{};
     std::optional<std::string> file_id{};
-    std::optional<std::string> file_url{};
+    std::optional<EncodedUrl> file_url{};
     std::optional<std::string> filename{};
 };
 
@@ -315,21 +318,21 @@ struct SearchAction {
     SearchActionKind type = SearchActionKind::SEARCH;
     std::optional<std::vector<std::string>> queries{};
     struct Source {
-        std::string type = "url";
-        std::string url;
+        SearchActionSourceKind type = SearchActionSourceKind::URL;
+        EncodedUrl url;
     };
     std::optional<std::vector<Source>> sources{};
 };
 
 struct OpenPageAction {
     OpenPageActionKind type = OpenPageActionKind::OPEN_PAGE;
-    std::string url;
+    EncodedUrl url;
 };
 
 struct FindAction {
     std::string pattern;
     FindActionKind type = FindActionKind::FIND;
-    std::string url;
+    EncodedUrl url;
 };
 
 using WebSearchAction = std::variant<SearchAction, OpenPageAction, FindAction>;
@@ -391,7 +394,7 @@ struct ComputerCall {
 struct ComputerScreenshot {
     ComputerScreenshotKind type = ComputerScreenshotKind::COMPUTER_SCREENSHOT;
     std::optional<std::string> file_id{};
-    std::optional<std::string> image_url{};
+    std::optional<EncodedUrl> image_url{};
 };
 
 struct ComputerCallOutput {
@@ -465,7 +468,7 @@ struct CodeInterpreterCall {
     };
     struct OutputImage {
         CodeInterpreterOutputType type = CodeInterpreterOutputType::IMAGE;
-        std::string url;
+        EncodedUrl url;
     };
     using Output = std::variant<OutputLog, OutputImage>;
 
@@ -656,7 +659,7 @@ struct OutputMessage {
             int64_t start_index;
             std::string title;
             UrlCitationKind type = UrlCitationKind::URL_CITATION;
-            std::string url;
+            EncodedUrl url;
         };
         struct FilePath {
             std::string file_id;
@@ -796,13 +799,13 @@ struct McpTool {
     std::optional<std::map<std::string, std::string>> headers{};
     std::optional<ApprovalFilter> require_approval{};
     std::optional<std::string> server_description{};
-    std::optional<std::string> server_url{};
+    std::optional<EncodedUrl> server_url{};
 };
 
 struct CodeInterpreterTool {
     struct ContainerConfig {
         std::vector<std::string> file_ids;
-        std::string type = "auto";
+        ContainerConfigKind type = ContainerConfigKind::AUTO;
         std::optional<std::string> memory_limit{};
     };
     using Container = std::variant<std::string, ContainerConfig>;
@@ -817,7 +820,7 @@ struct ImageGenerationTool {
     std::optional<ImageGenerationFidelity> input_fidelity{};
     struct Mask {
         std::string file_id;
-        std::string image_url;
+        EncodedUrl image_url;
     };
     std::optional<Mask> input_image_mask{};
     std::optional<std::string> model{};

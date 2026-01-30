@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../interface/providers/anthropic.hpp"
+#include "../../interface/protocols/anthropic/messages.hpp"
 
 #include "../http.hpp"
 

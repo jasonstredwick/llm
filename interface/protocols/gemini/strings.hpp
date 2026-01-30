@@ -1,6 +1,10 @@
 #pragma once
 
-#include "../gemini.hpp"
+#include "generate_content.hpp"
+
+#include <optional>
+#include <stdexcept>
+#include <string_view>
 
 
 namespace jai::llm {

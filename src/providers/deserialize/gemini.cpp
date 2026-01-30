@@ -1,5 +1,5 @@
-#include "../../interface/providers/gemini.hpp"
-#include "../../interface/providers/strings/gemini.hpp" // must include before base.hpp
+#include "../../../interface/protocols/gemini/generate_content.hpp"
+#include "../../../interface/protocols/gemini/strings.hpp" // must include before base.hpp
 #include "base.hpp"
 #include "../../curl.hpp"
 

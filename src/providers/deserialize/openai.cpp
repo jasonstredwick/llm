@@ -1,14 +1,14 @@
-#include "../../../interface/providers/openai.hpp"
-#include "../../../interface/providers/strings/openai.hpp" // must include before base.hpp
-#include "base.hpp"
-#include "../../curl.hpp"
-
 #include <map>
 #include <ranges>
 #include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
+
+#include "../../../interface/protocols/openai/responses.hpp"
+#include "../../../interface/protocols/openai/strings.hpp" // must include before base.hpp
+#include "base.hpp"
+#include "../../curl.hpp"
 
 
 /***
@@ -34,14 +34,6 @@ namespace jai::llm {
 template <>
 std::byte Parse<std::byte>(const simdjson::dom::element& src) {
     return static_cast<std::byte>(src.get_uint64().value());
-}
-
-template <>
-json::Object Parse<json::Object>(const simdjson::dom::element& src) {
-    return src.get_object() | std::views::transform([](auto&& kv) {
-        auto const& [key, value] = kv;
-        return std::pair{std::string{key}, Parse<json::Value>(value)};
-    }) | std::ranges::to<json::Object>();
 }
 
 template <>

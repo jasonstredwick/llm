@@ -1,14 +1,15 @@
 #pragma once
 
-#include "../../interface/types.hpp"
-
 #include <cstdint>
 #include <format>
 #include <optional>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
 #include <simdjson.h>
+
+#include "../../interface/core/types.hpp"
 
 
 namespace jai::llm {
@@ -18,15 +19,14 @@ enum class CommaDirection : uint8_t { NONE, BEFORE, AFTER, BOTH };
 
 
 // Forward declare
-template <typename T>
-constexpr std::optional<T> from_string_view(std::string_view sv) = delete;
+constexpr std::string_view to_string_view(auto val) = delete;
 
 
 template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
 inline void AddOptKV_base(simdjson::builder::string_builder& builder, const T& v) {
     if constexpr (Dir == CommaDirection::BEFORE || Dir == CommaDirection::BOTH) { builder.append_comma(); }
     if constexpr (std::is_enum_v<T>) {
-        builder.append_key_value<key>(to_string(v));
+        builder.append_key_value<key>(jai::llm::to_string_view(v));
     } else {
         builder.append_key_value<key>(v);
     }

@@ -13,8 +13,8 @@
 #include <variant>
 #include <vector>
 
-#include "../types.hpp"
-#include "../url.hpp"
+#include "../../core/types.hpp"
+#include "../../core/url.hpp"
 
 
 namespace jai::llm::anthropic {
@@ -186,7 +186,8 @@ struct ImageBlock {
  */
 
 struct ContentBlockSource {
-    using Content = std::variant<std::string, std::vector<std::variant<TextBlock, ImageBlock>>>;
+    using ContentUnit = std::variant<TextBlock, ImageBlock>;
+    using Content = std::variant<std::string, std::vector<ContentUnit>>;
     Content content;
     ContentSourceKind type = ContentSourceKind::CONTENT;
 };

@@ -1,10 +1,8 @@
-#include "../../../interface/providers/anthropic.hpp"
-#include "../../../interface/providers/strings/anthropic.hpp" // must include before base.hpp
+#include "../../../interface/protocols/anthropic/messages.hpp"
+#include "../../../interface/protocols/anthropic/strings.hpp" // must include before base.hpp
 #include "base.hpp"
 #include "../../curl.hpp"
 
-#include <map>
-#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <variant>
@@ -26,74 +24,6 @@ Type Parse<Type>(const simdjson::dom::element& src) { \
 
 
 namespace jai::llm {
-
-
-/***
- * Basic and Container Specializations
- */
-template <>
-json::Object Parse<json::Object>(const simdjson::dom::element& src) {
-    return src.get_object() | std::views::transform([](auto&& kv) {
-        auto const& [key, value] = kv;
-        return std::pair{std::string{key}, Parse<json::Value>(value)};
-    }) | std::ranges::to<json::Object>();
-}
-
-template <>
-std::map<std::string, std::string> Parse<std::map<std::string, std::string>>(const simdjson::dom::element& src) {
-    return src.get_object() | std::views::transform([](auto&& kv) {
-        auto const& [key, value] = kv;
-        return std::pair{std::string{key}, Parse<std::string>(value)};
-    }) | std::ranges::to<std::map<std::string, std::string>>();
-}
-
-
-/***
- * Forward Declarations for complex variants to fix ordering issues.
- */
-
-template <>
-anthropic::Citation Parse<anthropic::Citation>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ImageSource Parse<anthropic::ImageSource>(const simdjson::dom::element& src);
-
-template <>
-anthropic::DocumentSource Parse<anthropic::DocumentSource>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ContentBlock Parse<anthropic::ContentBlock>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ToolUnion Parse<anthropic::ToolUnion>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ToolChoice Parse<anthropic::ToolChoice>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ThinkingConfig Parse<anthropic::ThinkingConfig>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ContentBlockSource::Content Parse<anthropic::ContentBlockSource::Content>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ToolResultBlock::Content Parse<anthropic::ToolResultBlock::Content>(const simdjson::dom::element& src);
-
-template <>
-anthropic::MessageParam::Content Parse<anthropic::MessageParam::Content>(const simdjson::dom::element& src);
-
-template <>
-std::variant<anthropic::TextBlock, anthropic::ImageBlock>
-    Parse<std::variant<anthropic::TextBlock, anthropic::ImageBlock>>(const simdjson::dom::element& src);
-
-template <>
-std::variant<anthropic::TextBlock, anthropic::ImageBlock, anthropic::SearchResultBlock, anthropic::DocumentBlock>
-    Parse<std::variant<anthropic::TextBlock, anthropic::ImageBlock, anthropic::SearchResultBlock, anthropic::DocumentBlock>>(const simdjson::dom::element& src);
-
-template <>
-anthropic::WebSearchToolResultBlock::Content Parse<anthropic::WebSearchToolResultBlock::Content>(const simdjson::dom::element& src);
-
-
 /***
  * Shared Substructures (Block 3)
  */
@@ -192,42 +122,25 @@ BEGIN_PARSE(anthropic::UrlImageSource)
     FIELD(src, url)
 END_PARSE
 
-template <>
-anthropic::ImageSource Parse<anthropic::ImageSource>(const simdjson::dom::element& src) {
-    using T = anthropic::ImageSource;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "base64") return T{Parse<anthropic::Base64ImageSource>(src)};
-    if (type_sv == "url")    return T{Parse<anthropic::UrlImageSource>(src)};
-    throw std::logic_error{"ImageSource variant unsatisfied"};
-}
-
 BEGIN_PARSE(anthropic::ImageBlock)
     FIELD(src, source),
     FIELD(src, type),
     FIELD(src, cache_control)
 END_PARSE
 
+template <>
+anthropic::ImageSource Parse<anthropic::ImageSource>(const simdjson::dom::element& src) {
+    using T = anthropic::ImageSource;
+    auto obj = src.get_object();
+    if      (auto r = ExtractForVariant<"base64">(obj); r.has_value()) { return T{Parse<anthropic::Base64ImageSource>(*r)}; }
+    else if (auto r = ExtractForVariant<"url"   >(obj); r.has_value()) { return T{Parse<anthropic::UrlImageSource>(*r)}; }
+    throw std::logic_error{"ImageSource variant unsatisfied"};
+}
+
 
 /***
  * Recursive Sources & Documents (Block 6)
  */
-
-template <>
-std::variant<anthropic::TextBlock, anthropic::ImageBlock> Parse<std::variant<anthropic::TextBlock, anthropic::ImageBlock>>(const simdjson::dom::element& src) {
-    using T = std::variant<anthropic::TextBlock, anthropic::ImageBlock>;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "text")  return T{Parse<anthropic::TextBlock>(src)};
-    if (type_sv == "image") return T{Parse<anthropic::ImageBlock>(src)};
-    throw std::logic_error{"TextBlock/ImageBlock variant unsatisfied"};
-}
-
-template <>
-anthropic::ContentBlockSource::Content Parse<anthropic::ContentBlockSource::Content>(const simdjson::dom::element& src) {
-    using T = anthropic::ContentBlockSource::Content;
-    if (src.is_string()) return T{std::string{src.get_string().value()}};
-    using V = std::vector<std::variant<anthropic::TextBlock, anthropic::ImageBlock>>;
-    return T{Parse<V>(src)};
-}
 
 BEGIN_PARSE(anthropic::ContentBlockSource)
     FIELD(src, content),
@@ -251,17 +164,6 @@ BEGIN_PARSE(anthropic::URLPDFSource)
     FIELD(src, url)
 END_PARSE
 
-template <>
-anthropic::DocumentSource Parse<anthropic::DocumentSource>(const simdjson::dom::element& src) {
-    using T = anthropic::DocumentSource;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "base64")  return T{Parse<anthropic::Base64PDFSource>(src)};
-    if (type_sv == "text")    return T{Parse<anthropic::PlainTextSource>(src)};
-    if (type_sv == "url")     return T{Parse<anthropic::URLPDFSource>(src)};
-    if (type_sv == "content") return T{Parse<anthropic::ContentBlockSource>(src)};
-    throw std::logic_error{"DocumentSource variant unsatisfied"};
-}
-
 BEGIN_PARSE(anthropic::DocumentBlock)
     FIELD(src, source),
     FIELD(src, type),
@@ -279,6 +181,36 @@ BEGIN_PARSE(anthropic::SearchResultBlock)
     FIELD(src, cache_control),
     FIELD(src, citations)
 END_PARSE
+
+template <>
+anthropic::DocumentSource Parse<anthropic::DocumentSource>(const simdjson::dom::element& src) {
+    using T = anthropic::DocumentSource;
+    auto obj = src.get_object();
+    if      (auto r = ExtractForVariant<"base64" >(obj); r.has_value()) { return T{Parse<anthropic::Base64PDFSource>(*r)}; }
+    else if (auto r = ExtractForVariant<"text"   >(obj); r.has_value()) { return T{Parse<anthropic::PlainTextSource>(*r)}; }
+    else if (auto r = ExtractForVariant<"url"    >(obj); r.has_value()) { return T{Parse<anthropic::URLPDFSource>(*r)}; }
+    else if (auto r = ExtractForVariant<"content">(obj); r.has_value()) { return T{Parse<anthropic::ContentBlockSource>(*r)}; }
+    throw std::logic_error{"DocumentSource variant unsatisfied"};
+}
+
+template <>
+anthropic::ContentBlockSource::ContentUnit Parse<anthropic::ContentBlockSource::ContentUnit>(const simdjson::dom::element& src) {
+    using T = anthropic::ContentBlockSource::ContentUnit;
+    auto obj = src.get_object();
+    if      (auto r = ExtractForVariant<"text" >(obj); r.has_value()) { return T{Parse<anthropic::TextBlock>(*r)}; }
+    else if (auto r = ExtractForVariant<"image">(obj); r.has_value()) { return T{Parse<anthropic::ImageBlock>(*r)}; }
+    throw std::logic_error{"TextBlock/ImageBlock variant unsatisfied"};
+}
+
+template <>
+anthropic::ContentBlockSource::Content Parse<anthropic::ContentBlockSource::Content>(const simdjson::dom::element& src) {
+    using T = anthropic::ContentBlockSource::Content;
+    auto obj = src.get_object();
+
+    if (src.is_string()) return T{std::string{src.get_string().value()}};
+    using V = std::vector<std::variant<anthropic::TextBlock, anthropic::ImageBlock>>;
+    return T{Parse<V>(src)};
+}
 
 
 /***

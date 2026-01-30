@@ -6,7 +6,7 @@
 #include <string>
 #include <variant>
 
-#include "async.hpp"
+#include "../core/async.hpp"
 
 
 namespace jai::llm {
@@ -15,13 +15,9 @@ namespace jai::llm {
 // ModelContract identifies a semantically distinct model interface
 // that requires specific request/response and reasoning handling.
 enum class ModelContract {
-    Anthropic_Claude_Opus_4_5,
-    Anthropic_Claude_Sonnet_4_5,
-    Gemini_2_5,
-    Gemini_3,
-    OpenAI_4,
-    OpenAI_4o,
-    OpenAI_5,
+    Anthropic,
+    Gemini,
+    OpenAI
 };
 
 
@@ -48,6 +44,7 @@ using Metadata = std::variant<AnthropicMetadata, GeminiMetadata, OpenAIMetadata>
 
 struct Result {};
 struct Request {};
+struct Response {};
 struct Policy {};
 constexpr size_t Size = 64;
 constexpr size_t Align = 8;
@@ -90,7 +87,9 @@ public:
 
     ~Client() { if (vtable) { vtable->destroy(storage.data()); } }
 
-    Result Call(const Request& r, const Policy& p) const { return vtable->Call(std::addressof(storage), r, p); }
+    //AsyncTask<Result> Call(const Request& r, const Policy& p) const { return vtable->Call(std::addressof(storage), r, p); }
+    AsyncTask<Response> CallAsync(const Request& r) const;
+    Response CallSync(const Request& r) const;
 };
 
 

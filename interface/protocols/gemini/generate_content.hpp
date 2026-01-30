@@ -6,10 +6,8 @@
 #include <vector>
 #include <variant>
 
-#include "../async.hpp"
-#include "../policy.hpp"
-#include "../types.hpp"
-#include "../url.hpp"
+#include "../../core/types.hpp"
+#include "../../core/url.hpp"
 
 
 namespace jai::llm::gemini {
@@ -531,27 +529,6 @@ struct Response {
     std::string modelVersion;
     std::string responseId;
     ModelStatus modelStatus;
-};
-
-
-/***
- * Client
- */
-class Client {
-private:
-    ClientPolicy policy;
-
-public:
-    Client(const ClientPolicy& client_policy) : policy{client_policy} {}
-    Client(ClientPolicy&& client_policy) : policy{std::move(client_policy)} {}
-    Client(const Client&) = default;
-    Client(Client&&) noexcept = default;
-    ~Client() noexcept = default;
-    Client& operator=(const Client&) = default;
-    Client& operator=(Client&&) noexcept = default;
-
-    AsyncTask<Response> GenerateTextAsync(const Request& r) const;
-    Response GenerateTextSync(const Request& r) const;
 };
 
 

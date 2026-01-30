@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../interface/providers/openai.hpp"
+#include "../../interface/protocols/openai/responses.hpp"
 
 #include "../http.hpp"
 

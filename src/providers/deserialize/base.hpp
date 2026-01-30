@@ -1,10 +1,5 @@
 #pragma once
 
-#include "../../interface/types.hpp"
-
-#include "../../interface/url.hpp"
-
-
 #include <limits>
 #include <optional>
 #include <ranges>
@@ -14,13 +9,16 @@
 
 #include <simdjson.h>
 
+#include "../../../interface/core/types.hpp"
+#include "../../../interface/core/url.hpp"
+
 
 namespace jai::llm {
 
 
 // Forward declare
 template <typename T>
-constexpr std::optional<T> from_string_view(std::string_view sv) = delete;
+constexpr std::optional<T> from_string_view(std::string_view sv);
 
 
 /***
@@ -68,6 +66,26 @@ int64_t Parse(const simdjson::dom::element& src) {
 
 
 template <typename T>
+requires Like_c<std::map<std::string, std::string>, T>
+std::map<std::string, std::string> Parse(const simdjson::dom::element& src) {
+    return src.get_object() | std::views::transform([](auto&& kv) {
+        auto const& [key, value] = kv;
+        return std::pair{std::string{key}, Parse<std::string>(value)};
+    }) | std::ranges::to<std::map<std::string, std::string>>();
+}
+
+
+template <typename T>
+requires Like_c<json::Object, T>
+json::Object Parse(const simdjson::dom::element& src) {
+    return src.get_object() | std::views::transform([](auto&& kv) {
+        auto const& [key, value] = kv;
+        return std::pair{std::string{key}, Parse<json::Value>(value)};
+    }) | std::ranges::to<json::Object>();
+}
+
+
+template <typename T>
 requires Like_c<RFC3339Timestamp, T>
 RFC3339Timestamp Parse(const simdjson::dom::element& src) {
     return RFC3339Timestamp::Parse(src.get_string().value());
@@ -85,12 +103,6 @@ template <typename T>
 requires Like_c<std::string_view, T>
 std::string_view Parse(const simdjson::dom::element& src) {
     return src.get_string().value();
-}
-
-
-template <typename T, typename Allocator>
-std::vector<T, Allocator> Parse(const simdjson::dom::element& src) {
-    return src.get_array() | std::views::transform([](auto const& in) { return Parse<T>(in); }) | std::ranges::to();
 }
 
 
@@ -133,6 +145,12 @@ json::Value Parse(const simdjson::dom::element& src) {
         };
     }
     std::unreachable();
+}
+
+
+template <typename T, typename Allocator>
+std::vector<T, Allocator> Parse(const simdjson::dom::element& src) {
+    return src.get_array() | std::views::transform([](auto const& in) { return Parse<T>(in); }) | std::ranges::to();
 }
 
 

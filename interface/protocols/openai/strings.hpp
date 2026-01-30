@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../openai.hpp"
+#include "responses.hpp"
 
 #include <optional>
 #include <stdexcept>
@@ -177,6 +177,12 @@ constexpr std::optional<openai::ComputerScreenshotKind> from_string_view<openai:
 template <>
 constexpr std::optional<openai::ComputerUseToolKind> from_string_view<openai::ComputerUseToolKind>(std::string_view sv) {
     if (sv == "computer_use_preview") return openai::ComputerUseToolKind::COMPUTER_USE_PREVIEW;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::ContainerConfigKind> from_string_view<openai::ContainerConfigKind>(std::string_view sv) {
+    if (sv == "auto") return openai::ContainerConfigKind::AUTO;
     return std::nullopt;
 }
 
@@ -749,6 +755,12 @@ constexpr std::optional<openai::SearchActionKind> from_string_view<openai::Searc
 }
 
 template <>
+constexpr std::optional<openai::SearchActionSourceKind> from_string_view<openai::SearchActionSourceKind>(std::string_view sv) {
+    if (sv == "url") return openai::SearchActionSourceKind::URL;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<openai::SearchContextSize> from_string_view<openai::SearchContextSize>(std::string_view sv) {
     if (sv == "low") return openai::SearchContextSize::LOW;
     if (sv == "medium") return openai::SearchContextSize::MEDIUM;
@@ -1127,6 +1139,13 @@ constexpr std::string_view to_string_view(openai::ComputerUseToolKind val) {
     switch (val) {
         case openai::ComputerUseToolKind::COMPUTER_USE_PREVIEW: return "computer_use_preview";
         default: throw std::logic_error("invalid openai::ComputerUseToolKind");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::ContainerConfigKind val) {
+    switch (val) {
+        case openai::ContainerConfigKind::AUTO: return "auto";
+        default: throw std::logic_error("invalid openai::ContainerConfigKind");
     }
 }
 
@@ -1775,6 +1794,13 @@ constexpr std::string_view to_string_view(openai::SearchActionKind val) {
     switch (val) {
         case openai::SearchActionKind::SEARCH: return "search";
         default: throw std::logic_error("invalid openai::SearchActionKind");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::SearchActionSourceKind val) {
+    switch (val) {
+        case openai::SearchActionSourceKind::URL: return "url";
+        default: throw std::logic_error("invalid openai::SearchActionSourceKind");
     }
 }
 

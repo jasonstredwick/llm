@@ -1,5 +1,5 @@
-#include "../../interface/providers/openai.hpp"
-#include "../../interface/providers/strings/openai.hpp"
+#include "../../interface/protocols/openai/responses.hpp"
+#include "../../interface/protocols/openai/strings.hpp" // must include before base.hpp
 #include "base.hpp"
 
 #include <cstddef>

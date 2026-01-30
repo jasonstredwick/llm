@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../anthropic.hpp"
+#include "messages.hpp"
 
 #include <optional>
 #include <stdexcept>
