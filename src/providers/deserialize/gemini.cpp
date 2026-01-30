@@ -1,5 +1,5 @@
 #include "../../interface/providers/gemini.hpp"
-#include "../../interface/providers/strings/gemini.hpp"
+#include "../../interface/providers/strings/gemini.hpp" // must include before base.hpp
 #include "base.hpp"
 #include "../../curl.hpp"
 
@@ -9,13 +9,13 @@
  * Purpose is to simplify template specializations for Parse in preparation for reflection based approach.
  */
 #define FIELD(src, member) Extract<#member, T, &T::member>((src))
-#define BEGIN_PARSE(Type)              \
-template <>                            \
+#define BEGIN_PARSE(Type)                             \
+template <>                                           \
 Type Parse<Type>(const simdjson::dom::element& src) { \
-    using T = Type;                    \
+    using T = Type;                                   \
     return T{
-#define  END_PARSE                     \
-    };                                 \
+#define  END_PARSE \
+    };             \
 }
 
 

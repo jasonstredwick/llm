@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "../types.hpp"
+#include "../url.hpp"
 
 
 namespace jai::llm::anthropic {
@@ -130,7 +131,7 @@ struct CitationWebSearchResultLocation {
     std::string encrypted_index;
     std::string title;
     WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
-    std::string url;
+    EncodedUrl url;
 };
 
 struct CitationSearchResultLocation {
@@ -168,7 +169,7 @@ struct Base64ImageSource {
 
 struct UrlImageSource {
     UrlSourceKind type = UrlSourceKind::URL;
-    std::string url;
+    EncodedUrl url;
 };
 
 using ImageSource = std::variant<Base64ImageSource, UrlImageSource>;
@@ -204,7 +205,7 @@ struct PlainTextSource {
 
 struct URLPDFSource {
     UrlSourceKind type = UrlSourceKind::URL;
-    std::string url;
+    EncodedUrl url;
 };
 
 using DocumentSource = std::variant<
@@ -277,7 +278,7 @@ struct WebSearchToolResultBlock {
         std::string encrypted_content;
         std::string title;
         WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
-        std::string url;
+        EncodedUrl url;
         std::optional<std::string> page_age{};
     };
     struct Error {
