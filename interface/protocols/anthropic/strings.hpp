@@ -25,18 +25,6 @@ constexpr std::optional<anthropic::Base64SourceKind> from_string_view<anthropic:
 }
 
 template <>
-constexpr std::optional<anthropic::ToolBash20250124Type> from_string_view<anthropic::ToolBash20250124Type>(std::string_view sv) {
-    if (sv == "bash_20250124") return anthropic::ToolBash20250124Type::BASH_20250124;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<anthropic::ToolBash20250124Name> from_string_view<anthropic::ToolBash20250124Name>(std::string_view sv) {
-    if (sv == "bash") return anthropic::ToolBash20250124Name::BASH;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<anthropic::CacheControlEphemeralKind> from_string_view<anthropic::CacheControlEphemeralKind>(std::string_view sv) {
     if (sv == "ephemeral") return anthropic::CacheControlEphemeralKind::EPHEMERAL;
     return std::nullopt;
@@ -56,6 +44,16 @@ constexpr std::optional<anthropic::CharLocationKind> from_string_view<anthropic:
 }
 
 template <>
+constexpr std::optional<anthropic::CitationKinds> from_string_view<anthropic::CitationKinds>(std::string_view sv) {
+    if (sv == "char_location") return anthropic::CitationKinds::CHAR_LOCATION;
+    if (sv == "content_block_location") return anthropic::CitationKinds::CONTENT_BLOCK_LOCATION;
+    if (sv == "page_location") return anthropic::CitationKinds::PAGE_LOCATION;
+    if (sv == "search_result_location") return anthropic::CitationKinds::SEARCH_RESULT_LOCATION;
+    if (sv == "web_search_result_location") return anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<anthropic::ContentBlockLocationKind> from_string_view<anthropic::ContentBlockLocationKind>(std::string_view sv) {
     if (sv == "content_block_location") return anthropic::ContentBlockLocationKind::CONTENT_BLOCK_LOCATION;
     return std::nullopt;
@@ -68,8 +66,24 @@ constexpr std::optional<anthropic::ContentSourceKind> from_string_view<anthropic
 }
 
 template <>
+constexpr std::optional<anthropic::ContentUnitKind> from_string_view<anthropic::ContentUnitKind>(std::string_view sv) {
+    if (sv == "text") return anthropic::ContentUnitKind::TEXT;
+    if (sv == "image") return anthropic::ContentUnitKind::IMAGE;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<anthropic::CustomToolKind> from_string_view<anthropic::CustomToolKind>(std::string_view sv) {
     if (sv == "custom") return anthropic::CustomToolKind::CUSTOM;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::DocSrcKind> from_string_view<anthropic::DocSrcKind>(std::string_view sv) {
+    if (sv == "content") return anthropic::DocSrcKind::BLOCK;
+    if (sv == "base64") return anthropic::DocSrcKind::PDF;
+    if (sv == "text") return anthropic::DocSrcKind::PLAIN_TEXT;
+    if (sv == "url") return anthropic::DocSrcKind::URL_PDF;
     return std::nullopt;
 }
 
@@ -91,6 +105,13 @@ constexpr std::optional<anthropic::ImageMediaType> from_string_view<anthropic::I
     if (sv == "image/png") return anthropic::ImageMediaType::IMAGE_PNG;
     if (sv == "image/gif") return anthropic::ImageMediaType::IMAGE_GIF;
     if (sv == "image/webp") return anthropic::ImageMediaType::IMAGE_WEBP;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ImageSourceKinds> from_string_view<anthropic::ImageSourceKinds>(std::string_view sv) {
+    if (sv == "base64") return anthropic::ImageSourceKinds::BASE64;
+    if (sv == "url") return anthropic::ImageSourceKinds::URL;
     return std::nullopt;
 }
 
@@ -149,6 +170,30 @@ constexpr std::optional<anthropic::ReplaceEditor> from_string_view<anthropic::Re
 }
 
 template <>
+constexpr std::optional<anthropic::RequestServiceTier> from_string_view<anthropic::RequestServiceTier>(std::string_view sv) {
+    if (sv == "auto") return anthropic::RequestServiceTier::AUTO;
+    if (sv == "standard_only") return anthropic::RequestServiceTier::STANDARD_ONLY;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ResponseContentBlockKinds> from_string_view<anthropic::ResponseContentBlockKinds>(std::string_view sv) {
+    if (sv == "text") return anthropic::ResponseContentBlockKinds::TEXT;
+    if (sv == "thinking") return anthropic::ResponseContentBlockKinds::THINKING;
+    if (sv == "redacted_thinking") return anthropic::ResponseContentBlockKinds::REDACTED_THINKING;
+    if (sv == "tool_use") return anthropic::ResponseContentBlockKinds::TOOL_USE;
+    if (sv == "server_tool_use") return anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE;
+    if (sv == "web_search_tool_result") return anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ResponseRole> from_string_view<anthropic::ResponseRole>(std::string_view sv) {
+    if (sv == "assistant") return anthropic::ResponseRole::ASSISTANT;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<anthropic::Role> from_string_view<anthropic::Role>(std::string_view sv) {
     if (sv == "user") return anthropic::Role::USER;
     if (sv == "assistant") return anthropic::Role::ASSISTANT;
@@ -170,16 +215,6 @@ constexpr std::optional<anthropic::SearchResultLocationKind> from_string_view<an
 template <>
 constexpr std::optional<anthropic::ServerToolUseBlockKind> from_string_view<anthropic::ServerToolUseBlockKind>(std::string_view sv) {
     if (sv == "server_tool_use") return anthropic::ServerToolUseBlockKind::SERVER_TOOL_USE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<anthropic::ServiceTier> from_string_view<anthropic::ServiceTier>(std::string_view sv) {
-    if (sv == "auto") return anthropic::ServiceTier::AUTO;
-    if (sv == "standard_only") return anthropic::ServiceTier::STANDARD_ONLY;
-    if (sv == "standard") return anthropic::ServiceTier::STANDARD;
-    if (sv == "priority") return anthropic::ServiceTier::PRIORITY;
-    if (sv == "batch") return anthropic::ServiceTier::BATCH;
     return std::nullopt;
 }
 
@@ -207,24 +242,6 @@ constexpr std::optional<anthropic::TextBlockKind> from_string_view<anthropic::Te
 }
 
 template <>
-constexpr std::optional<anthropic::ToolTextEditor20250124Name> from_string_view<anthropic::ToolTextEditor20250124Name>(std::string_view sv) {
-    if (sv == "text_editor_20250124") return anthropic::ToolTextEditor20250124Name::TEXT_EDITOR_20250124;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<anthropic::ToolTextEditor20250429Name> from_string_view<anthropic::ToolTextEditor20250429Name>(std::string_view sv) {
-    if (sv == "text_editor_20250429") return anthropic::ToolTextEditor20250429Name::TEXT_EDITOR_20250429;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<anthropic::ToolTextEditor20250728Name> from_string_view<anthropic::ToolTextEditor20250728Name>(std::string_view sv) {
-    if (sv == "text_editor_20250728") return anthropic::ToolTextEditor20250728Name::TEXT_EDITOR_20250728;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<anthropic::ThinkingBlockKind> from_string_view<anthropic::ThinkingBlockKind>(std::string_view sv) {
     if (sv == "thinking") return anthropic::ThinkingBlockKind::THINKING;
     return std::nullopt;
@@ -234,6 +251,18 @@ template <>
 constexpr std::optional<anthropic::ThinkingConfigType> from_string_view<anthropic::ThinkingConfigType>(std::string_view sv) {
     if (sv == "enabled") return anthropic::ThinkingConfigType::ENABLED;
     if (sv == "disabled") return anthropic::ThinkingConfigType::DISABLED;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ToolBash20250124Name> from_string_view<anthropic::ToolBash20250124Name>(std::string_view sv) {
+    if (sv == "bash") return anthropic::ToolBash20250124Name::BASH;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ToolBash20250124Type> from_string_view<anthropic::ToolBash20250124Type>(std::string_view sv) {
+    if (sv == "bash_20250124") return anthropic::ToolBash20250124Type::BASH_20250124;
     return std::nullopt;
 }
 
@@ -268,6 +297,24 @@ constexpr std::optional<anthropic::ToolResultBlockKind> from_string_view<anthrop
 }
 
 template <>
+constexpr std::optional<anthropic::ToolTextEditor20250124Name> from_string_view<anthropic::ToolTextEditor20250124Name>(std::string_view sv) {
+    if (sv == "text_editor_20250124") return anthropic::ToolTextEditor20250124Name::TEXT_EDITOR_20250124;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ToolTextEditor20250429Name> from_string_view<anthropic::ToolTextEditor20250429Name>(std::string_view sv) {
+    if (sv == "text_editor_20250429") return anthropic::ToolTextEditor20250429Name::TEXT_EDITOR_20250429;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ToolTextEditor20250728Name> from_string_view<anthropic::ToolTextEditor20250728Name>(std::string_view sv) {
+    if (sv == "text_editor_20250728") return anthropic::ToolTextEditor20250728Name::TEXT_EDITOR_20250728;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<anthropic::ToolUseBlockKind> from_string_view<anthropic::ToolUseBlockKind>(std::string_view sv) {
     if (sv == "tool_use") return anthropic::ToolUseBlockKind::TOOL_USE;
     return std::nullopt;
@@ -280,8 +327,22 @@ constexpr std::optional<anthropic::UrlSourceKind> from_string_view<anthropic::Ur
 }
 
 template <>
+constexpr std::optional<anthropic::UsageServiceTier> from_string_view<anthropic::UsageServiceTier>(std::string_view sv) {
+    if (sv == "standard") return anthropic::UsageServiceTier::STANDARD;
+    if (sv == "priority") return anthropic::UsageServiceTier::PRIORITY;
+    if (sv == "batch") return anthropic::UsageServiceTier::BATCH;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<anthropic::UserLocationTypeKind> from_string_view<anthropic::UserLocationTypeKind>(std::string_view sv) {
     if (sv == "approximate") return anthropic::UserLocationTypeKind::APPROXIMATE;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::WebSearchName> from_string_view<anthropic::WebSearchName>(std::string_view sv) {
+    if (sv == "web_search") return anthropic::WebSearchName::WEB_SEARCH;
     return std::nullopt;
 }
 
@@ -294,12 +355,6 @@ constexpr std::optional<anthropic::WebSearchResultLocationKind> from_string_view
 template <>
 constexpr std::optional<anthropic::WebSearchTool20250305Kind> from_string_view<anthropic::WebSearchTool20250305Kind>(std::string_view sv) {
     if (sv == "web_search_20250305") return anthropic::WebSearchTool20250305Kind::WEB_SEARCH_20250305;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<anthropic::WebSearchName> from_string_view<anthropic::WebSearchName>(std::string_view sv) {
-    if (sv == "web_search") return anthropic::WebSearchName::WEB_SEARCH;
     return std::nullopt;
 }
 
@@ -338,20 +393,6 @@ constexpr std::string_view to_string_view(anthropic::Base64SourceKind val) {
     }
 }
 
-constexpr std::string_view to_string_view(anthropic::ToolBash20250124Type val) {
-    switch (val) {
-        case anthropic::ToolBash20250124Type::BASH_20250124: return "bash_20250124";
-        default: throw std::logic_error("invalid anthropic::ToolBash20250124Type");
-    }
-}
-
-constexpr std::string_view to_string_view(anthropic::ToolBash20250124Name val) {
-    switch (val) {
-        case anthropic::ToolBash20250124Name::BASH: return "bash";
-        default: throw std::logic_error("invalid anthropic::ToolBash20250124Name");
-    }
-}
-
 constexpr std::string_view to_string_view(anthropic::CacheControlEphemeralKind val) {
     switch (val) {
         case anthropic::CacheControlEphemeralKind::EPHEMERAL: return "ephemeral";
@@ -374,6 +415,17 @@ constexpr std::string_view to_string_view(anthropic::CharLocationKind val) {
     }
 }
 
+constexpr std::string_view to_string_view(anthropic::CitationKinds val) {
+    switch (val) {
+        case anthropic::CitationKinds::CHAR_LOCATION: return "char_location";
+        case anthropic::CitationKinds::CONTENT_BLOCK_LOCATION: return "content_block_location";
+        case anthropic::CitationKinds::PAGE_LOCATION: return "page_location";
+        case anthropic::CitationKinds::SEARCH_RESULT_LOCATION: return "search_result_location";
+        case anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION: return "web_search_result_location";
+        default: throw std::logic_error("invalid anthropic::CitationKinds");
+    }
+}
+
 constexpr std::string_view to_string_view(anthropic::ContentBlockLocationKind val) {
     switch (val) {
         case anthropic::ContentBlockLocationKind::CONTENT_BLOCK_LOCATION: return "content_block_location";
@@ -388,10 +440,28 @@ constexpr std::string_view to_string_view(anthropic::ContentSourceKind val) {
     }
 }
 
+constexpr std::string_view to_string_view(anthropic::ContentUnitKind val) {
+    switch (val) {
+        case anthropic::ContentUnitKind::TEXT: return "text";
+        case anthropic::ContentUnitKind::IMAGE: return "image";
+        default: throw std::logic_error("invalid anthropic::ContentUnitKind");
+    }
+}
+
 constexpr std::string_view to_string_view(anthropic::CustomToolKind val) {
     switch (val) {
         case anthropic::CustomToolKind::CUSTOM: return "custom";
         default: throw std::logic_error("invalid anthropic::CustomToolKind");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::DocSrcKind val) {
+    switch (val) {
+        case anthropic::DocSrcKind::BLOCK: return "content";
+        case anthropic::DocSrcKind::PDF: return "base64";
+        case anthropic::DocSrcKind::PLAIN_TEXT: return "text";
+        case anthropic::DocSrcKind::URL_PDF: return "url";
+        default: throw std::logic_error("invalid anthropic::DocSrcKind");
     }
 }
 
@@ -416,6 +486,14 @@ constexpr std::string_view to_string_view(anthropic::ImageMediaType val) {
         case anthropic::ImageMediaType::IMAGE_GIF: return "image/gif";
         case anthropic::ImageMediaType::IMAGE_WEBP: return "image/webp";
         default: throw std::logic_error("invalid anthropic::ImageMediaType");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ImageSourceKinds val) {
+    switch (val) {
+        case anthropic::ImageSourceKinds::BASE64: return "base64";
+        case anthropic::ImageSourceKinds::URL: return "url";
+        default: throw std::logic_error("invalid anthropic::ImageSourceKinds");
     }
 }
 
@@ -482,6 +560,33 @@ constexpr std::string_view to_string_view(anthropic::ReplaceEditor val) {
     }
 }
 
+constexpr std::string_view to_string_view(anthropic::RequestServiceTier val) {
+    switch (val) {
+        case anthropic::RequestServiceTier::AUTO: return "auto";
+        case anthropic::RequestServiceTier::STANDARD_ONLY: return "standard_only";
+        default: throw std::logic_error("invalid anthropic::RequestServiceTier");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ResponseContentBlockKinds val) {
+    switch (val) {
+        case anthropic::ResponseContentBlockKinds::TEXT: return "text";
+        case anthropic::ResponseContentBlockKinds::THINKING: return "thinking";
+        case anthropic::ResponseContentBlockKinds::REDACTED_THINKING: return "redacted_thinking";
+        case anthropic::ResponseContentBlockKinds::TOOL_USE: return "tool_use";
+        case anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE: return "server_tool_use";
+        case anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT: return "web_search_tool_result";
+        default: throw std::logic_error("invalid anthropic::ResponseContentBlockKinds");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ResponseRole val) {
+    switch (val) {
+        case anthropic::ResponseRole::ASSISTANT: return "assistant";
+        default: throw std::logic_error("invalid anthropic::ResponseRole");
+    }
+}
+
 constexpr std::string_view to_string_view(anthropic::Role val) {
     switch (val) {
         case anthropic::Role::USER: return "user";
@@ -511,17 +616,6 @@ constexpr std::string_view to_string_view(anthropic::ServerToolUseBlockKind val)
     }
 }
 
-constexpr std::string_view to_string_view(anthropic::ServiceTier val) {
-    switch (val) {
-        case anthropic::ServiceTier::AUTO: return "auto";
-        case anthropic::ServiceTier::STANDARD_ONLY: return "standard_only";
-        case anthropic::ServiceTier::STANDARD: return "standard";
-        case anthropic::ServiceTier::PRIORITY: return "priority";
-        case anthropic::ServiceTier::BATCH: return "batch";
-        default: throw std::logic_error("invalid anthropic::ServiceTier");
-    }
-}
-
 constexpr std::string_view to_string_view(anthropic::StopReason val) {
     switch (val) {
         case anthropic::StopReason::END_TURN: return "end_turn";
@@ -548,27 +642,6 @@ constexpr std::string_view to_string_view(anthropic::TextBlockKind val) {
     }
 }
 
-constexpr std::string_view to_string_view(anthropic::ToolTextEditor20250124Name val) {
-    switch (val) {
-        case anthropic::ToolTextEditor20250124Name::TEXT_EDITOR_20250124: return "text_editor_20250124";
-        default: throw std::logic_error("invalid anthropic::ToolTextEditor20250124Name");
-    }
-}
-
-constexpr std::string_view to_string_view(anthropic::ToolTextEditor20250429Name val) {
-    switch (val) {
-        case anthropic::ToolTextEditor20250429Name::TEXT_EDITOR_20250429: return "text_editor_20250429";
-        default: throw std::logic_error("invalid anthropic::ToolTextEditor20250429Name");
-    }
-}
-
-constexpr std::string_view to_string_view(anthropic::ToolTextEditor20250728Name val) {
-    switch (val) {
-        case anthropic::ToolTextEditor20250728Name::TEXT_EDITOR_20250728: return "text_editor_20250728";
-        default: throw std::logic_error("invalid anthropic::ToolTextEditor20250728Name");
-    }
-}
-
 constexpr std::string_view to_string_view(anthropic::ThinkingBlockKind val) {
     switch (val) {
         case anthropic::ThinkingBlockKind::THINKING: return "thinking";
@@ -581,6 +654,20 @@ constexpr std::string_view to_string_view(anthropic::ThinkingConfigType val) {
         case anthropic::ThinkingConfigType::ENABLED: return "enabled";
         case anthropic::ThinkingConfigType::DISABLED: return "disabled";
         default: throw std::logic_error("invalid anthropic::ThinkingConfigType");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ToolBash20250124Name val) {
+    switch (val) {
+        case anthropic::ToolBash20250124Name::BASH: return "bash";
+        default: throw std::logic_error("invalid anthropic::ToolBash20250124Name");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ToolBash20250124Type val) {
+    switch (val) {
+        case anthropic::ToolBash20250124Type::BASH_20250124: return "bash_20250124";
+        default: throw std::logic_error("invalid anthropic::ToolBash20250124Type");
     }
 }
 
@@ -619,6 +706,27 @@ constexpr std::string_view to_string_view(anthropic::ToolResultBlockKind val) {
     }
 }
 
+constexpr std::string_view to_string_view(anthropic::ToolTextEditor20250124Name val) {
+    switch (val) {
+        case anthropic::ToolTextEditor20250124Name::TEXT_EDITOR_20250124: return "text_editor_20250124";
+        default: throw std::logic_error("invalid anthropic::ToolTextEditor20250124Name");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ToolTextEditor20250429Name val) {
+    switch (val) {
+        case anthropic::ToolTextEditor20250429Name::TEXT_EDITOR_20250429: return "text_editor_20250429";
+        default: throw std::logic_error("invalid anthropic::ToolTextEditor20250429Name");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ToolTextEditor20250728Name val) {
+    switch (val) {
+        case anthropic::ToolTextEditor20250728Name::TEXT_EDITOR_20250728: return "text_editor_20250728";
+        default: throw std::logic_error("invalid anthropic::ToolTextEditor20250728Name");
+    }
+}
+
 constexpr std::string_view to_string_view(anthropic::ToolUseBlockKind val) {
     switch (val) {
         case anthropic::ToolUseBlockKind::TOOL_USE: return "tool_use";
@@ -633,10 +741,26 @@ constexpr std::string_view to_string_view(anthropic::UrlSourceKind val) {
     }
 }
 
+constexpr std::string_view to_string_view(anthropic::UsageServiceTier val) {
+    switch (val) {
+        case anthropic::UsageServiceTier::STANDARD: return "standard";
+        case anthropic::UsageServiceTier::PRIORITY: return "priority";
+        case anthropic::UsageServiceTier::BATCH: return "batch";
+        default: throw std::logic_error("invalid anthropic::UsageServiceTier");
+    }
+}
+
 constexpr std::string_view to_string_view(anthropic::UserLocationTypeKind val) {
     switch (val) {
         case anthropic::UserLocationTypeKind::APPROXIMATE: return "approximate";
         default: throw std::logic_error("invalid anthropic::UserLocationTypeKind");
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::WebSearchName val) {
+    switch (val) {
+        case anthropic::WebSearchName::WEB_SEARCH: return "web_search";
+        default: throw std::logic_error("invalid anthropic::WebSearchName");
     }
 }
 
@@ -651,13 +775,6 @@ constexpr std::string_view to_string_view(anthropic::WebSearchTool20250305Kind v
     switch (val) {
         case anthropic::WebSearchTool20250305Kind::WEB_SEARCH_20250305: return "web_search_20250305";
         default: throw std::logic_error("invalid anthropic::WebSearchTool20250305Kind");
-    }
-}
-
-constexpr std::string_view to_string_view(anthropic::WebSearchName val) {
-    switch (val) {
-        case anthropic::WebSearchName::WEB_SEARCH: return "web_search";
-        default: throw std::logic_error("invalid anthropic::WebSearchName");
     }
 }
 

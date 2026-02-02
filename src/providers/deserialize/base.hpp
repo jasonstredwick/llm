@@ -154,6 +154,12 @@ std::vector<T, Allocator> Parse(const simdjson::dom::element& src) {
 }
 
 
+template <typename T>
+std::vector<T> ParseArrayOf(const simdjson::dom::element& src) {
+    return src.get_array() | std::views::transform([](auto const& in) { return Parse<T>(in); }) | std::ranges::to();
+}
+
+
 /***
  * Extract
  */

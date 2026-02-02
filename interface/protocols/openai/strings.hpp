@@ -1,6 +1,6 @@
 #pragma once
 
-#include "responses.hpp"
+#include "responses_enums.hpp"
 
 #include <optional>
 #include <stdexcept>
@@ -181,6 +181,19 @@ constexpr std::optional<openai::ComputerUseToolKind> from_string_view<openai::Co
 }
 
 template <>
+constexpr std::optional<openai::ConnectId> from_string_view<openai::ConnectId>(std::string_view sv) {
+    if (sv == "connector_dropbox") return openai::ConnectId::DROPBOX;
+    if (sv == "connector_gmail") return openai::ConnectId::GMAIL;
+    if (sv == "connector_googlecalendar") return openai::ConnectId::GOOGLE_CALENDAR;
+    if (sv == "connector_googledrive") return openai::ConnectId::GOOGLE_DRIVE;
+    if (sv == "connector_microsoftteams") return openai::ConnectId::MICROSOFT_TEAMS;
+    if (sv == "connector_outlookcalendar") return openai::ConnectId::OUTLOOK_CALENDAR;
+    if (sv == "connector_outlookemail") return openai::ConnectId::OUTLOOK_EMAIL;
+    if (sv == "connector_sharepoint") return openai::ConnectId::SHAREPOINT;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<openai::ContainerConfigKind> from_string_view<openai::ContainerConfigKind>(std::string_view sv) {
     if (sv == "auto") return openai::ContainerConfigKind::AUTO;
     return std::nullopt;
@@ -280,8 +293,8 @@ constexpr std::optional<openai::FilePathKind> from_string_view<openai::FilePathK
 }
 
 template <>
-constexpr std::optional<openai::FileSearchCallKind> from_string_view<openai::FileSearchCallKind>(std::string_view sv) {
-    if (sv == "file_search_call") return openai::FileSearchCallKind::FILE_SEARCH_CALL;
+constexpr std::optional<openai::FileSearchToolCallKind> from_string_view<openai::FileSearchToolCallKind>(std::string_view sv) {
+    if (sv == "file_search_call") return openai::FileSearchToolCallKind::FILE_SEARCH_CALL;
     return std::nullopt;
 }
 
@@ -429,6 +442,18 @@ constexpr std::optional<openai::ImageGenerationToolKind> from_string_view<openai
 }
 
 template <>
+constexpr std::optional<openai::IncludeOutputData> from_string_view<openai::IncludeOutputData>(std::string_view sv) {
+    if (sv == "code_interpreter_call.outputs") return openai::IncludeOutputData::CODE_INTERPRETER_CALL_OUTPUTS;
+    if (sv == "computer_call_output.output.image_url") return openai::IncludeOutputData::COMPUTER_CALL_OUTPUT_OUTPUT_IMAGE_URL;
+    if (sv == "file_search_call.results") return openai::IncludeOutputData::FILE_SEARCH_CALL_RESULTS;
+    if (sv == "message.input_image.image_url") return openai::IncludeOutputData::MESSAGE_INPUT_IMAGE_IMAGE_URL;
+    if (sv == "message.output_text.logprobs") return openai::IncludeOutputData::MESSAGE_OUTPUT_TEXT_LOGPROBS;
+    if (sv == "reasoning.encrypted_content") return openai::IncludeOutputData::REASONING_ENCRYPTED_CONTENT;
+    if (sv == "web_search_call.action.sources") return openai::IncludeOutputData::WEB_SEARCH_CALL_ACTION_SOURCES;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<openai::IncompleteReason> from_string_view<openai::IncompleteReason>(std::string_view sv) {
     if (sv == "max_output_tokens") return openai::IncompleteReason::MAX_OUTPUT_TOKENS;
     if (sv == "content_filter") return openai::IncompleteReason::CONTENT_FILTER;
@@ -548,45 +573,45 @@ constexpr std::optional<openai::LocationType> from_string_view<openai::LocationT
 }
 
 template <>
-constexpr std::optional<openai::McpApprovalRequestKind> from_string_view<openai::McpApprovalRequestKind>(std::string_view sv) {
-    if (sv == "mcp_approval_request") return openai::McpApprovalRequestKind::MCP_APPROVAL_REQUEST;
+constexpr std::optional<openai::MCPApprovalRequestKind> from_string_view<openai::MCPApprovalRequestKind>(std::string_view sv) {
+    if (sv == "mcp_approval_request") return openai::MCPApprovalRequestKind::MCP_APPROVAL_REQUEST;
     return std::nullopt;
 }
 
 template <>
-constexpr std::optional<openai::McpApprovalResponseKind> from_string_view<openai::McpApprovalResponseKind>(std::string_view sv) {
-    if (sv == "mcp_approval_response") return openai::McpApprovalResponseKind::MCP_APPROVAL_RESPONSE;
+constexpr std::optional<openai::MCPApprovalResponseKind> from_string_view<openai::MCPApprovalResponseKind>(std::string_view sv) {
+    if (sv == "mcp_approval_response") return openai::MCPApprovalResponseKind::MCP_APPROVAL_RESPONSE;
     return std::nullopt;
 }
 
 template <>
-constexpr std::optional<openai::McpApprovalSetting> from_string_view<openai::McpApprovalSetting>(std::string_view sv) {
-    if (sv == "always") return openai::McpApprovalSetting::ALWAYS;
-    if (sv == "never") return openai::McpApprovalSetting::NEVER;
+constexpr std::optional<openai::MCPApprovalSetting> from_string_view<openai::MCPApprovalSetting>(std::string_view sv) {
+    if (sv == "always") return openai::MCPApprovalSetting::ALWAYS;
+    if (sv == "never") return openai::MCPApprovalSetting::NEVER;
     return std::nullopt;
 }
 
 template <>
-constexpr std::optional<openai::McpCallKind> from_string_view<openai::McpCallKind>(std::string_view sv) {
-    if (sv == "mcp_call") return openai::McpCallKind::MCP_CALL;
+constexpr std::optional<openai::MCPCallKind> from_string_view<openai::MCPCallKind>(std::string_view sv) {
+    if (sv == "mcp_call") return openai::MCPCallKind::MCP_CALL;
     return std::nullopt;
 }
 
 template <>
-constexpr std::optional<openai::McpListToolsKind> from_string_view<openai::McpListToolsKind>(std::string_view sv) {
-    if (sv == "mcp_list_tools") return openai::McpListToolsKind::MCP_LIST_TOOLS;
+constexpr std::optional<openai::MCPListToolsKind> from_string_view<openai::MCPListToolsKind>(std::string_view sv) {
+    if (sv == "mcp_list_tools") return openai::MCPListToolsKind::MCP_LIST_TOOLS;
     return std::nullopt;
 }
 
 template <>
-constexpr std::optional<openai::McpToolChoiceKind> from_string_view<openai::McpToolChoiceKind>(std::string_view sv) {
-    if (sv == "mcp") return openai::McpToolChoiceKind::MCP;
+constexpr std::optional<openai::MCPToolChoiceKind> from_string_view<openai::MCPToolChoiceKind>(std::string_view sv) {
+    if (sv == "mcp") return openai::MCPToolChoiceKind::MCP;
     return std::nullopt;
 }
 
 template <>
-constexpr std::optional<openai::McpToolKind> from_string_view<openai::McpToolKind>(std::string_view sv) {
-    if (sv == "mcp") return openai::McpToolKind::MCP;
+constexpr std::optional<openai::MCPToolKind> from_string_view<openai::MCPToolKind>(std::string_view sv) {
+    if (sv == "mcp") return openai::MCPToolKind::MCP;
     return std::nullopt;
 }
 
@@ -728,11 +753,25 @@ constexpr std::optional<openai::ResponseStatus> from_string_view<openai::Respons
 }
 
 template <>
-constexpr std::optional<openai::Role> from_string_view<openai::Role>(std::string_view sv) {
-    if (sv == "user") return openai::Role::USER;
-    if (sv == "assistant") return openai::Role::ASSISTANT;
-    if (sv == "system") return openai::Role::SYSTEM;
-    if (sv == "developer") return openai::Role::DEVELOPER;
+constexpr std::optional<openai::RoleAssistant> from_string_view<openai::RoleAssistant>(std::string_view sv) {
+    if (sv == "assistant") return openai::RoleAssistant::ASSISTANT;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::RoleInputMessage> from_string_view<openai::RoleInputMessage>(std::string_view sv) {
+    if (sv == "user") return openai::RoleInputMessage::USER;
+    if (sv == "assistant") return openai::RoleInputMessage::ASSISTANT;
+    if (sv == "system") return openai::RoleInputMessage::SYSTEM;
+    if (sv == "developer") return openai::RoleInputMessage::DEVELOPER;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::RoleUser> from_string_view<openai::RoleUser>(std::string_view sv) {
+    if (sv == "user") return openai::RoleUser::USER;
+    if (sv == "system") return openai::RoleUser::SYSTEM;
+    if (sv == "developer") return openai::RoleUser::DEVELOPER;
     return std::nullopt;
 }
 
@@ -773,7 +812,6 @@ constexpr std::optional<openai::ServiceTier> from_string_view<openai::ServiceTie
     if (sv == "auto") return openai::ServiceTier::AUTO;
     if (sv == "default") return openai::ServiceTier::DEFAULT;
     if (sv == "flex") return openai::ServiceTier::FLEX;
-    if (sv == "scale") return openai::ServiceTier::SCALE;
     if (sv == "priority") return openai::ServiceTier::PRIORITY;
     return std::nullopt;
 }
@@ -832,6 +870,13 @@ constexpr std::optional<openai::ToolChoiceMode> from_string_view<openai::ToolCho
     if (sv == "none") return openai::ToolChoiceMode::NONE;
     if (sv == "auto") return openai::ToolChoiceMode::AUTO;
     if (sv == "required") return openai::ToolChoiceMode::REQUIRED;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::ToolChoiceModeNotNone> from_string_view<openai::ToolChoiceModeNotNone>(std::string_view sv) {
+    if (sv == "auto") return openai::ToolChoiceModeNotNone::AUTO;
+    if (sv == "required") return openai::ToolChoiceModeNotNone::REQUIRED;
     return std::nullopt;
 }
 
@@ -1142,6 +1187,20 @@ constexpr std::string_view to_string_view(openai::ComputerUseToolKind val) {
     }
 }
 
+constexpr std::string_view to_string_view(openai::ConnectId val) {
+    switch (val) {
+        case openai::ConnectId::DROPBOX: return "connector_dropbox";
+        case openai::ConnectId::GMAIL: return "connector_gmail";
+        case openai::ConnectId::GOOGLE_CALENDAR: return "connector_googlecalendar";
+        case openai::ConnectId::GOOGLE_DRIVE: return "connector_googledrive";
+        case openai::ConnectId::MICROSOFT_TEAMS: return "connector_microsoftteams";
+        case openai::ConnectId::OUTLOOK_CALENDAR: return "connector_outlookcalendar";
+        case openai::ConnectId::OUTLOOK_EMAIL: return "connector_outlookemail";
+        case openai::ConnectId::SHAREPOINT: return "connector_sharepoint";
+        default: throw std::logic_error("invalid openai::ConnectId");
+    }
+}
+
 constexpr std::string_view to_string_view(openai::ContainerConfigKind val) {
     switch (val) {
         case openai::ContainerConfigKind::AUTO: return "auto";
@@ -1257,10 +1316,10 @@ constexpr std::string_view to_string_view(openai::FilePathKind val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::FileSearchCallKind val) {
+constexpr std::string_view to_string_view(openai::FileSearchToolCallKind val) {
     switch (val) {
-        case openai::FileSearchCallKind::FILE_SEARCH_CALL: return "file_search_call";
-        default: throw std::logic_error("invalid openai::FileSearchCallKind");
+        case openai::FileSearchToolCallKind::FILE_SEARCH_CALL: return "file_search_call";
+        default: throw std::logic_error("invalid openai::FileSearchToolCallKind");
     }
 }
 
@@ -1425,6 +1484,19 @@ constexpr std::string_view to_string_view(openai::ImageGenerationToolKind val) {
         default: throw std::logic_error("invalid openai::ImageGenerationToolKind");
     }
 }
+constexpr std::string_view to_string_view(openai::IncludeOutputData val) {
+    switch (val) {
+        case openai::IncludeOutputData::CODE_INTERPRETER_CALL_OUTPUTS: return "code_interpreter_call.outputs";
+        case openai::IncludeOutputData::COMPUTER_CALL_OUTPUT_OUTPUT_IMAGE_URL: return "computer_call_output.output.image_url";
+        case openai::IncludeOutputData::FILE_SEARCH_CALL_RESULTS: return "file_search_call.results";
+        case openai::IncludeOutputData::MESSAGE_INPUT_IMAGE_IMAGE_URL: return "message.input_image.image_url";
+        case openai::IncludeOutputData::MESSAGE_OUTPUT_TEXT_LOGPROBS: return "message.output_text.logprobs";
+        case openai::IncludeOutputData::REASONING_ENCRYPTED_CONTENT: return "reasoning.encrypted_content";
+        case openai::IncludeOutputData::WEB_SEARCH_CALL_ACTION_SOURCES: return "web_search_call.action.sources";
+        default: throw std::logic_error("invalid openai::IncludeOutputData");
+    }
+}
+
 
 constexpr std::string_view to_string_view(openai::IncompleteReason val) {
     switch (val) {
@@ -1560,53 +1632,53 @@ constexpr std::string_view to_string_view(openai::LocationType val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpApprovalRequestKind val) {
+constexpr std::string_view to_string_view(openai::MCPApprovalRequestKind val) {
     switch (val) {
-        case openai::McpApprovalRequestKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
-        default: throw std::logic_error("invalid openai::McpApprovalRequestKind");
+        case openai::MCPApprovalRequestKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
+        default: throw std::logic_error("invalid openai::MCPApprovalRequestKind");
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpApprovalResponseKind val) {
+constexpr std::string_view to_string_view(openai::MCPApprovalResponseKind val) {
     switch (val) {
-        case openai::McpApprovalResponseKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
-        default: throw std::logic_error("invalid openai::McpApprovalResponseKind");
+        case openai::MCPApprovalResponseKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
+        default: throw std::logic_error("invalid openai::MCPApprovalResponseKind");
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpApprovalSetting val) {
+constexpr std::string_view to_string_view(openai::MCPApprovalSetting val) {
     switch (val) {
-        case openai::McpApprovalSetting::ALWAYS: return "always";
-        case openai::McpApprovalSetting::NEVER: return "never";
-        default: throw std::logic_error("invalid openai::McpApprovalSetting");
+        case openai::MCPApprovalSetting::ALWAYS: return "always";
+        case openai::MCPApprovalSetting::NEVER: return "never";
+        default: throw std::logic_error("invalid openai::MCPApprovalSetting");
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpCallKind val) {
+constexpr std::string_view to_string_view(openai::MCPCallKind val) {
     switch (val) {
-        case openai::McpCallKind::MCP_CALL: return "mcp_call";
-        default: throw std::logic_error("invalid openai::McpCallKind");
+        case openai::MCPCallKind::MCP_CALL: return "mcp_call";
+        default: throw std::logic_error("invalid openai::MCPCallKind");
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpListToolsKind val) {
+constexpr std::string_view to_string_view(openai::MCPListToolsKind val) {
     switch (val) {
-        case openai::McpListToolsKind::MCP_LIST_TOOLS: return "mcp_list_tools";
-        default: throw std::logic_error("invalid openai::McpListToolsKind");
+        case openai::MCPListToolsKind::MCP_LIST_TOOLS: return "mcp_list_tools";
+        default: throw std::logic_error("invalid openai::MCPListToolsKind");
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpToolChoiceKind val) {
+constexpr std::string_view to_string_view(openai::MCPToolChoiceKind val) {
     switch (val) {
-        case openai::McpToolChoiceKind::MCP: return "mcp";
-        default: throw std::logic_error("invalid openai::McpToolChoiceKind");
+        case openai::MCPToolChoiceKind::MCP: return "mcp";
+        default: throw std::logic_error("invalid openai::MCPToolChoiceKind");
     }
 }
 
-constexpr std::string_view to_string_view(openai::McpToolKind val) {
+constexpr std::string_view to_string_view(openai::MCPToolKind val) {
     switch (val) {
-        case openai::McpToolKind::MCP: return "mcp";
-        default: throw std::logic_error("invalid openai::McpToolKind");
+        case openai::MCPToolKind::MCP: return "mcp";
+        default: throw std::logic_error("invalid openai::MCPToolKind");
     }
 }
 
@@ -1766,13 +1838,29 @@ constexpr std::string_view to_string_view(openai::ResponseStatus val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::Role val) {
+constexpr std::string_view to_string_view(openai::RoleAssistant val) {
     switch (val) {
-        case openai::Role::USER: return "user";
-        case openai::Role::ASSISTANT: return "assistant";
-        case openai::Role::SYSTEM: return "system";
-        case openai::Role::DEVELOPER: return "developer";
-        default: throw std::logic_error("invalid openai::Role");
+        case openai::RoleAssistant::ASSISTANT: return "assistant";
+        default: throw std::logic_error("invalid openai::RoleAssistant");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::RoleInputMessage val) {
+    switch (val) {
+        case openai::RoleInputMessage::USER: return "user";
+        case openai::RoleInputMessage::ASSISTANT: return "assistant";
+        case openai::RoleInputMessage::SYSTEM: return "system";
+        case openai::RoleInputMessage::DEVELOPER: return "developer";
+        default: throw std::logic_error("invalid openai::RoleInputMessage");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::RoleUser val) {
+    switch (val) {
+        case openai::RoleUser::USER: return "user";
+        case openai::RoleUser::SYSTEM: return "system";
+        case openai::RoleUser::DEVELOPER: return "developer";
+        default: throw std::logic_error("invalid openai::RoleUser");
     }
 }
 
@@ -1818,7 +1906,6 @@ constexpr std::string_view to_string_view(openai::ServiceTier val) {
         case openai::ServiceTier::AUTO: return "auto";
         case openai::ServiceTier::DEFAULT: return "default";
         case openai::ServiceTier::FLEX: return "flex";
-        case openai::ServiceTier::SCALE: return "scale";
         case openai::ServiceTier::PRIORITY: return "priority";
         default: throw std::logic_error("invalid openai::ServiceTier");
     }
@@ -1887,6 +1974,14 @@ constexpr std::string_view to_string_view(openai::ToolChoiceMode val) {
         case openai::ToolChoiceMode::AUTO: return "auto";
         case openai::ToolChoiceMode::REQUIRED: return "required";
         default: throw std::logic_error("invalid openai::ToolChoiceMode");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::ToolChoiceModeNotNone val) {
+    switch (val) {
+        case openai::ToolChoiceModeNotNone::AUTO: return "auto";
+        case openai::ToolChoiceModeNotNone::REQUIRED: return "required";
+        default: throw std::logic_error("invalid openai::ToolChoiceModeNotNone");
     }
 }
 

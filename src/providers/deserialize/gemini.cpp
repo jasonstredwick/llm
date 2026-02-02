@@ -262,7 +262,7 @@ gemini::GroundingChunk::ChunkType Parse<gemini::GroundingChunk::ChunkType>(const
     } else if (auto r = ExtractForVariant<"web">(obj); r.has_value()) {
         return T{jai::llm::Parse<gemini::GroundingChunk::Web>(*r)};
     }
-    throw std::logic_error{"GroundingChunk::ChunkType variant unsatisfied"};
+    throw std::logic_error{"gemini::GroundingChunk::ChunkType variant unsatisfied"};
 }
 
 
@@ -277,7 +277,7 @@ gemini::ResponseContent::ResponsePart::ResponsePartData
     else if (auto r = ExtractForVariant<"executableCode">(obj); r.has_value()) { return T{Parse<gemini::ExecutableCode>(*r)}; }
     else if (auto r = ExtractForVariant<"fileData"      >(obj); r.has_value()) { return T{Parse<gemini::FileData>(*r)}; }
     else if (auto r = ExtractForVariant<"functionCall"  >(obj); r.has_value()) { return T{Parse<gemini::FunctionCall>(*r)}; }
-    throw std::logic_error{"ResponseContent::ResponsePart::ResponsePartData variant unsatisfied"};
+    throw std::logic_error{"gemini::ResponseContent::ResponsePart::ResponsePartData variant unsatisfied"};
 }
 
 

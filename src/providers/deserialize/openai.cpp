@@ -97,7 +97,7 @@ template <>
 openai::OutputMessage::Content Parse<openai::OutputMessage::Content>(const simdjson::dom::element& src);
 
 template <>
-openai::InputItem Parse<openai::InputItem>(const simdjson::dom::element& src);
+openai::ResponseInputItem Parse<openai::ResponseInputItem>(const simdjson::dom::element& src);
 
 template <>
 openai::Tool Parse<openai::Tool>(const simdjson::dom::element& src);
@@ -169,11 +169,11 @@ END_PARSE
 template <>
 openai::ResponseFormat Parse<openai::ResponseFormat>(const simdjson::dom::element& src) {
     using T = openai::ResponseFormat;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "json_schema") {
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"json_schema") {
         return T{Parse<openai::ResponseFormatJsonSchema>(src["json_schema"])};
     } else {
-        return T{Parse<openai::ResponseFormatText>(src)};
+        return T{Parse<openai::ResponseFormatText>(*r)}; }
     }
 }
 
@@ -182,9 +182,6 @@ BEGIN_PARSE(openai::TextConfig)
     FIELD(src, verbosity)
 END_PARSE
 
-BEGIN_PARSE(openai::StreamOptions)
-    FIELD(src, include_obfuscation)
-END_PARSE
 
 BEGIN_PARSE(openai::ReasoningConfig)
     FIELD(src, effort),
@@ -220,24 +217,6 @@ BEGIN_PARSE(openai::ConversationRef)
     FIELD(src, id)
 END_PARSE
 
-template <>
-openai::PromptRef::VariableValue Parse<openai::PromptRef::VariableValue>(const simdjson::dom::element& src) {
-    using T = openai::PromptRef::VariableValue;
-    if (src.is_string()) {
-        return T{std::string{src.get_string().value()}};
-    }
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "input_image") return T{Parse<openai::InputImage>(src)};
-    if (type_sv == "input_file" ) return T{Parse<openai::InputFile>(src)};
-    if (type_sv == "item_reference") return T{Parse<openai::ItemReference>(src)};
-    throw std::logic_error{"PromptRef::VariableValue variant unsatisfied"};
-}
-
-BEGIN_PARSE(openai::PromptRef)
-    FIELD(src, id),
-    FIELD(src, variables),
-    FIELD(src, version)
-END_PARSE
 
 
 /***
@@ -302,16 +281,16 @@ END_PARSE
 template <>
 openai::ComputerAction Parse<openai::ComputerAction>(const simdjson::dom::element& src) {
     using T = openai::ComputerAction;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "click") return T{Parse<openai::ClickAction>(src)};
-    if (type_sv == "double_click") return T{Parse<openai::DoubleClickAction>(src)};
-    if (type_sv == "drag") return T{Parse<openai::DragAction>(src)};
-    if (type_sv == "keypress") return T{Parse<openai::KeyPressAction>(src)};
-    if (type_sv == "move") return T{Parse<openai::MoveAction>(src)};
-    if (type_sv == "screenshot") return T{Parse<openai::ScreenshotAction>(src)};
-    if (type_sv == "scroll") return T{Parse<openai::ScrollAction>(src)};
-    if (type_sv == "type") return T{Parse<openai::TypeAction>(src)};
-    if (type_sv == "wait") return T{Parse<openai::WaitAction>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"click">(obj); r.has_value()) { return T{Parse<openai::ClickAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"double_click">(obj); r.has_value()) { return T{Parse<openai::DoubleClickAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"drag">(obj); r.has_value()) { return T{Parse<openai::DragAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"keypress">(obj); r.has_value()) { return T{Parse<openai::KeyPressAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"move">(obj); r.has_value()) { return T{Parse<openai::MoveAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"screenshot">(obj); r.has_value()) { return T{Parse<openai::ScreenshotAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"scroll">(obj); r.has_value()) { return T{Parse<openai::ScrollAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"type">(obj); r.has_value()) { return T{Parse<openai::TypeAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"wait">(obj); r.has_value()) { return T{Parse<openai::WaitAction>(*r)}; }
     throw std::logic_error{"ComputerAction variant unsatisfied"};
 }
 
@@ -340,10 +319,10 @@ END_PARSE
 template <>
 openai::WebSearchAction Parse<openai::WebSearchAction>(const simdjson::dom::element& src) {
     using T = openai::WebSearchAction;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "search") return T{Parse<openai::SearchAction>(src)};
-    if (type_sv == "open_page") return T{Parse<openai::OpenPageAction>(src)};
-    if (type_sv == "find") return T{Parse<openai::FindAction>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"search">(obj); r.has_value()) { return T{Parse<openai::SearchAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"open_page">(obj); r.has_value()) { return T{Parse<openai::OpenPageAction>(*r)}; }
+    else if (auto r = ExtractForVariant<"find">(obj); r.has_value()) { return T{Parse<openai::FindAction>(*r)}; }
     throw std::logic_error{"WebSearchAction variant unsatisfied"};
 }
 
@@ -367,10 +346,10 @@ END_PARSE
 template <>
 openai::ApplyPatchOperation Parse<openai::ApplyPatchOperation>(const simdjson::dom::element& src) {
     using T = openai::ApplyPatchOperation;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "create_file") return T{Parse<openai::CreateFileOperation>(src)};
-    if (type_sv == "delete_file") return T{Parse<openai::DeleteFileOperation>(src)};
-    if (type_sv == "update_file") return T{Parse<openai::UpdateFileOperation>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"create_file">(obj); r.has_value()) { return T{Parse<openai::CreateFileOperation>(*r)}; }
+    else if (auto r = ExtractForVariant<"delete_file">(obj); r.has_value()) { return T{Parse<openai::DeleteFileOperation>(*r)}; }
+    else if (auto r = ExtractForVariant<"update_file">(obj); r.has_value()) { return T{Parse<openai::UpdateFileOperation>(*r)}; }
     throw std::logic_error{"ApplyPatchOperation variant unsatisfied"};
 }
 
@@ -444,7 +423,7 @@ END_PARSE
 template <>
 FunctionCallOutput_output_t Parse<FunctionCallOutput_output_t>(const simdjson::dom::element& src) {
     if (src.is_string()) return FunctionCallOutput_output_t{std::string{src.get_string().value()}};
-    return FunctionCallOutput_output_t{Parse<std::vector<std::variant<openai::InputText, openai::InputImage, openai::InputFile>>>(src)};
+    return FunctionCallOutput_output_t{Parse<std::vector<std::variant<openai::InputText, openai::InputImage, openai::InputFile>>>(*r)}; }
 }
 
 BEGIN_PARSE(openai::FunctionCallOutput)
@@ -501,9 +480,9 @@ END_PARSE
 template <>
 openai::CodeInterpreterCall::Output Parse<openai::CodeInterpreterCall::Output>(const simdjson::dom::element& src) {
     using T = openai::CodeInterpreterCall::Output;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "logs")  return T{Parse<openai::CodeInterpreterCall::OutputLog>(src)};
-    if (type_sv == "image") return T{Parse<openai::CodeInterpreterCall::OutputImage>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"logs">(obj); r.has_value()) { return T{Parse<openai::CodeInterpreterCall::OutputLog>(*r)}; }
+    else if (auto r = ExtractForVariant<"image">(obj); r.has_value()) { return T{Parse<openai::CodeInterpreterCall::OutputImage>(*r)}; }
     throw std::logic_error{"CodeInterpreterCall::Output variant unsatisfied"};
 }
 
@@ -578,9 +557,9 @@ END_PARSE
 template <>
 openai::ShellCallOutput::Outcome Parse<openai::ShellCallOutput::Outcome>(const simdjson::dom::element& src) {
     using T = openai::ShellCallOutput::Outcome;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "exit") return T{Parse<openai::ShellCallOutput::ShellExitOutcome>(src)};
-    if (type_sv == "timeout") return T{Parse<openai::ShellCallOutput::ShellTimeoutOutcome>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"exit">(obj); r.has_value()) { return T{Parse<openai::ShellCallOutput::ShellExitOutcome>(*r)}; }
+    else if (auto r = ExtractForVariant<"timeout">(obj); r.has_value()) { return T{Parse<openai::ShellCallOutput::ShellTimeoutOutcome>(*r)}; }
     throw std::logic_error{"ShellCallOutput::Outcome variant unsatisfied"};
 }
 
@@ -686,10 +665,10 @@ std::variant<openai::InputText, openai::InputImage, openai::InputFile>
     Parse<std::variant<openai::InputText, openai::InputImage, openai::InputFile>>(const simdjson::dom::element& src)
 {
     using T = std::variant<openai::InputText, openai::InputImage, openai::InputFile>;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "input_text")  return T{Parse<openai::InputText>(src)};
-    if (type_sv == "input_image") return T{Parse<openai::InputImage>(src)};
-    if (type_sv == "input_file")  return T{Parse<openai::InputFile>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"input_text">(obj); r.has_value()) { return T{Parse<openai::InputText>(*r)}; }
+    else if (auto r = ExtractForVariant<"input_image">(obj); r.has_value()) { return T{Parse<openai::InputImage>(*r)}; }
+    else if (auto r = ExtractForVariant<"input_file">(obj); r.has_value()) { return T{Parse<openai::InputFile>(*r)}; }
     throw std::logic_error{"Variant unsatisfied"};
 }
 
@@ -698,11 +677,11 @@ std::variant<openai::InputText, openai::InputImage, openai::InputFile, openai::I
     Parse<std::variant<openai::InputText, openai::InputImage, openai::InputFile, openai::ItemReference>>(const simdjson::dom::element& src)
 {
     using T = std::variant<openai::InputText, openai::InputImage, openai::InputFile, openai::ItemReference>;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "input_text")     return T{Parse<openai::InputText>(src)};
-    if (type_sv == "input_image")    return T{Parse<openai::InputImage>(src)};
-    if (type_sv == "input_file")     return T{Parse<openai::InputFile>(src)};
-    if (type_sv == "item_reference") return T{Parse<openai::ItemReference>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"input_text">(obj); r.has_value()) { return T{Parse<openai::InputText>(*r)}; }
+    else if (auto r = ExtractForVariant<"input_image">(obj); r.has_value()) { return T{Parse<openai::InputImage>(*r)}; }
+    else if (auto r = ExtractForVariant<"input_file">(obj); r.has_value()) { return T{Parse<openai::InputFile>(*r)}; }
+    else if (auto r = ExtractForVariant<"item_reference">(obj); r.has_value()) { return T{Parse<openai::ItemReference>(*r)}; }
     throw std::logic_error{"InputMessage content variant unsatisfied"};
 }
 
@@ -747,11 +726,11 @@ END_PARSE
 template <>
 openai::OutputMessage::OutputText::Annotation Parse<openai::OutputMessage::OutputText::Annotation>(const simdjson::dom::element& src) {
     using T = openai::OutputMessage::OutputText::Annotation;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "file_citation")           return T{Parse<openai::OutputMessage::OutputText::CitationFile>(src)};
-    if (type_sv == "url_citation")            return T{Parse<openai::OutputMessage::OutputText::CitationUrl>(src)};
-    if (type_sv == "container_file_citation") return T{Parse<openai::OutputMessage::OutputText::CitationContainer>(src)};
-    if (type_sv == "file_path")               return T{Parse<openai::OutputMessage::OutputText::FilePath>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"file_citation">(obj); r.has_value()) { return T{Parse<openai::OutputMessage::OutputText::CitationFile>(*r)}; }
+    else if (auto r = ExtractForVariant<"url_citation">(obj); r.has_value()) { return T{Parse<openai::OutputMessage::OutputText::CitationUrl>(*r)}; }
+    else if (auto r = ExtractForVariant<"container_file_citation">(obj); r.has_value()) { return T{Parse<openai::OutputMessage::OutputText::CitationContainer>(*r)}; }
+    else if (auto r = ExtractForVariant<"file_path">(obj); r.has_value()) { return T{Parse<openai::OutputMessage::OutputText::FilePath>(*r)}; }
     throw std::logic_error{"OutputMessage::OutputText::Annotation variant unsatisfied"};
 }
 
@@ -783,9 +762,9 @@ END_PARSE
 template <>
 openai::OutputMessage::Content Parse<openai::OutputMessage::Content>(const simdjson::dom::element& src) {
     using T = openai::OutputMessage::Content;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "output_text") return T{Parse<openai::OutputMessage::OutputText>(src)};
-    if (type_sv == "refusal")     return T{Parse<openai::OutputMessage::Refusal>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"output_text">(obj); r.has_value()) { return T{Parse<openai::OutputMessage::OutputText>(*r)}; }
+    else if (auto r = ExtractForVariant<"refusal">(obj); r.has_value()) { return T{Parse<openai::OutputMessage::Refusal>(*r)}; }
     throw std::logic_error{"OutputMessage::Content variant unsatisfied"};
 }
 
@@ -798,38 +777,38 @@ BEGIN_PARSE(openai::OutputMessage)
 END_PARSE
 
 template <>
-openai::InputItem Parse<openai::InputItem>(const simdjson::dom::element& src) {
-    using T = openai::InputItem;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "message") {
+openai::ResponseInputItem Parse<openai::ResponseInputItem>(const simdjson::dom::element& src) {
+    using T = openai::ResponseInputItem;
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"message") {
         auto role_sv = src["role"].get_string().value();
-        if (role_sv == "assistant") return T{Parse<openai::OutputMessage>(src)};
-        return T{Parse<openai::InputMessage>(src)};
+        if (role_sv == "assistant">(obj); r.has_value()) { return T{Parse<openai::OutputMessage>(*r)}; }
+        return T{Parse<openai::InputMessage>(*r)}; }
     }
-    if (type_sv == "file_search_call")        return T{Parse<openai::FileSearchCall>(src)};
-    if (type_sv == "computer_call")           return T{Parse<openai::ComputerCall>(src)};
-    if (type_sv == "computer_call_output")    return T{Parse<openai::ComputerCallOutput>(src)};
-    if (type_sv == "web_search_call")         return T{Parse<openai::WebSearchCall>(src)};
-    if (type_sv == "function_call")           return T{Parse<openai::FunctionCall>(src)};
-    if (type_sv == "function_call_output")    return T{Parse<openai::FunctionCallOutput>(src)};
-    if (type_sv == "reasoning")               return T{Parse<openai::ReasoningItem>(src)};
-    if (type_sv == "compaction")              return T{Parse<openai::CompactionItem>(src)};
-    if (type_sv == "image_generation_call")   return T{Parse<openai::ImageGenerationCall>(src)};
-    if (type_sv == "code_interpreter_call")   return T{Parse<openai::CodeInterpreterCall>(src)};
-    if (type_sv == "local_shell_call")        return T{Parse<openai::LocalShellCall>(src)};
-    if (type_sv == "local_shell_call_output") return T{Parse<openai::LocalShellCallOutput>(src)};
-    if (type_sv == "shell_call")              return T{Parse<openai::ShellCall>(src)};
-    if (type_sv == "shell_call_output")       return T{Parse<openai::ShellCallOutput>(src)};
-    if (type_sv == "apply_patch_call")        return T{Parse<openai::ApplyPatchCall>(src)};
-    if (type_sv == "apply_patch_call_output") return T{Parse<openai::ApplyPatchCallOutput>(src)};
-    if (type_sv == "mcp_list_tools")          return T{Parse<openai::McpListTools>(src)};
-    if (type_sv == "mcp_approval_request")    return T{Parse<openai::McpApprovalRequest>(src)};
-    if (type_sv == "mcp_approval_response")   return T{Parse<openai::McpApprovalResponse>(src)};
-    if (type_sv == "mcp_call")                return T{Parse<openai::McpCall>(src)};
-    if (type_sv == "custom_tool_call")        return T{Parse<openai::CustomToolCall>(src)};
-    if (type_sv == "custom_tool_call_output") return T{Parse<openai::CustomToolCallOutput>(src)};
-    if (type_sv == "item_reference")          return T{Parse<openai::ItemReference>(src)};
-    throw std::logic_error{"InputItem variant unsatisfied"};
+    else if (auto r = ExtractForVariant<"file_search_call">(obj); r.has_value()) { return T{Parse<openai::FileSearchCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"computer_call">(obj); r.has_value()) { return T{Parse<openai::ComputerCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"computer_call_output">(obj); r.has_value()) { return T{Parse<openai::ComputerCallOutput>(*r)}; }
+    else if (auto r = ExtractForVariant<"web_search_call">(obj); r.has_value()) { return T{Parse<openai::WebSearchCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"function_call">(obj); r.has_value()) { return T{Parse<openai::FunctionCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"function_call_output">(obj); r.has_value()) { return T{Parse<openai::FunctionCallOutput>(*r)}; }
+    else if (auto r = ExtractForVariant<"reasoning">(obj); r.has_value()) { return T{Parse<openai::ReasoningItem>(*r)}; }
+    else if (auto r = ExtractForVariant<"compaction">(obj); r.has_value()) { return T{Parse<openai::CompactionItem>(*r)}; }
+    else if (auto r = ExtractForVariant<"image_generation_call">(obj); r.has_value()) { return T{Parse<openai::ImageGenerationCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"code_interpreter_call">(obj); r.has_value()) { return T{Parse<openai::CodeInterpreterCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"local_shell_call">(obj); r.has_value()) { return T{Parse<openai::LocalShellCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"local_shell_call_output">(obj); r.has_value()) { return T{Parse<openai::LocalShellCallOutput>(*r)}; }
+    else if (auto r = ExtractForVariant<"shell_call">(obj); r.has_value()) { return T{Parse<openai::ShellCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"shell_call_output">(obj); r.has_value()) { return T{Parse<openai::ShellCallOutput>(*r)}; }
+    else if (auto r = ExtractForVariant<"apply_patch_call">(obj); r.has_value()) { return T{Parse<openai::ApplyPatchCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"apply_patch_call_output">(obj); r.has_value()) { return T{Parse<openai::ApplyPatchCallOutput>(*r)}; }
+    else if (auto r = ExtractForVariant<"mcp_list_tools">(obj); r.has_value()) { return T{Parse<openai::McpListTools>(*r)}; }
+    else if (auto r = ExtractForVariant<"mcp_approval_request">(obj); r.has_value()) { return T{Parse<openai::McpApprovalRequest>(*r)}; }
+    else if (auto r = ExtractForVariant<"mcp_approval_response">(obj); r.has_value()) { return T{Parse<openai::McpApprovalResponse>(*r)}; }
+    else if (auto r = ExtractForVariant<"mcp_call">(obj); r.has_value()) { return T{Parse<openai::McpCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"custom_tool_call">(obj); r.has_value()) { return T{Parse<openai::CustomToolCall>(*r)}; }
+    else if (auto r = ExtractForVariant<"custom_tool_call_output">(obj); r.has_value()) { return T{Parse<openai::CustomToolCallOutput>(*r)}; }
+    else if (auto r = ExtractForVariant<"item_reference">(obj); r.has_value()) { return T{Parse<openai::ItemReference>(*r)}; }
+    throw std::logic_error{"ResponseInputItem variant unsatisfied"};
 }
 
 
@@ -920,7 +899,7 @@ template <>
 openai::CodeInterpreterTool::Container Parse<openai::CodeInterpreterTool::Container>(const simdjson::dom::element& src) {
     using T = openai::CodeInterpreterTool::Container;
     if (src.is_string()) return T{std::string{src.get_string().value()}};
-    return T{Parse<openai::CodeInterpreterTool::ContainerConfig>(src)};
+    return T{Parse<openai::CodeInterpreterTool::ContainerConfig>(*r)}; }
 }
 
 BEGIN_PARSE(openai::CodeInterpreterTool)
@@ -960,9 +939,9 @@ END_PARSE
 template <>
 openai::CustomTool::Format Parse<openai::CustomTool::Format>(const simdjson::dom::element& src) {
     using T = openai::CustomTool::Format;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "grammar") return T{Parse<openai::CustomTool::GrammarFormat>(src)};
-    if (type_sv == "text")    return T{Parse<openai::CustomTool::TextFormat>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"grammar">(obj); r.has_value()) { return T{Parse<openai::CustomTool::GrammarFormat>(*r)}; }
+    else if (auto r = ExtractForVariant<"text">(obj); r.has_value()) { return T{Parse<openai::CustomTool::TextFormat>(*r)}; }
     throw std::logic_error{"CustomTool::Format variant unsatisfied"};
 }
 
@@ -994,19 +973,19 @@ END_PARSE
 template <>
 openai::Tool Parse<openai::Tool>(const simdjson::dom::element& src) {
     using T = openai::Tool;
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "function")              return T{Parse<openai::FunctionTool>(src)};
-    if (type_sv == "file_search")           return T{Parse<openai::FileSearchTool>(src)};
-    if (type_sv == "computer_20241022")    return T{Parse<openai::ComputerUseTool>(src)};
-    if (type_sv == "web_search_20250124")  return T{Parse<openai::WebSearchTool>(src)};
-    if (type_sv == "mcp")                   return T{Parse<openai::McpTool>(src)};
-    if (type_sv == "code_interpreter")      return T{Parse<openai::CodeInterpreterTool>(src)};
-    if (type_sv == "image_generation")      return T{Parse<openai::ImageGenerationTool>(src)};
-    if (type_sv == "local_shell")           return T{Parse<openai::LocalShellTool>(src)};
-    if (type_sv == "shell")                  return T{Parse<openai::ShellTool>(src)};
-    if (type_sv == "custom")                 return T{Parse<openai::CustomTool>(src)};
-    if (type_sv == "web_search_preview")    return T{Parse<openai::WebSearchPreviewTool>(src)};
-    if (type_sv == "apply_patch")           return T{Parse<openai::ApplyPatchTool>(src)};
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"function">(obj); r.has_value()) { return T{Parse<openai::FunctionTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"file_search">(obj); r.has_value()) { return T{Parse<openai::FileSearchTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"computer_20241022">(obj); r.has_value()) { return T{Parse<openai::ComputerUseTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"web_search_20250124">(obj); r.has_value()) { return T{Parse<openai::WebSearchTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"mcp">(obj); r.has_value()) { return T{Parse<openai::McpTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"code_interpreter">(obj); r.has_value()) { return T{Parse<openai::CodeInterpreterTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"image_generation">(obj); r.has_value()) { return T{Parse<openai::ImageGenerationTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"local_shell">(obj); r.has_value()) { return T{Parse<openai::LocalShellTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"shell">(obj); r.has_value()) { return T{Parse<openai::ShellTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"custom">(obj); r.has_value()) { return T{Parse<openai::CustomTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"web_search_preview">(obj); r.has_value()) { return T{Parse<openai::WebSearchPreviewTool>(*r)}; }
+    else if (auto r = ExtractForVariant<"apply_patch">(obj); r.has_value()) { return T{Parse<openai::ApplyPatchTool>(*r)}; }
     throw std::logic_error{"Tool variant unsatisfied"};
 }
 
@@ -1058,15 +1037,15 @@ END_PARSE
 template <>
 openai::ToolChoice Parse<openai::ToolChoice>(const simdjson::dom::element& src) {
     using T = openai::ToolChoice;
-    if (src.is_string()) return T{Parse<openai::ToolChoiceMode>(src)};
-    auto type_sv = src["type"].get_string().value();
-    if (type_sv == "allowed_tools") return T{Parse<openai::AllowedToolsChoice>(src)};
-    if (type_sv == "hosted")        return T{Parse<openai::HostedToolChoice>(src)};
-    if (type_sv == "function")      return T{Parse<openai::FunctionToolChoice>(src)};
-    if (type_sv == "mcp")           return T{Parse<openai::McpToolChoice>(src)};
-    if (type_sv == "custom")        return T{Parse<openai::CustomToolChoice>(src)};
-    if (type_sv == "apply_patch")   return T{Parse<openai::SpecificApplyPatchToolChoice>(src)};
-    if (type_sv == "shell")         return T{Parse<openai::SpecificShellToolChoice>(src)};
+    if (src.is_string()) return T{Parse<openai::ToolChoiceMode>(*r)}; }
+    auto obj = src.get_object();
+    else if (auto r = ExtractForVariant<"allowed_tools">(obj); r.has_value()) { return T{Parse<openai::AllowedToolsChoice>(*r)}; }
+    else if (auto r = ExtractForVariant<"hosted">(obj); r.has_value()) { return T{Parse<openai::HostedToolChoice>(*r)}; }
+    else if (auto r = ExtractForVariant<"function">(obj); r.has_value()) { return T{Parse<openai::FunctionToolChoice>(*r)}; }
+    else if (auto r = ExtractForVariant<"mcp">(obj); r.has_value()) { return T{Parse<openai::McpToolChoice>(*r)}; }
+    else if (auto r = ExtractForVariant<"custom">(obj); r.has_value()) { return T{Parse<openai::CustomToolChoice>(*r)}; }
+    else if (auto r = ExtractForVariant<"apply_patch">(obj); r.has_value()) { return T{Parse<openai::SpecificApplyPatchToolChoice>(*r)}; }
+    else if (auto r = ExtractForVariant<"shell">(obj); r.has_value()) { return T{Parse<openai::SpecificShellToolChoice>(*r)}; }
     throw std::logic_error{"ToolChoice variant unsatisfied"};
 }
 
@@ -1075,27 +1054,6 @@ openai::ToolChoice Parse<openai::ToolChoice>(const simdjson::dom::element& src) 
  * Block 7: Request
  */
 
-BEGIN_PARSE(openai::Request)
-    FIELD(src, background),
-    FIELD(src, conversation),
-    FIELD(src, include),
-    FIELD(src, input),
-    FIELD(src, instructions),
-    FIELD(src, max_output_tokens),
-    FIELD(src, metadata),
-    FIELD(src, model),
-    FIELD(src, parallel_tool_calls),
-    FIELD(src, previous_response_id),
-    FIELD(src, prompt),
-    FIELD(src, reasoning),
-    FIELD(src, service_tier),
-    FIELD(src, store),
-    FIELD(src, temperature),
-    FIELD(src, text),
-    FIELD(src, tool_choice),
-    FIELD(src, tools),
-    FIELD(src, top_p)
-END_PARSE
 
 
 /***

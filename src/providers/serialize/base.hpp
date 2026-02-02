@@ -68,6 +68,12 @@ inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builde
 }
 
 
+template <size_t N>
+inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, const NameLen<N>& value) {
+    builder.escape_and_append_with_quotes(value.Get());
+}
+
+
 inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
                        const RFC3339Timestamp& value)
 {

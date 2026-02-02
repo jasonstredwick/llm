@@ -24,15 +24,33 @@ namespace jai::llm::anthropic {
  * Kinds
  */
 enum class Base64SourceKind { BASE64 };
+enum class CitationKinds {
+    CHAR_LOCATION,
+    CONTENT_BLOCK_LOCATION,
+    PAGE_LOCATION,
+    SEARCH_RESULT_LOCATION,
+    WEB_SEARCH_RESULT_LOCATION
+};
+enum class ResponseContentBlockKinds {
+    TEXT,
+    THINKING,
+    REDACTED_THINKING,
+    TOOL_USE,
+    SERVER_TOOL_USE,
+    WEB_SEARCH_TOOL_RESULT
+};
 enum class ToolBash20250124Type { BASH_20250124 };
 enum class ToolBash20250124Name { BASH };
 enum class CacheControlEphemeralKind { EPHEMERAL };
 enum class CharLocationKind { CHAR_LOCATION };
 enum class ContentBlockLocationKind { CONTENT_BLOCK_LOCATION };
 enum class ContentSourceKind { CONTENT };
+enum class ContentUnitKind { TEXT, IMAGE };
 enum class CustomToolKind { CUSTOM };
 enum class DocumentBlockKind { DOCUMENT };
+enum class DocSrcKind { BLOCK, PDF, PLAIN_TEXT, URL_PDF};
 enum class ImageBlockKind { IMAGE };
+enum class ImageSourceKinds { BASE64, URL };
 enum class JsonSchemaTypeKind { OBJECT };
 enum class MessageType { MESSAGE };
 enum class PageLocationKind { PAGE_LOCATION };
@@ -40,6 +58,7 @@ enum class PlainTextSourceKind { TEXT };
 enum class RedactedThinkingBlockKind { REDACTED_THINKING };
 enum class ReplaceEditor { STRING };
 enum class ReplaceBasedEditor { STRING };
+enum class ResponseRole { ASSISTANT };
 enum class SearchResultBlockKind { SEARCH_RESULT };
 enum class SearchResultLocationKind { SEARCH_RESULT_LOCATION };
 enum class ServerToolUseBlockKind { SERVER_TOOL_USE };
@@ -70,10 +89,11 @@ enum class CacheControlTTL { TTL_5M, TTL_1H };
 enum class ImageMediaType { IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_WEBP };
 enum class PDFMediaType { APPLICATION_PDF };
 enum class PlainTextMediaType { TEXT_PLAIN };
+enum class RequestServiceTier { AUTO, STANDARD_ONLY };
 enum class Role { USER, ASSISTANT };
-enum class ServiceTier { AUTO, STANDARD_ONLY, STANDARD, PRIORITY, BATCH };
 enum class StopReason { END_TURN, MAX_TOKENS, STOP_SEQUENCE, TOOL_USE, PAUSE_TURN, REFUSAL };
 enum class ThinkingConfigType { ENABLED, DISABLED };
+enum class UsageServiceTier { STANDARD, PRIORITY, BATCH };
 enum class WebSearchToolResultErrorCode {
     INVALID_TOOL_INPUT, UNAVAILABLE, MAX_USES_EXCEEDED,
     TOO_MANY_REQUESTS, QUERY_TOO_LONG, REQUEST_TOO_LARGE
@@ -82,7 +102,7 @@ enum class WebSearchToolResultErrorType { WEB_SEARCH_TOOL_RESULT_ERROR };
 
 
 /***
- * Shared Substructures (Primitives)
+ * Request Shared Substructures
  */
 
 struct CacheControlEphemeral {
@@ -90,118 +110,113 @@ struct CacheControlEphemeral {
     std::optional<CacheControlTTL> ttl{};
 };
 
-struct CitationsConfig {
+struct Metadata {
+    std::optional<std::string> user_id{};
+};
+
+struct CitationsConfigParam {
     std::optional<bool> enabled{};
 };
 
 
 /***
- * Citations
+ * Request Citations
  */
 
-struct CitationCharLocation {
+struct CitationCharLocationParam {
+    CharLocationKind type = CharLocationKind::CHAR_LOCATION;
     std::string cited_text;
     int64_t document_index;
     std::string document_title;
     int64_t end_char_index;
     int64_t start_char_index;
-    CharLocationKind type = CharLocationKind::CHAR_LOCATION;
 };
 
-struct CitationPageLocation {
+struct CitationPageLocationParam {
+    PageLocationKind type = PageLocationKind::PAGE_LOCATION;
     std::string cited_text;
     int64_t document_index;
     std::string document_title;
     int64_t end_page_number;
     int64_t start_page_number;
-    PageLocationKind type = PageLocationKind::PAGE_LOCATION;
 };
 
-struct CitationContentBlockLocation {
+struct CitationContentBlockLocationParam {
+    ContentBlockLocationKind type = ContentBlockLocationKind::CONTENT_BLOCK_LOCATION;
     std::string cited_text;
     int64_t document_index;
     std::string document_title;
     int64_t end_block_index;
     int64_t start_block_index;
-    ContentBlockLocationKind type = ContentBlockLocationKind::CONTENT_BLOCK_LOCATION;
 };
 
-struct CitationWebSearchResultLocation {
+struct CitationWebSearchResultLocationParam {
+    WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
     std::string cited_text;
     std::string encrypted_index;
     std::string title;
-    WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
     EncodedUrl url;
 };
 
-struct CitationSearchResultLocation {
+struct CitationSearchResultLocationParam {
+    SearchResultLocationKind type = SearchResultLocationKind::SEARCH_RESULT_LOCATION;
     std::string cited_text;
     int64_t end_block_index;
     int64_t search_result_index;
     std::string source;
     int64_t start_block_index;
     std::string title;
-    SearchResultLocationKind type = SearchResultLocationKind::SEARCH_RESULT_LOCATION;
 };
 
-using Citation = std::variant<
-    CitationCharLocation, CitationPageLocation, CitationContentBlockLocation,
-    CitationWebSearchResultLocation, CitationSearchResultLocation
+using TextCitationParam = std::variant<
+    CitationCharLocationParam,
+    CitationPageLocationParam,
+    CitationContentBlockLocationParam,
+    CitationWebSearchResultLocationParam,
+    CitationSearchResultLocationParam
 >;
 
 
 /***
- * Message Blocks (Base)
+ * Request Content Blocks
  */
 
-struct TextBlock {
-    std::string text;
-    TextBlockKind type = TextBlockKind::TEXT;
-    std::optional<CacheControlEphemeral> cache_control{};
-    std::optional<std::vector<Citation>> citations{};
-};
-
 struct Base64ImageSource {
+    Base64SourceKind type = Base64SourceKind::BASE64;
     std::string data;
     ImageMediaType media_type;
-    Base64SourceKind type = Base64SourceKind::BASE64;
 };
 
-struct UrlImageSource {
+struct URLImageSource {
     UrlSourceKind type = UrlSourceKind::URL;
     EncodedUrl url;
 };
 
-using ImageSource = std::variant<Base64ImageSource, UrlImageSource>;
+using ImageSource = std::variant<Base64ImageSource, URLImageSource>;
 
-struct ImageBlock {
-    ImageSource source;
+struct TextBlockParam {
+    TextBlockKind type = TextBlockKind::TEXT;
+    std::string text;
+    std::optional<CacheControlEphemeral> cache_control{};
+    std::optional<std::vector<TextCitationParam>> citations{};
+};
+
+struct ImageBlockParam {
     ImageBlockKind type = ImageBlockKind::IMAGE;
+    ImageSource source;
     std::optional<CacheControlEphemeral> cache_control{};
 };
 
-
-/***
- * Recursive Sources & Documents
- */
-
-struct ContentBlockSource {
-    using ContentUnit = std::variant<TextBlock, ImageBlock>;
-    using Content = std::variant<std::string, std::vector<ContentUnit>>;
-    Content content;
-    ContentSourceKind type = ContentSourceKind::CONTENT;
-};
-
 struct Base64PDFSource {
+    Base64SourceKind type = Base64SourceKind::BASE64;
     std::string data;
     PDFMediaType media_type;
-    Base64SourceKind type = Base64SourceKind::BASE64;
 };
 
 struct PlainTextSource {
+    PlainTextSourceKind type = PlainTextSourceKind::TEXT;
     std::string data;
     PlainTextMediaType media_type;
-    PlainTextSourceKind type = PlainTextSourceKind::TEXT;
 };
 
 struct URLPDFSource {
@@ -209,106 +224,118 @@ struct URLPDFSource {
     EncodedUrl url;
 };
 
+struct ContentBlockSource {
+    using ContentBlockSourceContent = std::variant<
+        TextBlockParam,
+        ImageBlockParam
+    >;
+    using Content = std::variant<
+        std::string,
+        std::vector<ContentBlockSourceContent>
+    >;
+
+    ContentSourceKind type = ContentSourceKind::CONTENT;
+    Content content;
+};
+
 using DocumentSource = std::variant<
-    Base64PDFSource, PlainTextSource, URLPDFSource, ContentBlockSource
+    Base64PDFSource,
+    PlainTextSource,
+    ContentBlockSource,
+    URLPDFSource
 >;
 
-struct DocumentBlock {
-    DocumentSource source;
+struct DocumentBlockParam {
     DocumentBlockKind type = DocumentBlockKind::DOCUMENT;
+    DocumentSource source;
     std::optional<CacheControlEphemeral> cache_control{};
-    std::optional<CitationsConfig> citations{};
+    std::optional<CitationsConfigParam> citations{};
     std::optional<std::string> context{};
     std::optional<std::string> title{};
 };
 
-struct SearchResultBlock {
-    std::vector<TextBlock> content;
+struct SearchResultBlockParam {
+    SearchResultBlockKind type = SearchResultBlockKind::SEARCH_RESULT;
+    std::vector<TextBlockParam> content;
     std::string source;
     std::string title;
-    SearchResultBlockKind type = SearchResultBlockKind::SEARCH_RESULT;
     std::optional<CacheControlEphemeral> cache_control{};
-    std::optional<CitationsConfig> citations{};
+    std::optional<CitationsConfigParam> citations{};
 };
 
-
-/***
- * Thinking Blocks
- */
-
-struct ThinkingBlock {
+struct ThinkingBlockParam {
+    ThinkingBlockKind type = ThinkingBlockKind::THINKING;
     std::string signature;
     std::string thinking;
-    ThinkingBlockKind type = ThinkingBlockKind::THINKING;
 };
 
-struct RedactedThinkingBlock {
-    std::string data;
+struct RedactedThinkingBlockParam {
     RedactedThinkingBlockKind type = RedactedThinkingBlockKind::REDACTED_THINKING;
+    std::string data;
 };
 
-
-/***
- * Tool Call Blocks
- */
-
-struct ToolUseBlock {
+struct ToolUseBlockParam {
+    ToolUseBlockKind type = ToolUseBlockKind::TOOL_USE;
     std::string id;
     jai::llm::json::Object input;
     std::string name;
-    ToolUseBlockKind type = ToolUseBlockKind::TOOL_USE;
+    std::optional<CacheControlEphemeral> cache_control{};
 };
 
-struct ToolResultBlock {
-    using Content = std::variant<std::string, std::vector<std::variant<TextBlock, ImageBlock, SearchResultBlock, DocumentBlock>>>;
-    std::string tool_use_id;
+struct ToolResultBlockParam {
     ToolResultBlockKind type = ToolResultBlockKind::TOOL_RESULT;
+    std::string tool_use_id;
+    std::optional<CacheControlEphemeral> cache_control{};
+    using Content = std::variant<
+        std::string,
+        std::vector<std::variant<TextBlockParam, ImageBlockParam, SearchResultBlockParam, DocumentBlockParam>>
+    >;
     std::optional<Content> content{};
     std::optional<bool> is_error{};
 };
 
-struct ServerToolUseBlock {
+struct ServerToolUseBlockParam {
+    ServerToolUseBlockKind type = ServerToolUseBlockKind::SERVER_TOOL_USE;
+    WebSearchName name = WebSearchName::WEB_SEARCH;
     std::string id;
     jai::llm::json::Object input;
-    WebSearchName name = WebSearchName::WEB_SEARCH;
-    ServerToolUseBlockKind type = ServerToolUseBlockKind::SERVER_TOOL_USE;
+    std::optional<CacheControlEphemeral> cache_control{};
 };
 
-struct WebSearchToolResultBlock {
-    struct WebSearchResultItem {
+struct WebSearchToolResultBlockParam {
+    struct WebSearchResultBlockParamItem {
+        WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
         std::string encrypted_content;
         std::string title;
-        WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
         EncodedUrl url;
         std::optional<std::string> page_age{};
     };
-    struct Error {
-        WebSearchToolResultErrorCode error_code;
+    struct WebSearchToolRequestError {
         WebSearchToolResultErrorType type = WebSearchToolResultErrorType::WEB_SEARCH_TOOL_RESULT_ERROR;
+        WebSearchToolResultErrorCode error_code;
     };
-    using Content = std::variant<std::vector<WebSearchResultItem>, Error>;
+    using Content = std::variant<
+        std::vector<WebSearchResultBlockParamItem>,
+        WebSearchToolRequestError
+    >;
+    WebSearchToolResultBlockKind type = WebSearchToolResultBlockKind::WEB_SEARCH_TOOL_RESULT;
     Content content;
     std::string tool_use_id;
-    WebSearchToolResultBlockKind type = WebSearchToolResultBlockKind::WEB_SEARCH_TOOL_RESULT;
+    std::optional<CacheControlEphemeral> cache_control{};
 };
 
-
-/***
- * Messaging (Polymorphic)
- */
-
-using ContentBlock = std::variant<
-    TextBlock, ImageBlock, DocumentBlock, SearchResultBlock,
-    ThinkingBlock, RedactedThinkingBlock, ToolUseBlock, ToolResultBlock,
-    ServerToolUseBlock, WebSearchToolResultBlock
+using ContentBlockParam = std::variant<
+    TextBlockParam,
+    ImageBlockParam,
+    DocumentBlockParam,
+    SearchResultBlockParam,
+    ThinkingBlockParam,
+    RedactedThinkingBlockParam,
+    ToolUseBlockParam,
+    ToolResultBlockParam,
+    ServerToolUseBlockParam,
+    WebSearchToolResultBlockParam
 >;
-
-struct MessageParam {
-    // A string content value is semantically equivalent to a single TextBlock.
-    using Content = std::variant<std::string, std::vector<ContentBlock>>;
-    Content content;
-    Role role;
-};
 
 
 /***
@@ -330,29 +357,29 @@ struct Tool {
 };
 
 struct ToolBash20250124 {
-    ToolBash20250124Name name = ToolBash20250124Name::BASH;
     ToolBash20250124Type type = ToolBash20250124Type::BASH_20250124;
+    ToolBash20250124Name name = ToolBash20250124Name::BASH;
     std::optional<CacheControlEphemeral> cache_control{};
     std::optional<bool> strict{};
 };
 
 struct ToolTextEditor20250124 {
-    ReplaceEditor name = ReplaceEditor::STRING;
     ToolTextEditor20250124Name type = ToolTextEditor20250124Name::TEXT_EDITOR_20250124;
+    ReplaceEditor name = ReplaceEditor::STRING;
     std::optional<CacheControlEphemeral> cache_control{};
     std::optional<bool> strict{};
 };
 
 struct ToolTextEditor20250429 {
-    ReplaceBasedEditor name = ReplaceBasedEditor::STRING;
     ToolTextEditor20250429Name type = ToolTextEditor20250429Name::TEXT_EDITOR_20250429;
+    ReplaceBasedEditor name = ReplaceBasedEditor::STRING;
     std::optional<CacheControlEphemeral> cache_control{};
     std::optional<bool> strict{};
 };
 
 struct ToolTextEditor20250728 {
-    ReplaceBasedEditor name = ReplaceBasedEditor::STRING;
     ToolTextEditor20250728Name type = ToolTextEditor20250728Name::TEXT_EDITOR_20250728;
+    ReplaceBasedEditor name = ReplaceBasedEditor::STRING;
     std::optional<CacheControlEphemeral> cache_control{};
     std::optional<int64_t> max_characters{};
     std::optional<bool> strict{};
@@ -366,8 +393,8 @@ struct WebSearchTool20250305 {
         std::optional<std::string> region{};
         std::optional<std::string> timezone{};
     };
-    WebSearchName name = WebSearchName::WEB_SEARCH;
     WebSearchTool20250305Kind type = WebSearchTool20250305Kind::WEB_SEARCH_20250305;
+    WebSearchName name = WebSearchName::WEB_SEARCH;
     std::optional<std::vector<std::string>> allowed_domains{};
     std::optional<std::vector<std::string>> blocked_domains{};
     std::optional<CacheControlEphemeral> cache_control{};
@@ -377,9 +404,18 @@ struct WebSearchTool20250305 {
 };
 
 using ToolUnion = std::variant<
-    Tool, ToolBash20250124, ToolTextEditor20250124, ToolTextEditor20250429, ToolTextEditor20250728,
+    Tool,
+    ToolBash20250124,
+    ToolTextEditor20250124,
+    ToolTextEditor20250429,
+    ToolTextEditor20250728,
     WebSearchTool20250305
 >;
+
+
+/***
+ * Tool Choice
+ */
 
 struct ToolChoiceAuto {
     ToolChoiceAutoKind type = ToolChoiceAutoKind::AUTO;
@@ -392,8 +428,8 @@ struct ToolChoiceAny {
 };
 
 struct ToolChoiceTool {
-    std::string name;
     ToolChoiceToolKind type = ToolChoiceToolKind::TOOL;
+    std::string name;
     std::optional<bool> disable_parallel_tool_use{};
 };
 
@@ -402,53 +438,52 @@ struct ToolChoiceNone {
 };
 
 using ToolChoice = std::variant<
-    ToolChoiceAuto, ToolChoiceAny, ToolChoiceTool, ToolChoiceNone
+    ToolChoiceAuto,
+    ToolChoiceAny,
+    ToolChoiceTool,
+    ToolChoiceNone
 >;
 
 
 /***
- * Infrastructure Root (Phase 5)
+ * Request Infrastructure
  */
-
-struct Usage {
-    struct CacheCreation {
-        int64_t ephemeral_1h_input_tokens;
-        int64_t ephemeral_5m_input_tokens;
-    };
-    struct ServerToolUsage {
-        int64_t web_search_requests;
-    };
-    std::optional<CacheCreation> cache_creation{};
-    int64_t cache_creation_input_tokens;
-    int64_t cache_read_input_tokens;
-    int64_t input_tokens;
-    int64_t output_tokens;
-    std::optional<ServerToolUsage> server_tool_use{};
-    std::optional<ServiceTier> service_tier{};
-};
-
-struct Metadata {
-    std::optional<std::string> user_id{};
-};
 
 struct OutputConfig {
     struct Format {
-        jai::llm::json::Object schema;
         StructuredOutputFormatKind type = StructuredOutputFormatKind::JSON_SCHEMA;
+        jai::llm::json::Object schema;
     };
     std::optional<Format> format{};
 };
 
 struct ThinkingConfigEnabled {
-    int64_t budget_tokens;
     ThinkingConfigType type = ThinkingConfigType::ENABLED;
+    int64_t budget_tokens;
 };
 
 struct ThinkingConfigDisabled {
     ThinkingConfigType type = ThinkingConfigType::DISABLED;
 };
 
-using ThinkingConfig = std::variant<ThinkingConfigEnabled, ThinkingConfigDisabled>;
+using ThinkingConfig = std::variant<
+    ThinkingConfigEnabled,
+    ThinkingConfigDisabled
+>;
+
+
+/***
+ * Message Request
+ */
+
+struct MessageParam {
+    using Content = std::variant<
+        std::string,
+        std::vector<ContentBlockParam>
+    >;
+    Content content;
+    Role role;
+};
 
 struct Request {
     int64_t max_tokens;
@@ -456,9 +491,14 @@ struct Request {
     std::string model;
     std::optional<Metadata> metadata{};
     std::optional<OutputConfig> output_config{};
+    std::optional<RequestServiceTier> service_tier{};
     std::optional<std::vector<std::string>> stop_sequences{};
     std::optional<bool> stream{};
-    std::optional<std::string> system{}; // system prompt
+    using System = std::variant<
+        std::string,
+        std::vector<TextBlockParam>
+    >;
+    std::optional<System> system{};
     std::optional<double> temperature{};
     std::optional<ThinkingConfig> thinking{};
     std::optional<ToolChoice> tool_choice{};
@@ -467,14 +507,155 @@ struct Request {
     std::optional<double> top_p{};
 };
 
-struct Response {
+
+/***
+ * Response Objects
+ */
+
+struct CitationCharLocation {
+    CharLocationKind type = CharLocationKind::CHAR_LOCATION;
+    std::string cited_text;
+    int64_t document_index;
+    std::string document_title;
+    int64_t end_char_index;
+    int64_t start_char_index;
+    std::string file_id;
+};
+
+struct CitationPageLocation {
+    PageLocationKind type = PageLocationKind::PAGE_LOCATION;
+    std::string cited_text;
+    int64_t document_index;
+    std::string document_title;
+    int64_t end_page_number;
+    int64_t start_page_number;
+    std::string file_id;
+};
+
+struct CitationContentBlockLocation {
+    ContentBlockLocationKind type = ContentBlockLocationKind::CONTENT_BLOCK_LOCATION;
+    std::string cited_text;
+    int64_t document_index;
+    std::string document_title;
+    int64_t end_block_index;
+    int64_t start_block_index;
+    std::string file_id;
+};
+
+struct CitationsWebSearchResultLocation {
+    WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
+    std::string cited_text;
+    std::string encrypted_index;
+    std::string title;
+    EncodedUrl url;
+};
+
+struct CitationsSearchResultLocation {
+    SearchResultLocationKind type = SearchResultLocationKind::SEARCH_RESULT_LOCATION;
+    std::string cited_text;
+    int64_t end_block_index;
+    int64_t search_result_index;
+    std::string source;
+    int64_t start_block_index;
+    std::string title;
+};
+
+using TextCitation = std::variant<
+    CitationCharLocation,
+    CitationPageLocation,
+    CitationContentBlockLocation,
+    CitationsWebSearchResultLocation,
+    CitationsSearchResultLocation
+>;
+
+struct TextBlock {
+    TextBlockKind type = TextBlockKind::TEXT;
+    std::vector<TextCitation> citations;
+    std::string text;
+};
+
+struct ThinkingBlock {
+    ThinkingBlockKind type = ThinkingBlockKind::THINKING;
+    std::string signature;
+    std::string thinking;
+};
+
+struct RedactedThinkingBlock {
+    RedactedThinkingBlockKind type = RedactedThinkingBlockKind::REDACTED_THINKING;
+    std::string data;
+};
+
+struct ToolUseBlock {
+    ToolUseBlockKind type = ToolUseBlockKind::TOOL_USE;
     std::string id;
-    std::vector<ContentBlock> content;
+    jai::llm::json::Object input;
+    std::string name;
+};
+
+struct ServerToolUseBlock {
+    ServerToolUseBlockKind type = ServerToolUseBlockKind::SERVER_TOOL_USE;
+    std::string id;
+    jai::llm::json::Object input;
+    WebSearchName name = WebSearchName::WEB_SEARCH;
+};
+
+struct WebSearchToolResultBlock {
+    struct WebSearchResultBlock {
+        WebSearchResultLocationKind type = WebSearchResultLocationKind::WEB_SEARCH_RESULT_LOCATION;
+        std::string encrypted_content;
+        std::string page_age;
+        std::string title;
+        EncodedUrl url;
+    };
+    struct WebSearchToolResultError {
+        WebSearchToolResultErrorType type = WebSearchToolResultErrorType::WEB_SEARCH_TOOL_RESULT_ERROR;
+        WebSearchToolResultErrorCode error_code;
+    };
+    using Content = std::variant<
+        WebSearchToolResultError,
+        std::vector<WebSearchResultBlock>
+    >;
+    WebSearchToolResultBlockKind type = WebSearchToolResultBlockKind::WEB_SEARCH_TOOL_RESULT;
+    Content content;
+    std::string tool_use_id;
+};
+
+using ResponseContentBlock = std::variant<
+    TextBlock,
+    ThinkingBlock,
+    RedactedThinkingBlock,
+    ToolUseBlock,
+    ServerToolUseBlock,
+    WebSearchToolResultBlock
+>;
+
+struct CacheCreation {
+    int64_t ephemeral_1h_input_tokens;
+    int64_t ephemeral_5m_input_tokens;
+};
+
+struct ServerToolUsage {
+    int64_t web_search_requests;
+};
+
+struct Usage {
+    CacheCreation cache_creation;
+    int64_t cache_creation_input_tokens;
+    int64_t cache_read_input_tokens;
+    int64_t input_tokens;
+    int64_t output_tokens;
+    ServerToolUsage server_tool_use;
+    UsageServiceTier service_tier;
+};
+
+struct Message {
+    MessageType type = MessageType::MESSAGE;
+    std::string id;
+    std::vector<ResponseContentBlock> content;
     std::string model;
-    Role role = Role::ASSISTANT;
+    ResponseRole role = ResponseRole::ASSISTANT;
     StopReason stop_reason;
     std::optional<std::string> stop_sequence{};
-    MessageType type = MessageType::MESSAGE;
     Usage usage;
 };
 

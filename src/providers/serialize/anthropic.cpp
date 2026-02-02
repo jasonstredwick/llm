@@ -17,7 +17,7 @@ namespace jai::llm {
 
 
 /***
- * Shared Substructures (Primitives)
+ * Request Shared Substructures
  */
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CacheControlEphemeral& obj) {
@@ -27,7 +27,13 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CacheCo
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationsConfig& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Metadata& obj) {
+    builder.start_object();
+    AddOptKV<"user_id", CommaDirection::NONE>(builder, obj.user_id);
+    builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationsConfigParam& obj) {
     builder.start_object();
     AddOptKV<"enabled", CommaDirection::NONE>(builder, obj.enabled);
     builder.end_object();
@@ -35,11 +41,13 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
 
 
 /***
- * Citations
+ * Request Citations
  */
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationCharLocation& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationCharLocationParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"cited_text">(obj.cited_text);
     builder.append_comma();
     builder.append_key_value<"document_index">(obj.document_index);
@@ -49,13 +57,13 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
     builder.append_key_value<"end_char_index">(obj.end_char_index);
     builder.append_comma();
     builder.append_key_value<"start_char_index">(obj.start_char_index);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationPageLocation& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationPageLocationParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"cited_text">(obj.cited_text);
     builder.append_comma();
     builder.append_key_value<"document_index">(obj.document_index);
@@ -65,13 +73,13 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
     builder.append_key_value<"end_page_number">(obj.end_page_number);
     builder.append_comma();
     builder.append_key_value<"start_page_number">(obj.start_page_number);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationContentBlockLocation& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationContentBlockLocationParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"cited_text">(obj.cited_text);
     builder.append_comma();
     builder.append_key_value<"document_index">(obj.document_index);
@@ -81,27 +89,27 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
     builder.append_key_value<"end_block_index">(obj.end_block_index);
     builder.append_comma();
     builder.append_key_value<"start_block_index">(obj.start_block_index);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationWebSearchResultLocation& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationWebSearchResultLocationParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"cited_text">(obj.cited_text);
     builder.append_comma();
     builder.append_key_value<"encrypted_index">(obj.encrypted_index);
     builder.append_comma();
     builder.append_key_value<"title">(obj.title);
     builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
     builder.append_key_value<"url">(obj.url);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationSearchResultLocation& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationSearchResultLocationParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"cited_text">(obj.cited_text);
     builder.append_comma();
     builder.append_key_value<"end_block_index">(obj.end_block_index);
@@ -113,41 +121,29 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
     builder.append_key_value<"start_block_index">(obj.start_block_index);
     builder.append_comma();
     builder.append_key_value<"title">(obj.title);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citation& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::TextCitationParam& obj) {
     std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 
 /***
- * Message Blocks (Base)
+ * Request Content Blocks
  */
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::TextBlock& obj) {
-    builder.start_object();
-    builder.append_key_value<"text">(obj.text);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
-    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
-    AddOptKV<"citations",     CommaDirection::BEFORE>(builder, obj.citations);
-    builder.end_object();
-}
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Base64ImageSource& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"data">(obj.data);
     builder.append_comma();
     builder.append_key_value<"media_type">(obj.media_type);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::UrlImageSource& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::URLImageSource& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
     builder.append_comma();
@@ -159,49 +155,42 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ImageSo
     std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ImageBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::TextBlockParam& obj) {
     builder.start_object();
-    builder.append_key_value<"source">(obj.source);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"text">(obj.text);
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
+    AddOptKV<"citations",     CommaDirection::BEFORE>(builder, obj.citations);
     builder.end_object();
 }
 
-
-/***
- * Recursive Sources & Documents
- */
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ContentBlockSource::Content& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
-}
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ContentBlockSource& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ImageBlockParam& obj) {
     builder.start_object();
-    builder.append_key_value<"content">(obj.content);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"source">(obj.source);
+    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Base64PDFSource& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"data">(obj.data);
     builder.append_comma();
     builder.append_key_value<"media_type">(obj.media_type);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::PlainTextSource& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"data">(obj.data);
     builder.append_comma();
     builder.append_key_value<"media_type">(obj.media_type);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
@@ -213,15 +202,25 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::URLPDFS
     builder.end_object();
 }
 
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ContentBlockSource& obj) {
+    builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    std::visit([&](auto const& x) {
+        builder.append_key_value<"content">(x);
+    }, obj.content);
+    builder.end_object();
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::DocumentSource& obj) {
     std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::DocumentBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::DocumentBlockParam& obj) {
     builder.start_object();
-    builder.append_key_value<"source">(obj.source);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"source">(obj.source);
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     AddOptKV<"citations",     CommaDirection::BEFORE>(builder, obj.citations);
     AddOptKV<"context",       CommaDirection::BEFORE>(builder, obj.context);
@@ -229,140 +228,116 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Documen
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::SearchResultBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::SearchResultBlockParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"content">(obj.content);
     builder.append_comma();
     builder.append_key_value<"source">(obj.source);
     builder.append_comma();
     builder.append_key_value<"title">(obj.title);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     AddOptKV<"citations",     CommaDirection::BEFORE>(builder, obj.citations);
     builder.end_object();
 }
 
-
-/***
- * Thinking Blocks
- */
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ThinkingBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ThinkingBlockParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"signature">(obj.signature);
     builder.append_comma();
     builder.append_key_value<"thinking">(obj.thinking);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::RedactedThinkingBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::RedactedThinkingBlockParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"data">(obj.data);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.end_object();
 }
 
-
-/***
- * Tool Call Blocks
- */
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolUseBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolUseBlockParam& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"id">(obj.id);
     builder.append_comma();
     builder.append_key_value<"input">(obj.input);
     builder.append_comma();
     builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
+    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolResultBlock::Content& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
-}
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolResultBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolResultBlockParam& obj) {
     builder.start_object();
-    builder.append_key_value<"tool_use_id">(obj.tool_use_id);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
-    AddOptKV<"content",  CommaDirection::BEFORE>(builder, obj.content);
+    builder.append_comma();
+    builder.append_key_value<"tool_use_id">(obj.tool_use_id);
+    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
+    if (obj.content) {
+        builder.append_comma();
+        std::visit([&](auto const& x) {
+            builder.append_key_value<"content">(x);
+        }, *obj.content);
+    }
     AddOptKV<"is_error", CommaDirection::BEFORE>(builder, obj.is_error);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ServerToolUseBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ServerToolUseBlockParam& obj) {
     builder.start_object();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"input">(obj.input);
+    builder.append_key_value<"type">(obj.type);
     builder.append_comma();
     builder.append_key_value<"name">(obj.name);
     builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
+    builder.append_key_value<"id">(obj.id);
+    builder.append_comma();
+    builder.append_key_value<"input">(obj.input);
+    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlock::WebSearchResultItem& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlockParam::WebSearchResultBlockParamItem& obj) {
     builder.start_object();
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
     builder.append_key_value<"encrypted_content">(obj.encrypted_content);
     builder.append_comma();
     builder.append_key_value<"title">(obj.title);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
     builder.append_comma();
     builder.append_key_value<"url">(obj.url);
     AddOptKV<"page_age", CommaDirection::BEFORE>(builder, obj.page_age);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlock::Error& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlockParam::WebSearchToolRequestError& obj) {
     builder.start_object();
-    builder.append_key_value<"error_code">(obj.error_code);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"error_code">(obj.error_code);
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlock::Content& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
-}
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchToolResultBlockParam& obj) {
     builder.start_object();
-    builder.append_key_value<"content">(obj.content);
+    builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    std::visit([&](auto const& x) {
+        builder.append_key_value<"content">(x);
+    }, obj.content);
     builder.append_comma();
     builder.append_key_value<"tool_use_id">(obj.tool_use_id);
-    builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
+    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     builder.end_object();
 }
 
-
-/***
- * Messaging (Polymorphic)
- */
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ContentBlock& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ContentBlockParam& obj) {
     std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
-}
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::MessageParam::Content& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
-}
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::MessageParam& obj) {
-    builder.start_object();
-    builder.append_key_value<"content">(obj.content);
-    builder.append_comma();
-    builder.append_key_value<"role">(obj.role);
-    builder.end_object();
 }
 
 
@@ -392,42 +367,37 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Tool& o
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolBash20250124& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"name">(obj.name);
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
-    AddOptKV<"strict",        CommaDirection::BEFORE>(builder, obj.strict);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolTextEditor20250124& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"name">(obj.name);
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
-    AddOptKV<"strict",        CommaDirection::BEFORE>(builder, obj.strict);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolTextEditor20250429& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"name">(obj.name);
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
-    AddOptKV<"strict",        CommaDirection::BEFORE>(builder, obj.strict);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolTextEditor20250728& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
-    AddOptKV<"cache_control",   CommaDirection::BEFORE>(builder, obj.cache_control);
-    AddOptKV<"max_characters",  CommaDirection::BEFORE>(builder, obj.max_characters);
-    AddOptKV<"strict",          CommaDirection::BEFORE>(builder, obj.strict);
+    builder.append_comma();
+    builder.append_key_value<"name">(obj.name);
+    AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     builder.end_object();
 }
 
@@ -443,9 +413,9 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSear
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSearchTool20250305& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
+    builder.append_comma();
+    builder.append_key_value<"name">(obj.name);
     AddOptKV<"allowed_domains", CommaDirection::BEFORE>(builder, obj.allowed_domains);
     AddOptKV<"blocked_domains", CommaDirection::BEFORE>(builder, obj.blocked_domains);
     AddOptKV<"cache_control",   CommaDirection::BEFORE>(builder, obj.cache_control);
@@ -461,29 +431,26 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolUni
 
 
 /***
- * Tool Choice models
+ * Tool Choice
  */
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolChoiceAuto& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
-    AddOptKV<"disable_parallel_tool_use", CommaDirection::BEFORE>(builder, obj.disable_parallel_tool_use);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolChoiceAny& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
-    AddOptKV<"disable_parallel_tool_use", CommaDirection::BEFORE>(builder, obj.disable_parallel_tool_use);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolChoiceTool& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
     builder.append_key_value<"type">(obj.type);
-    AddOptKV<"disable_parallel_tool_use", CommaDirection::BEFORE>(builder, obj.disable_parallel_tool_use);
+    builder.append_comma();
+    builder.append_key_value<"name">(obj.name);
     builder.end_object();
 }
 
@@ -499,14 +466,8 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolCho
 
 
 /***
- * Infrastructure Root
+ * Request Infrastructure
  */
-
-void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Metadata& obj) {
-    builder.start_object();
-    AddOptKV<"user_id", CommaDirection::NONE>(builder, obj.user_id);
-    builder.end_object();
-}
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::OutputConfig::Format& obj) {
     builder.start_object();
@@ -540,6 +501,21 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Thinkin
     std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
+
+/***
+ * Message Request
+ */
+
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::MessageParam& obj) {
+    builder.start_object();
+    std::visit([&](auto const& x) {
+        builder.append_key_value<"content">(x);
+    }, obj.content);
+    builder.append_comma();
+    builder.append_key_value<"role">(obj.role);
+    builder.end_object();
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Request& obj) {
     builder.start_object();
     builder.append_key_value<"max_tokens">(obj.max_tokens);
@@ -547,23 +523,34 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Request
     builder.append_key_value<"messages">(obj.messages);
     builder.append_comma();
     builder.append_key_value<"model">(obj.model);
-    AddOptKV<"metadata",        CommaDirection::BEFORE>(builder, obj.metadata);
-    AddOptKV<"output_config",   CommaDirection::BEFORE>(builder, obj.output_config);
-    AddOptKV<"stop_sequences",  CommaDirection::BEFORE>(builder, obj.stop_sequences);
-    AddOptKV<"stream",          CommaDirection::BEFORE>(builder, obj.stream);
-    AddOptKV<"system",          CommaDirection::BEFORE>(builder, obj.system);
-    AddOptKV<"temperature",     CommaDirection::BEFORE>(builder, obj.temperature);
-    AddOptKV<"thinking",        CommaDirection::BEFORE>(builder, obj.thinking);
-    AddOptKV<"tool_choice",     CommaDirection::BEFORE>(builder, obj.tool_choice);
-    AddOptKV<"tools",           CommaDirection::BEFORE>(builder, obj.tools);
-    AddOptKV<"top_k",           CommaDirection::BEFORE>(builder, obj.top_k);
-    AddOptKV<"top_p",           CommaDirection::BEFORE>(builder, obj.top_p);
+    AddOptKV<"metadata",      CommaDirection::BEFORE>(builder, obj.metadata);
+    AddOptKV<"output_config", CommaDirection::BEFORE>(builder, obj.output_config);
+    AddOptKV<"service_tier",  CommaDirection::BEFORE>(builder, obj.service_tier);
+    AddOptKV<"stop_sequences", CommaDirection::BEFORE>(builder, obj.stop_sequences);
+    AddOptKV<"stream",        CommaDirection::BEFORE>(builder, obj.stream);
+    if (obj.system) {
+        builder.append_comma();
+        std::visit([&](auto const& x) {
+            builder.append_key_value<"system">(x);
+        }, *obj.system);
+    }
+    AddOptKV<"temperature",   CommaDirection::BEFORE>(builder, obj.temperature);
+    AddOptKV<"thinking",      CommaDirection::BEFORE>(builder, obj.thinking);
+    AddOptKV<"tool_choice",   CommaDirection::BEFORE>(builder, obj.tool_choice);
+    AddOptKV<"tools",         CommaDirection::BEFORE>(builder, obj.tools);
+    AddOptKV<"top_k",         CommaDirection::BEFORE>(builder, obj.top_k);
+    AddOptKV<"top_p",         CommaDirection::BEFORE>(builder, obj.top_p);
     builder.end_object();
 }
 
 
-namespace anthropic {
+}
 
+
+/***
+ * Top-level Serialize
+ */
+namespace jai::llm::anthropic {
 
 std::vector<std::byte> Serialize(const Request& request) {
     static thread_local string_builder builder{};
@@ -577,9 +564,5 @@ std::vector<std::byte> Serialize(const Request& request) {
            std::views::transform([](auto const& c) { return static_cast<std::byte>(c); }) |
            std::ranges::to<std::vector<std::byte>>();
 }
-
-
-}
-
 
 }

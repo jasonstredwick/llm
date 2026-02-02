@@ -795,12 +795,9 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::OutputMess
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::OutputMessage::OutputText& obj) {
     builder.start_object();
-    builder.append_key_value<"annotations">(obj.annotations);
-    builder.append_comma();
     builder.append_key_value<"value">(obj.value);
     builder.append_comma();
     builder.append_key_value<"type">(obj.type);
-    AddOptKV<"logprobs", CommaDirection::BEFORE>(builder, obj.logprobs);
     builder.end_object();
 }
 
@@ -826,7 +823,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::OutputMess
     builder.end_object();
 }
 
-void tag_invoke(serialize_tag, string_builder& builder, const openai::InputItem& obj) {
+void tag_invoke(serialize_tag, string_builder& builder, const openai::RequestInputItem& obj) {
     std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 

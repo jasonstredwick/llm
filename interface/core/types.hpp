@@ -154,6 +154,31 @@ public:
 };
 
 
+template <size_t N>
+class NameLen {
+private:
+    std::string name;
+
+public:
+    static constexpr bool IsValid(std::string_view in) { return !in.empty() && in.size() <= N; }
+
+public:
+    NameLen(const std::string& in) : name{in} { Validate(); }
+    NameLen(const NameLen&) = default;
+    NameLen(NameLen&&) noexcept = default;
+    ~NameLen() noexcept = default;
+    NameLen& operator=(const NameLen&) = default;
+    NameLen& operator=(NameLen&&) noexcept = default;
+
+    friend bool operator<=>(const NameLen&, const NameLen&) = default;
+
+    std::string_view Get() const { return name; }
+    const std::string& Value() const { return name; }
+
+    void Validate() { if (!NameLen::IsValid(name)) { throw std::runtime_error{"NameLen not valid"}; } }
+};
+
+
 class Timestamp {
 public:
     using clock      = std::chrono::system_clock;
