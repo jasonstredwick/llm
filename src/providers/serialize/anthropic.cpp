@@ -19,7 +19,6 @@ namespace jai::llm {
 /***
  * Request Shared Substructures
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CacheControlEphemeral& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
@@ -43,7 +42,6 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
 /***
  * Request Citations
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::CitationCharLocationParam& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
@@ -132,7 +130,6 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::TextCit
 /***
  * Request Content Blocks
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Base64ImageSource& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
@@ -344,7 +341,6 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Content
 /***
  * Tool Definitions
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Tool::InputSchema& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
@@ -433,7 +429,6 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolUni
 /***
  * Tool Choice
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolChoiceAuto& obj) {
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
@@ -468,7 +463,6 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolCho
 /***
  * Request Infrastructure
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::OutputConfig::Format& obj) {
     builder.start_object();
     builder.append_key_value<"schema">(obj.schema);
@@ -505,7 +499,6 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Thinkin
 /***
  * Message Request
  */
-
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::MessageParam& obj) {
     builder.start_object();
     std::visit([&](auto const& x) {
@@ -544,13 +537,14 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Request
 }
 
 
-}
+} // namespace jai::llm
 
 
 /***
  * Top-level Serialize
  */
 namespace jai::llm::anthropic {
+
 
 std::vector<std::byte> Serialize(const Request& request) {
     static thread_local string_builder builder{};
@@ -564,5 +558,6 @@ std::vector<std::byte> Serialize(const Request& request) {
            std::views::transform([](auto const& c) { return static_cast<std::byte>(c); }) |
            std::ranges::to<std::vector<std::byte>>();
 }
+
 
 }

@@ -390,7 +390,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::UrlContext
 }
 
 
-}
+} // namespace jai::llm
 
 
 namespace jai::llm::gemini {

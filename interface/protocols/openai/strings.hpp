@@ -34,6 +34,14 @@ constexpr std::optional<openai::AnnotationType> from_string_view<openai::Annotat
 }
 
 template <>
+constexpr std::optional<openai::ContentType> from_string_view<openai::ContentType>(std::string_view sv) {
+    if (sv == "input_text") return openai::ContentType::INPUT_TEXT;
+    if (sv == "input_image") return openai::ContentType::INPUT_IMAGE;
+    if (sv == "input_file") return openai::ContentType::INPUT_FILE;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<openai::ApplyPatchCallKind> from_string_view<openai::ApplyPatchCallKind>(std::string_view sv) {
     if (sv == "apply_patch_call") return openai::ApplyPatchCallKind::APPLY_PATCH_CALL;
     return std::nullopt;
@@ -474,9 +482,6 @@ constexpr std::optional<openai::InputImageKind> from_string_view<openai::InputIm
 
 template <>
 constexpr std::optional<openai::InputItemType> from_string_view<openai::InputItemType>(std::string_view sv) {
-    if (sv == "input_text") return openai::InputItemType::INPUT_TEXT;
-    if (sv == "input_image") return openai::InputItemType::INPUT_IMAGE;
-    if (sv == "input_file") return openai::InputItemType::INPUT_FILE;
     if (sv == "message") return openai::InputItemType::MESSAGE;
     if (sv == "reasoning") return openai::InputItemType::REASONING;
     if (sv == "compaction") return openai::InputItemType::COMPACTION;
@@ -634,6 +639,30 @@ constexpr std::optional<openai::MoveActionKind> from_string_view<openai::MoveAct
 template <>
 constexpr std::optional<openai::OpenPageActionKind> from_string_view<openai::OpenPageActionKind>(std::string_view sv) {
     if (sv == "open_page") return openai::OpenPageActionKind::OPEN_PAGE;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::OutputItemType> from_string_view<openai::OutputItemType>(std::string_view sv) {
+    if (sv == "message") return openai::OutputItemType::MESSAGE;
+    if (sv == "reasoning") return openai::OutputItemType::REASONING;
+    if (sv == "compaction") return openai::OutputItemType::COMPACTION;
+    if (sv == "file_search_call") return openai::OutputItemType::FILE_SEARCH_CALL;
+    if (sv == "computer_call") return openai::OutputItemType::COMPUTER_CALL;
+    if (sv == "web_search_call") return openai::OutputItemType::WEB_SEARCH_CALL;
+    if (sv == "function_call") return openai::OutputItemType::FUNCTION_CALL;
+    if (sv == "image_generation_call") return openai::OutputItemType::IMAGE_GENERATION_CALL;
+    if (sv == "code_interpreter_call") return openai::OutputItemType::CODE_INTERPRETER_CALL;
+    if (sv == "local_shell_call") return openai::OutputItemType::LOCAL_SHELL_CALL;
+    if (sv == "shell_call") return openai::OutputItemType::SHELL_CALL;
+    if (sv == "shell_call_output") return openai::OutputItemType::SHELL_CALL_OUTPUT;
+    if (sv == "apply_patch_call") return openai::OutputItemType::APPLY_PATCH_CALL;
+    if (sv == "apply_patch_call_output") return openai::OutputItemType::APPLY_PATCH_CALL_OUTPUT;
+    if (sv == "mcp_list_tools") return openai::OutputItemType::MCP_LIST_TOOLS;
+    if (sv == "mcp_approval_request") return openai::OutputItemType::MCP_APPROVAL_REQUEST;
+    if (sv == "mcp_call") return openai::OutputItemType::MCP_CALL;
+    if (sv == "custom_tool_call") return openai::OutputItemType::CUSTOM_TOOL_CALL;
+    if (sv == "item_reference") return openai::OutputItemType::ITEM_REFERENCE;
     return std::nullopt;
 }
 
@@ -1506,6 +1535,15 @@ constexpr std::string_view to_string_view(openai::IncompleteReason val) {
     }
 }
 
+constexpr std::string_view to_string_view(openai::ContentType val) {
+    switch (val) {
+        case openai::ContentType::INPUT_TEXT: return "input_text";
+        case openai::ContentType::INPUT_IMAGE: return "input_image";
+        case openai::ContentType::INPUT_FILE: return "input_file";
+    }
+    return "unknown";
+}
+
 constexpr std::string_view to_string_view(openai::InputFileKind val) {
     switch (val) {
         case openai::InputFileKind::INPUT_FILE: return "input_file";
@@ -1522,9 +1560,6 @@ constexpr std::string_view to_string_view(openai::InputImageKind val) {
 
 constexpr std::string_view to_string_view(openai::InputItemType val) {
     switch (val) {
-        case openai::InputItemType::INPUT_TEXT: return "input_text";
-        case openai::InputItemType::INPUT_IMAGE: return "input_image";
-        case openai::InputItemType::INPUT_FILE: return "input_file";
         case openai::InputItemType::MESSAGE: return "message";
         case openai::InputItemType::REASONING: return "reasoning";
         case openai::InputItemType::COMPACTION: return "compaction";
@@ -1705,6 +1740,31 @@ constexpr std::string_view to_string_view(openai::OpenPageActionKind val) {
         case openai::OpenPageActionKind::OPEN_PAGE: return "open_page";
         default: throw std::logic_error("invalid openai::OpenPageActionKind");
     }
+}
+
+constexpr std::string_view to_string_view(openai::OutputItemType val) {
+    switch (val) {
+        case openai::OutputItemType::MESSAGE: return "message";
+        case openai::OutputItemType::REASONING: return "reasoning";
+        case openai::OutputItemType::COMPACTION: return "compaction";
+        case openai::OutputItemType::FILE_SEARCH_CALL: return "file_search_call";
+        case openai::OutputItemType::COMPUTER_CALL: return "computer_call";
+        case openai::OutputItemType::WEB_SEARCH_CALL: return "web_search_call";
+        case openai::OutputItemType::FUNCTION_CALL: return "function_call";
+        case openai::OutputItemType::IMAGE_GENERATION_CALL: return "image_generation_call";
+        case openai::OutputItemType::CODE_INTERPRETER_CALL: return "code_interpreter_call";
+        case openai::OutputItemType::LOCAL_SHELL_CALL: return "local_shell_call";
+        case openai::OutputItemType::SHELL_CALL: return "shell_call";
+        case openai::OutputItemType::SHELL_CALL_OUTPUT: return "shell_call_output";
+        case openai::OutputItemType::APPLY_PATCH_CALL: return "apply_patch_call";
+        case openai::OutputItemType::APPLY_PATCH_CALL_OUTPUT: return "apply_patch_call_output";
+        case openai::OutputItemType::MCP_LIST_TOOLS: return "mcp_list_tools";
+        case openai::OutputItemType::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
+        case openai::OutputItemType::MCP_CALL: return "mcp_call";
+        case openai::OutputItemType::CUSTOM_TOOL_CALL: return "custom_tool_call";
+        case openai::OutputItemType::ITEM_REFERENCE: return "item_reference";
+    }
+    return "unknown";
 }
 
 constexpr std::string_view to_string_view(openai::OutputMessageContentType val) {

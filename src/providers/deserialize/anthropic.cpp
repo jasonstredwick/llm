@@ -26,20 +26,8 @@ namespace jai::llm {
 
 
 /***
- * Forward Declarations for Response Variants
- */
-
-template <>
-anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::element& src);
-
-template <>
-anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const simdjson::dom::element& src);
-
-
-/***
  * Response Citations
  */
-
 BEGIN_PARSE(anthropic::CitationCharLocation)
     FIELD(src, type),
     FIELD(src, cited_text),
@@ -92,9 +80,12 @@ template <>
 anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::element& src) {
     using T = anthropic::TextCitation;
     auto obj = src.get_object();
-    auto type_sv = obj["type"].get_string();
-    auto opt_kind = jai::llm::from_string_view<anthropic::CitationKinds>(type_sv.value());
-    if (!opt_kind) { throw std::runtime_error{"Unexpected anthropic::TextCitation found."}; }
+    auto type_sv = obj["type"].get_string().value();
+    auto opt_kind = jai::llm::from_string_view<anthropic::CitationKinds>(type_sv);
+    if (!opt_kind) {
+        throw std::runtime_error{"Unexpected anthropic::TextCitation type: " + std::string{type_sv}};
+    }
+
     switch (*opt_kind) {
     case anthropic::CitationKinds::CHAR_LOCATION:
         return T{Parse<anthropic::CitationCharLocation>(src)};
@@ -115,7 +106,6 @@ anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::elem
 /***
  * Response Content Blocks
  */
-
 BEGIN_PARSE(anthropic::TextBlock)
     FIELD(src, type),
     FIELD(src, citations),
@@ -165,9 +155,12 @@ template <>
 anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const simdjson::dom::element& src) {
     using T = anthropic::ResponseContentBlock;
     auto obj = src.get_object();
-    auto type_sv = obj["type"].get_string();
-    auto opt_kind = jai::llm::from_string_view<anthropic::ResponseContentBlockKinds>(type_sv.value());
-    if (!opt_kind) { throw std::runtime_error{"Unexpected anthropic::ResponseContentBlockKinds found."}; }
+    auto type_sv = obj["type"].get_string().value();
+    auto opt_kind = jai::llm::from_string_view<anthropic::ResponseContentBlockKinds>(type_sv);
+    if (!opt_kind) {
+        throw std::runtime_error{"Unexpected anthropic::ResponseContentBlockKinds type: " + std::string{type_sv}};
+    }
+
     switch (*opt_kind) {
     case anthropic::ResponseContentBlockKinds::TEXT:
         return T{Parse<anthropic::TextBlock>(src)};
@@ -190,7 +183,6 @@ anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const sim
 /***
  * Usage and Substructures
  */
-
 BEGIN_PARSE(anthropic::CacheCreation)
     FIELD(src, ephemeral_1h_input_tokens),
     FIELD(src, ephemeral_5m_input_tokens)
@@ -214,7 +206,6 @@ END_PARSE
 /***
  * Top-level Response Message
  */
-
 BEGIN_PARSE(anthropic::Message)
     FIELD(src, type),
     FIELD(src, id),
@@ -227,7 +218,12 @@ BEGIN_PARSE(anthropic::Message)
 END_PARSE
 
 
-}
+} // namespace jai::llm
+
+
+#undef FIELD
+#undef BEGIN_PARSE
+#undef END_PARSE
 
 
 /***
@@ -244,5 +240,6 @@ Response Deserialize(const curl::Response& response) {
     simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body.size());
     return Parse<Response>(doc);
 }
+
 
 }

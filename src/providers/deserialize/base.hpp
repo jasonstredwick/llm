@@ -107,6 +107,18 @@ std::string_view Parse(const simdjson::dom::element& src) {
 
 
 template <typename T>
+requires Like_c<NameLen<64>, T>
+NameLen<64> Parse(const simdjson::dom::element& src) {
+    return NameLen<64>{Parse<std::string>(src)};
+}
+
+template <typename T>
+requires Like_c<NameLen<512>, T>
+NameLen<512> Parse(const simdjson::dom::element& src) {
+    return NameLen<512>{Parse<std::string>(src)};
+}
+
+template <typename T>
 requires Like_c<json::Value, T>
 json::Value Parse(const simdjson::dom::element& src) {
     switch (src.type()) {

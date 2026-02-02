@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -74,12 +73,12 @@ struct ContentTypes {
 
         struct LogProb {
             struct TopLogprob {
-                std::vector<std::byte> bytes;
+                std::vector<uint8_t> bytes;
                 double logprob;
                 std::string token;
             };
 
-            std::vector<std::byte> bytes;
+            std::vector<uint8_t> bytes;
             double logprob;
             std::string token;
             std::vector<TopLogprob> top_logprobs;
@@ -133,10 +132,11 @@ struct WebSearchToolActions {
 
 
 struct InputTypes {
+    using MessageContentUnit = std::variant<ContentTypes::Text, ContentTypes::Image, ContentTypes::File>;
+
     struct Message {
-        using Content = std::variant<std::string,
-                                     std::vector<
-                                        std::variant<ContentTypes::Text, ContentTypes::Image, ContentTypes::File>>>;
+        using Content = std::variant<std::string, std::vector<MessageContentUnit>>;
+
         Content content;
         RoleInputMessage role;
         std::optional<InputMessageKind> type{}; // InputMessageKind::MESSAGE
@@ -144,9 +144,7 @@ struct InputTypes {
 
     struct Item {
         struct InputMessage {
-            using Content = std::variant<ContentTypes::Text, ContentTypes::Image, ContentTypes::File>;
-
-            std::vector<Content> content;
+            std::vector<MessageContentUnit> content;
             RoleUser role;
             std::optional<ItemStatus> status{};
             std::optional<InputMessageKind> type{};
@@ -343,7 +341,9 @@ struct InputTypes {
             };
 
             struct Output {
-                std::variant<ShellCallExitOutcome, ShellCallTimeoutOutcome> outcome;
+                using Outcome = std::variant<ShellCallExitOutcome, ShellCallTimeoutOutcome>;
+
+                Outcome outcome;
                 std::string std_err;
                 std::string std_out;
             };
@@ -495,12 +495,13 @@ struct ToolTypes {
 
     struct FileSearch {
         struct ComparisonFilter {
+            using ValueType = std::variant<std::string, double, bool,
+                                           std::vector<std::string>,
+                                           std::vector<double>,
+                                           std::vector<bool>>;
             std::string key;
             FilterOperator type;
-            std::variant<std::string, double, bool,
-                         std::vector<std::string>,
-                         std::vector<double>,
-                         std::vector<bool>> value;
+            ValueType value;
         };
 
         struct CompoundFilter {
