@@ -9,6 +9,7 @@
  * Purpose is to simplify template specializations for Parse in preparation for reflection based approach.
  */
 #define FIELD(src, member) Extract<#member, T, &T::member>((src))
+#define FIELD_ARRAY(src, member) ExtractArrayOf<#member, T, &T::member>((src))
 #define BEGIN_PARSE(Type)                             \
 template <>                                           \
 Type Parse<Type>(const simdjson::dom::element& src) { \
@@ -31,7 +32,7 @@ END_PARSE
 BEGIN_PARSE(gemini::Candidate)
     FIELD(src, content),
     FIELD(src, finishReason),
-    FIELD(src, safetyRatings),
+    FIELD_ARRAY(src, safetyRatings),
     FIELD(src, citationMetadata),
     FIELD(src, tokenCount),
     FIELD(src, groundingMetadata),
@@ -257,9 +258,11 @@ gemini::GroundingChunk::ChunkType Parse<gemini::GroundingChunk::ChunkType>(const
     auto obj = src.get_object();
     if (auto r = ExtractForVariant<"maps">(obj); r.has_value()) {
         return T{Parse<gemini::GroundingChunk::Maps>(*r)};
-    } else if (auto r = ExtractForVariant<"retrievedContext">(obj); r.has_value()) {
+    }
+    if (auto r = ExtractForVariant<"retrievedContext">(obj); r.has_value()) {
         return T{Parse<gemini::GroundingChunk::RetrievedContext>(*r)};
-    } else if (auto r = ExtractForVariant<"web">(obj); r.has_value()) {
+    }
+    if (auto r = ExtractForVariant<"web">(obj); r.has_value()) {
         return T{jai::llm::Parse<gemini::GroundingChunk::Web>(*r)};
     }
     throw std::logic_error{"gemini::GroundingChunk::ChunkType variant unsatisfied"};
@@ -272,11 +275,11 @@ gemini::ResponseContent::ResponsePart::ResponsePartData
 {
     using T = gemini::ResponseContent::ResponsePart::ResponsePartData;
     auto obj = src.get_object();
-    if      (auto r = ExtractForVariant<"text"          >(obj); r.has_value()) { return T{Parse<gemini::Text>(*r)}; }
-    else if (auto r = ExtractForVariant<"inlineData"    >(obj); r.has_value()) { return T{Parse<gemini::Blob>(*r)}; }
-    else if (auto r = ExtractForVariant<"executableCode">(obj); r.has_value()) { return T{Parse<gemini::ExecutableCode>(*r)}; }
-    else if (auto r = ExtractForVariant<"fileData"      >(obj); r.has_value()) { return T{Parse<gemini::FileData>(*r)}; }
-    else if (auto r = ExtractForVariant<"functionCall"  >(obj); r.has_value()) { return T{Parse<gemini::FunctionCall>(*r)}; }
+    if (auto r = ExtractForVariant<"text"          >(obj); r.has_value()) { return T{Parse<gemini::Text>(*r)}; }
+    if (auto r = ExtractForVariant<"inlineData"    >(obj); r.has_value()) { return T{Parse<gemini::Blob>(*r)}; }
+    if (auto r = ExtractForVariant<"executableCode">(obj); r.has_value()) { return T{Parse<gemini::ExecutableCode>(*r)}; }
+    if (auto r = ExtractForVariant<"fileData"      >(obj); r.has_value()) { return T{Parse<gemini::FileData>(*r)}; }
+    if (auto r = ExtractForVariant<"functionCall"  >(obj); r.has_value()) { return T{Parse<gemini::FunctionCall>(*r)}; }
     throw std::logic_error{"gemini::ResponseContent::ResponsePart::ResponsePartData variant unsatisfied"};
 }
 
@@ -285,6 +288,7 @@ gemini::ResponseContent::ResponsePart::ResponsePartData
 
 
 #undef FIELD
+#undef FIELD_ARRAY
 #undef BEGIN_PARSE
 #undef END_PARSE
 

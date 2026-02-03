@@ -1,19 +1,23 @@
 #pragma once
 
-
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <spanstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
 
 namespace jai::llm {
 
+/***
+ * Type traits and concepts
+ */
 template <typename> inline constexpr bool always_false_v = false;
 
 template <typename T, auto Member> struct member_type;
@@ -35,46 +39,83 @@ concept Variant_c = requires { typename std::variant_size<T>::type; };
 template <typename TARGET, typename T>
 concept Like_c = std::same_as<TARGET, std::remove_cvref_t<T>>;
 
+
+/***
+ * JSON schema
+ */
+namespace json {
+    struct Value;
+    using Array  = std::vector<Value>;
+    using Object = std::map<std::string, Value>;
+
+    using ValueVariant = std::variant<
+        nullptr_t,   // null
+        bool,        // true / false
+        int64_t,     // integer numbers
+        double,      // floating-point numbers
+        std::string, // strings
+        Array,       // arrays
+        Object       // objects
+    >;
+
+    struct Value {
+        ValueVariant data;
+
+        Value()               : data(nullptr) {}
+        Value(std::nullptr_t) : data(nullptr) {}
+        Value(bool b)         : data(b) {}
+        Value(int64_t i)      : data(i) {}
+        Value(double d)       : data(d) {}
+        Value(const char* s)  : data(std::string{s}) {}
+        Value(std::string s)  : data(std::move(s)) {}
+        Value(Array a)        : data(std::move(a)) {}
+        Value(Object o)       : data(std::move(o)) {}
+    };
 }
 
 
-namespace jai::llm {
+/***
+ * General types need to represent structures across Provider protocols where a raw value is not acceptible.
+ */
 
+ // @brief Represents a URL that is expected to be ASCII-only (already percent-encoded).
+class EncodedUrl {
+private:
+    std::string value{};
 
-namespace json {
+public:
+    explicit EncodedUrl(std::string v) : value{std::move(v)} { EncodedUrl::VerifyWireSafe(value); }
+    explicit EncodedUrl(std::string_view v) : value{v} { EncodedUrl::VerifyWireSafe(value); }
 
-class Value;
-using Array  = std::vector<Value>;
-using Object = std::map<std::string, Value>;
+    EncodedUrl(const EncodedUrl&) = default;
+    EncodedUrl(EncodedUrl&&) noexcept = default;
+    ~EncodedUrl() noexcept = default;
+    EncodedUrl& operator=(const EncodedUrl&) = default;
+    EncodedUrl& operator=(EncodedUrl&&) noexcept = default;
 
-using ValueVariant = std::variant<
-    nullptr_t,   // null
-    bool,        // true / false
-    int64_t,     // integer numbers
-    double,      // floating-point numbers
-    std::string, // strings
-    Array,       // arrays
-    Object       // objects
->;
+    friend auto operator<=>(const EncodedUrl&, const EncodedUrl&) = default;
 
-struct Value {
-    ValueVariant data;
+    std::string_view View() const noexcept { return value; }
 
-    Value()               : data(nullptr) {}
-    Value(std::nullptr_t) : data(nullptr) {}
-    Value(bool b)         : data(b) {}
-    Value(int64_t i)      : data(i) {}
-    Value(double d)       : data(d) {}
-    Value(const char* s)  : data(std::string{s}) {}
-    Value(std::string s)  : data(std::move(s)) {}
-    Value(Array a)        : data(std::move(a)) {}
-    Value(Object o)       : data(std::move(o)) {}
+private:
+    static void VerifyWireSafe(std::string_view sv) {
+        if (sv.empty()) {
+            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: empty string provided."};
+        } else if (!std::ranges::all_of(sv, [](auto c) { return static_cast<unsigned char>(c) <= 127; })) {
+            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains non-ASCII characters."};
+        } else if (sv.find('\0') != std::string_view::npos) {
+            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains NUL (\\0) character"};
+        } else if (sv.find('\n') != std::string_view::npos) {
+            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains newline (\\n) character"};
+        } else if (sv.find('\r') != std::string_view::npos) {
+            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains carriage return (\\r) character"};
+        } else if (sv.find(' ') != std::string_view::npos) {
+            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains space character"};
+        }
+    }
 };
 
-}
 
-
-// Special type for use as an alternative int64_t for function argument type resolution.
 class Int64 {
 private:
     int64_t value;
@@ -87,7 +128,7 @@ public:
     Int64& operator=(const Int64&) = default;
     Int64& operator=(Int64&&) noexcept = default;
 
-    friend bool operator<=>(const Int64&, const Int64&) = default;
+    friend auto operator<=>(const Int64&, const Int64&) = default;
 
     int64_t Get() const { return value; }
 };
@@ -108,7 +149,7 @@ public:
     IntN& operator=(const IntN&) = default;
     IntN& operator=(IntN&&) noexcept = default;
 
-    friend bool operator<=>(const IntN&, const IntN&) = default;
+    friend auto operator<=>(const IntN&, const IntN&) = default;
     static bool IsValid(int64_t x) { return N_lower <= x && x <= N_upper; }
 
     int64_t Get() const { return value; }
@@ -143,7 +184,7 @@ public:
     Name64& operator=(const Name64&) = default;
     Name64& operator=(Name64&&) noexcept = default;
 
-    friend bool operator<=>(const Name64&, const Name64&) = default;
+    friend auto operator<=>(const Name64&, const Name64&) = default;
 
     std::string_view Get() const { return name; }
     const std::string& Value() const { return name; }
@@ -170,7 +211,7 @@ public:
     NameLen& operator=(const NameLen&) = default;
     NameLen& operator=(NameLen&&) noexcept = default;
 
-    friend bool operator<=>(const NameLen&, const NameLen&) = default;
+    friend auto operator<=>(const NameLen&, const NameLen&) = default;
 
     std::string_view Get() const { return name; }
     const std::string& Value() const { return name; }
@@ -196,7 +237,7 @@ public:
     Timestamp& operator=(const Timestamp&) = default;
     Timestamp& operator=(Timestamp&&) noexcept = default;
 
-    friend bool operator<=>(const Timestamp&, const Timestamp&) = default;
+    friend auto operator<=>(const Timestamp&, const Timestamp&) = default;
 
     time_point Get() const { return tp; }
 
@@ -216,6 +257,35 @@ struct RFC3339Timestamp : public Timestamp {
         if (iss.fail()) { throw std::runtime_error{"Failed to convert string to RFC3339Timestamp."}; }
         return RFC3339Timestamp{tp};
     }
+};
+
+
+template <typename T>
+class ValueBox {
+private:
+    std::unique_ptr<T> ptr;
+
+public:
+    ValueBox() = delete;
+    ValueBox(const T& v)            : ptr(std::make_unique<T>(v)) {}
+    ValueBox(T&& v)                 : ptr(std::make_unique<T>(std::move(v))) {}
+    ValueBox(const ValueBox& other) : ptr(std::make_unique<T>(*other.ptr)) {}
+    ValueBox(ValueBox&&) noexcept = default;
+    ~ValueBox() noexcept = default;
+
+    ValueBox& operator=(const ValueBox& other) {
+        if (this != &other) { *ptr = *(other.ptr); }
+        return *this;
+    }
+    ValueBox& operator=(ValueBox&&) noexcept = default;
+
+    friend auto operator<=>(const ValueBox& a, const ValueBox& b) { return *(a.ptr) <=> *(b.ptr); }
+
+    T& get() { return *ptr; }
+    const T& get() const { return *ptr; }
+
+    T* operator->() { return ptr.get(); }
+    const T* operator->() const { return ptr.get(); }
 };
 
 

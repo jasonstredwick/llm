@@ -4,16 +4,79 @@
 
 #include <simdjson.h>
 
-#include "../../interface/protocols/anthropic/messages.hpp"
-#include "../../interface/protocols/anthropic/strings.hpp" // must include before base.hpp
 #include "base.hpp"
+#include "../../interface/protocols/anthropic/messages.hpp"
+#include "../../interface/protocols/anthropic/strings.hpp"
 
 
-using namespace simdjson;
-using namespace builder;
+using namespace simdjson::builder;
+using namespace jai::llm;
 
 
-namespace jai::llm {
+#define TAG_ENUM(T) \
+    void tag_invoke(serialize_tag, string_builder& builder, T v) { \
+        builder.escape_and_append_with_quotes(jai::llm::to_string_view(v)); \
+    }
+
+
+namespace simdjson {
+
+
+TAG_ENUM(anthropic::Base64SourceKind)
+TAG_ENUM(anthropic::CacheControlEphemeralKind)
+TAG_ENUM(anthropic::CacheControlTTL)
+TAG_ENUM(anthropic::CharLocationKind)
+TAG_ENUM(anthropic::CitationKinds)
+TAG_ENUM(anthropic::ContentBlockLocationKind)
+TAG_ENUM(anthropic::ContentSourceKind)
+TAG_ENUM(anthropic::ContentUnitKind)
+TAG_ENUM(anthropic::CustomToolKind)
+TAG_ENUM(anthropic::DocSrcKind)
+TAG_ENUM(anthropic::DocumentBlockKind)
+TAG_ENUM(anthropic::ImageBlockKind)
+TAG_ENUM(anthropic::ImageMediaType)
+TAG_ENUM(anthropic::ImageSourceKinds)
+TAG_ENUM(anthropic::JsonSchemaTypeKind)
+TAG_ENUM(anthropic::MessageType)
+TAG_ENUM(anthropic::PageLocationKind)
+TAG_ENUM(anthropic::PDFMediaType)
+TAG_ENUM(anthropic::PlainTextMediaType)
+TAG_ENUM(anthropic::PlainTextSourceKind)
+TAG_ENUM(anthropic::RedactedThinkingBlockKind)
+TAG_ENUM(anthropic::ReplaceBasedEditor)
+TAG_ENUM(anthropic::ReplaceEditor)
+TAG_ENUM(anthropic::RequestServiceTier)
+TAG_ENUM(anthropic::ResponseContentBlockKinds)
+TAG_ENUM(anthropic::ResponseRole)
+TAG_ENUM(anthropic::Role)
+TAG_ENUM(anthropic::SearchResultBlockKind)
+TAG_ENUM(anthropic::SearchResultLocationKind)
+TAG_ENUM(anthropic::ServerToolUseBlockKind)
+TAG_ENUM(anthropic::StopReason)
+TAG_ENUM(anthropic::StructuredOutputFormatKind)
+TAG_ENUM(anthropic::TextBlockKind)
+TAG_ENUM(anthropic::ThinkingBlockKind)
+TAG_ENUM(anthropic::ThinkingConfigType)
+TAG_ENUM(anthropic::ToolBash20250124Name)
+TAG_ENUM(anthropic::ToolBash20250124Type)
+TAG_ENUM(anthropic::ToolChoiceAnyKind)
+TAG_ENUM(anthropic::ToolChoiceAutoKind)
+TAG_ENUM(anthropic::ToolChoiceNoneKind)
+TAG_ENUM(anthropic::ToolChoiceToolKind)
+TAG_ENUM(anthropic::ToolResultBlockKind)
+TAG_ENUM(anthropic::ToolTextEditor20250124Name)
+TAG_ENUM(anthropic::ToolTextEditor20250429Name)
+TAG_ENUM(anthropic::ToolTextEditor20250728Name)
+TAG_ENUM(anthropic::ToolUseBlockKind)
+TAG_ENUM(anthropic::UrlSourceKind)
+TAG_ENUM(anthropic::UsageServiceTier)
+TAG_ENUM(anthropic::UserLocationTypeKind)
+TAG_ENUM(anthropic::WebSearchName)
+TAG_ENUM(anthropic::WebSearchResultLocationKind)
+TAG_ENUM(anthropic::WebSearchTool20250305Kind)
+TAG_ENUM(anthropic::WebSearchToolResultBlockKind)
+TAG_ENUM(anthropic::WebSearchToolResultErrorCode)
+TAG_ENUM(anthropic::WebSearchToolResultErrorType)
 
 
 /***
@@ -123,7 +186,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Citatio
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::TextCitationParam& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -149,7 +212,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::URLImag
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ImageSource& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::TextBlockParam& obj) {
@@ -203,14 +266,18 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Content
     builder.start_object();
     builder.append_key_value<"type">(obj.type);
     builder.append_comma();
-    std::visit([&](auto const& x) {
-        builder.append_key_value<"content">(x);
-    }, obj.content);
+    std::visit([&](auto const& x) { builder.append_key_value<"content">(x); }, obj.content);
     builder.end_object();
 }
 
+void tag_invoke(serialize_tag, string_builder& builder,
+                const anthropic::ContentBlockSource::ContentBlockSourceContent& obj)
+{
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::DocumentSource& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::DocumentBlockParam& obj) {
@@ -278,12 +345,14 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolRes
     AddOptKV<"cache_control", CommaDirection::BEFORE>(builder, obj.cache_control);
     if (obj.content) {
         builder.append_comma();
-        std::visit([&](auto const& x) {
-            builder.append_key_value<"content">(x);
-        }, *obj.content);
+        std::visit([&](auto const& x) { builder.append_key_value<"content">(x); }, *obj.content);
     }
     AddOptKV<"is_error", CommaDirection::BEFORE>(builder, obj.is_error);
     builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolResultBlockParam::ContentUnit& obj) {
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ServerToolUseBlockParam& obj) {
@@ -334,7 +403,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSear
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ContentBlockParam& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -422,7 +491,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::WebSear
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolUnion& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -456,7 +525,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolCho
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ToolChoice& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -492,7 +561,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Thinkin
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const anthropic::ThinkingConfig& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { simdjson::tag_invoke(simdjson::serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -537,7 +606,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const anthropic::Request
 }
 
 
-} // namespace jai::llm
+}
 
 
 /***
@@ -550,7 +619,7 @@ std::vector<std::byte> Serialize(const Request& request) {
     static thread_local string_builder builder{};
 
     builder.clear();
-    jai::llm::tag_invoke(serialize_tag{}, builder, request);
+    simdjson::tag_invoke(simdjson::serialize_tag{}, builder, request);
     builder.validate_unicode();
     std::string_view json_str = builder.view();
 

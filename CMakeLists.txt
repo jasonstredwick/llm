@@ -6,10 +6,32 @@ project(llm
     LANGUAGES C CXX
 )
 
-# Default to Release mode if no build type is specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "No build type selected, defaulting to Release")
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
+if(CMAKE_CONFIGURATION_TYPES)
+  # Multi-config generators (Visual Studio, Xcode)
+  set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
+
+  if(DEFINED CMAKE_BUILD_TYPE)
+    message(FATAL_ERROR
+      "CMAKE_BUILD_TYPE must not be set for multi-config generators")
+  endif()
+
+  message(STATUS "Build policy: multi-config generator, Release-only enforced")
+
+else()
+  # Single-config generators (Ninja, NMake)
+  if(NOT CMAKE_BUILD_TYPE)
+    message(FATAL_ERROR
+      "\n❌ No build type specified.\n"
+      "This project requires Release builds.\n"
+      "Use:\n"
+      "  cmake -DCMAKE_BUILD_TYPE=Release\n")
+  elseif(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(FATAL_ERROR
+      "\n❌ Build type '${CMAKE_BUILD_TYPE}' is forbidden.\n"
+      "Only Release builds are supported.\n")
+  endif()
+
+  message(STATUS "Build policy: single-config generator, Release-only enforced")
 endif()
 
 # Standards baseline
@@ -58,8 +80,12 @@ endif()
 
 # Define the library
 add_library(llm STATIC
-    src/http.cpp
-    src/curl.cpp
+    src/providers/serialize/anthropic.cpp
+    src/providers/serialize/gemini.cpp
+#    src/providers/serialize/openai.cpp
+    src/providers/deserialize/anthropic.cpp
+    src/providers/deserialize/gemini.cpp
+#    src/providers/deserialize/openai.cpp
 )
 
 # Add include directories (Unified Sysroot)
@@ -111,36 +137,9 @@ if(MSVC)
 else()
     target_compile_options(llm PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+# Production Tests
+add_executable(test_anthropic tests/unit/test_anthropic.cpp)
+target_link_libraries(test_anthropic PRIVATE llm)
 
-# Verification Test
-add_executable(test_includes tests/test_includes.cpp)
-target_link_libraries(test_includes PRIVATE llm)
-
-# ODR Verification Test (Multi-Unit Linking)
-add_executable(test_odr tests/test_odr_1.cpp tests/test_odr_2.cpp)
-target_link_libraries(test_odr PRIVATE llm)
-
-install(TARGETS test_includes test_odr RUNTIME DESTINATION bin)
-
-# HTTP Manager Verification
-add_executable(test_http_simple tests/test_http_simple.cpp)
-target_link_libraries(test_http_simple PRIVATE llm)
-
-add_executable(test_transport tests/test_transport.cpp)
-target_link_libraries(test_transport PRIVATE llm)
-
-add_executable(test_admission tests/test_admission.cpp)
-target_link_libraries(test_admission PRIVATE llm)
-
-add_executable(test_openai tests/test_openai.cpp)
-target_link_libraries(test_openai PRIVATE llm)
-
-add_executable(test_operations tests/test_operations.cpp)
-target_link_libraries(test_operations PRIVATE llm)
-
-# New Unit Tests
-add_executable(unit_test_http tests/unit_test_http.cpp)
-target_link_libraries(unit_test_http PRIVATE llm)
-
-add_executable(unit_test_curl tests/unit_test_curl.cpp)
-target_link_libraries(unit_test_curl PRIVATE llm)
+add_executable(test_gemini tests/unit/test_gemini.cpp)
+target_link_libraries(test_gemini PRIVATE llm)

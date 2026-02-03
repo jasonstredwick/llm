@@ -76,16 +76,6 @@ std::map<std::string, std::string> Parse(const simdjson::dom::element& src) {
 
 
 template <typename T>
-requires Like_c<json::Object, T>
-json::Object Parse(const simdjson::dom::element& src) {
-    return src.get_object() | std::views::transform([](auto&& kv) {
-        auto const& [key, value] = kv;
-        return std::pair{std::string{key}, Parse<json::Value>(value)};
-    }) | std::ranges::to<json::Object>();
-}
-
-
-template <typename T>
 requires Like_c<RFC3339Timestamp, T>
 RFC3339Timestamp Parse(const simdjson::dom::element& src) {
     return RFC3339Timestamp::Parse(src.get_string().value());
@@ -160,6 +150,16 @@ json::Value Parse(const simdjson::dom::element& src) {
 }
 
 
+template <typename T>
+requires Like_c<json::Object, T>
+json::Object Parse(const simdjson::dom::element& src) {
+    return src.get_object() | std::views::transform([](auto&& kv) {
+        auto const& [key, value] = kv;
+        return std::pair{std::string{key}, Parse<json::Value>(value)};
+    }) | std::ranges::to<json::Object>();
+}
+
+
 template <typename T, typename Allocator>
 std::vector<T, Allocator> Parse(const simdjson::dom::element& src) {
     return src.get_array() | std::views::transform([](auto const& in) { return Parse<T>(in); }) | std::ranges::to();
@@ -168,7 +168,9 @@ std::vector<T, Allocator> Parse(const simdjson::dom::element& src) {
 
 template <typename T>
 std::vector<T> ParseArrayOf(const simdjson::dom::element& src) {
-    return src.get_array() | std::views::transform([](auto const& in) { return Parse<T>(in); }) | std::ranges::to();
+    return src.get_array() |
+           std::views::transform([](auto const& in) { return Parse<T>(in); }) |
+           std::ranges::to<std::vector<T>>();
 }
 
 
@@ -194,6 +196,15 @@ template <simdjson::constevalutil::fixed_string key, typename T, auto Member>
 member_type_t<T, Member> Extract(const simdjson::dom::element& src) {
     using U = member_type_t<T, Member>;
     return Parse<U>(src[key]);
+}
+
+
+template <simdjson::constevalutil::fixed_string key, typename T, auto Member>
+requires requires { typename member_type_t<T, Member>::value_type; }
+member_type_t<T, Member> ExtractArrayOf(const simdjson::dom::element& src) {
+    using U = member_type_t<T, Member>;
+    using V = U::value_type;
+    return ParseArrayOf<V>(src[key]);
 }
 
 

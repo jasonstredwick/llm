@@ -1,5 +1,5 @@
 #include "../../../interface/protocols/anthropic/messages.hpp"
-#include "../../../interface/protocols/anthropic/strings.hpp" // must include before base.hpp
+#include "../../../interface/protocols/anthropic/strings.hpp"
 #include "base.hpp"
 #include "../../curl.hpp"
 
@@ -12,6 +12,7 @@
  * Local defined MACROs for source file only.
  */
 #define FIELD(src, member) Extract<#member, T, &T::member>((src))
+#define FIELD_ARRAY(src, member) ExtractArrayOf<#member, T, &T::member>((src))
 #define BEGIN_PARSE(Type)                             \
 template <>                                           \
 Type Parse<Type>(const simdjson::dom::element& src) { \
@@ -108,7 +109,7 @@ anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::elem
  */
 BEGIN_PARSE(anthropic::TextBlock)
     FIELD(src, type),
-    FIELD(src, citations),
+    FIELD_ARRAY(src, citations),
     FIELD(src, text)
 END_PARSE
 
@@ -150,6 +151,36 @@ BEGIN_PARSE(anthropic::WebSearchToolResultBlock::WebSearchResultBlock)
     FIELD(src, title),
     FIELD(src, url)
 END_PARSE
+
+BEGIN_PARSE(anthropic::WebSearchToolResultBlock::WebSearchToolResultError)
+    FIELD(src, type),
+    FIELD(src, error_code)
+END_PARSE
+
+template <>
+anthropic::WebSearchToolResultBlock::Content
+    Parse<anthropic::WebSearchToolResultBlock::Content>(const simdjson::dom::element& src)
+{
+    using T = anthropic::WebSearchToolResultBlock::Content;
+
+    if (src.is_array()) {
+        return T{ParseArrayOf<anthropic::WebSearchToolResultBlock::WebSearchResultBlock>(src)};
+    }
+
+    auto obj = src.get_object();
+    auto type_sv = obj["type"].get_string().value();
+    auto opt_kind = jai::llm::from_string_view<anthropic::WebSearchToolResultErrorType>(type_sv);
+    if (!opt_kind) {
+        throw std::runtime_error{"Unexpected anthropic::WebSearchToolResultBlock::Content type: " + std::string{type_sv}};
+    }
+
+    switch (*opt_kind) {
+    case anthropic::WebSearchToolResultErrorType::WEB_SEARCH_TOOL_RESULT_ERROR:
+        return T{Parse<anthropic::WebSearchToolResultBlock::WebSearchToolResultError>(src)};
+    default:
+        throw std::logic_error{"anthropic::WebSearchToolResultBlock::Content variant unsatisfied"};
+    }
+}
 
 template <>
 anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const simdjson::dom::element& src) {
@@ -206,10 +237,10 @@ END_PARSE
 /***
  * Top-level Response Message
  */
-BEGIN_PARSE(anthropic::Message)
+BEGIN_PARSE(anthropic::Response)
     FIELD(src, type),
     FIELD(src, id),
-    FIELD(src, content),
+    FIELD_ARRAY(src, content),
     FIELD(src, model),
     FIELD(src, role),
     FIELD(src, stop_reason),
@@ -222,6 +253,7 @@ END_PARSE
 
 
 #undef FIELD
+#undef FIELD_ARRAY
 #undef BEGIN_PARSE
 #undef END_PARSE
 
@@ -232,13 +264,16 @@ END_PARSE
 namespace jai::llm::anthropic {
 
 
-using Response = Message;
-
-
 Response Deserialize(const curl::Response& response) {
-    simdjson::dom::parser parser;
-    simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body.size());
-    return Parse<Response>(doc);
+    if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
+        throw std::runtime_error("Simdjson padding check failed");
+    }
+
+    static thread_local simdjson::dom::parser parser{};
+    simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body_len);
+
+    Response out = Parse<Response>(doc);
+    return out;
 }
 
 

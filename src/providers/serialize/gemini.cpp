@@ -4,16 +4,47 @@
 
 #include <simdjson.h>
 
-#include "../../interface/protocols/gemini/generate_content.hpp"
-#include "../../interface/protocols/gemini/strings.hpp" // must include before base.hpp
 #include "base.hpp"
+#include "../../interface/protocols/gemini/generate_content.hpp"
+#include "../../interface/protocols/gemini/strings.hpp"
 
 
-using namespace simdjson;
-using namespace builder;
+using namespace simdjson::builder;
+using namespace jai::llm;
 
 
-namespace jai::llm {
+#define TAG_ENUM(T) \
+    void tag_invoke(serialize_tag, string_builder& builder, T v) { \
+        builder.escape_and_append_with_quotes(jai::llm::to_string_view(v)); \
+    }
+
+
+namespace simdjson {
+
+
+TAG_ENUM(gemini::AspectRatio)
+TAG_ENUM(gemini::Behavior)
+TAG_ENUM(gemini::BlockReason)
+TAG_ENUM(gemini::CodeLanguage)
+TAG_ENUM(gemini::DynamicRetrievalMode)
+TAG_ENUM(gemini::Environment)
+TAG_ENUM(gemini::ExecutionOutcome)
+TAG_ENUM(gemini::FinishReason)
+TAG_ENUM(gemini::HarmBlockThreshold)
+TAG_ENUM(gemini::HarmCategory)
+TAG_ENUM(gemini::HarmProbability)
+TAG_ENUM(gemini::ImageDim)
+TAG_ENUM(gemini::MediaResolution)
+TAG_ENUM(gemini::MediaType)
+TAG_ENUM(gemini::Modality)
+TAG_ENUM(gemini::ModelStage)
+TAG_ENUM(gemini::ResponseMimeType)
+TAG_ENUM(gemini::Role)
+TAG_ENUM(gemini::Scheduling)
+TAG_ENUM(gemini::SchemaType)
+TAG_ENUM(gemini::ThinkingLevel)
+TAG_ENUM(gemini::ToolMode)
+TAG_ENUM(gemini::UrlRetrievalStatus)
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::Blob& obj) {
@@ -27,6 +58,14 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::Blob& obj)
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::CodeExecution&) {
     builder.start_object();
+    builder.end_object();
+}
+
+
+void tag_invoke(serialize_tag, string_builder& builder, const gemini::CodeExecutionResult& obj) {
+    builder.start_object();
+    builder.append_key_value<"outcome">(obj.outcome);
+    AddOptKV<"output", CommaDirection::BEFORE> (builder, obj.output);
     builder.end_object();
 }
 
@@ -244,20 +283,20 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::Schema& ob
     AddOptKV<"description",      CommaDirection::BEFORE>(builder, obj.description);
     AddOptKV<"nullable",         CommaDirection::BEFORE>(builder, obj.nullable);
     AddOptKV<"enum",             CommaDirection::BEFORE>(builder, obj.enum_values);
-    AddOptKV<"minItems",         CommaDirection::BEFORE>(builder, obj.minItems);
     AddOptKV<"maxItems",         CommaDirection::BEFORE>(builder, obj.maxItems);
+    AddOptKV<"minItems",         CommaDirection::BEFORE>(builder, obj.minItems);
+    AddOptKV<"properties",       CommaDirection::BEFORE>(builder, obj.properties);
+    AddOptKV<"required",         CommaDirection::BEFORE>(builder, obj.required);
     AddOptKV<"minProperties",    CommaDirection::BEFORE>(builder, obj.minProperties);
     AddOptKV<"maxProperties",    CommaDirection::BEFORE>(builder, obj.maxProperties);
     AddOptKV<"minLength",        CommaDirection::BEFORE>(builder, obj.minLength);
     AddOptKV<"maxLength",        CommaDirection::BEFORE>(builder, obj.maxLength);
     AddOptKV<"pattern",          CommaDirection::BEFORE>(builder, obj.pattern);
-    AddOptKV<"properties",       CommaDirection::BEFORE>(builder, obj.properties);
-    AddOptKV<"required",         CommaDirection::BEFORE>(builder, obj.required);
-    AddOptKV<"propertyOrdering", CommaDirection::BEFORE>(builder, obj.propertyOrdering);
-    AddOptKV<"items",            CommaDirection::BEFORE>(builder, obj.items);
-    AddOptKV<"anyOf",            CommaDirection::BEFORE>(builder, obj.anyOf);
     AddOptKV<"example",          CommaDirection::BEFORE>(builder, obj.example);
+    AddOptKV<"anyOf",            CommaDirection::BEFORE>(builder, obj.anyOf);
+    AddOptKV<"propertyOrdering", CommaDirection::BEFORE>(builder, obj.propertyOrdering);
     AddOptKV<"default",          CommaDirection::BEFORE>(builder, obj.default_value);
+    AddOptKV<"items",            CommaDirection::BEFORE>(builder, obj.items);
     AddOptKV<"minimum",          CommaDirection::BEFORE>(builder, obj.minimum);
     AddOptKV<"maximum",          CommaDirection::BEFORE>(builder, obj.maximum);
     builder.end_object();
@@ -307,7 +346,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConf
             static_assert(always_false_v<T>,
                           "tag_invoke: Unhandled SpeechConfig::VoiceConfig variant alternative.");
         }
-    }, obj);
+    }, obj.voice_config);
     builder.end_object();
 }
 
@@ -390,9 +429,12 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::UrlContext
 }
 
 
-} // namespace jai::llm
+}
 
 
+/***
+ * Top-level Serialize
+ */
 namespace jai::llm::gemini {
 
 
@@ -400,7 +442,7 @@ std::vector<std::byte> Serialize(const Request& request) {
     static thread_local simdjson::builder::string_builder builder{};
 
     builder.clear();
-    jai::llm::tag_invoke(serialize_tag{}, builder, request);
+    simdjson::tag_invoke(simdjson::serialize_tag{}, builder, request);
     builder.validate_unicode();
     std::string_view json_str = builder.view();
 

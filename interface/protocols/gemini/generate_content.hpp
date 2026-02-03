@@ -16,9 +16,8 @@ namespace jai::llm::gemini {
 /***
  * Forward declarations
  */
-class Client;
-class Request;
-class Response;
+struct Request;
+struct Response;
 
 
 /***
@@ -185,7 +184,7 @@ struct Schema {
     std::optional<std::vector<Schema>> anyOf{};
     std::optional<std::vector<std::string>> propertyOrdering{};
     std::optional<json::Value> default_value{};
-    std::optional<Schema> items{};
+    std::optional<ValueBox<Schema>> items{};
     std::optional<double> minimum{};
     std::optional<double> maximum{};
 };

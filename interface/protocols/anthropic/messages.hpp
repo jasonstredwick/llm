@@ -225,14 +225,8 @@ struct URLPDFSource {
 };
 
 struct ContentBlockSource {
-    using ContentBlockSourceContent = std::variant<
-        TextBlockParam,
-        ImageBlockParam
-    >;
-    using Content = std::variant<
-        std::string,
-        std::vector<ContentBlockSourceContent>
-    >;
+    using ContentBlockSourceContent = std::variant<TextBlockParam, ImageBlockParam>;
+    using Content = std::variant<std::string, std::vector<ContentBlockSourceContent>>;
 
     ContentSourceKind type = ContentSourceKind::CONTENT;
     Content content;
@@ -283,13 +277,12 @@ struct ToolUseBlockParam {
 };
 
 struct ToolResultBlockParam {
+    using ContentUnit = std::variant<TextBlockParam, ImageBlockParam, SearchResultBlockParam, DocumentBlockParam>;
+    using Content = std::variant<std::string, std::vector<ContentUnit>>;
+
     ToolResultBlockKind type = ToolResultBlockKind::TOOL_RESULT;
     std::string tool_use_id;
     std::optional<CacheControlEphemeral> cache_control{};
-    using Content = std::variant<
-        std::string,
-        std::vector<std::variant<TextBlockParam, ImageBlockParam, SearchResultBlockParam, DocumentBlockParam>>
-    >;
     std::optional<Content> content{};
     std::optional<bool> is_error{};
 };
@@ -310,14 +303,14 @@ struct WebSearchToolResultBlockParam {
         EncodedUrl url;
         std::optional<std::string> page_age{};
     };
+
     struct WebSearchToolRequestError {
         WebSearchToolResultErrorType type = WebSearchToolResultErrorType::WEB_SEARCH_TOOL_RESULT_ERROR;
         WebSearchToolResultErrorCode error_code;
     };
-    using Content = std::variant<
-        std::vector<WebSearchResultBlockParamItem>,
-        WebSearchToolRequestError
-    >;
+
+    using Content = std::variant<std::vector<WebSearchResultBlockParamItem>, WebSearchToolRequestError>;
+
     WebSearchToolResultBlockKind type = WebSearchToolResultBlockKind::WEB_SEARCH_TOOL_RESULT;
     Content content;
     std::string tool_use_id;
@@ -607,14 +600,14 @@ struct WebSearchToolResultBlock {
         std::string title;
         EncodedUrl url;
     };
+
     struct WebSearchToolResultError {
         WebSearchToolResultErrorType type = WebSearchToolResultErrorType::WEB_SEARCH_TOOL_RESULT_ERROR;
         WebSearchToolResultErrorCode error_code;
     };
-    using Content = std::variant<
-        WebSearchToolResultError,
-        std::vector<WebSearchResultBlock>
-    >;
+
+    using Content = std::variant<WebSearchToolResultError, std::vector<WebSearchResultBlock>>;
+
     WebSearchToolResultBlockKind type = WebSearchToolResultBlockKind::WEB_SEARCH_TOOL_RESULT;
     Content content;
     std::string tool_use_id;
@@ -648,7 +641,7 @@ struct Usage {
     UsageServiceTier service_tier;
 };
 
-struct Message {
+struct Response {
     MessageType type = MessageType::MESSAGE;
     std::string id;
     std::vector<ResponseContentBlock> content;

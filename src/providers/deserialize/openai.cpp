@@ -15,6 +15,7 @@
  * Local defined MACROs for source file only.
  */
 #define FIELD(src, member) Extract<#member, T, &T::member>((src))
+#define FIELD_ARRAY(src, member) ExtractArrayOf<#member, T, &T::member>((src))
 #define BEGIN_PARSE(Type)                             \
 template <>                                           \
 Type Parse<Type>(const simdjson::dom::element& src) { \
@@ -1313,6 +1314,7 @@ END_PARSE
 
 
 #undef FIELD
+#undef FIELD_ARRAY
 #undef BEGIN_PARSE
 #undef END_PARSE
 

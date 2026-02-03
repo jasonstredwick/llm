@@ -348,6 +348,18 @@ constexpr std::optional<openai::FindActionKind> from_string_view<openai::FindAct
 }
 
 template <>
+constexpr std::optional<openai::FormatJsonSchemaKind> from_string_view<openai::FormatJsonSchemaKind>(std::string_view sv) {
+    if (sv == "json_schema") return openai::FormatJsonSchemaKind::JSON_SCHEMA;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::FormatTextKind> from_string_view<openai::FormatTextKind>(std::string_view sv) {
+    if (sv == "text") return openai::FormatTextKind::TEXT;
+    return std::nullopt;
+}
+
+template <>
 constexpr std::optional<openai::FunctionCallKind> from_string_view<openai::FunctionCallKind>(std::string_view sv) {
     if (sv == "function_call") return openai::FunctionCallKind::FUNCTION_CALL;
     return std::nullopt;
@@ -1395,6 +1407,20 @@ constexpr std::string_view to_string_view(openai::FindActionKind val) {
     switch (val) {
         case openai::FindActionKind::FIND: return "find";
         default: throw std::logic_error("invalid openai::FindActionKind");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::FormatJsonSchemaKind val) {
+    switch (val) {
+        case openai::FormatJsonSchemaKind::JSON_SCHEMA: return "json_schema";
+        default: throw std::logic_error("invalid openai::FormatJsonSchemaKind");
+    }
+}
+
+constexpr std::string_view to_string_view(openai::FormatTextKind val) {
+    switch (val) {
+        case openai::FormatTextKind::TEXT: return "text";
+        default: throw std::logic_error("invalid openai::FormatTextKind");
     }
 }
 

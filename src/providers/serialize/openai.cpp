@@ -1,19 +1,167 @@
-#include "../../interface/protocols/openai/responses.hpp"
-#include "../../interface/protocols/openai/strings.hpp" // must include before base.hpp
-#include "base.hpp"
-
 #include <cstddef>
 #include <ranges>
 #include <vector>
 
 #include <simdjson.h>
 
+#include "base.hpp"
+#include "../../interface/protocols/openai/responses.hpp"
+#include "../../interface/protocols/openai/strings.hpp"
 
-using namespace simdjson;
-using namespace builder;
+
+using namespace simdjson::builder;
+using namespace jai::llm;
 
 
-namespace jai::llm {
+#define TAG_ENUM(T) \
+    void tag_invoke(serialize_tag, string_builder& builder, T v) { \
+        builder.escape_and_append_with_quotes(jai::llm::to_string_view(v)); \
+    }
+
+
+namespace simdjson {
+
+
+TAG_ENUM(openai::AnnotationType)
+TAG_ENUM(openai::ApplyPatchOperationType)
+TAG_ENUM(openai::CodeInterpreterOutputType)
+TAG_ENUM(openai::ComputerActionType)
+TAG_ENUM(openai::CustomToolFormatType)
+TAG_ENUM(openai::InputItemType)
+TAG_ENUM(openai::OutputItemType)
+TAG_ENUM(openai::ContentType)
+TAG_ENUM(openai::OutputMessageContentType)
+TAG_ENUM(openai::ShellCallOutcomeType)
+TAG_ENUM(openai::ToolChoiceType)
+TAG_ENUM(openai::ToolType)
+TAG_ENUM(openai::WebSearchActionType)
+TAG_ENUM(openai::AllowedToolsChoiceKind)
+TAG_ENUM(openai::ApplyPatchCallKind)
+TAG_ENUM(openai::ApplyPatchCallOutputKind)
+TAG_ENUM(openai::ApplyPatchToolKind)
+TAG_ENUM(openai::ClickActionKind)
+TAG_ENUM(openai::CodeInterpreterCallKind)
+TAG_ENUM(openai::CodeInterpreterImageKind)
+TAG_ENUM(openai::CodeInterpreterLogKind)
+TAG_ENUM(openai::CodeInterpreterToolKind)
+TAG_ENUM(openai::CompactionItemKind)
+TAG_ENUM(openai::ComputerCallKind)
+TAG_ENUM(openai::ComputerCallOutputKind)
+TAG_ENUM(openai::ComputerScreenshotKind)
+TAG_ENUM(openai::ComputerUseToolKind)
+TAG_ENUM(openai::ContainerFileCitationKind)
+TAG_ENUM(openai::ContainerConfigKind)
+TAG_ENUM(openai::CreateFileOperationKind)
+TAG_ENUM(openai::CustomToolCallKind)
+TAG_ENUM(openai::CustomToolCallOutputKind)
+TAG_ENUM(openai::CustomToolChoiceKind)
+TAG_ENUM(openai::CustomToolGrammarFormatKind)
+TAG_ENUM(openai::CustomToolKind)
+TAG_ENUM(openai::CustomToolTextFormatKind)
+TAG_ENUM(openai::DeleteFileOperationKind)
+TAG_ENUM(openai::DoubleClickActionKind)
+TAG_ENUM(openai::DragActionKind)
+TAG_ENUM(openai::FileCitationKind)
+TAG_ENUM(openai::FilePathKind)
+TAG_ENUM(openai::FileSearchToolCallKind)
+TAG_ENUM(openai::FileSearchToolKind)
+TAG_ENUM(openai::FindActionKind)
+TAG_ENUM(openai::FunctionCallKind)
+TAG_ENUM(openai::FunctionCallOutputKind)
+TAG_ENUM(openai::FunctionToolChoiceKind)
+TAG_ENUM(openai::FunctionToolKind)
+TAG_ENUM(openai::ImageGenerationCallKind)
+TAG_ENUM(openai::ImageGenerationToolKind)
+TAG_ENUM(openai::InputFileKind)
+TAG_ENUM(openai::InputImageKind)
+TAG_ENUM(openai::InputMessageKind)
+TAG_ENUM(openai::InputTextKind)
+TAG_ENUM(openai::ItemReferenceKind)
+TAG_ENUM(openai::KeyPressActionKind)
+TAG_ENUM(openai::LocalShellActionKind)
+TAG_ENUM(openai::LocalShellCallKind)
+TAG_ENUM(openai::LocalShellCallOutputKind)
+TAG_ENUM(openai::LocalShellToolKind)
+TAG_ENUM(openai::MCPApprovalRequestKind)
+TAG_ENUM(openai::MCPApprovalResponseKind)
+TAG_ENUM(openai::MCPCallKind)
+TAG_ENUM(openai::MCPListToolsKind)
+TAG_ENUM(openai::MCPToolChoiceKind)
+TAG_ENUM(openai::MCPToolKind)
+TAG_ENUM(openai::MoveActionKind)
+TAG_ENUM(openai::OpenPageActionKind)
+TAG_ENUM(openai::OutputMessageKind)
+TAG_ENUM(openai::OutputTextKind)
+TAG_ENUM(openai::ReasoningItemKind)
+TAG_ENUM(openai::ReasoningSummaryTextKind)
+TAG_ENUM(openai::ReasoningTextKind)
+TAG_ENUM(openai::RefusalKind)
+TAG_ENUM(openai::ScreenshotActionKind)
+TAG_ENUM(openai::ScrollActionKind)
+TAG_ENUM(openai::SearchActionKind)
+TAG_ENUM(openai::SearchActionSourceKind)
+TAG_ENUM(openai::ShellCallKind)
+TAG_ENUM(openai::ShellCallOutputKind)
+TAG_ENUM(openai::ShellExitOutcomeKind)
+TAG_ENUM(openai::ShellTimeoutOutcomeKind)
+TAG_ENUM(openai::ResponseKind)
+TAG_ENUM(openai::ShellToolKind)
+TAG_ENUM(openai::SpecificApplyPatchToolChoiceKind)
+TAG_ENUM(openai::SpecificShellToolChoiceKind)
+TAG_ENUM(openai::TypeActionKind)
+TAG_ENUM(openai::UpdateFileOperationKind)
+TAG_ENUM(openai::UrlCitationKind)
+TAG_ENUM(openai::WaitActionKind)
+TAG_ENUM(openai::FormatTextKind)
+TAG_ENUM(openai::FormatJsonSchemaKind)
+TAG_ENUM(openai::WebSearchCallKind)
+TAG_ENUM(openai::WebSearchPreviewToolKind)
+TAG_ENUM(openai::WebSearchToolKind)
+TAG_ENUM(openai::ApplyPatchCallOutputStatus)
+TAG_ENUM(openai::ApplyPatchCallStatus)
+TAG_ENUM(openai::CallStatus)
+TAG_ENUM(openai::CodeInterpreterStatus)
+TAG_ENUM(openai::ComputerCallOutputType)
+TAG_ENUM(openai::ConnectId)
+TAG_ENUM(openai::Detail)
+TAG_ENUM(openai::FileSearchStatus)
+TAG_ENUM(openai::FilterCompoundType)
+TAG_ENUM(openai::FilterOperator)
+TAG_ENUM(openai::FunctionCallStatus)
+TAG_ENUM(openai::GrammarSyntax)
+TAG_ENUM(openai::HostedToolMode)
+TAG_ENUM(openai::ImageGenerationBackground)
+TAG_ENUM(openai::ImageGenerationFidelity)
+TAG_ENUM(openai::ImageGenerationFormat)
+TAG_ENUM(openai::ImageGenerationQuality)
+TAG_ENUM(openai::ImageGenerationSize)
+TAG_ENUM(openai::IncompleteReason)
+TAG_ENUM(openai::ItemStatus)
+TAG_ENUM(openai::IncludeOutputData)
+TAG_ENUM(openai::LocalShellActionType)
+TAG_ENUM(openai::LocationType)
+TAG_ENUM(openai::MCPApprovalSetting)
+TAG_ENUM(openai::MouseButton)
+TAG_ENUM(openai::PendingSafetyCheckStatus)
+TAG_ENUM(openai::PromptCacheRetention)
+TAG_ENUM(openai::ReasoningEffort)
+TAG_ENUM(openai::ReasoningItemContentType)
+TAG_ENUM(openai::ReasoningStatus)
+TAG_ENUM(openai::ReasoningSummary)
+TAG_ENUM(openai::ResponseFormatType)
+TAG_ENUM(openai::ResponseStatus)
+TAG_ENUM(openai::RoleAssistant)
+TAG_ENUM(openai::RoleInputMessage)
+TAG_ENUM(openai::RoleUser)
+TAG_ENUM(openai::SearchContextSize)
+TAG_ENUM(openai::ServiceTier)
+TAG_ENUM(openai::ToolChoiceMode)
+TAG_ENUM(openai::ToolChoiceModeNotNone)
+TAG_ENUM(openai::TruncationStrategy)
+TAG_ENUM(openai::Verbosity)
+TAG_ENUM(openai::WebSearchPreviewToolType)
+TAG_ENUM(openai::WebSearchStatus)
+TAG_ENUM(openai::WebSearchToolType)
 
 
 /***
@@ -110,7 +258,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerTo
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::All& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -398,7 +546,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::W
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::WebSearchToolActions::All& obj) {
-    std::visit([&](auto const& x) { jai::llm::tag_invoke(serialize_tag{}, builder, x); }, obj);
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 
@@ -1242,17 +1390,20 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::Request& o
 }
 
 
-} // namespace jai::llm
+}
 
 
 namespace jai::llm::openai {
 
 
+/***
+ * Top-level Serialize
+ */
 std::vector<std::byte> Serialize(const Request& request) {
     static thread_local simdjson::builder::string_builder builder{};
 
     builder.clear();
-    jai::llm::tag_invoke(serialize_tag{}, builder, request);
+    simdjson::tag_invoke(simdjson::serialize_tag{}, builder, request);
     builder.validate_unicode();
     std::string_view json_str = builder.view();
 
