@@ -4,19 +4,12 @@
 
 #include <simdjson.h>
 
-#include "base.hpp"
 #include "../../interface/protocols/gemini/generate_content.hpp"
-#include "../../interface/protocols/gemini/strings.hpp"
+#include "base.hpp"
 
 
 using namespace simdjson::builder;
 using namespace jai::llm;
-
-
-#define TAG_ENUM(T) \
-    void tag_invoke(serialize_tag, string_builder& builder, T v) { \
-        builder.escape_and_append_with_quotes(jai::llm::to_string_view(v)); \
-    }
 
 
 namespace simdjson {
@@ -49,9 +42,8 @@ TAG_ENUM(gemini::UrlRetrievalStatus)
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::Blob& obj) {
     builder.start_object();
-    builder.append_key_value<"mimeType">(obj.mimeType);
-    builder.append_comma();
-    builder.append_key_value<"data">(obj.data);
+    AddReqKV<"mimeType", CommaDirection::NONE>  (builder, obj.mimeType);
+    AddReqKV<"data",     CommaDirection::BEFORE>(builder, obj.data);
     builder.end_object();
 }
 
@@ -64,16 +56,16 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::CodeExecut
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::CodeExecutionResult& obj) {
     builder.start_object();
-    builder.append_key_value<"outcome">(obj.outcome);
-    AddOptKV<"output", CommaDirection::BEFORE> (builder, obj.output);
+    AddReqKV<"outcome", CommaDirection::NONE>  (builder, obj.outcome);
+    AddOptKV<"output",  CommaDirection::BEFORE>(builder, obj.output);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::ComputerUse& obj) {
     builder.start_object();
-    builder.append_key_value<"environment">(obj.environment);
-    AddOptKV<"excludedPredefinedFunctions", CommaDirection::BEFORE> (builder, obj.excludedPredefinedFunctions);
+    AddReqKV<"environment",                 CommaDirection::NONE>  (builder, obj.environment);
+    AddOptKV<"excludedPredefinedFunctions", CommaDirection::BEFORE>(builder, obj.excludedPredefinedFunctions);
     builder.end_object();
 }
 
@@ -81,25 +73,24 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::ComputerUs
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::FileData& obj) {
     builder.start_object();
     AddOptKV<"mimeType", CommaDirection::AFTER>(builder, obj.mimeType);
-    builder.append_key_value<"fileUri">(obj.fileUri);
+    AddReqKV<"fileUri",  CommaDirection::NONE> (builder, obj.fileUri);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::FileSearch& obj) {
     builder.start_object();
-    builder.append_key_value<"fileSearchStoreNames">(obj.fileSearchStoreNames);
-    AddOptKV<"metadataFilter", CommaDirection::BEFORE>(builder, obj.metadataFilter);
-    AddOptKV<"topK", CommaDirection::BEFORE>(builder, obj.topK);
+    AddReqKV<"fileSearchStoreNames", CommaDirection::NONE>  (builder, obj.fileSearchStoreNames);
+    AddOptKV<"metadataFilter",       CommaDirection::BEFORE>(builder, obj.metadataFilter);
+    AddOptKV<"topK",                 CommaDirection::BEFORE>(builder, obj.topK);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionDeclaration& obj) {
     builder.start_object();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"description">(obj.description);
+    AddReqKV<"name",                 CommaDirection::NONE>  (builder, obj.name);
+    AddReqKV<"description",          CommaDirection::BEFORE>(builder, obj.description);
     AddOptKV<"behavior",             CommaDirection::BEFORE>(builder, obj.behavior);
     AddOptKV<"parameters",           CommaDirection::BEFORE>(builder, obj.parameters);
     AddOptKV<"parametersJsonSchema", CommaDirection::BEFORE>(builder, obj.parametersJsonSchema);
@@ -111,10 +102,9 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionDe
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionResponse& obj) {
     builder.start_object();
-    AddOptKV<"id",           CommaDirection::AFTER>(builder, obj.id);
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"response">(obj.response);
+    AddOptKV<"id",           CommaDirection::AFTER> (builder, obj.id);
+    AddReqKV<"name",         CommaDirection::NONE>  (builder, obj.name);
+    AddReqKV<"response",     CommaDirection::BEFORE>(builder, obj.response);
     AddOptKV<"parts",        CommaDirection::BEFORE>(builder, obj.parts);
     AddOptKV<"willContinue", CommaDirection::BEFORE>(builder, obj.willContinue);
     AddOptKV<"scheduling",   CommaDirection::BEFORE>(builder, obj.scheduling);
@@ -127,7 +117,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionRe
     builder.start_object();
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
-        if constexpr (std::is_same_v<T, gemini::Blob>) { builder.append_key_value<"inlineData">(x); }
+        if constexpr (std::is_same_v<T, gemini::Blob>) { AddReqKV<"inlineData", CommaDirection::NONE>(builder, x); }
         else { static_assert(always_false_v<T>, "tag_invoke: Unhandled FunctionResponse::Part variant alternative."); }
     }, obj);
     builder.end_object();
@@ -180,23 +170,23 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSear
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearch::Interval& obj) {
     builder.start_object();
-    AddOptKV<"startTime", CommaDirection::NONE>(builder, obj.startTime);
+    AddOptKV<"startTime", CommaDirection::NONE>  (builder, obj.startTime);
     if (obj.startTime && obj.endTime) { builder.append_comma(); }
-    AddOptKV<"endTime", CommaDirection::NONE>(builder, obj.endTime);
+    AddOptKV<"endTime",   CommaDirection::NONE>  (builder, obj.endTime);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearchRetrieval& obj) {
     builder.start_object();
-    builder.append_key_value<"dynamicRetrievalConfig">(obj.dynamicRetrievalConfig);
+    AddReqKV<"dynamicRetrievalConfig", CommaDirection::NONE>(builder, obj.dynamicRetrievalConfig);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearchRetrieval::Config& obj) {
     builder.start_object();
-    builder.append_key_value<"mode">(obj.mode);
+    AddReqKV<"mode",             CommaDirection::NONE>  (builder, obj.mode);
     AddOptKV<"dynamicThreshold", CommaDirection::BEFORE>(builder, obj.dynamicThreshold);
     builder.end_object();
 }
@@ -204,16 +194,16 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSear
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::ImageConfig& obj) {
     builder.start_object();
-    AddOptKV<"aspectRatio", CommaDirection::NONE>(builder, obj.aspectRatio);
+    AddOptKV<"aspectRatio", CommaDirection::NONE>  (builder, obj.aspectRatio);
     if (obj.aspectRatio && obj.imageSize) { builder.append_comma(); }
-    AddOptKV<"imageSize", CommaDirection::NONE>(builder, obj.imageSize);
+    AddOptKV<"imageSize",   CommaDirection::NONE>  (builder, obj.imageSize);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::Request& obj) {
     builder.start_object();
-    builder.append_key_value<"contents">(obj.contents);
+    AddReqKV<"contents",          CommaDirection::NONE>  (builder, obj.contents);
     AddOptKV<"tools",             CommaDirection::BEFORE>(builder, obj.tools);
     AddOptKV<"toolConfig",        CommaDirection::BEFORE>(builder, obj.toolConfig);
     AddOptKV<"safetySettings",    CommaDirection::BEFORE>(builder, obj.safetySettings);
@@ -226,8 +216,8 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::Request& o
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestContent& obj) {
     builder.start_object();
-    builder.append_key_value<"parts">(obj.parts);
-    AddOptKV<"role", CommaDirection::BEFORE>(builder, obj.role);
+    AddReqKV<"parts", CommaDirection::NONE>  (builder, obj.parts);
+    AddOptKV<"role",  CommaDirection::BEFORE>(builder, obj.role);
     builder.end_object();
 }
 
@@ -236,17 +226,15 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestCon
     builder.start_object();
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
-        if      constexpr (std::is_same_v<T, gemini::Blob>)                { builder.append_key_value<"inlineData">(x); }
-        else if constexpr (std::is_same_v<T, gemini::CodeExecutionResult>) { builder.append_key_value<"codeExecutionResult">(x); }
-        else if constexpr (std::is_same_v<T, gemini::FileData>)            { builder.append_key_value<"fileData">(x); }
-        else if constexpr (std::is_same_v<T, gemini::FunctionResponse>)    { builder.append_key_value<"functionResponse">(x); }
-        else if constexpr (std::is_same_v<T, gemini::Text>)                { builder.append_key_value<"text">(x); }
+        if      constexpr (std::is_same_v<T, gemini::Blob>)                { AddReqKV<"inlineData",          CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::CodeExecutionResult>) { AddReqKV<"codeExecutionResult", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::FileData>)            { AddReqKV<"fileData",            CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::FunctionResponse>)    { AddReqKV<"functionResponse",    CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::Text>)                { AddReqKV<"text",                CommaDirection::NONE>(builder, x); }
         else { static_assert(always_false_v<T>, "tag_invoke: Unhandled RequestContent::Part variant alternative."); }
     }, obj.data);
-    builder.append_comma();
-    builder.append_key_value<"partMetadata">(obj.partMetadata);
-    builder.append_comma();
-    builder.append_key_value<"metadata">(obj.metadata);
+    AddReqKV<"partMetadata",     CommaDirection::BEFORE>(builder, obj.partMetadata);
+    AddReqKV<"metadata",         CommaDirection::BEFORE>(builder, obj.metadata);
     AddOptKV<"thoughtSignature", CommaDirection::BEFORE>(builder, obj.thoughtSignature);
     builder.end_object();
 }
@@ -256,7 +244,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestCon
     builder.start_object();
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
-        if constexpr (std::is_same_v<T, gemini::VideoMetadata>) { builder.append_key_value<"videoMetadata">(x); }
+        if constexpr (std::is_same_v<T, gemini::VideoMetadata>) { AddReqKV<"videoMetadata", CommaDirection::NONE>(builder, x); }
         else {
             static_assert(always_false_v<T>,
                           "tag_invoke: Unhandled RequestContent::RequestPart::Metadata variant alternative.");
@@ -268,16 +256,15 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestCon
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::SafetySetting& obj) {
     builder.start_object();
-    builder.append_key_value<"category">(obj.category);
-    builder.append_comma();
-    builder.append_key_value<"threshold">(obj.threshold);
+    AddReqKV<"category",  CommaDirection::NONE>  (builder, obj.category);
+    AddReqKV<"threshold", CommaDirection::BEFORE>(builder, obj.threshold);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::Schema& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",             CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"format",           CommaDirection::BEFORE>(builder, obj.format);
     AddOptKV<"title",            CommaDirection::BEFORE>(builder, obj.title);
     AddOptKV<"description",      CommaDirection::BEFORE>(builder, obj.description);
@@ -305,32 +292,31 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::Schema& ob
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig& obj) {
     builder.start_object();
-    builder.append_key_value<"voiceConfig">(obj.voiceConfig);
+    AddReqKV<"voiceConfig",             CommaDirection::NONE>  (builder, obj.voiceConfig);
     AddOptKV<"multiSpeakerVoiceConfig", CommaDirection::BEFORE>(builder, obj.multiSpeakerVoiceConfig);
-    AddOptKV<"languageCode", CommaDirection::BEFORE>(builder, obj.languageCode);
+    AddOptKV<"languageCode",            CommaDirection::BEFORE>(builder, obj.languageCode);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::MultiSpeakerVoiceConfig& obj) {
     builder.start_object();
-    builder.append_key_value<"speakerVoiceConfigs">(obj.speakerVoiceConfigs);
+    AddReqKV<"speakerVoiceConfigs", CommaDirection::NONE>(builder, obj.speakerVoiceConfigs);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::PrebuiltVoiceConfig& obj) {
     builder.start_object();
-    builder.append_key_value<"voiceName">(obj.voiceName);
+    AddReqKV<"voiceName", CommaDirection::NONE>(builder, obj.voiceName);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::SpeakerVoiceConfig& obj) {
     builder.start_object();
-    builder.append_key_value<"speaker">(obj.speaker);
-    builder.append_comma();
-    builder.append_key_value<"voiceConfig">(obj.voiceConfig);
+    AddReqKV<"speaker",     CommaDirection::NONE>  (builder, obj.speaker);
+    AddReqKV<"voiceConfig", CommaDirection::BEFORE>(builder, obj.voiceConfig);
     builder.end_object();
 }
 
@@ -341,7 +327,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConf
         using T = std::decay_t<decltype(x)>;
 
         if constexpr (std::is_same_v<T, gemini::SpeechConfig::PrebuiltVoiceConfig>) {
-            builder.append_key_value<"prebuiltVoiceConfig">(x);
+            AddReqKV<"prebuiltVoiceConfig", CommaDirection::NONE>(builder, x);
         } else {
             static_assert(always_false_v<T>,
                           "tag_invoke: Unhandled SpeechConfig::VoiceConfig variant alternative.");
@@ -353,17 +339,16 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConf
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::Text& obj) {
     builder.start_object();
-    builder.append_key_value<"text">(obj.text);
+    AddReqKV<"text", CommaDirection::NONE>(builder, obj.text);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::ThinkingConfig& obj) {
     builder.start_object();
-    builder.append_key_value<"includeThoughts">(obj.includeThoughts);
-    builder.append_comma();
-    builder.append_key_value<"thinkingBudget">(obj.thinkingBudget);
-    AddOptKV<"thinkingLevel", CommaDirection::BEFORE>(builder, obj.thinkingLevel);
+    AddReqKV<"includeThoughts", CommaDirection::NONE>  (builder, obj.includeThoughts);
+    AddReqKV<"thinkingBudget",  CommaDirection::BEFORE>(builder, obj.thinkingBudget);
+    AddOptKV<"thinkingLevel",   CommaDirection::BEFORE>(builder, obj.thinkingLevel);
     builder.end_object();
 }
 
@@ -373,14 +358,14 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::Tool& obj)
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
 
-        if      constexpr (std::is_same_v<T, gemini::CodeExecution>)         { builder.append_key_value<"codeExecution">(x); }
-        else if constexpr (std::is_same_v<T, gemini::ComputerUse>)           { builder.append_key_value<"computerUse">(x); }
-        else if constexpr (std::is_same_v<T, gemini::FileSearch>)            { builder.append_key_value<"fileSearch">(x); }
-        else if constexpr (std::is_same_v<T, gemini::FunctionDeclaration>)   { builder.append_key_value<"functionDeclarations">(x); }
-        else if constexpr (std::is_same_v<T, gemini::GoogleMaps>)            { builder.append_key_value<"googleMaps">(x); }
-        else if constexpr (std::is_same_v<T, gemini::GoogleSearch>)          { builder.append_key_value<"googleSearch">(x); }
-        else if constexpr (std::is_same_v<T, gemini::GoogleSearchRetrieval>) { builder.append_key_value<"googleSearchRetrieval">(x); }
-        else if constexpr (std::is_same_v<T, gemini::UrlContext>)            { builder.append_key_value<"urlContext">(x); }
+        if      constexpr (std::is_same_v<T, gemini::CodeExecution>)         { AddReqKV<"codeExecution", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::ComputerUse>)           { AddReqKV<"computerUse", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::FileSearch>)            { AddReqKV<"fileSearch", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::FunctionDeclaration>)   { AddReqKV<"functionDeclarations", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::GoogleMaps>)            { AddReqKV<"googleMaps", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::GoogleSearch>)          { AddReqKV<"googleSearch", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::GoogleSearchRetrieval>) { AddReqKV<"googleSearchRetrieval", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, gemini::UrlContext>)            { AddReqKV<"urlContext", CommaDirection::NONE>(builder, x); }
         else { static_assert(always_false_v<T>, "tag_invoke: Unhandled Tool variant alternative."); }
     }, obj);
     builder.end_object();
@@ -391,14 +376,14 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig
     builder.start_object();
     AddOptKV<"functionCallingConfig", CommaDirection::NONE>(builder, obj.functionCallingConfig);
     if (obj.functionCallingConfig && obj.retrievalConfig) { builder.append_comma(); }
-    AddOptKV<"retrievalConfig", CommaDirection::NONE>(builder, obj.retrievalConfig);
+    AddOptKV<"retrievalConfig",       CommaDirection::NONE>(builder, obj.retrievalConfig);
     builder.end_object();
 }
 
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig::FunctionCallingConfig& obj) {
     builder.start_object();
-    AddOptKV<"mode", CommaDirection::NONE>(builder, obj.mode);
+    AddOptKV<"mode",                  CommaDirection::NONE>(builder, obj.mode);
     if (obj.mode && !obj.allowedFunctionNames.empty()) { builder.append_comma(); }
     AddOptKV<"allowedFunctionNames", CommaDirection::NONE>(builder, obj.allowedFunctionNames);
     builder.end_object();
@@ -407,7 +392,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig::RetrievalConfig& obj) {
     builder.start_object();
-    AddOptKV<"latLng", CommaDirection::NONE>(builder, obj.latLng);
+    AddOptKV<"latLng",       CommaDirection::NONE>(builder, obj.latLng);
     if (obj.latLng && obj.languageCode) { builder.append_comma(); }
     AddOptKV<"languageCode", CommaDirection::NONE>(builder, obj.languageCode);
     builder.end_object();
@@ -416,9 +401,8 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig
 
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig::RetrievalConfig::LatLng& obj) {
     builder.start_object();
-    builder.append_key_value<"latitude">(obj.latitude);
-    builder.append_comma();
-    builder.append_key_value<"longitude">(obj.longitude);
+    AddReqKV<"latitude",  CommaDirection::NONE>  (builder, obj.latitude);
+    AddReqKV<"longitude", CommaDirection::BEFORE>(builder, obj.longitude);
     builder.end_object();
 }
 
@@ -429,7 +413,11 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::UrlContext
 }
 
 
-}
+} // namespace jai::llm
+
+
+#undef TAG_ENUM
+#undef KIND_ENUM
 
 
 /***

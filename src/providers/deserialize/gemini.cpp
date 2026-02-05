@@ -1,23 +1,6 @@
 #include "../../../interface/protocols/gemini/generate_content.hpp"
-#include "../../../interface/protocols/gemini/strings.hpp" // must include before base.hpp
 #include "base.hpp"
 #include "../../curl.hpp"
-
-
-/***
- * Local defined MACROs for source file only.
- * Purpose is to simplify template specializations for Parse in preparation for reflection based approach.
- */
-#define FIELD(src, member) Extract<#member, T, &T::member>((src))
-#define FIELD_ARRAY(src, member) ExtractArrayOf<#member, T, &T::member>((src))
-#define BEGIN_PARSE(Type)                             \
-template <>                                           \
-Type Parse<Type>(const simdjson::dom::element& src) { \
-    using T = Type;                                   \
-    return T{
-#define  END_PARSE \
-    };             \
-}
 
 
 namespace jai::llm {
@@ -32,7 +15,7 @@ END_PARSE
 BEGIN_PARSE(gemini::Candidate)
     FIELD(src, content),
     FIELD(src, finishReason),
-    FIELD_ARRAY(src, safetyRatings),
+    FIELD(src, safetyRatings),
     FIELD(src, citationMetadata),
     FIELD(src, tokenCount),
     FIELD(src, groundingMetadata),
@@ -284,11 +267,10 @@ gemini::ResponseContent::ResponsePart::ResponsePartData
 }
 
 
-}
+} // namespace jai::llm
 
 
 #undef FIELD
-#undef FIELD_ARRAY
 #undef BEGIN_PARSE
 #undef END_PARSE
 

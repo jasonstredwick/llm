@@ -6,35 +6,11 @@
 #include <vector>
 
 #include "../../../interface/protocols/openai/responses.hpp"
-#include "../../../interface/protocols/openai/strings.hpp" // must include before base.hpp
 #include "base.hpp"
 #include "../../curl.hpp"
 
 
-/***
- * Local defined MACROs for source file only.
- */
-#define FIELD(src, member) Extract<#member, T, &T::member>((src))
-#define FIELD_ARRAY(src, member) ExtractArrayOf<#member, T, &T::member>((src))
-#define BEGIN_PARSE(Type)                             \
-template <>                                           \
-Type Parse<Type>(const simdjson::dom::element& src) { \
-    using T = Type;                                   \
-    return T{
-#define  END_PARSE \
-    };             \
-}
-
-
 namespace jai::llm {
-
-
-// Custom "array of bytes" support function.
-template <typename T>
-requires Like_c<uint8_t, T>
-uint8_t Parse(const simdjson::dom::element& src) {
-    return static_cast<uint8_t>(src.get_uint64().value());
-}
 
 
 /***
@@ -374,7 +350,7 @@ openai::response::InputTypes::Message::Content
 {
     using T = openai::response::InputTypes::Message::Content;
     if (src.is_string()) { return T{Parse<std::string>(src)}; }
-    else if (src.is_array()) { return T{ParseArrayOf<openai::response::InputTypes::Message::ContentUnit>(src)}; }
+    else if (src.is_array()) { return T{ParseArrayOf<openai::response::InputTypes::MessageContentUnit>(src)}; }
     throw std::runtime_error{"Invalid InputTypes::Message::Content"};
 }
 
@@ -1314,7 +1290,6 @@ END_PARSE
 
 
 #undef FIELD
-#undef FIELD_ARRAY
 #undef BEGIN_PARSE
 #undef END_PARSE
 

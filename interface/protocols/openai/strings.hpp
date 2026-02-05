@@ -1,29 +1,488 @@
 #pragma once
 
-#include "responses_enums.hpp"
-
-#include <optional>
 #include <stdexcept>
-#include <string_view>
+
+#include "../../core/strings_base.hpp"
+#include "responses_enums.hpp"
 
 
 namespace jai::llm {
 
 
-template <typename T>
-constexpr std::optional<T> from_string_view(std::string_view sv) = delete;
-
-
 /***
  * from_string_view Specializations
  */
-
+// Kinds
 template <>
-constexpr std::optional<openai::AllowedToolsChoiceKind> from_string_view<openai::AllowedToolsChoiceKind>(std::string_view sv) {
-    if (sv == "allowed_tools") return openai::AllowedToolsChoiceKind::ALLOWED_TOOLS;
+constexpr std::optional<openai::KindAllowedToolsChoice> from_string_view<openai::KindAllowedToolsChoice>(std::string_view sv) {
+    if (sv == openai::KindAllowedToolsChoice::value) return openai::KindAllowedToolsChoice{};
     return std::nullopt;
 }
 
+template <>
+constexpr std::optional<openai::KindApplyPatchCall> from_string_view<openai::KindApplyPatchCall>(std::string_view sv) {
+    if (sv == openai::KindApplyPatchCall::value) return openai::KindApplyPatchCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindApplyPatchCallOutput> from_string_view<openai::KindApplyPatchCallOutput>(std::string_view sv) {
+    if (sv == openai::KindApplyPatchCallOutput::value) return openai::KindApplyPatchCallOutput{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindApplyPatchTool> from_string_view<openai::KindApplyPatchTool>(std::string_view sv) {
+    if (sv == openai::KindApplyPatchTool::value) return openai::KindApplyPatchTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindClickAction> from_string_view<openai::KindClickAction>(std::string_view sv) {
+    if (sv == openai::KindClickAction::value) return openai::KindClickAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCodeInterpreterCall> from_string_view<openai::KindCodeInterpreterCall>(std::string_view sv) {
+    if (sv == openai::KindCodeInterpreterCall::value) return openai::KindCodeInterpreterCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCodeInterpreterTool> from_string_view<openai::KindCodeInterpreterTool>(std::string_view sv) {
+    if (sv == openai::KindCodeInterpreterTool::value) return openai::KindCodeInterpreterTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCompactionItem> from_string_view<openai::KindCompactionItem>(std::string_view sv) {
+    if (sv == openai::KindCompactionItem::value) return openai::KindCompactionItem{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindComputerCall> from_string_view<openai::KindComputerCall>(std::string_view sv) {
+    if (sv == openai::KindComputerCall::value) return openai::KindComputerCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindComputerCallOutput> from_string_view<openai::KindComputerCallOutput>(std::string_view sv) {
+    if (sv == openai::KindComputerCallOutput::value) return openai::KindComputerCallOutput{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindComputerScreenshot> from_string_view<openai::KindComputerScreenshot>(std::string_view sv) {
+    if (sv == openai::KindComputerScreenshot::value) return openai::KindComputerScreenshot{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindComputerUseTool> from_string_view<openai::KindComputerUseTool>(std::string_view sv) {
+    if (sv == openai::KindComputerUseTool::value) return openai::KindComputerUseTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindContainerFileCitation> from_string_view<openai::KindContainerFileCitation>(std::string_view sv) {
+    if (sv == openai::KindContainerFileCitation::value) return openai::KindContainerFileCitation{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindContainerConfig> from_string_view<openai::KindContainerConfig>(std::string_view sv) {
+    if (sv == openai::KindContainerConfig::value) return openai::KindContainerConfig{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCreateFileOperation> from_string_view<openai::KindCreateFileOperation>(std::string_view sv) {
+    if (sv == openai::KindCreateFileOperation::value) return openai::KindCreateFileOperation{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCustomToolCall> from_string_view<openai::KindCustomToolCall>(std::string_view sv) {
+    if (sv == openai::KindCustomToolCall::value) return openai::KindCustomToolCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCustomToolCallOutput> from_string_view<openai::KindCustomToolCallOutput>(std::string_view sv) {
+    if (sv == openai::KindCustomToolCallOutput::value) return openai::KindCustomToolCallOutput{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCustomToolChoice> from_string_view<openai::KindCustomToolChoice>(std::string_view sv) {
+    if (sv == openai::KindCustomToolChoice::value) return openai::KindCustomToolChoice{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCustomToolGrammarFormat> from_string_view<openai::KindCustomToolGrammarFormat>(std::string_view sv) {
+    if (sv == openai::KindCustomToolGrammarFormat::value) return openai::KindCustomToolGrammarFormat{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCustomTool> from_string_view<openai::KindCustomTool>(std::string_view sv) {
+    if (sv == openai::KindCustomTool::value) return openai::KindCustomTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindCustomToolTextFormat> from_string_view<openai::KindCustomToolTextFormat>(std::string_view sv) {
+    if (sv == openai::KindCustomToolTextFormat::value) return openai::KindCustomToolTextFormat{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindDeleteFileOperation> from_string_view<openai::KindDeleteFileOperation>(std::string_view sv) {
+    if (sv == openai::KindDeleteFileOperation::value) return openai::KindDeleteFileOperation{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindDoubleClickAction> from_string_view<openai::KindDoubleClickAction>(std::string_view sv) {
+    if (sv == openai::KindDoubleClickAction::value) return openai::KindDoubleClickAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindDragAction> from_string_view<openai::KindDragAction>(std::string_view sv) {
+    if (sv == openai::KindDragAction::value) return openai::KindDragAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFileCitation> from_string_view<openai::KindFileCitation>(std::string_view sv) {
+    if (sv == openai::KindFileCitation::value) return openai::KindFileCitation{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFilePath> from_string_view<openai::KindFilePath>(std::string_view sv) {
+    if (sv == openai::KindFilePath::value) return openai::KindFilePath{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFileSearchToolCall> from_string_view<openai::KindFileSearchToolCall>(std::string_view sv) {
+    if (sv == openai::KindFileSearchToolCall::value) return openai::KindFileSearchToolCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFileSearchTool> from_string_view<openai::KindFileSearchTool>(std::string_view sv) {
+    if (sv == openai::KindFileSearchTool::value) return openai::KindFileSearchTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFindAction> from_string_view<openai::KindFindAction>(std::string_view sv) {
+    if (sv == openai::KindFindAction::value) return openai::KindFindAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFormatText> from_string_view<openai::KindFormatText>(std::string_view sv) {
+    if (sv == openai::KindFormatText::value) return openai::KindFormatText{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFormatJsonSchema> from_string_view<openai::KindFormatJsonSchema>(std::string_view sv) {
+    if (sv == openai::KindFormatJsonSchema::value) return openai::KindFormatJsonSchema{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFunctionCall> from_string_view<openai::KindFunctionCall>(std::string_view sv) {
+    if (sv == openai::KindFunctionCall::value) return openai::KindFunctionCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFunctionCallOutput> from_string_view<openai::KindFunctionCallOutput>(std::string_view sv) {
+    if (sv == openai::KindFunctionCallOutput::value) return openai::KindFunctionCallOutput{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFunctionToolChoice> from_string_view<openai::KindFunctionToolChoice>(std::string_view sv) {
+    if (sv == openai::KindFunctionToolChoice::value) return openai::KindFunctionToolChoice{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindFunctionTool> from_string_view<openai::KindFunctionTool>(std::string_view sv) {
+    if (sv == openai::KindFunctionTool::value) return openai::KindFunctionTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindImageGenerationCall> from_string_view<openai::KindImageGenerationCall>(std::string_view sv) {
+    if (sv == openai::KindImageGenerationCall::value) return openai::KindImageGenerationCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindImageGenerationTool> from_string_view<openai::KindImageGenerationTool>(std::string_view sv) {
+    if (sv == openai::KindImageGenerationTool::value) return openai::KindImageGenerationTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindInputFile> from_string_view<openai::KindInputFile>(std::string_view sv) {
+    if (sv == openai::KindInputFile::value) return openai::KindInputFile{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindInputImage> from_string_view<openai::KindInputImage>(std::string_view sv) {
+    if (sv == openai::KindInputImage::value) return openai::KindInputImage{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindInputMessage> from_string_view<openai::KindInputMessage>(std::string_view sv) {
+    if (sv == openai::KindInputMessage::value) return openai::KindInputMessage{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindInputText> from_string_view<openai::KindInputText>(std::string_view sv) {
+    if (sv == openai::KindInputText::value) return openai::KindInputText{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindItemReference> from_string_view<openai::KindItemReference>(std::string_view sv) {
+    if (sv == openai::KindItemReference::value) return openai::KindItemReference{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindKeyPressAction> from_string_view<openai::KindKeyPressAction>(std::string_view sv) {
+    if (sv == openai::KindKeyPressAction::value) return openai::KindKeyPressAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindLocalShellAction> from_string_view<openai::KindLocalShellAction>(std::string_view sv) {
+    if (sv == openai::KindLocalShellAction::value) return openai::KindLocalShellAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindLocalShellCall> from_string_view<openai::KindLocalShellCall>(std::string_view sv) {
+    if (sv == openai::KindLocalShellCall::value) return openai::KindLocalShellCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindLocalShellCallOutput> from_string_view<openai::KindLocalShellCallOutput>(std::string_view sv) {
+    if (sv == openai::KindLocalShellCallOutput::value) return openai::KindLocalShellCallOutput{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindLocalShellTool> from_string_view<openai::KindLocalShellTool>(std::string_view sv) {
+    if (sv == openai::KindLocalShellTool::value) return openai::KindLocalShellTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMCPApprovalRequest> from_string_view<openai::KindMCPApprovalRequest>(std::string_view sv) {
+    if (sv == openai::KindMCPApprovalRequest::value) return openai::KindMCPApprovalRequest{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMCPApprovalResponse> from_string_view<openai::KindMCPApprovalResponse>(std::string_view sv) {
+    if (sv == openai::KindMCPApprovalResponse::value) return openai::KindMCPApprovalResponse{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMCPCall> from_string_view<openai::KindMCPCall>(std::string_view sv) {
+    if (sv == openai::KindMCPCall::value) return openai::KindMCPCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMCPListTools> from_string_view<openai::KindMCPListTools>(std::string_view sv) {
+    if (sv == openai::KindMCPListTools::value) return openai::KindMCPListTools{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMCPToolChoice> from_string_view<openai::KindMCPToolChoice>(std::string_view sv) {
+    if (sv == openai::KindMCPToolChoice::value) return openai::KindMCPToolChoice{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMCPTool> from_string_view<openai::KindMCPTool>(std::string_view sv) {
+    if (sv == openai::KindMCPTool::value) return openai::KindMCPTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindMoveAction> from_string_view<openai::KindMoveAction>(std::string_view sv) {
+    if (sv == openai::KindMoveAction::value) return openai::KindMoveAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindOpenPageAction> from_string_view<openai::KindOpenPageAction>(std::string_view sv) {
+    if (sv == openai::KindOpenPageAction::value) return openai::KindOpenPageAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindOutputMessage> from_string_view<openai::KindOutputMessage>(std::string_view sv) {
+    if (sv == openai::KindOutputMessage::value) return openai::KindOutputMessage{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindOutputText> from_string_view<openai::KindOutputText>(std::string_view sv) {
+    if (sv == openai::KindOutputText::value) return openai::KindOutputText{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindReasoningItem> from_string_view<openai::KindReasoningItem>(std::string_view sv) {
+    if (sv == openai::KindReasoningItem::value) return openai::KindReasoningItem{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindReasoningSummaryText> from_string_view<openai::KindReasoningSummaryText>(std::string_view sv) {
+    if (sv == openai::KindReasoningSummaryText::value) return openai::KindReasoningSummaryText{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindReasoningText> from_string_view<openai::KindReasoningText>(std::string_view sv) {
+    if (sv == openai::KindReasoningText::value) return openai::KindReasoningText{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindRefusal> from_string_view<openai::KindRefusal>(std::string_view sv) {
+    if (sv == openai::KindRefusal::value) return openai::KindRefusal{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindResponse> from_string_view<openai::KindResponse>(std::string_view sv) {
+    if (sv == openai::KindResponse::value) return openai::KindResponse{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindScreenshotAction> from_string_view<openai::KindScreenshotAction>(std::string_view sv) {
+    if (sv == openai::KindScreenshotAction::value) return openai::KindScreenshotAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindScrollAction> from_string_view<openai::KindScrollAction>(std::string_view sv) {
+    if (sv == openai::KindScrollAction::value) return openai::KindScrollAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindSearchAction> from_string_view<openai::KindSearchAction>(std::string_view sv) {
+    if (sv == openai::KindSearchAction::value) return openai::KindSearchAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindSearchActionSource> from_string_view<openai::KindSearchActionSource>(std::string_view sv) {
+    if (sv == openai::KindSearchActionSource::value) return openai::KindSearchActionSource{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindShellCall> from_string_view<openai::KindShellCall>(std::string_view sv) {
+    if (sv == openai::KindShellCall::value) return openai::KindShellCall{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindShellCallOutput> from_string_view<openai::KindShellCallOutput>(std::string_view sv) {
+    if (sv == openai::KindShellCallOutput::value) return openai::KindShellCallOutput{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindShellExitOutcome> from_string_view<openai::KindShellExitOutcome>(std::string_view sv) {
+    if (sv == openai::KindShellExitOutcome::value) return openai::KindShellExitOutcome{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindShellTimeoutOutcome> from_string_view<openai::KindShellTimeoutOutcome>(std::string_view sv) {
+    if (sv == openai::KindShellTimeoutOutcome::value) return openai::KindShellTimeoutOutcome{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindShellTool> from_string_view<openai::KindShellTool>(std::string_view sv) {
+    if (sv == openai::KindShellTool::value) return openai::KindShellTool{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindSpecificApplyPatchToolChoice> from_string_view<openai::KindSpecificApplyPatchToolChoice>(std::string_view sv) {
+    if (sv == openai::KindSpecificApplyPatchToolChoice::value) return openai::KindSpecificApplyPatchToolChoice{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindSpecificShellToolChoice> from_string_view<openai::KindSpecificShellToolChoice>(std::string_view sv) {
+    if (sv == openai::KindSpecificShellToolChoice::value) return openai::KindSpecificShellToolChoice{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindTypeAction> from_string_view<openai::KindTypeAction>(std::string_view sv) {
+    if (sv == openai::KindTypeAction::value) return openai::KindTypeAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindUpdateFileOperation> from_string_view<openai::KindUpdateFileOperation>(std::string_view sv) {
+    if (sv == openai::KindUpdateFileOperation::value) return openai::KindUpdateFileOperation{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindUrlCitation> from_string_view<openai::KindUrlCitation>(std::string_view sv) {
+    if (sv == openai::KindUrlCitation::value) return openai::KindUrlCitation{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindWaitAction> from_string_view<openai::KindWaitAction>(std::string_view sv) {
+    if (sv == openai::KindWaitAction::value) return openai::KindWaitAction{};
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<openai::KindWebSearchCall> from_string_view<openai::KindWebSearchCall>(std::string_view sv) {
+    if (sv == openai::KindWebSearchCall::value) return openai::KindWebSearchCall{};
+    return std::nullopt;
+}
+
+
+// Enums
 template <>
 constexpr std::optional<openai::AnnotationType> from_string_view<openai::AnnotationType>(std::string_view sv) {
     if (sv == "file_citation") return openai::AnnotationType::FILE_CITATION;
@@ -38,18 +497,6 @@ constexpr std::optional<openai::ContentType> from_string_view<openai::ContentTyp
     if (sv == "input_text") return openai::ContentType::INPUT_TEXT;
     if (sv == "input_image") return openai::ContentType::INPUT_IMAGE;
     if (sv == "input_file") return openai::ContentType::INPUT_FILE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ApplyPatchCallKind> from_string_view<openai::ApplyPatchCallKind>(std::string_view sv) {
-    if (sv == "apply_patch_call") return openai::ApplyPatchCallKind::APPLY_PATCH_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ApplyPatchCallOutputKind> from_string_view<openai::ApplyPatchCallOutputKind>(std::string_view sv) {
-    if (sv == "apply_patch_call_output") return openai::ApplyPatchCallOutputKind::APPLY_PATCH_CALL_OUTPUT;
     return std::nullopt;
 }
 
@@ -76,42 +523,12 @@ constexpr std::optional<openai::ApplyPatchOperationType> from_string_view<openai
 }
 
 template <>
-constexpr std::optional<openai::ApplyPatchToolKind> from_string_view<openai::ApplyPatchToolKind>(std::string_view sv) {
-    if (sv == "apply_patch") return openai::ApplyPatchToolKind::APPLY_PATCH;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::CallStatus> from_string_view<openai::CallStatus>(std::string_view sv) {
     if (sv == "in_progress") return openai::CallStatus::IN_PROGRESS;
     if (sv == "completed") return openai::CallStatus::COMPLETED;
     if (sv == "incomplete") return openai::CallStatus::INCOMPLETE;
     if (sv == "calling") return openai::CallStatus::CALLING;
     if (sv == "failed") return openai::CallStatus::FAILED;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ClickActionKind> from_string_view<openai::ClickActionKind>(std::string_view sv) {
-    if (sv == "click") return openai::ClickActionKind::CLICK;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CodeInterpreterCallKind> from_string_view<openai::CodeInterpreterCallKind>(std::string_view sv) {
-    if (sv == "code_interpreter_call") return openai::CodeInterpreterCallKind::CODE_INTERPRETER_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CodeInterpreterImageKind> from_string_view<openai::CodeInterpreterImageKind>(std::string_view sv) {
-    if (sv == "image") return openai::CodeInterpreterImageKind::IMAGE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CodeInterpreterLogKind> from_string_view<openai::CodeInterpreterLogKind>(std::string_view sv) {
-    if (sv == "logs") return openai::CodeInterpreterLogKind::LOGS;
     return std::nullopt;
 }
 
@@ -133,18 +550,6 @@ constexpr std::optional<openai::CodeInterpreterStatus> from_string_view<openai::
 }
 
 template <>
-constexpr std::optional<openai::CodeInterpreterToolKind> from_string_view<openai::CodeInterpreterToolKind>(std::string_view sv) {
-    if (sv == "code_interpreter") return openai::CodeInterpreterToolKind::CODE_INTERPRETER;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CompactionItemKind> from_string_view<openai::CompactionItemKind>(std::string_view sv) {
-    if (sv == "compaction") return openai::CompactionItemKind::COMPACTION;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::ComputerActionType> from_string_view<openai::ComputerActionType>(std::string_view sv) {
     if (sv == "click") return openai::ComputerActionType::CLICK;
     if (sv == "double_click") return openai::ComputerActionType::DOUBLE_CLICK;
@@ -159,32 +564,8 @@ constexpr std::optional<openai::ComputerActionType> from_string_view<openai::Com
 }
 
 template <>
-constexpr std::optional<openai::ComputerCallKind> from_string_view<openai::ComputerCallKind>(std::string_view sv) {
-    if (sv == "computer_call") return openai::ComputerCallKind::COMPUTER_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ComputerCallOutputKind> from_string_view<openai::ComputerCallOutputKind>(std::string_view sv) {
-    if (sv == "computer_call_output") return openai::ComputerCallOutputKind::COMPUTER_CALL_OUTPUT;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::ComputerCallOutputType> from_string_view<openai::ComputerCallOutputType>(std::string_view sv) {
     if (sv == "computer_screenshot") return openai::ComputerCallOutputType::COMPUTER_SCREENSHOT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ComputerScreenshotKind> from_string_view<openai::ComputerScreenshotKind>(std::string_view sv) {
-    if (sv == "computer_screenshot") return openai::ComputerScreenshotKind::COMPUTER_SCREENSHOT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ComputerUseToolKind> from_string_view<openai::ComputerUseToolKind>(std::string_view sv) {
-    if (sv == "computer_use_preview") return openai::ComputerUseToolKind::COMPUTER_USE_PREVIEW;
     return std::nullopt;
 }
 
@@ -202,69 +583,9 @@ constexpr std::optional<openai::ConnectId> from_string_view<openai::ConnectId>(s
 }
 
 template <>
-constexpr std::optional<openai::ContainerConfigKind> from_string_view<openai::ContainerConfigKind>(std::string_view sv) {
-    if (sv == "auto") return openai::ContainerConfigKind::AUTO;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ContainerFileCitationKind> from_string_view<openai::ContainerFileCitationKind>(std::string_view sv) {
-    if (sv == "container_file_citation") return openai::ContainerFileCitationKind::CONTAINER_FILE_CITATION;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CreateFileOperationKind> from_string_view<openai::CreateFileOperationKind>(std::string_view sv) {
-    if (sv == "create_file") return openai::CreateFileOperationKind::CREATE_FILE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CustomToolCallKind> from_string_view<openai::CustomToolCallKind>(std::string_view sv) {
-    if (sv == "custom_tool_call") return openai::CustomToolCallKind::CUSTOM_TOOL_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CustomToolCallOutputKind> from_string_view<openai::CustomToolCallOutputKind>(std::string_view sv) {
-    if (sv == "custom_tool_call_output") return openai::CustomToolCallOutputKind::CUSTOM_TOOL_CALL_OUTPUT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CustomToolChoiceKind> from_string_view<openai::CustomToolChoiceKind>(std::string_view sv) {
-    if (sv == "custom") return openai::CustomToolChoiceKind::CUSTOM;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::CustomToolFormatType> from_string_view<openai::CustomToolFormatType>(std::string_view sv) {
     if (sv == "text") return openai::CustomToolFormatType::TEXT;
     if (sv == "grammar") return openai::CustomToolFormatType::GRAMMAR;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CustomToolGrammarFormatKind> from_string_view<openai::CustomToolGrammarFormatKind>(std::string_view sv) {
-    if (sv == "grammar") return openai::CustomToolGrammarFormatKind::GRAMMAR;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CustomToolKind> from_string_view<openai::CustomToolKind>(std::string_view sv) {
-    if (sv == "custom") return openai::CustomToolKind::CUSTOM;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::CustomToolTextFormatKind> from_string_view<openai::CustomToolTextFormatKind>(std::string_view sv) {
-    if (sv == "text") return openai::CustomToolTextFormatKind::TEXT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::DeleteFileOperationKind> from_string_view<openai::DeleteFileOperationKind>(std::string_view sv) {
-    if (sv == "delete_file") return openai::DeleteFileOperationKind::DELETE_FILE;
     return std::nullopt;
 }
 
@@ -277,47 +598,11 @@ constexpr std::optional<openai::Detail> from_string_view<openai::Detail>(std::st
 }
 
 template <>
-constexpr std::optional<openai::DoubleClickActionKind> from_string_view<openai::DoubleClickActionKind>(std::string_view sv) {
-    if (sv == "double_click") return openai::DoubleClickActionKind::DOUBLE_CLICK;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::DragActionKind> from_string_view<openai::DragActionKind>(std::string_view sv) {
-    if (sv == "drag") return openai::DragActionKind::DRAG;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FileCitationKind> from_string_view<openai::FileCitationKind>(std::string_view sv) {
-    if (sv == "file_citation") return openai::FileCitationKind::FILE_CITATION;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FilePathKind> from_string_view<openai::FilePathKind>(std::string_view sv) {
-    if (sv == "file_path") return openai::FilePathKind::FILE_PATH;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FileSearchToolCallKind> from_string_view<openai::FileSearchToolCallKind>(std::string_view sv) {
-    if (sv == "file_search_call") return openai::FileSearchToolCallKind::FILE_SEARCH_CALL;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::FileSearchStatus> from_string_view<openai::FileSearchStatus>(std::string_view sv) {
     if (sv == "in_progress") return openai::FileSearchStatus::IN_PROGRESS;
     if (sv == "searching") return openai::FileSearchStatus::SEARCHING;
     if (sv == "incomplete") return openai::FileSearchStatus::INCOMPLETE;
     if (sv == "failed") return openai::FileSearchStatus::FAILED;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FileSearchToolKind> from_string_view<openai::FileSearchToolKind>(std::string_view sv) {
-    if (sv == "file_search") return openai::FileSearchToolKind::FILE_SEARCH;
     return std::nullopt;
 }
 
@@ -342,52 +627,10 @@ constexpr std::optional<openai::FilterOperator> from_string_view<openai::FilterO
 }
 
 template <>
-constexpr std::optional<openai::FindActionKind> from_string_view<openai::FindActionKind>(std::string_view sv) {
-    if (sv == "find") return openai::FindActionKind::FIND;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FormatJsonSchemaKind> from_string_view<openai::FormatJsonSchemaKind>(std::string_view sv) {
-    if (sv == "json_schema") return openai::FormatJsonSchemaKind::JSON_SCHEMA;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FormatTextKind> from_string_view<openai::FormatTextKind>(std::string_view sv) {
-    if (sv == "text") return openai::FormatTextKind::TEXT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FunctionCallKind> from_string_view<openai::FunctionCallKind>(std::string_view sv) {
-    if (sv == "function_call") return openai::FunctionCallKind::FUNCTION_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FunctionCallOutputKind> from_string_view<openai::FunctionCallOutputKind>(std::string_view sv) {
-    if (sv == "function_call_output") return openai::FunctionCallOutputKind::FUNCTION_CALL_OUTPUT;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::FunctionCallStatus> from_string_view<openai::FunctionCallStatus>(std::string_view sv) {
     if (sv == "in_progress") return openai::FunctionCallStatus::IN_PROGRESS;
     if (sv == "completed") return openai::FunctionCallStatus::COMPLETED;
     if (sv == "incomplete") return openai::FunctionCallStatus::INCOMPLETE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FunctionToolChoiceKind> from_string_view<openai::FunctionToolChoiceKind>(std::string_view sv) {
-    if (sv == "function") return openai::FunctionToolChoiceKind::FUNCTION;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::FunctionToolKind> from_string_view<openai::FunctionToolKind>(std::string_view sv) {
-    if (sv == "function") return openai::FunctionToolKind::FUNCTION;
     return std::nullopt;
 }
 
@@ -413,12 +656,6 @@ constexpr std::optional<openai::ImageGenerationBackground> from_string_view<open
     if (sv == "transparent") return openai::ImageGenerationBackground::TRANSPARENT;
     if (sv == "opaque") return openai::ImageGenerationBackground::OPAQUE;
     if (sv == "auto") return openai::ImageGenerationBackground::AUTO;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ImageGenerationCallKind> from_string_view<openai::ImageGenerationCallKind>(std::string_view sv) {
-    if (sv == "image_generation_call") return openai::ImageGenerationCallKind::IMAGE_GENERATION_CALL;
     return std::nullopt;
 }
 
@@ -456,12 +693,6 @@ constexpr std::optional<openai::ImageGenerationSize> from_string_view<openai::Im
 }
 
 template <>
-constexpr std::optional<openai::ImageGenerationToolKind> from_string_view<openai::ImageGenerationToolKind>(std::string_view sv) {
-    if (sv == "image_generation") return openai::ImageGenerationToolKind::IMAGE_GENERATION;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::IncludeOutputData> from_string_view<openai::IncludeOutputData>(std::string_view sv) {
     if (sv == "code_interpreter_call.outputs") return openai::IncludeOutputData::CODE_INTERPRETER_CALL_OUTPUTS;
     if (sv == "computer_call_output.output.image_url") return openai::IncludeOutputData::COMPUTER_CALL_OUTPUT_OUTPUT_IMAGE_URL;
@@ -477,18 +708,6 @@ template <>
 constexpr std::optional<openai::IncompleteReason> from_string_view<openai::IncompleteReason>(std::string_view sv) {
     if (sv == "max_output_tokens") return openai::IncompleteReason::MAX_OUTPUT_TOKENS;
     if (sv == "content_filter") return openai::IncompleteReason::CONTENT_FILTER;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::InputFileKind> from_string_view<openai::InputFileKind>(std::string_view sv) {
-    if (sv == "input_file") return openai::InputFileKind::INPUT_FILE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::InputImageKind> from_string_view<openai::InputImageKind>(std::string_view sv) {
-    if (sv == "input_image") return openai::InputImageKind::INPUT_IMAGE;
     return std::nullopt;
 }
 
@@ -522,58 +741,10 @@ constexpr std::optional<openai::InputItemType> from_string_view<openai::InputIte
 }
 
 template <>
-constexpr std::optional<openai::InputMessageKind> from_string_view<openai::InputMessageKind>(std::string_view sv) {
-    if (sv == "message") return openai::InputMessageKind::MESSAGE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::InputTextKind> from_string_view<openai::InputTextKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::InputTextKind::INPUT_TEXT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ItemReferenceKind> from_string_view<openai::ItemReferenceKind>(std::string_view sv) {
-    if (sv == "item_reference") return openai::ItemReferenceKind::ITEM_REFERENCE;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::ItemStatus> from_string_view<openai::ItemStatus>(std::string_view sv) {
     if (sv == "in_progress") return openai::ItemStatus::IN_PROGRESS;
     if (sv == "completed") return openai::ItemStatus::COMPLETED;
     if (sv == "incomplete") return openai::ItemStatus::INCOMPLETE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::KeyPressActionKind> from_string_view<openai::KeyPressActionKind>(std::string_view sv) {
-    if (sv == "keypress") return openai::KeyPressActionKind::KEYPRESS;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::LocalShellActionKind> from_string_view<openai::LocalShellActionKind>(std::string_view sv) {
-    if (sv == "exec") return openai::LocalShellActionKind::EXEC;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::LocalShellCallKind> from_string_view<openai::LocalShellCallKind>(std::string_view sv) {
-    if (sv == "local_shell_call") return openai::LocalShellCallKind::LOCAL_SHELL_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::LocalShellCallOutputKind> from_string_view<openai::LocalShellCallOutputKind>(std::string_view sv) {
-    if (sv == "local_shell_call_output") return openai::LocalShellCallOutputKind::LOCAL_SHELL_CALL_OUTPUT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::LocalShellToolKind> from_string_view<openai::LocalShellToolKind>(std::string_view sv) {
-    if (sv == "local_shell") return openai::LocalShellToolKind::LOCAL_SHELL;
     return std::nullopt;
 }
 
@@ -590,45 +761,9 @@ constexpr std::optional<openai::LocationType> from_string_view<openai::LocationT
 }
 
 template <>
-constexpr std::optional<openai::MCPApprovalRequestKind> from_string_view<openai::MCPApprovalRequestKind>(std::string_view sv) {
-    if (sv == "mcp_approval_request") return openai::MCPApprovalRequestKind::MCP_APPROVAL_REQUEST;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::MCPApprovalResponseKind> from_string_view<openai::MCPApprovalResponseKind>(std::string_view sv) {
-    if (sv == "mcp_approval_response") return openai::MCPApprovalResponseKind::MCP_APPROVAL_RESPONSE;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::MCPApprovalSetting> from_string_view<openai::MCPApprovalSetting>(std::string_view sv) {
     if (sv == "always") return openai::MCPApprovalSetting::ALWAYS;
     if (sv == "never") return openai::MCPApprovalSetting::NEVER;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::MCPCallKind> from_string_view<openai::MCPCallKind>(std::string_view sv) {
-    if (sv == "mcp_call") return openai::MCPCallKind::MCP_CALL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::MCPListToolsKind> from_string_view<openai::MCPListToolsKind>(std::string_view sv) {
-    if (sv == "mcp_list_tools") return openai::MCPListToolsKind::MCP_LIST_TOOLS;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::MCPToolChoiceKind> from_string_view<openai::MCPToolChoiceKind>(std::string_view sv) {
-    if (sv == "mcp") return openai::MCPToolChoiceKind::MCP;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::MCPToolKind> from_string_view<openai::MCPToolKind>(std::string_view sv) {
-    if (sv == "mcp") return openai::MCPToolKind::MCP;
     return std::nullopt;
 }
 
@@ -639,18 +774,6 @@ constexpr std::optional<openai::MouseButton> from_string_view<openai::MouseButto
     if (sv == "wheel") return openai::MouseButton::WHEEL;
     if (sv == "back") return openai::MouseButton::BACK;
     if (sv == "forward") return openai::MouseButton::FORWARD;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::MoveActionKind> from_string_view<openai::MoveActionKind>(std::string_view sv) {
-    if (sv == "move") return openai::MoveActionKind::MOVE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::OpenPageActionKind> from_string_view<openai::OpenPageActionKind>(std::string_view sv) {
-    if (sv == "open_page") return openai::OpenPageActionKind::OPEN_PAGE;
     return std::nullopt;
 }
 
@@ -682,18 +805,6 @@ template <>
 constexpr std::optional<openai::OutputMessageContentType> from_string_view<openai::OutputMessageContentType>(std::string_view sv) {
     if (sv == "output_text") return openai::OutputMessageContentType::OUTPUT_TEXT;
     if (sv == "refusal") return openai::OutputMessageContentType::REFUSAL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::OutputMessageKind> from_string_view<openai::OutputMessageKind>(std::string_view sv) {
-    if (sv == "message") return openai::OutputMessageKind::MESSAGE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::OutputTextKind> from_string_view<openai::OutputTextKind>(std::string_view sv) {
-    if (sv == "output_text") return openai::OutputTextKind::OUTPUT_TEXT;
     return std::nullopt;
 }
 
@@ -730,12 +841,6 @@ constexpr std::optional<openai::ReasoningItemContentType> from_string_view<opena
 }
 
 template <>
-constexpr std::optional<openai::ReasoningItemKind> from_string_view<openai::ReasoningItemKind>(std::string_view sv) {
-    if (sv == "reasoning") return openai::ReasoningItemKind::REASONING;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::ReasoningStatus> from_string_view<openai::ReasoningStatus>(std::string_view sv) {
     if (sv == "in_progress") return openai::ReasoningStatus::IN_PROGRESS;
     if (sv == "completed") return openai::ReasoningStatus::COMPLETED;
@@ -752,33 +857,9 @@ constexpr std::optional<openai::ReasoningSummary> from_string_view<openai::Reaso
 }
 
 template <>
-constexpr std::optional<openai::ReasoningSummaryTextKind> from_string_view<openai::ReasoningSummaryTextKind>(std::string_view sv) {
-    if (sv == "summary_text") return openai::ReasoningSummaryTextKind::SUMMARY_TEXT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ReasoningTextKind> from_string_view<openai::ReasoningTextKind>(std::string_view sv) {
-    if (sv == "reasoning_text") return openai::ReasoningTextKind::REASONING_TEXT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::RefusalKind> from_string_view<openai::RefusalKind>(std::string_view sv) {
-    if (sv == "refusal") return openai::RefusalKind::REFUSAL;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::ResponseFormatType> from_string_view<openai::ResponseFormatType>(std::string_view sv) {
     if (sv == "text") return openai::ResponseFormatType::TEXT;
     if (sv == "json_schema") return openai::ResponseFormatType::JSON_SCHEMA;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ResponseKind> from_string_view<openai::ResponseKind>(std::string_view sv) {
-    if (sv == "response") return openai::ResponseKind::RESPONSE;
     return std::nullopt;
 }
 
@@ -817,30 +898,6 @@ constexpr std::optional<openai::RoleUser> from_string_view<openai::RoleUser>(std
 }
 
 template <>
-constexpr std::optional<openai::ScreenshotActionKind> from_string_view<openai::ScreenshotActionKind>(std::string_view sv) {
-    if (sv == "screenshot") return openai::ScreenshotActionKind::SCREENSHOT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ScrollActionKind> from_string_view<openai::ScrollActionKind>(std::string_view sv) {
-    if (sv == "scroll") return openai::ScrollActionKind::SCROLL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::SearchActionKind> from_string_view<openai::SearchActionKind>(std::string_view sv) {
-    if (sv == "search") return openai::SearchActionKind::SEARCH;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::SearchActionSourceKind> from_string_view<openai::SearchActionSourceKind>(std::string_view sv) {
-    if (sv == "url") return openai::SearchActionSourceKind::URL;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::SearchContextSize> from_string_view<openai::SearchContextSize>(std::string_view sv) {
     if (sv == "low") return openai::SearchContextSize::LOW;
     if (sv == "medium") return openai::SearchContextSize::MEDIUM;
@@ -858,51 +915,9 @@ constexpr std::optional<openai::ServiceTier> from_string_view<openai::ServiceTie
 }
 
 template <>
-constexpr std::optional<openai::ShellCallKind> from_string_view<openai::ShellCallKind>(std::string_view sv) {
-    if (sv == "shell_call") return openai::ShellCallKind::SHELL_CALL;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::ShellCallOutcomeType> from_string_view<openai::ShellCallOutcomeType>(std::string_view sv) {
     if (sv == "exit") return openai::ShellCallOutcomeType::EXIT;
     if (sv == "timeout") return openai::ShellCallOutcomeType::TIMEOUT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ShellCallOutputKind> from_string_view<openai::ShellCallOutputKind>(std::string_view sv) {
-    if (sv == "shell_call_output") return openai::ShellCallOutputKind::SHELL_CALL_OUTPUT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ShellExitOutcomeKind> from_string_view<openai::ShellExitOutcomeKind>(std::string_view sv) {
-    if (sv == "exit") return openai::ShellExitOutcomeKind::EXIT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ShellTimeoutOutcomeKind> from_string_view<openai::ShellTimeoutOutcomeKind>(std::string_view sv) {
-    if (sv == "timeout") return openai::ShellTimeoutOutcomeKind::TIMEOUT;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::ShellToolKind> from_string_view<openai::ShellToolKind>(std::string_view sv) {
-    if (sv == "shell") return openai::ShellToolKind::SHELL;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::SpecificApplyPatchToolChoiceKind> from_string_view<openai::SpecificApplyPatchToolChoiceKind>(std::string_view sv) {
-    if (sv == "apply_patch") return openai::SpecificApplyPatchToolChoiceKind::APPLY_PATCH;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::SpecificShellToolChoiceKind> from_string_view<openai::SpecificShellToolChoiceKind>(std::string_view sv) {
-    if (sv == "shell") return openai::SpecificShellToolChoiceKind::SHELL;
     return std::nullopt;
 }
 
@@ -957,24 +972,6 @@ constexpr std::optional<openai::TruncationStrategy> from_string_view<openai::Tru
 }
 
 template <>
-constexpr std::optional<openai::TypeActionKind> from_string_view<openai::TypeActionKind>(std::string_view sv) {
-    if (sv == "type") return openai::TypeActionKind::TYPE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::UpdateFileOperationKind> from_string_view<openai::UpdateFileOperationKind>(std::string_view sv) {
-    if (sv == "update_file") return openai::UpdateFileOperationKind::UPDATE_FILE;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::UrlCitationKind> from_string_view<openai::UrlCitationKind>(std::string_view sv) {
-    if (sv == "url_citation") return openai::UrlCitationKind::URL_CITATION;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::Verbosity> from_string_view<openai::Verbosity>(std::string_view sv) {
     if (sv == "low") return openai::Verbosity::LOW;
     if (sv == "medium") return openai::Verbosity::MEDIUM;
@@ -983,22 +980,10 @@ constexpr std::optional<openai::Verbosity> from_string_view<openai::Verbosity>(s
 }
 
 template <>
-constexpr std::optional<openai::WaitActionKind> from_string_view<openai::WaitActionKind>(std::string_view sv) {
-    if (sv == "wait") return openai::WaitActionKind::WAIT;
-    return std::nullopt;
-}
-
-template <>
 constexpr std::optional<openai::WebSearchActionType> from_string_view<openai::WebSearchActionType>(std::string_view sv) {
     if (sv == "search") return openai::WebSearchActionType::SEARCH;
     if (sv == "open_page") return openai::WebSearchActionType::OPEN_PAGE;
     if (sv == "find") return openai::WebSearchActionType::FIND;
-    return std::nullopt;
-}
-
-template <>
-constexpr std::optional<openai::WebSearchCallKind> from_string_view<openai::WebSearchCallKind>(std::string_view sv) {
-    if (sv == "web_search_call") return openai::WebSearchCallKind::WEB_SEARCH_CALL;
     return std::nullopt;
 }
 
@@ -1042,14 +1027,6 @@ constexpr std::optional<openai::WebSearchToolType> from_string_view<openai::WebS
 /***
  * to_string_view Overloads
  */
-
-constexpr std::string_view to_string_view(openai::AllowedToolsChoiceKind val) {
-    switch (val) {
-        case openai::AllowedToolsChoiceKind::ALLOWED_TOOLS: return "allowed_tools";
-        default: throw std::logic_error("invalid openai::AllowedToolsChoiceKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::AnnotationType val) {
     switch (val) {
         case openai::AnnotationType::FILE_CITATION: return "file_citation";
@@ -1057,20 +1034,6 @@ constexpr std::string_view to_string_view(openai::AnnotationType val) {
         case openai::AnnotationType::CONTAINER_FILE_CITATION: return "container_file_citation";
         case openai::AnnotationType::FILE_PATH: return "file_path";
         default: throw std::logic_error("invalid openai::AnnotationType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ApplyPatchCallKind val) {
-    switch (val) {
-        case openai::ApplyPatchCallKind::APPLY_PATCH_CALL: return "apply_patch_call";
-        default: throw std::logic_error("invalid openai::ApplyPatchCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ApplyPatchCallOutputKind val) {
-    switch (val) {
-        case openai::ApplyPatchCallOutputKind::APPLY_PATCH_CALL_OUTPUT: return "apply_patch_call_output";
-        default: throw std::logic_error("invalid openai::ApplyPatchCallOutputKind");
     }
 }
 
@@ -1099,13 +1062,6 @@ constexpr std::string_view to_string_view(openai::ApplyPatchOperationType val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ApplyPatchToolKind val) {
-    switch (val) {
-        case openai::ApplyPatchToolKind::APPLY_PATCH: return "apply_patch";
-        default: throw std::logic_error("invalid openai::ApplyPatchToolKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::CallStatus val) {
     switch (val) {
         case openai::CallStatus::IN_PROGRESS: return "in_progress";
@@ -1114,34 +1070,6 @@ constexpr std::string_view to_string_view(openai::CallStatus val) {
         case openai::CallStatus::CALLING: return "calling";
         case openai::CallStatus::FAILED: return "failed";
         default: throw std::logic_error("invalid openai::CallStatus");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ClickActionKind val) {
-    switch (val) {
-        case openai::ClickActionKind::CLICK: return "click";
-        default: throw std::logic_error("invalid openai::ClickActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CodeInterpreterCallKind val) {
-    switch (val) {
-        case openai::CodeInterpreterCallKind::CODE_INTERPRETER_CALL: return "code_interpreter_call";
-        default: throw std::logic_error("invalid openai::CodeInterpreterCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CodeInterpreterImageKind val) {
-    switch (val) {
-        case openai::CodeInterpreterImageKind::IMAGE: return "image";
-        default: throw std::logic_error("invalid openai::CodeInterpreterImageKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CodeInterpreterLogKind val) {
-    switch (val) {
-        case openai::CodeInterpreterLogKind::LOGS: return "logs";
-        default: throw std::logic_error("invalid openai::CodeInterpreterLogKind");
     }
 }
 
@@ -1164,20 +1092,6 @@ constexpr std::string_view to_string_view(openai::CodeInterpreterStatus val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::CodeInterpreterToolKind val) {
-    switch (val) {
-        case openai::CodeInterpreterToolKind::CODE_INTERPRETER: return "code_interpreter";
-        default: throw std::logic_error("invalid openai::CodeInterpreterToolKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CompactionItemKind val) {
-    switch (val) {
-        case openai::CompactionItemKind::COMPACTION: return "compaction";
-        default: throw std::logic_error("invalid openai::CompactionItemKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ComputerActionType val) {
     switch (val) {
         case openai::ComputerActionType::CLICK: return "click";
@@ -1193,20 +1107,6 @@ constexpr std::string_view to_string_view(openai::ComputerActionType val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ComputerCallKind val) {
-    switch (val) {
-        case openai::ComputerCallKind::COMPUTER_CALL: return "computer_call";
-        default: throw std::logic_error("invalid openai::ComputerCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ComputerCallOutputKind val) {
-    switch (val) {
-        case openai::ComputerCallOutputKind::COMPUTER_CALL_OUTPUT: return "computer_call_output";
-        default: throw std::logic_error("invalid openai::ComputerCallOutputKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ComputerCallOutputType val) {
     switch (val) {
         case openai::ComputerCallOutputType::COMPUTER_SCREENSHOT: return "computer_screenshot";
@@ -1214,73 +1114,17 @@ constexpr std::string_view to_string_view(openai::ComputerCallOutputType val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ComputerScreenshotKind val) {
-    switch (val) {
-        case openai::ComputerScreenshotKind::COMPUTER_SCREENSHOT: return "computer_screenshot";
-        default: throw std::logic_error("invalid openai::ComputerScreenshotKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ComputerUseToolKind val) {
-    switch (val) {
-        case openai::ComputerUseToolKind::COMPUTER_USE_PREVIEW: return "computer_use_preview";
-        default: throw std::logic_error("invalid openai::ComputerUseToolKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ConnectId val) {
     switch (val) {
-        case openai::ConnectId::DROPBOX: return "connector_dropbox";
-        case openai::ConnectId::GMAIL: return "connector_gmail";
-        case openai::ConnectId::GOOGLE_CALENDAR: return "connector_googlecalendar";
-        case openai::ConnectId::GOOGLE_DRIVE: return "connector_googledrive";
-        case openai::ConnectId::MICROSOFT_TEAMS: return "connector_microsoftteams";
-        case openai::ConnectId::OUTLOOK_CALENDAR: return "connector_outlookcalendar";
-        case openai::ConnectId::OUTLOOK_EMAIL: return "connector_outlookemail";
-        case openai::ConnectId::SHAREPOINT: return "connector_sharepoint";
+        case openai::ConnectId::DROPBOX: return "dropbox";
+        case openai::ConnectId::GMAIL: return "gmail";
+        case openai::ConnectId::GOOGLE_CALENDAR: return "google_calendar";
+        case openai::ConnectId::GOOGLE_DRIVE: return "google_drive";
+        case openai::ConnectId::MICROSOFT_TEAMS: return "microsoft_teams";
+        case openai::ConnectId::OUTLOOK_CALENDAR: return "outlook_calendar";
+        case openai::ConnectId::OUTLOOK_EMAIL: return "outlook_email";
+        case openai::ConnectId::SHAREPOINT: return "sharepoint";
         default: throw std::logic_error("invalid openai::ConnectId");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ContainerConfigKind val) {
-    switch (val) {
-        case openai::ContainerConfigKind::AUTO: return "auto";
-        default: throw std::logic_error("invalid openai::ContainerConfigKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ContainerFileCitationKind val) {
-    switch (val) {
-        case openai::ContainerFileCitationKind::CONTAINER_FILE_CITATION: return "container_file_citation";
-        default: throw std::logic_error("invalid openai::ContainerFileCitationKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CreateFileOperationKind val) {
-    switch (val) {
-        case openai::CreateFileOperationKind::CREATE_FILE: return "create_file";
-        default: throw std::logic_error("invalid openai::CreateFileOperationKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CustomToolCallKind val) {
-    switch (val) {
-        case openai::CustomToolCallKind::CUSTOM_TOOL_CALL: return "custom_tool_call";
-        default: throw std::logic_error("invalid openai::CustomToolCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CustomToolCallOutputKind val) {
-    switch (val) {
-        case openai::CustomToolCallOutputKind::CUSTOM_TOOL_CALL_OUTPUT: return "custom_tool_call_output";
-        default: throw std::logic_error("invalid openai::CustomToolCallOutputKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CustomToolChoiceKind val) {
-    switch (val) {
-        case openai::CustomToolChoiceKind::CUSTOM: return "custom";
-        default: throw std::logic_error("invalid openai::CustomToolChoiceKind");
     }
 }
 
@@ -1289,34 +1133,6 @@ constexpr std::string_view to_string_view(openai::CustomToolFormatType val) {
         case openai::CustomToolFormatType::TEXT: return "text";
         case openai::CustomToolFormatType::GRAMMAR: return "grammar";
         default: throw std::logic_error("invalid openai::CustomToolFormatType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CustomToolGrammarFormatKind val) {
-    switch (val) {
-        case openai::CustomToolGrammarFormatKind::GRAMMAR: return "grammar";
-        default: throw std::logic_error("invalid openai::CustomToolGrammarFormatKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CustomToolKind val) {
-    switch (val) {
-        case openai::CustomToolKind::CUSTOM: return "custom";
-        default: throw std::logic_error("invalid openai::CustomToolKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::CustomToolTextFormatKind val) {
-    switch (val) {
-        case openai::CustomToolTextFormatKind::TEXT: return "text";
-        default: throw std::logic_error("invalid openai::CustomToolTextFormatKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::DeleteFileOperationKind val) {
-    switch (val) {
-        case openai::DeleteFileOperationKind::DELETE_FILE: return "delete_file";
-        default: throw std::logic_error("invalid openai::DeleteFileOperationKind");
     }
 }
 
@@ -1329,41 +1145,6 @@ constexpr std::string_view to_string_view(openai::Detail val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::DoubleClickActionKind val) {
-    switch (val) {
-        case openai::DoubleClickActionKind::DOUBLE_CLICK: return "double_click";
-        default: throw std::logic_error("invalid openai::DoubleClickActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::DragActionKind val) {
-    switch (val) {
-        case openai::DragActionKind::DRAG: return "drag";
-        default: throw std::logic_error("invalid openai::DragActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FileCitationKind val) {
-    switch (val) {
-        case openai::FileCitationKind::FILE_CITATION: return "file_citation";
-        default: throw std::logic_error("invalid openai::FileCitationKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FilePathKind val) {
-    switch (val) {
-        case openai::FilePathKind::FILE_PATH: return "file_path";
-        default: throw std::logic_error("invalid openai::FilePathKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FileSearchToolCallKind val) {
-    switch (val) {
-        case openai::FileSearchToolCallKind::FILE_SEARCH_CALL: return "file_search_call";
-        default: throw std::logic_error("invalid openai::FileSearchToolCallKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::FileSearchStatus val) {
     switch (val) {
         case openai::FileSearchStatus::IN_PROGRESS: return "in_progress";
@@ -1371,13 +1152,6 @@ constexpr std::string_view to_string_view(openai::FileSearchStatus val) {
         case openai::FileSearchStatus::INCOMPLETE: return "incomplete";
         case openai::FileSearchStatus::FAILED: return "failed";
         default: throw std::logic_error("invalid openai::FileSearchStatus");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FileSearchToolKind val) {
-    switch (val) {
-        case openai::FileSearchToolKind::FILE_SEARCH: return "file_search";
-        default: throw std::logic_error("invalid openai::FileSearchToolKind");
     }
 }
 
@@ -1403,61 +1177,12 @@ constexpr std::string_view to_string_view(openai::FilterOperator val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::FindActionKind val) {
-    switch (val) {
-        case openai::FindActionKind::FIND: return "find";
-        default: throw std::logic_error("invalid openai::FindActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FormatJsonSchemaKind val) {
-    switch (val) {
-        case openai::FormatJsonSchemaKind::JSON_SCHEMA: return "json_schema";
-        default: throw std::logic_error("invalid openai::FormatJsonSchemaKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FormatTextKind val) {
-    switch (val) {
-        case openai::FormatTextKind::TEXT: return "text";
-        default: throw std::logic_error("invalid openai::FormatTextKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FunctionCallKind val) {
-    switch (val) {
-        case openai::FunctionCallKind::FUNCTION_CALL: return "function_call";
-        default: throw std::logic_error("invalid openai::FunctionCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FunctionCallOutputKind val) {
-    switch (val) {
-        case openai::FunctionCallOutputKind::FUNCTION_CALL_OUTPUT: return "function_call_output";
-        default: throw std::logic_error("invalid openai::FunctionCallOutputKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::FunctionCallStatus val) {
     switch (val) {
         case openai::FunctionCallStatus::IN_PROGRESS: return "in_progress";
         case openai::FunctionCallStatus::COMPLETED: return "completed";
         case openai::FunctionCallStatus::INCOMPLETE: return "incomplete";
         default: throw std::logic_error("invalid openai::FunctionCallStatus");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FunctionToolChoiceKind val) {
-    switch (val) {
-        case openai::FunctionToolChoiceKind::FUNCTION: return "function";
-        default: throw std::logic_error("invalid openai::FunctionToolChoiceKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::FunctionToolKind val) {
-    switch (val) {
-        case openai::FunctionToolKind::FUNCTION: return "function";
-        default: throw std::logic_error("invalid openai::FunctionToolKind");
     }
 }
 
@@ -1486,13 +1211,6 @@ constexpr std::string_view to_string_view(openai::ImageGenerationBackground val)
         case openai::ImageGenerationBackground::OPAQUE: return "opaque";
         case openai::ImageGenerationBackground::AUTO: return "auto";
         default: throw std::logic_error("invalid openai::ImageGenerationBackground");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ImageGenerationCallKind val) {
-    switch (val) {
-        case openai::ImageGenerationCallKind::IMAGE_GENERATION_CALL: return "image_generation_call";
-        default: throw std::logic_error("invalid openai::ImageGenerationCallKind");
     }
 }
 
@@ -1533,12 +1251,6 @@ constexpr std::string_view to_string_view(openai::ImageGenerationSize val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ImageGenerationToolKind val) {
-    switch (val) {
-        case openai::ImageGenerationToolKind::IMAGE_GENERATION: return "image_generation";
-        default: throw std::logic_error("invalid openai::ImageGenerationToolKind");
-    }
-}
 constexpr std::string_view to_string_view(openai::IncludeOutputData val) {
     switch (val) {
         case openai::IncludeOutputData::CODE_INTERPRETER_CALL_OUTPUTS: return "code_interpreter_call.outputs";
@@ -1551,7 +1263,6 @@ constexpr std::string_view to_string_view(openai::IncludeOutputData val) {
         default: throw std::logic_error("invalid openai::IncludeOutputData");
     }
 }
-
 
 constexpr std::string_view to_string_view(openai::IncompleteReason val) {
     switch (val) {
@@ -1568,20 +1279,6 @@ constexpr std::string_view to_string_view(openai::ContentType val) {
         case openai::ContentType::INPUT_FILE: return "input_file";
     }
     return "unknown";
-}
-
-constexpr std::string_view to_string_view(openai::InputFileKind val) {
-    switch (val) {
-        case openai::InputFileKind::INPUT_FILE: return "input_file";
-        default: throw std::logic_error("invalid openai::InputFileKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::InputImageKind val) {
-    switch (val) {
-        case openai::InputImageKind::INPUT_IMAGE: return "input_image";
-        default: throw std::logic_error("invalid openai::InputImageKind");
-    }
 }
 
 constexpr std::string_view to_string_view(openai::InputItemType val) {
@@ -1614,47 +1311,12 @@ constexpr std::string_view to_string_view(openai::InputItemType val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::InputMessageKind val) {
-    switch (val) {
-        case openai::InputMessageKind::MESSAGE: return "message";
-        default: throw std::logic_error("invalid openai::InputMessageKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::InputTextKind val) {
-    switch (val) {
-        case openai::InputTextKind::INPUT_TEXT: return "input_text";
-        default: throw std::logic_error("invalid openai::InputTextKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ItemReferenceKind val) {
-    switch (val) {
-        case openai::ItemReferenceKind::ITEM_REFERENCE: return "item_reference";
-        default: throw std::logic_error("invalid openai::ItemReferenceKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ItemStatus val) {
     switch (val) {
         case openai::ItemStatus::IN_PROGRESS: return "in_progress";
         case openai::ItemStatus::COMPLETED: return "completed";
         case openai::ItemStatus::INCOMPLETE: return "incomplete";
         default: throw std::logic_error("invalid openai::ItemStatus");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::KeyPressActionKind val) {
-    switch (val) {
-        case openai::KeyPressActionKind::KEYPRESS: return "keypress";
-        default: throw std::logic_error("invalid openai::KeyPressActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::LocalShellActionKind val) {
-    switch (val) {
-        case openai::LocalShellActionKind::EXEC: return "exec";
-        default: throw std::logic_error("invalid openai::LocalShellActionKind");
     }
 }
 
@@ -1665,45 +1327,10 @@ constexpr std::string_view to_string_view(openai::LocalShellActionType val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::LocalShellCallKind val) {
-    switch (val) {
-        case openai::LocalShellCallKind::LOCAL_SHELL_CALL: return "local_shell_call";
-        default: throw std::logic_error("invalid openai::LocalShellCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::LocalShellCallOutputKind val) {
-    switch (val) {
-        case openai::LocalShellCallOutputKind::LOCAL_SHELL_CALL_OUTPUT: return "local_shell_call_output";
-        default: throw std::logic_error("invalid openai::LocalShellCallOutputKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::LocalShellToolKind val) {
-    switch (val) {
-        case openai::LocalShellToolKind::LOCAL_SHELL: return "local_shell";
-        default: throw std::logic_error("invalid openai::LocalShellToolKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::LocationType val) {
     switch (val) {
         case openai::LocationType::APPROXIMATE: return "approximate";
         default: throw std::logic_error("invalid openai::LocationType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::MCPApprovalRequestKind val) {
-    switch (val) {
-        case openai::MCPApprovalRequestKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
-        default: throw std::logic_error("invalid openai::MCPApprovalRequestKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::MCPApprovalResponseKind val) {
-    switch (val) {
-        case openai::MCPApprovalResponseKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
-        default: throw std::logic_error("invalid openai::MCPApprovalResponseKind");
     }
 }
 
@@ -1715,34 +1342,6 @@ constexpr std::string_view to_string_view(openai::MCPApprovalSetting val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::MCPCallKind val) {
-    switch (val) {
-        case openai::MCPCallKind::MCP_CALL: return "mcp_call";
-        default: throw std::logic_error("invalid openai::MCPCallKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::MCPListToolsKind val) {
-    switch (val) {
-        case openai::MCPListToolsKind::MCP_LIST_TOOLS: return "mcp_list_tools";
-        default: throw std::logic_error("invalid openai::MCPListToolsKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::MCPToolChoiceKind val) {
-    switch (val) {
-        case openai::MCPToolChoiceKind::MCP: return "mcp";
-        default: throw std::logic_error("invalid openai::MCPToolChoiceKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::MCPToolKind val) {
-    switch (val) {
-        case openai::MCPToolKind::MCP: return "mcp";
-        default: throw std::logic_error("invalid openai::MCPToolKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::MouseButton val) {
     switch (val) {
         case openai::MouseButton::LEFT: return "left";
@@ -1751,20 +1350,6 @@ constexpr std::string_view to_string_view(openai::MouseButton val) {
         case openai::MouseButton::BACK: return "back";
         case openai::MouseButton::FORWARD: return "forward";
         default: throw std::logic_error("invalid openai::MouseButton");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::MoveActionKind val) {
-    switch (val) {
-        case openai::MoveActionKind::MOVE: return "move";
-        default: throw std::logic_error("invalid openai::MoveActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::OpenPageActionKind val) {
-    switch (val) {
-        case openai::OpenPageActionKind::OPEN_PAGE: return "open_page";
-        default: throw std::logic_error("invalid openai::OpenPageActionKind");
     }
 }
 
@@ -1798,20 +1383,6 @@ constexpr std::string_view to_string_view(openai::OutputMessageContentType val) 
         case openai::OutputMessageContentType::OUTPUT_TEXT: return "output_text";
         case openai::OutputMessageContentType::REFUSAL: return "refusal";
         default: throw std::logic_error("invalid openai::OutputMessageContentType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::OutputMessageKind val) {
-    switch (val) {
-        case openai::OutputMessageKind::MESSAGE: return "message";
-        default: throw std::logic_error("invalid openai::OutputMessageKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::OutputTextKind val) {
-    switch (val) {
-        case openai::OutputTextKind::OUTPUT_TEXT: return "output_text";
-        default: throw std::logic_error("invalid openai::OutputTextKind");
     }
 }
 
@@ -1851,13 +1422,6 @@ constexpr std::string_view to_string_view(openai::ReasoningItemContentType val) 
     }
 }
 
-constexpr std::string_view to_string_view(openai::ReasoningItemKind val) {
-    switch (val) {
-        case openai::ReasoningItemKind::REASONING: return "reasoning";
-        default: throw std::logic_error("invalid openai::ReasoningItemKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ReasoningStatus val) {
     switch (val) {
         case openai::ReasoningStatus::IN_PROGRESS: return "in_progress";
@@ -1876,39 +1440,11 @@ constexpr std::string_view to_string_view(openai::ReasoningSummary val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ReasoningSummaryTextKind val) {
-    switch (val) {
-        case openai::ReasoningSummaryTextKind::SUMMARY_TEXT: return "summary_text";
-        default: throw std::logic_error("invalid openai::ReasoningSummaryTextKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ReasoningTextKind val) {
-    switch (val) {
-        case openai::ReasoningTextKind::REASONING_TEXT: return "reasoning_text";
-        default: throw std::logic_error("invalid openai::ReasoningTextKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::RefusalKind val) {
-    switch (val) {
-        case openai::RefusalKind::REFUSAL: return "refusal";
-        default: throw std::logic_error("invalid openai::RefusalKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ResponseFormatType val) {
     switch (val) {
         case openai::ResponseFormatType::TEXT: return "text";
         case openai::ResponseFormatType::JSON_SCHEMA: return "json_schema";
         default: throw std::logic_error("invalid openai::ResponseFormatType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ResponseKind val) {
-    switch (val) {
-        case openai::ResponseKind::RESPONSE: return "response";
-        default: throw std::logic_error("invalid openai::ResponseKind");
     }
 }
 
@@ -1950,34 +1486,6 @@ constexpr std::string_view to_string_view(openai::RoleUser val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ScreenshotActionKind val) {
-    switch (val) {
-        case openai::ScreenshotActionKind::SCREENSHOT: return "screenshot";
-        default: throw std::logic_error("invalid openai::ScreenshotActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ScrollActionKind val) {
-    switch (val) {
-        case openai::ScrollActionKind::SCROLL: return "scroll";
-        default: throw std::logic_error("invalid openai::ScrollActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::SearchActionKind val) {
-    switch (val) {
-        case openai::SearchActionKind::SEARCH: return "search";
-        default: throw std::logic_error("invalid openai::SearchActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::SearchActionSourceKind val) {
-    switch (val) {
-        case openai::SearchActionSourceKind::URL: return "url";
-        default: throw std::logic_error("invalid openai::SearchActionSourceKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::SearchContextSize val) {
     switch (val) {
         case openai::SearchContextSize::LOW: return "low";
@@ -1997,60 +1505,11 @@ constexpr std::string_view to_string_view(openai::ServiceTier val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::ShellCallKind val) {
-    switch (val) {
-        case openai::ShellCallKind::SHELL_CALL: return "shell_call";
-        default: throw std::logic_error("invalid openai::ShellCallKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::ShellCallOutcomeType val) {
     switch (val) {
         case openai::ShellCallOutcomeType::EXIT: return "exit";
         case openai::ShellCallOutcomeType::TIMEOUT: return "timeout";
         default: throw std::logic_error("invalid openai::ShellCallOutcomeType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ShellCallOutputKind val) {
-    switch (val) {
-        case openai::ShellCallOutputKind::SHELL_CALL_OUTPUT: return "shell_call_output";
-        default: throw std::logic_error("invalid openai::ShellCallOutputKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ShellExitOutcomeKind val) {
-    switch (val) {
-        case openai::ShellExitOutcomeKind::EXIT: return "exit";
-        default: throw std::logic_error("invalid openai::ShellExitOutcomeKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ShellTimeoutOutcomeKind val) {
-    switch (val) {
-        case openai::ShellTimeoutOutcomeKind::TIMEOUT: return "timeout";
-        default: throw std::logic_error("invalid openai::ShellTimeoutOutcomeKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::ShellToolKind val) {
-    switch (val) {
-        case openai::ShellToolKind::SHELL: return "shell";
-        default: throw std::logic_error("invalid openai::ShellToolKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::SpecificApplyPatchToolChoiceKind val) {
-    switch (val) {
-        case openai::SpecificApplyPatchToolChoiceKind::APPLY_PATCH: return "apply_patch";
-        default: throw std::logic_error("invalid openai::SpecificApplyPatchToolChoiceKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::SpecificShellToolChoiceKind val) {
-    switch (val) {
-        case openai::SpecificShellToolChoiceKind::SHELL: return "shell";
-        default: throw std::logic_error("invalid openai::SpecificShellToolChoiceKind");
     }
 }
 
@@ -2109,27 +1568,6 @@ constexpr std::string_view to_string_view(openai::TruncationStrategy val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::TypeActionKind val) {
-    switch (val) {
-        case openai::TypeActionKind::TYPE: return "type";
-        default: throw std::logic_error("invalid openai::TypeActionKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::UpdateFileOperationKind val) {
-    switch (val) {
-        case openai::UpdateFileOperationKind::UPDATE_FILE: return "update_file";
-        default: throw std::logic_error("invalid openai::UpdateFileOperationKind");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::UrlCitationKind val) {
-    switch (val) {
-        case openai::UrlCitationKind::URL_CITATION: return "url_citation";
-        default: throw std::logic_error("invalid openai::UrlCitationKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::Verbosity val) {
     switch (val) {
         case openai::Verbosity::LOW: return "low";
@@ -2139,26 +1577,12 @@ constexpr std::string_view to_string_view(openai::Verbosity val) {
     }
 }
 
-constexpr std::string_view to_string_view(openai::WaitActionKind val) {
-    switch (val) {
-        case openai::WaitActionKind::WAIT: return "wait";
-        default: throw std::logic_error("invalid openai::WaitActionKind");
-    }
-}
-
 constexpr std::string_view to_string_view(openai::WebSearchActionType val) {
     switch (val) {
         case openai::WebSearchActionType::SEARCH: return "search";
         case openai::WebSearchActionType::OPEN_PAGE: return "open_page";
         case openai::WebSearchActionType::FIND: return "find";
         default: throw std::logic_error("invalid openai::WebSearchActionType");
-    }
-}
-
-constexpr std::string_view to_string_view(openai::WebSearchCallKind val) {
-    switch (val) {
-        case openai::WebSearchCallKind::WEB_SEARCH_CALL: return "web_search_call";
-        default: throw std::logic_error("invalid openai::WebSearchCallKind");
     }
 }
 

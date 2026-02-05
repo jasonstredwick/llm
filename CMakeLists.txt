@@ -82,10 +82,10 @@ endif()
 add_library(llm STATIC
     src/providers/serialize/anthropic.cpp
     src/providers/serialize/gemini.cpp
-#    src/providers/serialize/openai.cpp
+    src/providers/serialize/openai.cpp
     src/providers/deserialize/anthropic.cpp
     src/providers/deserialize/gemini.cpp
-#    src/providers/deserialize/openai.cpp
+    src/providers/deserialize/openai.cpp
 )
 
 # Add include directories (Unified Sysroot)

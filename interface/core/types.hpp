@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <format>
 #include <map>
 #include <memory>
 #include <spanstream>
@@ -15,29 +16,76 @@
 
 namespace jai::llm {
 
+
+struct Kind {};
+
+
 /***
  * Type traits and concepts
  */
-template <typename> inline constexpr bool always_false_v = false;
+template <typename>
+inline constexpr bool always_false_v = false;
 
-template <typename T, auto Member> struct member_type;
-template <typename T, typename M, M T::* Member> struct member_type<T, Member> { using type = M; };
+
+// Class/Struct member type extraction
+template <typename T, auto Member>
+struct member_type;
+
+template <typename T, typename M, M T::* Member>
+struct member_type<T, Member> {
+    using type = M;
+};
+
 template <typename T, auto Member>
 using member_type_t = typename member_type<T, Member>::type;
 
-template <typename T>     struct is_variant                      : std::false_type {};
-template <typename... Ts> struct is_variant<std::variant<Ts...>> : std::true_type {};
-template <typename T> inline constexpr bool is_variant_v = is_variant<T>::value;
 
+// Variant
+template <typename T>
+struct is_variant : std::false_type {};
+
+template <typename... Ts>
+struct is_variant<std::variant<Ts...>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_variant_v = is_variant<T>::value;
+
+
+// Concepts
+template <typename T>
+concept AssocContainer_c = requires {
+    typename T::key_type;
+    typename T::mapped_type;
+    typename T::value_type;
+};
+
+template <typename T>
+concept Kind_c = std::is_base_of_v<Kind, T>;
+
+template <typename TARGET, typename T>
+concept Like_c = std::same_as<TARGET, std::remove_cvref_t<T>>;
 
 template <typename T>
 concept Optional_c = requires { typename T::value_type; } && std::same_as<T, std::optional<typename T::value_type>>;
 
 template <typename T>
-concept Variant_c = requires { typename std::variant_size<T>::type; };
+concept StdMap_c = AssocContainer_c<T> &&
+    std::same_as<
+        std::remove_cvref_t<T>,
+        std::map<typename T::key_type,
+                 typename T::mapped_type,
+                 typename T::key_compare,
+                 typename T::allocator_type>>;
 
-template <typename TARGET, typename T>
-concept Like_c = std::same_as<TARGET, std::remove_cvref_t<T>>;
+template <typename T>
+concept StdVector_c =
+    std::same_as<
+        std::remove_cvref_t<T>,
+        std::vector<typename std::remove_cvref_t<T>::value_type,
+                    typename std::remove_cvref_t<T>::allocator_type>>;
+
+template <typename T>
+concept Variant_c = requires { typename std::variant_size<T>::type; };
 
 
 /***
@@ -95,7 +143,8 @@ public:
 
     friend auto operator<=>(const EncodedUrl&, const EncodedUrl&) = default;
 
-    std::string_view View() const noexcept { return value; }
+    std::string_view   Get()   const { return value; }
+    const std::string& Value() const { return value; }
 
 private:
     static void VerifyWireSafe(std::string_view sv) {
@@ -130,7 +179,32 @@ public:
 
     friend auto operator<=>(const Int64&, const Int64&) = default;
 
-    int64_t Get() const { return value; }
+    int64_t Get()   const { return value; }
+    int64_t Value() const { return value; }
+};
+
+
+class Int64Str {
+private:
+    int64_t value;
+
+public:
+    Int64Str(int64_t in) : value{in} {}
+    Int64Str(const Int64Str&) = default;
+    Int64Str(Int64Str&&) noexcept = default;
+    ~Int64Str() noexcept = default;
+    Int64Str& operator=(const Int64Str&) = default;
+    Int64Str& operator=(Int64Str&&) noexcept = default;
+
+    friend auto operator<=>(const Int64Str&, const Int64Str&) = default;
+
+    std::string Get() const {
+        char buf[32];
+        auto it = std::format_to(buf, "{}", value);
+        return std::string(buf, it - buf);
+    }
+
+    int64_t Value() const { return value; }
 };
 
 
@@ -152,7 +226,8 @@ public:
     friend auto operator<=>(const IntN&, const IntN&) = default;
     static bool IsValid(int64_t x) { return N_lower <= x && x <= N_upper; }
 
-    int64_t Get() const { return value; }
+    int64_t Get()   const { return value; }
+    int64_t Value() const { return value; }
 
 private:
     void Validate() {
@@ -166,7 +241,7 @@ private:
     std::string name;
 
 public:
-    static bool IsValid(std::string_view in) {
+    static constexpr bool IsValid(std::string_view in) {
         return !in.empty() &&
                in.size() <= 64 &&
                std::ranges::all_of(in, [](const auto c) {
@@ -177,7 +252,8 @@ public:
     }
 
 public:
-    Name64(const std::string& in) : name{in} { Validate(); }
+    explicit Name64(std::string in)      : name{std::move(in)} { Validate(); }
+    explicit Name64(std::string_view in) : name{in}            { Validate(); }
     Name64(const Name64&) = default;
     Name64(Name64&&) noexcept = default;
     ~Name64() noexcept = default;
@@ -186,11 +262,11 @@ public:
 
     friend auto operator<=>(const Name64&, const Name64&) = default;
 
-    std::string_view Get() const { return name; }
+    std::string_view   Get()   const { return name; }
     const std::string& Value() const { return name; }
 
     void Validate() {
-        if (!Name64::IsValid(name)) { throw std::runtime_error{"Name not valid: a-zA-Z0-9_-"}; }
+        if (!Name64::IsValid(name)) { throw std::runtime_error{"Name not valid: a-zA-Z_-"}; }
     }
 };
 
@@ -204,7 +280,8 @@ public:
     static constexpr bool IsValid(std::string_view in) { return !in.empty() && in.size() <= N; }
 
 public:
-    NameLen(const std::string& in) : name{in} { Validate(); }
+    explicit NameLen(std::string in)      : name{std::move(in)} { Validate(); }
+    explicit NameLen(std::string_view in) : name{in}            { Validate(); }
     NameLen(const NameLen&) = default;
     NameLen(NameLen&&) noexcept = default;
     ~NameLen() noexcept = default;
@@ -213,7 +290,7 @@ public:
 
     friend auto operator<=>(const NameLen&, const NameLen&) = default;
 
-    std::string_view Get() const { return name; }
+    std::string_view   Get()   const { return name; }
     const std::string& Value() const { return name; }
 
     void Validate() { if (!NameLen::IsValid(name)) { throw std::runtime_error{"NameLen not valid"}; } }
@@ -239,7 +316,8 @@ public:
 
     friend auto operator<=>(const Timestamp&, const Timestamp&) = default;
 
-    time_point Get() const { return tp; }
+    time_point Get()   const { return tp; }
+    time_point Value() const { return tp; }
 
     static Timestamp Now() {
         return Timestamp{std::chrono::time_point_cast<duration>(clock::now())};
@@ -262,14 +340,17 @@ struct RFC3339Timestamp : public Timestamp {
 
 template <typename T>
 class ValueBox {
+public:
+    using element_type = T;
+
 private:
-    std::unique_ptr<T> ptr;
+    std::unique_ptr<element_type> ptr;
 
 public:
     ValueBox() = delete;
-    ValueBox(const T& v)            : ptr(std::make_unique<T>(v)) {}
-    ValueBox(T&& v)                 : ptr(std::make_unique<T>(std::move(v))) {}
-    ValueBox(const ValueBox& other) : ptr(std::make_unique<T>(*other.ptr)) {}
+    ValueBox(const element_type& v) : ptr(std::make_unique<element_type>(v)) {}
+    ValueBox(element_type&& v)      : ptr(std::make_unique<element_type>(std::move(v))) {}
+    ValueBox(const ValueBox& other) : ptr(std::make_unique<element_type>(*other.ptr)) {}
     ValueBox(ValueBox&&) noexcept = default;
     ~ValueBox() noexcept = default;
 
@@ -281,11 +362,10 @@ public:
 
     friend auto operator<=>(const ValueBox& a, const ValueBox& b) { return *(a.ptr) <=> *(b.ptr); }
 
-    T& get() { return *ptr; }
-    const T& get() const { return *ptr; }
+    const element_type& Get()   const { return *ptr; }
+    const element_type& Value() const { return *ptr; }
 
-    T* operator->() { return ptr.get(); }
-    const T* operator->() const { return ptr.get(); }
+    const element_type* operator->() const { return ptr.get(); }
 };
 
 

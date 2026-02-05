@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstddef>
 #include <ranges>
 #include <vector>
@@ -6,123 +7,106 @@
 
 #include "base.hpp"
 #include "../../interface/protocols/openai/responses.hpp"
-#include "../../interface/protocols/openai/strings.hpp"
 
 
 using namespace simdjson::builder;
 using namespace jai::llm;
 
 
-#define TAG_ENUM(T) \
-    void tag_invoke(serialize_tag, string_builder& builder, T v) { \
-        builder.escape_and_append_with_quotes(jai::llm::to_string_view(v)); \
-    }
-
-
 namespace simdjson {
 
 
+TAG_KIND(openai::KindAllowedToolsChoice)
+TAG_KIND(openai::KindApplyPatchCall)
+TAG_KIND(openai::KindApplyPatchCallOutput)
+TAG_KIND(openai::KindApplyPatchTool)
+TAG_KIND(openai::KindClickAction)
+TAG_KIND(openai::KindCodeInterpreterCall)
+TAG_KIND(openai::KindCodeInterpreterTool)
+TAG_KIND(openai::KindCompactionItem)
+TAG_KIND(openai::KindComputerCall)
+TAG_KIND(openai::KindComputerCallOutput)
+TAG_KIND(openai::KindComputerScreenshot)
+TAG_KIND(openai::KindComputerUseTool)
+TAG_KIND(openai::KindContainerConfig)
+TAG_KIND(openai::KindContainerFileCitation)
+TAG_KIND(openai::KindCreateFileOperation)
+TAG_KIND(openai::KindCustomTool)
+TAG_KIND(openai::KindCustomToolCall)
+TAG_KIND(openai::KindCustomToolCallOutput)
+TAG_KIND(openai::KindCustomToolChoice)
+TAG_KIND(openai::KindCustomToolGrammarFormat)
+TAG_KIND(openai::KindCustomToolTextFormat)
+TAG_KIND(openai::KindDeleteFileOperation)
+TAG_KIND(openai::KindDoubleClickAction)
+TAG_KIND(openai::KindDragAction)
+TAG_KIND(openai::KindFileCitation)
+TAG_KIND(openai::KindFilePath)
+TAG_KIND(openai::KindFileSearchTool)
+TAG_KIND(openai::KindFileSearchToolCall)
+TAG_KIND(openai::KindFindAction)
+TAG_KIND(openai::KindFormatJsonSchema)
+TAG_KIND(openai::KindFormatText)
+TAG_KIND(openai::KindFunctionCall)
+TAG_KIND(openai::KindFunctionCallOutput)
+TAG_KIND(openai::KindFunctionTool)
+TAG_KIND(openai::KindFunctionToolChoice)
+TAG_KIND(openai::KindImageGenerationCall)
+TAG_KIND(openai::KindImageGenerationTool)
+TAG_KIND(openai::KindInputFile)
+TAG_KIND(openai::KindInputImage)
+TAG_KIND(openai::KindInputMessage)
+TAG_KIND(openai::KindInputText)
+TAG_KIND(openai::KindItemReference)
+TAG_KIND(openai::KindKeyPressAction)
+TAG_KIND(openai::KindLocalShellAction)
+TAG_KIND(openai::KindLocalShellCall)
+TAG_KIND(openai::KindLocalShellCallOutput)
+TAG_KIND(openai::KindLocalShellTool)
+TAG_KIND(openai::KindMCPApprovalRequest)
+TAG_KIND(openai::KindMCPApprovalResponse)
+TAG_KIND(openai::KindMCPCall)
+TAG_KIND(openai::KindMCPListTools)
+TAG_KIND(openai::KindMCPTool)
+TAG_KIND(openai::KindMCPToolChoice)
+TAG_KIND(openai::KindMoveAction)
+TAG_KIND(openai::KindOpenPageAction)
+TAG_KIND(openai::KindOutputMessage)
+TAG_KIND(openai::KindOutputText)
+TAG_KIND(openai::KindReasoningItem)
+TAG_KIND(openai::KindReasoningSummaryText)
+TAG_KIND(openai::KindReasoningText)
+TAG_KIND(openai::KindRefusal)
+TAG_KIND(openai::KindResponse)
+TAG_KIND(openai::KindScreenshotAction)
+TAG_KIND(openai::KindScrollAction)
+TAG_KIND(openai::KindSearchAction)
+TAG_KIND(openai::KindSearchActionSource)
+TAG_KIND(openai::KindShellCall)
+TAG_KIND(openai::KindShellCallOutput)
+TAG_KIND(openai::KindShellExitOutcome)
+TAG_KIND(openai::KindShellTimeoutOutcome)
+TAG_KIND(openai::KindShellTool)
+TAG_KIND(openai::KindSpecificApplyPatchToolChoice)
+TAG_KIND(openai::KindSpecificShellToolChoice)
+TAG_KIND(openai::KindTypeAction)
+TAG_KIND(openai::KindUpdateFileOperation)
+TAG_KIND(openai::KindUrlCitation)
+TAG_KIND(openai::KindWaitAction)
+TAG_KIND(openai::KindWebSearchCall)
+
 TAG_ENUM(openai::AnnotationType)
-TAG_ENUM(openai::ApplyPatchOperationType)
-TAG_ENUM(openai::CodeInterpreterOutputType)
-TAG_ENUM(openai::ComputerActionType)
-TAG_ENUM(openai::CustomToolFormatType)
-TAG_ENUM(openai::InputItemType)
-TAG_ENUM(openai::OutputItemType)
-TAG_ENUM(openai::ContentType)
-TAG_ENUM(openai::OutputMessageContentType)
-TAG_ENUM(openai::ShellCallOutcomeType)
-TAG_ENUM(openai::ToolChoiceType)
-TAG_ENUM(openai::ToolType)
-TAG_ENUM(openai::WebSearchActionType)
-TAG_ENUM(openai::AllowedToolsChoiceKind)
-TAG_ENUM(openai::ApplyPatchCallKind)
-TAG_ENUM(openai::ApplyPatchCallOutputKind)
-TAG_ENUM(openai::ApplyPatchToolKind)
-TAG_ENUM(openai::ClickActionKind)
-TAG_ENUM(openai::CodeInterpreterCallKind)
-TAG_ENUM(openai::CodeInterpreterImageKind)
-TAG_ENUM(openai::CodeInterpreterLogKind)
-TAG_ENUM(openai::CodeInterpreterToolKind)
-TAG_ENUM(openai::CompactionItemKind)
-TAG_ENUM(openai::ComputerCallKind)
-TAG_ENUM(openai::ComputerCallOutputKind)
-TAG_ENUM(openai::ComputerScreenshotKind)
-TAG_ENUM(openai::ComputerUseToolKind)
-TAG_ENUM(openai::ContainerFileCitationKind)
-TAG_ENUM(openai::ContainerConfigKind)
-TAG_ENUM(openai::CreateFileOperationKind)
-TAG_ENUM(openai::CustomToolCallKind)
-TAG_ENUM(openai::CustomToolCallOutputKind)
-TAG_ENUM(openai::CustomToolChoiceKind)
-TAG_ENUM(openai::CustomToolGrammarFormatKind)
-TAG_ENUM(openai::CustomToolKind)
-TAG_ENUM(openai::CustomToolTextFormatKind)
-TAG_ENUM(openai::DeleteFileOperationKind)
-TAG_ENUM(openai::DoubleClickActionKind)
-TAG_ENUM(openai::DragActionKind)
-TAG_ENUM(openai::FileCitationKind)
-TAG_ENUM(openai::FilePathKind)
-TAG_ENUM(openai::FileSearchToolCallKind)
-TAG_ENUM(openai::FileSearchToolKind)
-TAG_ENUM(openai::FindActionKind)
-TAG_ENUM(openai::FunctionCallKind)
-TAG_ENUM(openai::FunctionCallOutputKind)
-TAG_ENUM(openai::FunctionToolChoiceKind)
-TAG_ENUM(openai::FunctionToolKind)
-TAG_ENUM(openai::ImageGenerationCallKind)
-TAG_ENUM(openai::ImageGenerationToolKind)
-TAG_ENUM(openai::InputFileKind)
-TAG_ENUM(openai::InputImageKind)
-TAG_ENUM(openai::InputMessageKind)
-TAG_ENUM(openai::InputTextKind)
-TAG_ENUM(openai::ItemReferenceKind)
-TAG_ENUM(openai::KeyPressActionKind)
-TAG_ENUM(openai::LocalShellActionKind)
-TAG_ENUM(openai::LocalShellCallKind)
-TAG_ENUM(openai::LocalShellCallOutputKind)
-TAG_ENUM(openai::LocalShellToolKind)
-TAG_ENUM(openai::MCPApprovalRequestKind)
-TAG_ENUM(openai::MCPApprovalResponseKind)
-TAG_ENUM(openai::MCPCallKind)
-TAG_ENUM(openai::MCPListToolsKind)
-TAG_ENUM(openai::MCPToolChoiceKind)
-TAG_ENUM(openai::MCPToolKind)
-TAG_ENUM(openai::MoveActionKind)
-TAG_ENUM(openai::OpenPageActionKind)
-TAG_ENUM(openai::OutputMessageKind)
-TAG_ENUM(openai::OutputTextKind)
-TAG_ENUM(openai::ReasoningItemKind)
-TAG_ENUM(openai::ReasoningSummaryTextKind)
-TAG_ENUM(openai::ReasoningTextKind)
-TAG_ENUM(openai::RefusalKind)
-TAG_ENUM(openai::ScreenshotActionKind)
-TAG_ENUM(openai::ScrollActionKind)
-TAG_ENUM(openai::SearchActionKind)
-TAG_ENUM(openai::SearchActionSourceKind)
-TAG_ENUM(openai::ShellCallKind)
-TAG_ENUM(openai::ShellCallOutputKind)
-TAG_ENUM(openai::ShellExitOutcomeKind)
-TAG_ENUM(openai::ShellTimeoutOutcomeKind)
-TAG_ENUM(openai::ResponseKind)
-TAG_ENUM(openai::ShellToolKind)
-TAG_ENUM(openai::SpecificApplyPatchToolChoiceKind)
-TAG_ENUM(openai::SpecificShellToolChoiceKind)
-TAG_ENUM(openai::TypeActionKind)
-TAG_ENUM(openai::UpdateFileOperationKind)
-TAG_ENUM(openai::UrlCitationKind)
-TAG_ENUM(openai::WaitActionKind)
-TAG_ENUM(openai::FormatTextKind)
-TAG_ENUM(openai::FormatJsonSchemaKind)
-TAG_ENUM(openai::WebSearchCallKind)
-TAG_ENUM(openai::WebSearchPreviewToolKind)
-TAG_ENUM(openai::WebSearchToolKind)
 TAG_ENUM(openai::ApplyPatchCallOutputStatus)
 TAG_ENUM(openai::ApplyPatchCallStatus)
+TAG_ENUM(openai::ApplyPatchOperationType)
 TAG_ENUM(openai::CallStatus)
+TAG_ENUM(openai::CodeInterpreterOutputType)
 TAG_ENUM(openai::CodeInterpreterStatus)
+TAG_ENUM(openai::ComputerActionType)
 TAG_ENUM(openai::ComputerCallOutputType)
 TAG_ENUM(openai::ConnectId)
+TAG_ENUM(openai::ContentType)
+TAG_ENUM(openai::CustomToolFormatType)
 TAG_ENUM(openai::Detail)
 TAG_ENUM(openai::FileSearchStatus)
 TAG_ENUM(openai::FilterCompoundType)
@@ -135,13 +119,16 @@ TAG_ENUM(openai::ImageGenerationFidelity)
 TAG_ENUM(openai::ImageGenerationFormat)
 TAG_ENUM(openai::ImageGenerationQuality)
 TAG_ENUM(openai::ImageGenerationSize)
-TAG_ENUM(openai::IncompleteReason)
-TAG_ENUM(openai::ItemStatus)
 TAG_ENUM(openai::IncludeOutputData)
+TAG_ENUM(openai::IncompleteReason)
+TAG_ENUM(openai::InputItemType)
+TAG_ENUM(openai::ItemStatus)
 TAG_ENUM(openai::LocalShellActionType)
 TAG_ENUM(openai::LocationType)
 TAG_ENUM(openai::MCPApprovalSetting)
 TAG_ENUM(openai::MouseButton)
+TAG_ENUM(openai::OutputItemType)
+TAG_ENUM(openai::OutputMessageContentType)
 TAG_ENUM(openai::PendingSafetyCheckStatus)
 TAG_ENUM(openai::PromptCacheRetention)
 TAG_ENUM(openai::ReasoningEffort)
@@ -155,12 +142,18 @@ TAG_ENUM(openai::RoleInputMessage)
 TAG_ENUM(openai::RoleUser)
 TAG_ENUM(openai::SearchContextSize)
 TAG_ENUM(openai::ServiceTier)
+TAG_ENUM(openai::ShellCallOutcomeType)
 TAG_ENUM(openai::ToolChoiceMode)
 TAG_ENUM(openai::ToolChoiceModeNotNone)
+TAG_ENUM(openai::ToolChoiceType)
+TAG_ENUM(openai::ToolType)
 TAG_ENUM(openai::TruncationStrategy)
 TAG_ENUM(openai::Verbosity)
+TAG_ENUM(openai::WebSearchActionType)
+TAG_ENUM(openai::WebSearchPreviewToolKind)
 TAG_ENUM(openai::WebSearchPreviewToolType)
 TAG_ENUM(openai::WebSearchStatus)
+TAG_ENUM(openai::WebSearchToolKind)
 TAG_ENUM(openai::WebSearchToolType)
 
 
@@ -169,91 +162,76 @@ TAG_ENUM(openai::WebSearchToolType)
  */
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Click& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"button">(obj.button);
-    builder.append_comma();
-    builder.append_key_value<"x">(obj.x);
-    builder.append_comma();
-    builder.append_key_value<"y">(obj.y);
+    AddReqKV<"type",   CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"button", CommaDirection::BEFORE>(builder, obj.button);
+    AddReqKV<"x",      CommaDirection::BEFORE>(builder, obj.x);
+    AddReqKV<"y",      CommaDirection::BEFORE>(builder, obj.y);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::DoubleClick& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"x">(obj.x);
-    builder.append_comma();
-    builder.append_key_value<"y">(obj.y);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"x",    CommaDirection::BEFORE>(builder, obj.x);
+    AddReqKV<"y",    CommaDirection::BEFORE>(builder, obj.y);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Drag::Coordinate& obj) {
     builder.start_object();
-    builder.append_key_value<"x">(obj.x);
-    builder.append_comma();
-    builder.append_key_value<"y">(obj.y);
+    AddReqKV<"x", CommaDirection::NONE>  (builder, obj.x);
+    AddReqKV<"y", CommaDirection::BEFORE>(builder, obj.y);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Drag& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"path">(obj.path);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"path", CommaDirection::BEFORE>(builder, obj.path);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::KeyPress& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"keys">(obj.keys);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"keys", CommaDirection::BEFORE>(builder, obj.keys);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Move& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"x">(obj.x);
-    builder.append_comma();
-    builder.append_key_value<"y">(obj.y);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"x",    CommaDirection::BEFORE>(builder, obj.x);
+    AddReqKV<"y",    CommaDirection::BEFORE>(builder, obj.y);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Screenshot& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Scroll& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"scroll_x">(obj.scroll_x);
-    builder.append_comma();
-    builder.append_key_value<"scroll_y">(obj.scroll_y);
-    builder.append_comma();
-    builder.append_key_value<"x">(obj.x);
-    builder.append_comma();
-    builder.append_key_value<"y">(obj.y);
+    AddReqKV<"type",     CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"scroll_x", CommaDirection::BEFORE>(builder, obj.scroll_x);
+    AddReqKV<"scroll_y", CommaDirection::BEFORE>(builder, obj.scroll_y);
+    AddReqKV<"x",        CommaDirection::BEFORE>(builder, obj.x);
+    AddReqKV<"y",        CommaDirection::BEFORE>(builder, obj.y);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Type& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"text">(obj.text);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"text", CommaDirection::BEFORE>(builder, obj.text);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerToolActions::Wait& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
@@ -267,117 +245,101 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::ComputerTo
  */
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ConversationRef& obj) {
     builder.start_object();
-    builder.append_key_value<"id">(obj.id);
+    AddReqKV<"id", CommaDirection::NONE>(builder, obj.id);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::PatchFileOperations::Create& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"diff">(obj.diff);
-    builder.append_comma();
-    builder.append_key_value<"path">(obj.path);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"diff", CommaDirection::BEFORE>(builder, obj.diff);
+    AddReqKV<"path", CommaDirection::BEFORE>(builder, obj.path);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::PatchFileOperations::Delete& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"path">(obj.path);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"path", CommaDirection::BEFORE>(builder, obj.path);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::PatchFileOperations::Update& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"diff">(obj.diff);
-    builder.append_comma();
-    builder.append_key_value<"path">(obj.path);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"diff", CommaDirection::BEFORE>(builder, obj.diff);
+    AddReqKV<"path", CommaDirection::BEFORE>(builder, obj.path);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::IncompleteDetails& obj) {
     builder.start_object();
-    builder.append_key_value<"reason">(obj.reason);
+    AddReqKV<"reason", CommaDirection::NONE>(builder, obj.reason);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::Reasoning& obj) {
     builder.start_object();
-    builder.append_key_value<"effort">(obj.effort);
-    builder.append_comma();
-    builder.append_key_value<"summary">(obj.summary);
+    AddReqKV<"effort",  CommaDirection::NONE>  (builder, obj.effort);
+    AddReqKV<"summary", CommaDirection::BEFORE>(builder, obj.summary);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ResponseError& obj) {
     builder.start_object();
-    builder.append_key_value<"code">(obj.code);
-    builder.append_comma();
-    builder.append_key_value<"message">(obj.message);
+    AddReqKV<"code",    CommaDirection::NONE>  (builder, obj.code);
+    AddReqKV<"message", CommaDirection::BEFORE>(builder, obj.message);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ResponseUsage::InputTokenDetails& obj) {
     builder.start_object();
-    builder.append_key_value<"cached_tokens">(obj.cached_tokens);
+    AddReqKV<"cached_tokens", CommaDirection::NONE>(builder, obj.cached_tokens);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ResponseUsage::OutputTokenDetails& obj) {
     builder.start_object();
-    builder.append_key_value<"reasoning_tokens">(obj.reasoning_tokens);
+    AddReqKV<"reasoning_tokens", CommaDirection::NONE>(builder, obj.reasoning_tokens);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::ResponseUsage& obj) {
     builder.start_object();
-    builder.append_key_value<"input_tokens">(obj.input_tokens);
-    builder.append_comma();
-    builder.append_key_value<"input_tokens_details">(obj.input_tokens_details);
-    builder.append_comma();
-    builder.append_key_value<"output_tokens">(obj.output_tokens);
-    builder.append_comma();
-    builder.append_key_value<"output_tokens_details">(obj.output_tokens_details);
-    builder.append_comma();
-    builder.append_key_value<"total_tokens">(obj.total_tokens);
+    AddReqKV<"input_tokens",          CommaDirection::NONE>  (builder, obj.input_tokens);
+    AddReqKV<"input_tokens_details",  CommaDirection::BEFORE>(builder, obj.input_tokens_details);
+    AddReqKV<"output_tokens",         CommaDirection::BEFORE>(builder, obj.output_tokens);
+    AddReqKV<"output_tokens_details", CommaDirection::BEFORE>(builder, obj.output_tokens_details);
+    AddReqKV<"total_tokens",          CommaDirection::BEFORE>(builder, obj.total_tokens);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::StreamOptions& obj) {
     builder.start_object();
-    builder.append_key_value<"include_obfuscation">(obj.include_obfuscation);
+    AddReqKV<"include_obfuscation", CommaDirection::NONE>(builder, obj.include_obfuscation);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig::FormatText& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig::FormatJsonSchema& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"schema">(obj.schema);
-    builder.append_comma();
-    builder.append_key_value<"description">(obj.description);
-    builder.append_comma();
-    builder.append_key_value<"strict">(obj.strict);
+    AddReqKV<"type",        CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"name",        CommaDirection::BEFORE>(builder, obj.name);
+    AddReqKV<"schema",      CommaDirection::BEFORE>(builder, obj.schema);
+    AddReqKV<"description", CommaDirection::BEFORE>(builder, obj.description);
+    AddReqKV<"strict",      CommaDirection::BEFORE>(builder, obj.strict);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig& obj) {
     builder.start_object();
-    std::visit([&](auto const& x) { builder.append_key_value<"format">(x); }, obj.format);
-    builder.append_comma();
-    builder.append_key_value<"verbosity">(obj.verbosity);
+    std::visit([&](auto const& x) { AddReqKV<"format", CommaDirection::NONE>(builder, x); }, obj.format);
+    AddReqKV<"verbosity", CommaDirection::BEFORE>(builder, obj.verbosity);
     builder.end_object();
 }
 
@@ -387,7 +349,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig
  */
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::File& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",      CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"file_data", CommaDirection::BEFORE>(builder, obj.file_data);
     AddOptKV<"file_id",   CommaDirection::BEFORE>(builder, obj.file_id);
     AddOptKV<"file_url",  CommaDirection::BEFORE>(builder, obj.file_url);
@@ -397,9 +359,8 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::C
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::Image& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"detail">(obj.detail);
+    AddReqKV<"type",      CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"detail",    CommaDirection::BEFORE>(builder, obj.detail);
     AddOptKV<"file_id",   CommaDirection::BEFORE>(builder, obj.file_id);
     AddOptKV<"image_url", CommaDirection::BEFORE>(builder, obj.image_url);
     builder.end_object();
@@ -407,103 +368,84 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::C
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText::ContainerFileCitation& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"container_id">(obj.container_id);
-    builder.append_comma();
-    builder.append_key_value<"end_index">(obj.end_index);
-    builder.append_comma();
-    builder.append_key_value<"file_id">(obj.file_id);
-    builder.append_comma();
-    builder.append_key_value<"filename">(obj.filename);
-    builder.append_comma();
-    builder.append_key_value<"start_index">(obj.start_index);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"container_id", CommaDirection::BEFORE>(builder, obj.container_id);
+    AddReqKV<"end_index",    CommaDirection::BEFORE>(builder, obj.end_index);
+    AddReqKV<"file_id",      CommaDirection::BEFORE>(builder, obj.file_id);
+    AddReqKV<"filename",     CommaDirection::BEFORE>(builder, obj.filename);
+    AddReqKV<"start_index",  CommaDirection::BEFORE>(builder, obj.start_index);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText::FileCitation& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"file_id">(obj.file_id);
-    builder.append_comma();
-    builder.append_key_value<"filename">(obj.filename);
-    builder.append_comma();
-    builder.append_key_value<"index">(obj.index);
+    AddReqKV<"type",     CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"file_id",  CommaDirection::BEFORE>(builder, obj.file_id);
+    AddReqKV<"filename", CommaDirection::BEFORE>(builder, obj.filename);
+    AddReqKV<"index",    CommaDirection::BEFORE>(builder, obj.index);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText::UrlCitation& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"end_index">(obj.end_index);
-    builder.append_comma();
-    builder.append_key_value<"start_index">(obj.start_index);
-    builder.append_comma();
-    builder.append_key_value<"title">(obj.title);
-    builder.append_comma();
-    builder.append_key_value<"url">(obj.url);
+    AddReqKV<"type",        CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"end_index",   CommaDirection::BEFORE>(builder, obj.end_index);
+    AddReqKV<"start_index", CommaDirection::BEFORE>(builder, obj.start_index);
+    AddReqKV<"title",       CommaDirection::BEFORE>(builder, obj.title);
+    AddReqKV<"url",         CommaDirection::BEFORE>(builder, obj.url);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText::FilePath& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"file_id">(obj.file_id);
-    builder.append_comma();
-    builder.append_key_value<"index">(obj.index);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"file_id", CommaDirection::BEFORE>(builder, obj.file_id);
+    AddReqKV<"index",   CommaDirection::BEFORE>(builder, obj.index);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText::LogProb::TopLogprob& obj) {
     builder.start_object();
-    builder.append_key_value<"bytes">(obj.bytes);
-    builder.append_comma();
-    builder.append_key_value<"logprob">(obj.logprob);
-    builder.append_comma();
-    builder.append_key_value<"token">(obj.token);
+    AddReqKV<"bytes",   CommaDirection::NONE>  (builder, obj.bytes);
+    AddReqKV<"logprob", CommaDirection::BEFORE>(builder, obj.logprob);
+    AddReqKV<"token",   CommaDirection::BEFORE>(builder, obj.token);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText::LogProb& obj) {
     builder.start_object();
-    builder.append_key_value<"bytes">(obj.bytes);
-    builder.append_comma();
-    builder.append_key_value<"logprob">(obj.logprob);
-    builder.append_comma();
-    builder.append_key_value<"token">(obj.token);
-    builder.append_comma();
-    builder.append_key_value<"top_logprobs">(obj.top_logprobs);
+    AddReqKV<"bytes",         CommaDirection::NONE>  (builder, obj.bytes);
+    AddReqKV<"logprob",       CommaDirection::BEFORE>(builder, obj.logprob);
+    AddReqKV<"token",         CommaDirection::BEFORE>(builder, obj.token);
+    AddReqKV<"top_logprobs", CommaDirection::BEFORE>(builder, obj.top_logprobs);
     builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder,
+                const openai::request::ContentTypes::OutputText::Annotation& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::OutputText& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"annotations">(obj.annotations);
-    builder.append_comma();
-    builder.append_key_value<"logprobs">(obj.logprobs);
-    builder.append_comma();
-    builder.append_key_value<"text">(obj.text);
+    AddReqKV<"type",        CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"annotations", CommaDirection::BEFORE>(builder, obj.annotations);
+    AddReqKV<"logprobs",    CommaDirection::BEFORE>(builder, obj.logprobs);
+    AddReqKV<"text",        CommaDirection::BEFORE>(builder, obj.text);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::Refusal& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"refusal">(obj.refusal);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"refusal", CommaDirection::BEFORE>(builder, obj.refusal);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ContentTypes::Text& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"text">(obj.text);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"text", CommaDirection::BEFORE>(builder, obj.text);
     builder.end_object();
 }
 
@@ -513,33 +455,29 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::C
  */
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::WebSearchToolActions::Find& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"pattern">(obj.pattern);
-    builder.append_comma();
-    builder.append_key_value<"url">(obj.url);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"pattern", CommaDirection::BEFORE>(builder, obj.pattern);
+    AddReqKV<"url",     CommaDirection::BEFORE>(builder, obj.url);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::WebSearchToolActions::OpenPage& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"url">(obj.url);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"url",  CommaDirection::BEFORE>(builder, obj.url);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::WebSearchToolActions::Search::Source& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"url">(obj.url);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"url",  CommaDirection::BEFORE>(builder, obj.url);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::WebSearchToolActions::Search& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"queries", CommaDirection::BEFORE>(builder, obj.queries);
     AddOptKV<"sources", CommaDirection::BEFORE>(builder, obj.sources);
     builder.end_object();
@@ -553,34 +491,50 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::W
 /***
  * request::InputTypes
  */
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::MessageContentUnit& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
+}
+
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Message::Content& obj) {
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, std::string>) {
+            builder.escape_and_append_with_quotes(x);
+        } else {
+            tag_invoke(serialize_tag{}, builder, x);
+        }
+    }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Message& obj) {
     builder.start_object();
-    std::visit([&](auto const& x) { builder.append_key_value<"content">(x); }, obj.content);
-    builder.append_comma();
-    builder.append_key_value<"role">(obj.role);
-    AddOptKV<"type", CommaDirection::BEFORE>(builder, obj.type);
+    std::visit([&](auto const& x) { AddReqKV<"content", CommaDirection::NONE>(builder, x); }, obj.content);
+    AddReqKV<"role",    CommaDirection::BEFORE>(builder, obj.role);
+    AddOptKV<"type",    CommaDirection::BEFORE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::InputMessage& obj) {
     builder.start_object();
-    builder.append_key_value<"content">(obj.content);
-    builder.append_comma();
-    builder.append_key_value<"role">(obj.role);
-    AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
-    AddOptKV<"type",   CommaDirection::BEFORE>(builder, obj.type);
+    AddReqKV<"content", CommaDirection::NONE>  (builder, obj.content);
+    AddReqKV<"role",    CommaDirection::BEFORE>(builder, obj.role);
+    AddOptKV<"status",  CommaDirection::BEFORE>(builder, obj.status);
+    AddOptKV<"type",    CommaDirection::BEFORE>(builder, obj.type);
     builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder,
+                const openai::request::InputTypes::Item::OutputMessage::Content& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::OutputMessage& obj) {
     builder.start_object();
-    builder.append_key_value<"content">(obj.content);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"role">(obj.role);
-    AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
-    AddOptKV<"type",   CommaDirection::BEFORE>(builder, obj.type);
+    AddReqKV<"content", CommaDirection::NONE>  (builder, obj.content);
+    AddReqKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"role",    CommaDirection::BEFORE>(builder, obj.role);
+    AddOptKV<"status",  CommaDirection::BEFORE>(builder, obj.status);
+    AddOptKV<"type",    CommaDirection::BEFORE>(builder, obj.type);
     builder.end_object();
 }
 
@@ -592,7 +546,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
     builder.start_object();
     AddOptKV<"type", CommaDirection::NONE>(builder, obj.type);
     if (obj.type) { builder.append_comma(); }
-    builder.append_key_value<"id">(obj.id);
+    AddReqKV<"id", CommaDirection::NONE>(builder, obj.id);
     builder.end_object();
 }
 
@@ -600,9 +554,40 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 /***
  * request::ToolCallItems
  */
+void tag_invoke(serialize_tag, string_builder& builder, const std::variant<NameLen<512>, bool, double>& obj) {
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, double>) {
+            jai::llm::AppendNumber(builder, x);
+        } else {
+            tag_invoke(serialize_tag{}, builder, x);
+        }
+    }, obj);
+}
+
+void tag_invoke(serialize_tag, string_builder& builder,
+                const std::map<NameLen<64>, std::variant<NameLen<512>, bool, double>>& obj) {
+    auto F = [&builder](auto const& kv_pair) {
+        auto const& [key, value] = kv_pair;
+        simdjson::tag_invoke(serialize_tag{}, builder, key);
+        builder.append_colon();
+        simdjson::tag_invoke(serialize_tag{}, builder, value);
+    };
+
+    builder.start_object();
+    if (!obj.empty()) {
+        F(*obj.begin());
+        std::ranges::for_each(obj | std::views::drop(1), [&builder, &F](auto const& kv_pair) {
+            builder.append_comma();
+            F(kv_pair);
+        });
+    }
+    builder.end_object();
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::FileSearchToolCall::Result& obj) {
     builder.start_object();
-    AddOptKV<"attributes", CommaDirection::NONE>(builder, obj.attributes);
+    AddOptKV<"attributes", CommaDirection::NONE>  (builder, obj.attributes);
     AddOptKV<"file_id",    CommaDirection::BEFORE>(builder, obj.file_id);
     AddOptKV<"filename",   CommaDirection::BEFORE>(builder, obj.filename);
     AddOptKV<"score",      CommaDirection::BEFORE>(builder, obj.score);
@@ -612,20 +597,17 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::FileSearchToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"queries">(obj.queries);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"queries", CommaDirection::BEFORE>(builder, obj.queries);
+    AddReqKV<"status",  CommaDirection::BEFORE>(builder, obj.status);
     AddOptKV<"results", CommaDirection::BEFORE>(builder, obj.results);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ComputerToolCall::PendingSafetyCheck& obj) {
     builder.start_object();
-    builder.append_key_value<"id">(obj.id);
+    AddReqKV<"id",      CommaDirection::NONE>  (builder, obj.id);
     AddOptKV<"code",    CommaDirection::BEFORE>(builder, obj.code);
     AddOptKV<"message", CommaDirection::BEFORE>(builder, obj.message);
     builder.end_object();
@@ -633,23 +615,19 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ComputerToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"action">(x); }, obj.action);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"pending_safety_checks">(obj.pending_safety_checks);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    std::visit([&](auto const& x) { AddReqKV<"action", CommaDirection::NONE>(builder, x); }, obj.action);
+    AddReqKV<"call_id",               CommaDirection::BEFORE>(builder, obj.call_id);
+    AddReqKV<"id",                    CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"pending_safety_checks", CommaDirection::BEFORE>(builder, obj.pending_safety_checks);
+    AddReqKV<"status",                CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ComputerToolCallOutput::ComputerScreenshot& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",      CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"file_id",   CommaDirection::BEFORE>(builder, obj.file_id);
     AddOptKV<"image_url", CommaDirection::BEFORE>(builder, obj.image_url);
     builder.end_object();
@@ -657,7 +635,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ComputerToolCallOutput::AcknowledgedSafetyCheck& obj) {
     builder.start_object();
-    builder.append_key_value<"id">(obj.id);
+    AddReqKV<"id",      CommaDirection::NONE>  (builder, obj.id);
     AddOptKV<"code",    CommaDirection::BEFORE>(builder, obj.code);
     AddOptKV<"message", CommaDirection::BEFORE>(builder, obj.message);
     builder.end_object();
@@ -665,50 +643,42 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ComputerToolCallOutput& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    builder.append_key_value<"output">(obj.output);
+    AddReqKV<"type",                       CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"call_id",                    CommaDirection::BEFORE>(builder, obj.call_id);
+    AddReqKV<"output",                     CommaDirection::BEFORE>(builder, obj.output);
     AddOptKV<"acknowledged_safety_checks", CommaDirection::BEFORE>(builder, obj.acknowledged_safety_checks);
-    AddOptKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
-    AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
+    AddOptKV<"id",                         CommaDirection::BEFORE>(builder, obj.id);
+    AddOptKV<"status",                     CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::WebSearchToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"action">(x); }, obj.action);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    std::visit([&](auto const& x) { AddReqKV<"action", CommaDirection::NONE>(builder, x); }, obj.action);
+    AddReqKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"status", CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::FunctionToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"arguments">(obj.arguments);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
-    AddOptKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
-    AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
+    AddReqKV<"type",      CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"arguments", CommaDirection::BEFORE>(builder, obj.arguments);
+    AddReqKV<"call_id",   CommaDirection::BEFORE>(builder, obj.call_id);
+    AddReqKV<"name",      CommaDirection::BEFORE>(builder, obj.name);
+    AddOptKV<"id",        CommaDirection::BEFORE>(builder, obj.id);
+    AddOptKV<"status",    CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::FunctionToolCallOutput& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
     builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"output">(x); }, obj.output);
+    std::visit([&](auto const& x) { AddReqKV<"output", CommaDirection::NONE>(builder, x); }, obj.output);
     AddOptKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
     AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
@@ -716,27 +686,23 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::Reasoning::Summary& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"text">(obj.text);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"text", CommaDirection::BEFORE>(builder, obj.text);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::Reasoning::Content& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"text">(obj.text);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"text", CommaDirection::BEFORE>(builder, obj.text);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::Reasoning& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"summary">(obj.summary);
+    AddReqKV<"type",              CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"id",                CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"summary",           CommaDirection::BEFORE>(builder, obj.summary);
     AddOptKV<"content",           CommaDirection::BEFORE>(builder, obj.content);
     AddOptKV<"encrypted_content", CommaDirection::BEFORE>(builder, obj.encrypted_content);
     AddOptKV<"status",            CommaDirection::BEFORE>(builder, obj.status);
@@ -745,64 +711,56 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::CompactionItem& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"encrypted_content">(obj.encrypted_content);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"encrypted_content", CommaDirection::BEFORE>(builder, obj.encrypted_content);
     AddOptKV<"id", CommaDirection::BEFORE>(builder, obj.id);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ImageGenerationCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"result">(obj.result);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    AddReqKV<"type",   CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"result", CommaDirection::BEFORE>(builder, obj.result);
+    AddReqKV<"status", CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::CodeInterpreterToolCall::CodeInterpreterOutputLog& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"logs">(obj.logs);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"logs", CommaDirection::BEFORE>(builder, obj.logs);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::CodeInterpreterToolCall::CodeInterpreterOutputImage& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"url">(obj.url);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"url",  CommaDirection::BEFORE>(builder, obj.url);
     builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder,
+                const openai::request::InputTypes::Item::CodeInterpreterToolCall::Output& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::CodeInterpreterToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"code">(obj.code);
-    builder.append_comma();
-    builder.append_key_value<"container_id">(obj.container_id);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"outputs">(obj.outputs);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"code",         CommaDirection::BEFORE>(builder, obj.code);
+    AddReqKV<"container_id", CommaDirection::BEFORE>(builder, obj.container_id);
+    AddReqKV<"id",           CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"outputs",      CommaDirection::BEFORE>(builder, obj.outputs);
+    AddReqKV<"status",       CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::LocalShellCall::Action& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"command">(obj.command);
-    builder.append_comma();
-    builder.append_key_value<"env">(obj.env);
+    AddReqKV<"type",              CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"command",           CommaDirection::BEFORE>(builder, obj.command);
+    AddReqKV<"env",               CommaDirection::BEFORE>(builder, obj.env);
     AddOptKV<"timeout_ms",        CommaDirection::BEFORE>(builder, obj.timeout_ms);
     AddOptKV<"user",              CommaDirection::BEFORE>(builder, obj.user);
     AddOptKV<"working_directory", CommaDirection::BEFORE>(builder, obj.working_directory);
@@ -811,32 +769,26 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::LocalShellCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"action">(obj.action);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"action",  CommaDirection::BEFORE>(builder, obj.action);
+    AddReqKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
+    AddReqKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"status",  CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::LocalShellCallOutput& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"output">(obj.output);
+    AddReqKV<"type",   CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"output", CommaDirection::BEFORE>(builder, obj.output);
     AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ShellToolCall::Action& obj) {
     builder.start_object();
-    builder.append_key_value<"commands">(obj.commands);
+    AddReqKV<"commands", CommaDirection::NONE>(builder, obj.commands);
     AddOptKV<"max_output_length", CommaDirection::BEFORE>(builder, obj.max_output_length);
     AddOptKV<"timeout_ms",        CommaDirection::BEFORE>(builder, obj.timeout_ms);
     builder.end_object();
@@ -844,47 +796,40 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ShellToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"action">(obj.action);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    AddOptKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
-    AddOptKV<"status", CommaDirection::BEFORE>(builder, obj.status);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"action",  CommaDirection::BEFORE>(builder, obj.action);
+    AddReqKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
+    AddOptKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
+    AddOptKV<"status",  CommaDirection::BEFORE>(builder, obj.status);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ShellToolCallOutput::ShellCallExitOutcome& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"exit_code">(obj.exit_code);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"exit_code", CommaDirection::BEFORE>(builder, obj.exit_code);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ShellToolCallOutput::ShellCallTimeoutOutcome& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ShellToolCallOutput::Output& obj) {
     builder.start_object();
-    std::visit([&](auto const& x) { builder.append_key_value<"outcome">(x); }, obj.outcome);
-    builder.append_comma();
-    builder.append_key_value<"std_err">(obj.std_err);
-    builder.append_comma();
-    builder.append_key_value<"std_out">(obj.std_out);
+    std::visit([&](auto const& x) { AddReqKV<"outcome", CommaDirection::NONE>(builder, x); }, obj.outcome);
+    AddReqKV<"std_err", CommaDirection::BEFORE>(builder, obj.std_err);
+    AddReqKV<"std_out", CommaDirection::BEFORE>(builder, obj.std_out);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ShellToolCallOutput& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    builder.append_key_value<"output">(obj.output);
+    AddReqKV<"type",              CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"call_id",           CommaDirection::BEFORE>(builder, obj.call_id);
+    AddReqKV<"output",            CommaDirection::BEFORE>(builder, obj.output);
     AddOptKV<"id",                CommaDirection::BEFORE>(builder, obj.id);
     AddOptKV<"max_output_length", CommaDirection::BEFORE>(builder, obj.max_output_length);
     AddOptKV<"status",            CommaDirection::BEFORE>(builder, obj.status);
@@ -893,22 +838,19 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ApplyPatchToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
     builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"operation">(x); }, obj.operation);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
-    AddOptKV<"id", CommaDirection::BEFORE>(builder, obj.id);
+    std::visit([&](auto const& x) { AddReqKV<"operation", CommaDirection::NONE>(builder, x); }, obj.operation);
+    AddReqKV<"status",  CommaDirection::BEFORE>(builder, obj.status);
+    AddOptKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::ApplyPatchToolCallOutput& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"status">(obj.status);
+    AddReqKV<"type",   CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"status", CommaDirection::BEFORE>(builder, obj.status);
     AddOptKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
     AddOptKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
     AddOptKV<"output",  CommaDirection::BEFORE>(builder, obj.output);
@@ -917,9 +859,8 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::MCPListTools::ToolDef& obj) {
     builder.start_object();
-    builder.append_key_value<"input_schema">(obj.input_schema);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
+    AddReqKV<"input_schema", CommaDirection::NONE>(builder, obj.input_schema);
+    AddReqKV<"name", CommaDirection::BEFORE>(builder, obj.name);
     AddOptKV<"annotations", CommaDirection::BEFORE>(builder, obj.annotations);
     AddOptKV<"description", CommaDirection::BEFORE>(builder, obj.description);
     builder.end_object();
@@ -927,54 +868,41 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::MCPListTools& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"server_label">(obj.server_label);
-    builder.append_comma();
-    builder.append_key_value<"tools">(obj.tools);
-    AddOptKV<"error", CommaDirection::BEFORE>(builder, obj.error);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"id",           CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"server_label", CommaDirection::BEFORE>(builder, obj.server_label);
+    AddReqKV<"tools",        CommaDirection::BEFORE>(builder, obj.tools);
+    AddOptKV<"error",        CommaDirection::BEFORE>(builder, obj.error);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::MCPApprovalRequest& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"arguments">(obj.arguments);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"server_label">(obj.server_label);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"arguments",    CommaDirection::BEFORE>(builder, obj.arguments);
+    AddReqKV<"id",           CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"name",         CommaDirection::BEFORE>(builder, obj.name);
+    AddReqKV<"server_label", CommaDirection::BEFORE>(builder, obj.server_label);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::MCPApprovalResponse& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"approval_request_id">(obj.approval_request_id);
-    builder.append_comma();
-    builder.append_key_value<"approve">(obj.approve);
-    AddOptKV<"id",     CommaDirection::BEFORE>(builder, obj.id);
-    AddOptKV<"reason", CommaDirection::BEFORE>(builder, obj.reason);
+    AddReqKV<"type",                CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"approval_request_id", CommaDirection::BEFORE>(builder, obj.approval_request_id);
+    AddReqKV<"approve",             CommaDirection::BEFORE>(builder, obj.approve);
+    AddOptKV<"id",                  CommaDirection::BEFORE>(builder, obj.id);
+    AddOptKV<"reason",              CommaDirection::BEFORE>(builder, obj.reason);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::MCPToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"arguments">(obj.arguments);
-    builder.append_comma();
-    builder.append_key_value<"id">(obj.id);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"server_label">(obj.server_label);
+    AddReqKV<"type",                CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"arguments",           CommaDirection::BEFORE>(builder, obj.arguments);
+    AddReqKV<"id",                  CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"name",                CommaDirection::BEFORE>(builder, obj.name);
+    AddReqKV<"server_label",        CommaDirection::BEFORE>(builder, obj.server_label);
     AddOptKV<"approval_request_id", CommaDirection::BEFORE>(builder, obj.approval_request_id);
     AddOptKV<"error",               CommaDirection::BEFORE>(builder, obj.error);
     AddOptKV<"output",              CommaDirection::BEFORE>(builder, obj.output);
@@ -984,25 +912,21 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::CustomToolCallOutput& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
     builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"output">(x); }, obj.output);
-    AddOptKV<"id", CommaDirection::BEFORE>(builder, obj.id);
+    std::visit([&](auto const& x) { AddReqKV<"output", CommaDirection::NONE>(builder, x); }, obj.output);
+    AddOptKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::InputTypes::Item::CustomToolCall& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"call_id">(obj.call_id);
-    builder.append_comma();
-    builder.append_key_value<"input">(obj.input);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
-    AddOptKV<"id", CommaDirection::BEFORE>(builder, obj.id);
+    AddReqKV<"type",    CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"call_id", CommaDirection::BEFORE>(builder, obj.call_id);
+    AddReqKV<"input",   CommaDirection::BEFORE>(builder, obj.input);
+    AddReqKV<"name",    CommaDirection::BEFORE>(builder, obj.name);
+    AddOptKV<"id",      CommaDirection::BEFORE>(builder, obj.id);
     builder.end_object();
 }
 
@@ -1010,9 +934,20 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::I
 /***
  * request::Prompt
  */
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::Prompt::VariableTypes& obj) {
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, std::string>) {
+            builder.escape_and_append_with_quotes(x);
+        } else {
+            tag_invoke(serialize_tag{}, builder, x);
+        }
+    }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::Prompt& obj) {
     builder.start_object();
-    builder.append_key_value<"id">(obj.id);
+    AddReqKV<"id",        CommaDirection::NONE>  (builder, obj.id);
     AddOptKV<"variables", CommaDirection::BEFORE>(builder, obj.variables);
     AddOptKV<"version",   CommaDirection::BEFORE>(builder, obj.version);
     builder.end_object();
@@ -1024,71 +959,67 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::P
  */
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::Function& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
-    builder.append_comma();
-    builder.append_key_value<"parameters">(obj.parameters);
-    builder.append_comma();
-    builder.append_key_value<"strict">(obj.strict);
+    AddReqKV<"type",       CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"name",       CommaDirection::BEFORE>(builder, obj.name);
+    AddReqKV<"parameters", CommaDirection::BEFORE>(builder, obj.parameters);
+    AddReqKV<"strict",     CommaDirection::BEFORE>(builder, obj.strict);
     AddOptKV<"description", CommaDirection::BEFORE>(builder, obj.description);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::FileSearch::ComparisonFilter& obj) {
     builder.start_object();
-    builder.append_key_value<"key">(obj.key);
+    AddReqKV<"key",  CommaDirection::NONE>  (builder, obj.key);
+    AddReqKV<"type", CommaDirection::BEFORE>(builder, obj.type);
     builder.append_comma();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"value">(x); }, obj.value);
+    std::visit([&](auto const& x) { AddReqKV<"value", CommaDirection::NONE>(builder, x); }, obj.value);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::FileSearch::CompoundFilter& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"filters">(obj.filters);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
+    AddReqKV<"filters", CommaDirection::BEFORE>(builder, obj.filters);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::FileSearch::RankingOptions::HybridSearch& obj) {
     builder.start_object();
-    builder.append_key_value<"embedding_weight">(obj.embedding_weight);
-    builder.append_comma();
-    builder.append_key_value<"text_weight">(obj.text_weight);
+    AddReqKV<"embedding_weight", CommaDirection::NONE>  (builder, obj.embedding_weight);
+    AddReqKV<"text_weight",      CommaDirection::BEFORE>(builder, obj.text_weight);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::FileSearch::RankingOptions& obj) {
     builder.start_object();
-    AddOptKV<"hybrid_search",   CommaDirection::NONE>(builder, obj.hybrid_search);
+    AddOptKV<"hybrid_search",   CommaDirection::NONE>  (builder, obj.hybrid_search);
     AddOptKV<"ranker",          CommaDirection::BEFORE>(builder, obj.ranker);
     AddOptKV<"score_threshold", CommaDirection::BEFORE>(builder, obj.score_threshold);
     builder.end_object();
 }
 
+void tag_invoke(serialize_tag, string_builder& builder,
+                const std::variant<openai::request::ToolTypes::FileSearch::ComparisonFilter,
+                                   openai::request::ToolTypes::FileSearch::CompoundFilter>& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::FileSearch& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"vector_store_ids">(obj.vector_store_ids);
-    AddOptKV<"filters",         CommaDirection::BEFORE>(builder, obj.filters);
-    AddOptKV<"max_num_results", CommaDirection::BEFORE>(builder, obj.max_num_results);
-    AddOptKV<"ranking_options", CommaDirection::BEFORE>(builder, obj.ranking_options);
+    AddReqKV<"type",             CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"vector_store_ids", CommaDirection::BEFORE>(builder, obj.vector_store_ids);
+    AddOptKV<"filters",          CommaDirection::BEFORE>(builder, obj.filters);
+    AddOptKV<"max_num_results",  CommaDirection::BEFORE>(builder, obj.max_num_results);
+    AddOptKV<"ranking_options",  CommaDirection::BEFORE>(builder, obj.ranking_options);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::ComputerUse& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"display_height">(obj.display_height);
-    builder.append_comma();
-    builder.append_key_value<"display_width">(obj.display_width);
-    builder.append_comma();
-    builder.append_key_value<"environment">(obj.environment);
+    AddReqKV<"type",           CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"display_height", CommaDirection::BEFORE>(builder, obj.display_height);
+    AddReqKV<"display_width",  CommaDirection::BEFORE>(builder, obj.display_width);
+    AddReqKV<"environment",    CommaDirection::BEFORE>(builder, obj.environment);
     builder.end_object();
 }
 
@@ -1100,7 +1031,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::WebSearch::Location& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",     CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"city",     CommaDirection::BEFORE>(builder, obj.city);
     AddOptKV<"country",  CommaDirection::BEFORE>(builder, obj.country);
     AddOptKV<"region",   CommaDirection::BEFORE>(builder, obj.region);
@@ -1110,11 +1041,15 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::WebSearch& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",                CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"filters",             CommaDirection::BEFORE>(builder, obj.filters);
     AddOptKV<"search_context_size", CommaDirection::BEFORE>(builder, obj.search_context_size);
     AddOptKV<"user_location",       CommaDirection::BEFORE>(builder, obj.user_location);
     builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::MCP::AllowedTools& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::MCP::Filter& obj) {
@@ -1131,11 +1066,14 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
     builder.end_object();
 }
 
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::MCP::RequiredApproval& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::MCP& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"server_label">(obj.server_label);
+    AddReqKV<"type",               CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"server_label",       CommaDirection::BEFORE>(builder, obj.server_label);
     AddOptKV<"allowed_tools",      CommaDirection::BEFORE>(builder, obj.allowed_tools);
     AddOptKV<"authorization",      CommaDirection::BEFORE>(builder, obj.authorization);
     AddOptKV<"connector_id",       CommaDirection::BEFORE>(builder, obj.connector_id);
@@ -1148,30 +1086,41 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::CodeInterpreter::ContainerConfig& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"file_ids",     CommaDirection::BEFORE>(builder, obj.file_ids);
     AddOptKV<"memory_limit", CommaDirection::BEFORE>(builder, obj.memory_limit);
     builder.end_object();
 }
 
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::CodeInterpreter::Container& obj) {
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, std::string>) {
+            builder.escape_and_append_with_quotes(x);
+        } else {
+            tag_invoke(serialize_tag{}, builder, x);
+        }
+    }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::CodeInterpreter& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.append_comma();
-    std::visit([&](auto const& x) { builder.append_key_value<"container">(x); }, obj.container);
+    std::visit([&](auto const& x) { AddReqKV<"container", CommaDirection::NONE>(builder, x); }, obj.container);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::ImageGeneration::Mask& obj) {
     builder.start_object();
-    AddOptKV<"file_id",   CommaDirection::NONE>(builder, obj.file_id);
+    AddOptKV<"file_id",   CommaDirection::NONE>  (builder, obj.file_id);
     AddOptKV<"image_url", CommaDirection::BEFORE>(builder, obj.image_url);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::ImageGeneration& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",               CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"action",             CommaDirection::BEFORE>(builder, obj.action);
     AddOptKV<"background",         CommaDirection::BEFORE>(builder, obj.background);
     AddOptKV<"input_fidelity",     CommaDirection::BEFORE>(builder, obj.input_fidelity);
@@ -1188,37 +1137,38 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::LocalShell& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::Shell& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::Custom::GrammarFormat& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"definition">(obj.definition);
-    builder.append_comma();
-    builder.append_key_value<"syntax">(obj.syntax);
+    AddReqKV<"type",       CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"definition", CommaDirection::BEFORE>(builder, obj.definition);
+    AddReqKV<"syntax",     CommaDirection::BEFORE>(builder, obj.syntax);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::Custom::TextFormat& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
+}
+
+void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::Custom::Format& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::Custom& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
+    AddReqKV<"type",        CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"name",        CommaDirection::BEFORE>(builder, obj.name);
     AddOptKV<"description", CommaDirection::BEFORE>(builder, obj.description);
     AddOptKV<"format",      CommaDirection::BEFORE>(builder, obj.format);
     builder.end_object();
@@ -1226,7 +1176,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::WebSearchPreview::Location& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",     CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"city",     CommaDirection::BEFORE>(builder, obj.city);
     AddOptKV<"country",  CommaDirection::BEFORE>(builder, obj.country);
     AddOptKV<"region",   CommaDirection::BEFORE>(builder, obj.region);
@@ -1236,7 +1186,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::WebSearchPreview& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",                CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"search_context_size", CommaDirection::BEFORE>(builder, obj.search_context_size);
     AddOptKV<"user_location",       CommaDirection::BEFORE>(builder, obj.user_location);
     builder.end_object();
@@ -1244,7 +1194,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolTypes::ApplyPatch& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
@@ -1254,7 +1204,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
  */
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::Allowed::RestrictedTool& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
     AddOptKV<"name",         CommaDirection::BEFORE>(builder, obj.name);
     AddOptKV<"server_label", CommaDirection::BEFORE>(builder, obj.server_label);
     builder.end_object();
@@ -1262,54 +1212,49 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::Allowed& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"mode">(obj.mode);
-    builder.append_comma();
-    builder.append_key_value<"tools">(obj.tools);
+    AddReqKV<"type",  CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"mode",  CommaDirection::BEFORE>(builder, obj.mode);
+    AddReqKV<"tools", CommaDirection::BEFORE>(builder, obj.tools);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::Custom& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"name", CommaDirection::BEFORE>(builder, obj.name);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::Function& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"name">(obj.name);
+    AddReqKV<"type", CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"name", CommaDirection::BEFORE>(builder, obj.name);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::Hosted& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::MCP& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
-    builder.append_comma();
-    builder.append_key_value<"server_label">(obj.server_label);
-    AddOptKV<"name", CommaDirection::BEFORE>(builder, obj.name);
+    AddReqKV<"type",         CommaDirection::NONE>  (builder, obj.type);
+    AddReqKV<"server_label", CommaDirection::BEFORE>(builder, obj.server_label);
+    AddOptKV<"name",         CommaDirection::BEFORE>(builder, obj.name);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::SpecificApplyPatch& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::request::ToolsChoiceTypes::SpecificShell& obj) {
     builder.start_object();
-    builder.append_key_value<"type">(obj.type);
+    AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
     builder.end_object();
 }
 
@@ -1352,6 +1297,39 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
     }, obj);
 }
 
+void tag_invoke(serialize_tag, string_builder& builder,
+                const std::variant<std::string, openai::ConversationRef>& obj) {
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, std::string>) {
+            builder.escape_and_append_with_quotes(x);
+        } else {
+            tag_invoke(serialize_tag{}, builder, x);
+        }
+    }, obj);
+}
+
+
+void tag_invoke(serialize_tag, string_builder& builder,
+                const std::map<NameLen<64>, NameLen<512>>& obj) {
+    auto F = [&builder](auto const& kv_pair) {
+        auto const& [key, value] = kv_pair;
+        simdjson::tag_invoke(serialize_tag{}, builder, key);
+        builder.append_colon();
+        simdjson::tag_invoke(serialize_tag{}, builder, value);
+    };
+
+    builder.start_object();
+    if (!obj.empty()) {
+        F(*obj.begin());
+        std::ranges::for_each(obj | std::views::drop(1), [&builder, &F](auto const& kv_pair) {
+            builder.append_comma();
+            F(kv_pair);
+        });
+    }
+    builder.end_object();
+}
+
 
 /***
  * Top-level Request
@@ -1359,7 +1337,7 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::request::T
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::Request& obj) {
     builder.start_object();
-    AddOptKV<"background",             CommaDirection::NONE>(builder, obj.background);
+    AddOptKV<"background",             CommaDirection::NONE>  (builder, obj.background);
     AddOptKV<"conversation",           CommaDirection::BEFORE>(builder, obj.conversation);
     AddOptKV<"include",                CommaDirection::BEFORE>(builder, obj.include);
     AddOptKV<"input",                  CommaDirection::BEFORE>(builder, obj.input);

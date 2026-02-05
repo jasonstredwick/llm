@@ -1,17 +1,12 @@
 #pragma once
 
-#include "generate_content.hpp"
-
-#include <optional>
 #include <stdexcept>
-#include <string_view>
+
+#include "../../core/strings_base.hpp"
+#include "generate_content.hpp"
 
 
 namespace jai::llm {
-
-
-template <typename T>
-constexpr std::optional<T> from_string_view(std::string_view sv) = delete;
 
 
 template <>

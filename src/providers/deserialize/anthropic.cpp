@@ -1,26 +1,6 @@
 #include "../../../interface/protocols/anthropic/messages.hpp"
-#include "../../../interface/protocols/anthropic/strings.hpp"
 #include "base.hpp"
 #include "../../curl.hpp"
-
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-
-/***
- * Local defined MACROs for source file only.
- */
-#define FIELD(src, member) Extract<#member, T, &T::member>((src))
-#define FIELD_ARRAY(src, member) ExtractArrayOf<#member, T, &T::member>((src))
-#define BEGIN_PARSE(Type)                             \
-template <>                                           \
-Type Parse<Type>(const simdjson::dom::element& src) { \
-    using T = Type;                                   \
-    return T{
-#define  END_PARSE \
-    };             \
-}
 
 
 namespace jai::llm {
@@ -77,39 +57,13 @@ BEGIN_PARSE(anthropic::CitationsSearchResultLocation)
     FIELD(src, title)
 END_PARSE
 
-template <>
-anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::element& src) {
-    using T = anthropic::TextCitation;
-    auto obj = src.get_object();
-    auto type_sv = obj["type"].get_string().value();
-    auto opt_kind = jai::llm::from_string_view<anthropic::CitationKinds>(type_sv);
-    if (!opt_kind) {
-        throw std::runtime_error{"Unexpected anthropic::TextCitation type: " + std::string{type_sv}};
-    }
-
-    switch (*opt_kind) {
-    case anthropic::CitationKinds::CHAR_LOCATION:
-        return T{Parse<anthropic::CitationCharLocation>(src)};
-    case anthropic::CitationKinds::CONTENT_BLOCK_LOCATION:
-        return T{Parse<anthropic::CitationContentBlockLocation>(src)};
-    case anthropic::CitationKinds::PAGE_LOCATION:
-        return T{Parse<anthropic::CitationPageLocation>(src)};
-    case anthropic::CitationKinds::SEARCH_RESULT_LOCATION:
-        return T{Parse<anthropic::CitationsSearchResultLocation>(src)};
-    case anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION:
-        return T{Parse<anthropic::CitationsWebSearchResultLocation>(src)};
-    default:
-        throw std::logic_error{"anthropic::TextCitation variant unsatisfied"};
-    }
-}
-
 
 /***
  * Response Content Blocks
  */
 BEGIN_PARSE(anthropic::TextBlock)
     FIELD(src, type),
-    FIELD_ARRAY(src, citations),
+    FIELD(src, citations),
     FIELD(src, text)
 END_PARSE
 
@@ -157,28 +111,71 @@ BEGIN_PARSE(anthropic::WebSearchToolResultBlock::WebSearchToolResultError)
     FIELD(src, error_code)
 END_PARSE
 
+
+/***
+ * Usage and Substructures
+ */
+BEGIN_PARSE(anthropic::CacheCreation)
+    FIELD(src, ephemeral_1h_input_tokens),
+    FIELD(src, ephemeral_5m_input_tokens)
+END_PARSE
+
+BEGIN_PARSE(anthropic::ServerToolUsage)
+    FIELD(src, web_search_requests)
+END_PARSE
+
+BEGIN_PARSE(anthropic::Usage)
+    FIELD(src, cache_creation),
+    FIELD(src, cache_creation_input_tokens),
+    FIELD(src, cache_read_input_tokens),
+    FIELD(src, input_tokens),
+    FIELD(src, output_tokens),
+    FIELD(src, server_tool_use),
+    FIELD(src, service_tier)
+END_PARSE
+
+
+/***
+ * Top-level Response Message
+ */
+BEGIN_PARSE(anthropic::Response)
+    FIELD(src, type),
+    FIELD(src, id),
+    FIELD(src, content),
+    FIELD(src, model),
+    FIELD(src, role),
+    FIELD(src, stop_reason),
+    FIELD(src, stop_sequence),
+    FIELD(src, usage)
+END_PARSE
+
+
+/***
+ * Variants
+ */
 template <>
-anthropic::WebSearchToolResultBlock::Content
-    Parse<anthropic::WebSearchToolResultBlock::Content>(const simdjson::dom::element& src)
-{
-    using T = anthropic::WebSearchToolResultBlock::Content;
-
-    if (src.is_array()) {
-        return T{ParseArrayOf<anthropic::WebSearchToolResultBlock::WebSearchResultBlock>(src)};
-    }
-
+anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::element& src) {
+    using T = anthropic::TextCitation;
     auto obj = src.get_object();
     auto type_sv = obj["type"].get_string().value();
-    auto opt_kind = jai::llm::from_string_view<anthropic::WebSearchToolResultErrorType>(type_sv);
+    auto opt_kind = from_string_view<anthropic::CitationKinds>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected anthropic::WebSearchToolResultBlock::Content type: " + std::string{type_sv}};
+        throw std::runtime_error{"Unexpected anthropic::TextCitation type: " + std::string{type_sv}};
     }
 
     switch (*opt_kind) {
-    case anthropic::WebSearchToolResultErrorType::WEB_SEARCH_TOOL_RESULT_ERROR:
-        return T{Parse<anthropic::WebSearchToolResultBlock::WebSearchToolResultError>(src)};
+    case anthropic::CitationKinds::CHAR_LOCATION:
+        return T{Parse<anthropic::CitationCharLocation>(src)};
+    case anthropic::CitationKinds::CONTENT_BLOCK_LOCATION:
+        return T{Parse<anthropic::CitationContentBlockLocation>(src)};
+    case anthropic::CitationKinds::PAGE_LOCATION:
+        return T{Parse<anthropic::CitationPageLocation>(src)};
+    case anthropic::CitationKinds::SEARCH_RESULT_LOCATION:
+        return T{Parse<anthropic::CitationsSearchResultLocation>(src)};
+    case anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION:
+        return T{Parse<anthropic::CitationsWebSearchResultLocation>(src)};
     default:
-        throw std::logic_error{"anthropic::WebSearchToolResultBlock::Content variant unsatisfied"};
+        throw std::logic_error{"anthropic::TextCitation variant unsatisfied"};
     }
 }
 
@@ -210,50 +207,37 @@ anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const sim
     }
 }
 
+template <>
+anthropic::WebSearchToolResultBlock::Content
+    Parse<anthropic::WebSearchToolResultBlock::Content>(const simdjson::dom::element& src)
+{
+    using T = anthropic::WebSearchToolResultBlock::Content;
 
-/***
- * Usage and Substructures
- */
-BEGIN_PARSE(anthropic::CacheCreation)
-    FIELD(src, ephemeral_1h_input_tokens),
-    FIELD(src, ephemeral_5m_input_tokens)
-END_PARSE
+    if (src.is_array()) {
+        return T{ParseArrayOf<anthropic::WebSearchToolResultBlock::WebSearchResultBlock>(src)};
+    }
 
-BEGIN_PARSE(anthropic::ServerToolUsage)
-    FIELD(src, web_search_requests)
-END_PARSE
+    auto obj = src.get_object();
+    auto type_sv = obj["type"].get_string().value();
+    auto opt_kind = jai::llm::from_string_view<anthropic::WebSearchToolResultErrorType>(type_sv);
+    if (!opt_kind) {
+        throw std::runtime_error{"Unexpected anthropic::WebSearchToolResultBlock::Content type: " +
+                                 std::string{type_sv}};
+    }
 
-BEGIN_PARSE(anthropic::Usage)
-    FIELD(src, cache_creation),
-    FIELD(src, cache_creation_input_tokens),
-    FIELD(src, cache_read_input_tokens),
-    FIELD(src, input_tokens),
-    FIELD(src, output_tokens),
-    FIELD(src, server_tool_use),
-    FIELD(src, service_tier)
-END_PARSE
-
-
-/***
- * Top-level Response Message
- */
-BEGIN_PARSE(anthropic::Response)
-    FIELD(src, type),
-    FIELD(src, id),
-    FIELD_ARRAY(src, content),
-    FIELD(src, model),
-    FIELD(src, role),
-    FIELD(src, stop_reason),
-    FIELD(src, stop_sequence),
-    FIELD(src, usage)
-END_PARSE
+    switch (*opt_kind) {
+    case anthropic::WebSearchToolResultErrorType::TOOL_RESULT_ERROR:
+        return T{Parse<anthropic::WebSearchToolResultBlock::WebSearchToolResultError>(src)};
+    default:
+        throw std::logic_error{"anthropic::WebSearchToolResultErrorType variant unsatisfied"};
+    }
+}
 
 
 } // namespace jai::llm
 
 
 #undef FIELD
-#undef FIELD_ARRAY
 #undef BEGIN_PARSE
 #undef END_PARSE
 

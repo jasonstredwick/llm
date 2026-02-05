@@ -22,14 +22,14 @@ namespace jai::llm::openai {
 
 struct ComputerToolActions {
     struct Click {
-        ClickActionKind type = ClickActionKind::CLICK;
+        KindClickAction type{};
         MouseButton button;
         int64_t x;
         int64_t y;
     };
 
     struct DoubleClick {
-        DoubleClickActionKind type = DoubleClickActionKind::DOUBLE_CLICK;
+        KindDoubleClickAction type{};
         int64_t x;
         int64_t y;
     };
@@ -40,27 +40,27 @@ struct ComputerToolActions {
             int64_t y;
         };
 
-        DragActionKind type = DragActionKind::DRAG;
+        KindDragAction type{};
         std::vector<Coordinate> path;
     };
 
     struct KeyPress {
-        KeyPressActionKind type = KeyPressActionKind::KEYPRESS;
+        KindKeyPressAction type{};
         std::vector<std::string> keys;
     };
 
     struct Move {
-        MoveActionKind type = MoveActionKind::MOVE;
+        KindMoveAction type{};
         int64_t x;
         int64_t y;
     };
 
     struct Screenshot {
-        ScreenshotActionKind type = ScreenshotActionKind::SCREENSHOT;
+        KindScreenshotAction type{};
     };
 
     struct Scroll {
-        ScrollActionKind type = ScrollActionKind::SCROLL;
+        KindScrollAction type{};
         int64_t scroll_x;
         int64_t scroll_y;
         int64_t x;
@@ -68,12 +68,12 @@ struct ComputerToolActions {
     };
 
     struct Type {
-        TypeActionKind type = TypeActionKind::TYPE;
+        KindTypeAction type{};
         std::string text;
     };
 
     struct Wait {
-        WaitActionKind type = WaitActionKind::WAIT;
+        KindWaitAction type{};
     };
 
     using All = std::variant<Click, DoubleClick, Drag, KeyPress, Move, Screenshot, Scroll, Type, Wait>;
@@ -87,18 +87,18 @@ struct ConversationRef {
 
 struct PatchFileOperations {
     struct Create {
-        CreateFileOperationKind type = CreateFileOperationKind::CREATE_FILE;
+        KindCreateFileOperation type{};
         std::string diff;
         std::string path;
     };
 
     struct Delete {
-        DeleteFileOperationKind type = DeleteFileOperationKind::DELETE_FILE;
+        KindDeleteFileOperation type{};
         std::string path;
     };
 
     struct Update {
-        UpdateFileOperationKind type = UpdateFileOperationKind::UPDATE_FILE;
+        KindUpdateFileOperation type{};
         std::string diff;
         std::string path;
     };
@@ -147,11 +147,11 @@ struct StreamOptions {
 
 struct TextConfig {
     struct FormatText {
-        FormatTextKind type = FormatTextKind::TEXT;
+        KindFormatText type{};
     };
 
     struct FormatJsonSchema {
-        FormatJsonSchemaKind type = FormatJsonSchemaKind::JSON_SCHEMA;
+        KindFormatJsonSchema type{};
         std::string name;
         jai::llm::json::Object schema;
         std::string description;

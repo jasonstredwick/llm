@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -18,7 +19,6 @@
 #include "responses_enums.hpp"
 #include "responses_common.hpp"
 #include "../../core/types.hpp"
-#include "../../core/url.hpp"
 
 
 namespace jai::llm::openai::request {
@@ -26,7 +26,7 @@ namespace jai::llm::openai::request {
 
 struct ContentTypes {
     struct File {
-        InputFileKind type = InputFileKind::INPUT_FILE;
+        KindInputFile type{};
         std::optional<std::string> file_data{};
         std::optional<std::string> file_id{};
         std::optional<EncodedUrl> file_url{};
@@ -34,7 +34,7 @@ struct ContentTypes {
     };
 
     struct Image {
-        InputImageKind type = InputImageKind::INPUT_IMAGE;
+        KindInputImage type{};
         Detail detail; // Required defaults to auto, but marked required in doc
         std::optional<std::string> file_id{};
         std::optional<EncodedUrl> image_url{};
@@ -42,7 +42,7 @@ struct ContentTypes {
 
     struct OutputText {
         struct ContainerFileCitation {
-            ContainerFileCitationKind type = ContainerFileCitationKind::CONTAINER_FILE_CITATION;
+            KindContainerFileCitation type{};
             std::string container_id;
             int64_t end_index;
             std::string file_id;
@@ -51,14 +51,14 @@ struct ContentTypes {
         };
 
         struct FileCitation {
-            FileCitationKind type = FileCitationKind::FILE_CITATION;
+            KindFileCitation type{};
             std::string file_id;
             std::string filename;
             int64_t index;
         };
 
         struct UrlCitation {
-            UrlCitationKind type = UrlCitationKind::URL_CITATION;
+            KindUrlCitation type{};
             int64_t end_index;
             int64_t start_index;
             std::string title;
@@ -66,19 +66,19 @@ struct ContentTypes {
         };
 
         struct FilePath {
-            FilePathKind type = FilePathKind::FILE_PATH;
+            KindFilePath type{};
             std::string file_id;
             int64_t index;
         };
 
         struct LogProb {
             struct TopLogprob {
-                std::vector<uint8_t> bytes;
+                std::vector<std::byte> bytes;
                 double logprob;
                 std::string token;
             };
 
-            std::vector<uint8_t> bytes;
+            std::vector<std::byte> bytes;
             double logprob;
             std::string token;
             std::vector<TopLogprob> top_logprobs;
@@ -86,19 +86,19 @@ struct ContentTypes {
 
         using Annotation = std::variant<FileCitation, UrlCitation, ContainerFileCitation, FilePath>;
 
-        OutputTextKind type = OutputTextKind::OUTPUT_TEXT;
+        KindOutputText type{};
         std::vector<Annotation> annotations;
         std::vector<LogProb> logprobs;
         std::string text;
     };
 
     struct Refusal {
-        RefusalKind type = RefusalKind::REFUSAL;
+        KindRefusal type{};
         std::string refusal;
     };
 
     struct Text {
-        InputTextKind type = InputTextKind::INPUT_TEXT;
+        KindInputText type{};
         std::string text;
     };
 };
@@ -106,23 +106,23 @@ struct ContentTypes {
 
 struct WebSearchToolActions {
     struct Find {
-        FindActionKind type = FindActionKind::FIND;
+        KindFindAction type{};
         std::string pattern;
         EncodedUrl url;
     };
 
     struct OpenPage {
-        OpenPageActionKind type = OpenPageActionKind::OPEN_PAGE;
+        KindOpenPageAction type{};
         EncodedUrl url;
     };
 
     struct Search {
         struct Source {
-            SearchActionSourceKind type = SearchActionSourceKind::URL;
+            KindSearchActionSource type{};
             EncodedUrl url;
         };
 
-        SearchActionKind type = SearchActionKind::SEARCH;
+        KindSearchAction type{};
         std::optional<std::vector<std::string>> queries{};
         std::optional<std::vector<Source>> sources{};
     };
@@ -137,9 +137,9 @@ struct InputTypes {
     struct Message {
         using Content = std::variant<std::string, std::vector<MessageContentUnit>>;
 
+        KindInputMessage type{};
         Content content;
         RoleInputMessage role;
-        std::optional<InputMessageKind> type{}; // InputMessageKind::MESSAGE
     };
 
     struct Item {
@@ -147,7 +147,7 @@ struct InputTypes {
             std::vector<MessageContentUnit> content;
             RoleUser role;
             std::optional<ItemStatus> status{};
-            std::optional<InputMessageKind> type{};
+            std::optional<KindInputMessage> type{};
         };
 
         struct OutputMessage {
@@ -157,7 +157,7 @@ struct InputTypes {
             std::string id;
             RoleAssistant role;
             std::optional<ItemStatus> status{};
-            std::optional<InputMessageKind> type{};
+            std::optional<KindInputMessage> type{};
         };
 
         struct FileSearchToolCall {
@@ -169,7 +169,7 @@ struct InputTypes {
                 std::optional<std::string> text{};
             };
 
-            FileSearchToolCallKind type = FileSearchToolCallKind::FILE_SEARCH_CALL;
+            KindFileSearchToolCall type{};
             std::string id;
             std::vector<std::string> queries;
             FileSearchStatus status;
@@ -183,7 +183,7 @@ struct InputTypes {
                 std::optional<std::string> message{};
             };
 
-            ComputerCallKind type = ComputerCallKind::COMPUTER_CALL;
+            KindComputerCall type{};
             ComputerToolActions::All action;
             std::string call_id;
             std::string id;
@@ -193,7 +193,7 @@ struct InputTypes {
 
         struct ComputerToolCallOutput {
             struct ComputerScreenshot {
-                ComputerScreenshotKind type = ComputerScreenshotKind::COMPUTER_SCREENSHOT;
+                KindComputerScreenshot type{};
                 std::optional<std::string> file_id{};
                 std::optional<EncodedUrl> image_url{};
             };
@@ -204,7 +204,7 @@ struct InputTypes {
                 std::optional<std::string> message{};
             };
 
-            ComputerCallOutputKind type = ComputerCallOutputKind::COMPUTER_CALL_OUTPUT;
+            KindComputerCallOutput type{};
             std::string call_id;
             ComputerScreenshot output;
             std::optional<std::vector<AcknowledgedSafetyCheck>> acknowledged_safety_checks{};
@@ -213,14 +213,14 @@ struct InputTypes {
         };
 
         struct WebSearchToolCall {
-            WebSearchCallKind type = WebSearchCallKind::WEB_SEARCH_CALL;
+            KindWebSearchCall type{};
             WebSearchToolActions::All action;
             std::string id;
             ItemStatus status; // Doc says "status" but doesn't list enum. Assuming ItemStatus.
         };
 
         struct FunctionToolCall {
-            FunctionCallKind type = FunctionCallKind::FUNCTION_CALL;
+            KindFunctionCall type{};
             std::string arguments;
             std::string call_id;
             std::string name;
@@ -232,7 +232,7 @@ struct InputTypes {
             using Output = std::variant<std::string,
                                         std::vector<
                                             std::variant<ContentTypes::Text, ContentTypes::Image, ContentTypes::File>>>;
-            FunctionCallOutputKind type = FunctionCallOutputKind::FUNCTION_CALL_OUTPUT;
+            KindFunctionCallOutput type{};
             std::string call_id;
             Output output;
             std::optional<std::string> id{};
@@ -241,16 +241,16 @@ struct InputTypes {
 
         struct Reasoning {
             struct Summary {
-                ReasoningSummaryTextKind type = ReasoningSummaryTextKind::SUMMARY_TEXT;
+                KindReasoningSummaryText type{};
                 std::string text;
             };
 
             struct Content {
-                ReasoningTextKind type = ReasoningTextKind::REASONING_TEXT;
+                KindReasoningText type{};
                 std::string text;
             };
 
-            ReasoningItemKind type = ReasoningItemKind::REASONING;
+            KindReasoningItem type{};
             std::string id;
             std::vector<Summary> summary;
             std::optional<std::vector<Content>> content{};
@@ -259,13 +259,13 @@ struct InputTypes {
         };
 
         struct CompactionItem {
-            CompactionItemKind type = CompactionItemKind::COMPACTION;
+            KindCompactionItem type{};
             std::string encrypted_content;
             std::optional<std::string> id{};
         };
 
         struct ImageGenerationCall {
-            ImageGenerationCallKind type = ImageGenerationCallKind::IMAGE_GENERATION_CALL;
+            KindImageGenerationCall type{};
             std::string id;
             std::string result;
             std::string status;
@@ -284,7 +284,7 @@ struct InputTypes {
 
             using Output = std::variant<CodeInterpreterOutputLog, CodeInterpreterOutputImage>;
 
-            CodeInterpreterCallKind type = CodeInterpreterCallKind::CODE_INTERPRETER_CALL;
+            KindCodeInterpreterCall type{};
             std::string code;
             std::string container_id;
             std::string id;
@@ -294,7 +294,7 @@ struct InputTypes {
 
         struct LocalShellCall {
             struct Action {
-                LocalShellActionKind type = LocalShellActionKind::EXEC;
+                KindLocalShellAction type{};
                 std::vector<std::string> command;
                 std::map<std::string, std::string> env;
                 std::optional<int64_t> timeout_ms{};
@@ -302,7 +302,7 @@ struct InputTypes {
                 std::optional<std::string> working_directory{};
             };
 
-            LocalShellCallKind type = LocalShellCallKind::LOCAL_SHELL_CALL;
+            KindLocalShellCall type{};
             Action action;
             std::string call_id;
             std::string id;
@@ -310,7 +310,7 @@ struct InputTypes {
         };
 
         struct LocalShellCallOutput {
-            LocalShellCallOutputKind type = LocalShellCallOutputKind::LOCAL_SHELL_CALL_OUTPUT;
+            KindLocalShellCallOutput type{};
             std::string id;
             std::string output;
             std::optional<ItemStatus> status{};
@@ -323,7 +323,7 @@ struct InputTypes {
                 std::optional<int64_t> timeout_ms{};
             };
 
-            ShellCallKind type = ShellCallKind::SHELL_CALL;
+            KindShellCall type{};
             Action action;
             std::string call_id;
             std::optional<std::string> id{};
@@ -332,12 +332,12 @@ struct InputTypes {
 
         struct ShellToolCallOutput {
             struct ShellCallExitOutcome {
-                ShellExitOutcomeKind type = ShellExitOutcomeKind::EXIT;
+                KindShellExitOutcome type{};
                 int64_t exit_code;
             };
 
             struct ShellCallTimeoutOutcome {
-                ShellTimeoutOutcomeKind type = ShellTimeoutOutcomeKind::TIMEOUT;
+                KindShellTimeoutOutcome type{};
             };
 
             struct Output {
@@ -348,7 +348,7 @@ struct InputTypes {
                 std::string std_out;
             };
 
-            ShellCallOutputKind type = ShellCallOutputKind::SHELL_CALL_OUTPUT;
+            KindShellCallOutput type{};
             std::string call_id;
             std::vector<Output> output;
             std::optional<std::string> id{};
@@ -360,7 +360,7 @@ struct InputTypes {
             using ApplyPatchOperation = std::variant<PatchFileOperations::Create,
                                                      PatchFileOperations::Delete,
                                                      PatchFileOperations::Update>;
-            ApplyPatchCallKind type = ApplyPatchCallKind::APPLY_PATCH_CALL;
+            KindApplyPatchCall type{};
             std::string call_id;
             ApplyPatchOperation operation;
             ApplyPatchCallStatus status;
@@ -368,7 +368,7 @@ struct InputTypes {
         };
 
         struct ApplyPatchToolCallOutput {
-            ApplyPatchCallOutputKind type = ApplyPatchCallOutputKind::APPLY_PATCH_CALL_OUTPUT;
+            KindApplyPatchCallOutput type{};
             std::optional<std::string> call_id;
             ApplyPatchCallOutputStatus status;
             std::optional<std::string> id{};
@@ -383,7 +383,7 @@ struct InputTypes {
                 std::optional<std::string> description{};
             };
 
-            MCPListToolsKind type = MCPListToolsKind::MCP_LIST_TOOLS;
+            KindMCPListTools type{};
             std::string id;
             std::string server_label;
             std::vector<ToolDef> tools;
@@ -391,7 +391,7 @@ struct InputTypes {
         };
 
         struct MCPApprovalRequest {
-            MCPApprovalRequestKind type = MCPApprovalRequestKind::MCP_APPROVAL_REQUEST;
+            KindMCPApprovalRequest type{};
             std::string arguments;
             std::string id;
             std::string name;
@@ -399,7 +399,7 @@ struct InputTypes {
         };
 
         struct MCPApprovalResponse {
-            MCPApprovalResponseKind type = MCPApprovalResponseKind::MCP_APPROVAL_RESPONSE;
+            KindMCPApprovalResponse type{};
             std::string approval_request_id;
             bool approve;
             std::optional<std::string> id{};
@@ -407,7 +407,7 @@ struct InputTypes {
         };
 
         struct MCPToolCall {
-            MCPCallKind type = MCPCallKind::MCP_CALL;
+            KindMCPCall type{};
             std::string arguments;
             std::string id;
             std::string name;
@@ -422,14 +422,14 @@ struct InputTypes {
             using Output = std::variant<std::string,
                                         std::vector<
                                             std::variant<ContentTypes::Text, ContentTypes::Image, ContentTypes::File>>>;
-            CustomToolCallOutputKind type = CustomToolCallOutputKind::CUSTOM_TOOL_CALL_OUTPUT;
+            KindCustomToolCallOutput type{};
             std::string call_id;
             Output output;
             std::optional<std::string> id{};
         };
 
         struct CustomToolCall {
-            CustomToolCallKind type = CustomToolCallKind::CUSTOM_TOOL_CALL;
+            KindCustomToolCall type{};
             std::string call_id;
             std::string input;
             std::string name;
@@ -440,7 +440,7 @@ struct InputTypes {
 
 
 struct ItemReference {
-    std::optional<ItemReferenceKind> type{}; // ItemReferenceKind::ITEM_REFERENCE
+    std::optional<KindItemReference> type{};
     std::string id;
 };
 
@@ -486,7 +486,7 @@ struct Prompt {
 
 struct ToolTypes {
     struct Function {
-        FunctionToolKind type = FunctionToolKind::FUNCTION;
+        KindFunctionTool type{};
         std::string name;
         jai::llm::json::Object parameters;
         bool strict;
@@ -520,7 +520,7 @@ struct ToolTypes {
             std::optional<double> score_threshold{};
         };
 
-        FileSearchToolKind type = FileSearchToolKind::FILE_SEARCH;
+        KindFileSearchTool type{};
         std::vector<std::string> vector_store_ids;
         std::optional<std::variant<ComparisonFilter, CompoundFilter>> filters;
         std::optional<int64_t> max_num_results{};
@@ -528,7 +528,7 @@ struct ToolTypes {
     };
 
     struct ComputerUse {
-        ComputerUseToolKind type = ComputerUseToolKind::COMPUTER_USE_PREVIEW;
+        KindComputerUseTool type{};
         int64_t display_height;
         int64_t display_width;
         std::string environment;
@@ -567,7 +567,7 @@ struct ToolTypes {
         using AllowedTools = std::variant<std::vector<std::string>, Filter>;
         using RequiredApproval = std::variant<MCPApprovalSetting, ApprovalFilter>;
 
-        MCPToolKind type = MCPToolKind::MCP;
+        KindMCPTool type{};
         std::string server_label;
         std::optional<AllowedTools> allowed_tools{};
         std::optional<std::string> authorization{};
@@ -580,13 +580,13 @@ struct ToolTypes {
 
     struct CodeInterpreter {
         struct ContainerConfig {
-            ContainerConfigKind type = ContainerConfigKind::AUTO;
+            KindContainerConfig type{};
             std::optional<std::vector<std::string>> file_ids{};
             std::optional<std::string> memory_limit{};
         };
         using Container = std::variant<std::string, ContainerConfig>;
 
-        CodeInterpreterToolKind type = CodeInterpreterToolKind::CODE_INTERPRETER;
+        KindCodeInterpreterTool type{};
         Container container;
     };
 
@@ -596,7 +596,7 @@ struct ToolTypes {
             std::optional<EncodedUrl> image_url{};
         };
 
-        ImageGenerationToolKind type = ImageGenerationToolKind::IMAGE_GENERATION;
+        KindImageGenerationTool type{};
         std::optional<std::string> action{};
         std::optional<ImageGenerationBackground> background{};
         std::optional<ImageGenerationFidelity> input_fidelity{};
@@ -611,27 +611,27 @@ struct ToolTypes {
     };
 
     struct LocalShell {
-        LocalShellToolKind type = LocalShellToolKind::LOCAL_SHELL;
+        KindLocalShellTool type{};
     };
 
     struct Shell {
-        ShellToolKind type = ShellToolKind::SHELL;
+        KindShellTool type{};
     };
 
     struct Custom {
         struct GrammarFormat {
-            CustomToolGrammarFormatKind type = CustomToolGrammarFormatKind::GRAMMAR;
+            KindCustomToolGrammarFormat type{};
             std::string definition;
             GrammarSyntax syntax;
         };
 
         struct TextFormat {
-            CustomToolTextFormatKind type = CustomToolTextFormatKind::TEXT;
+            KindCustomToolTextFormat type{};
         };
 
         using Format = std::variant<GrammarFormat, TextFormat>;
 
-        CustomToolKind type = CustomToolKind::CUSTOM;
+        KindCustomTool type{};
         std::string name;
         std::optional<std::string> description{};
         std::optional<Format> format{};
@@ -652,7 +652,7 @@ struct ToolTypes {
     };
 
     struct ApplyPatch {
-        ApplyPatchToolKind type = ApplyPatchToolKind::APPLY_PATCH;
+        KindApplyPatchTool type{};
     };
 };
 
@@ -672,18 +672,18 @@ struct ToolsChoiceTypes {
             std::optional<std::string> server_label{};
         };
 
-        AllowedToolsChoiceKind type = AllowedToolsChoiceKind::ALLOWED_TOOLS;
+        KindAllowedToolsChoice type{};
         ToolChoiceModeNotNone mode;
         std::vector<RestrictedTool> tools;
     };
 
     struct Custom {
-        CustomToolChoiceKind type = CustomToolChoiceKind::CUSTOM;
+        KindCustomToolChoice type{};
         std::string name;
     };
 
     struct Function {
-        FunctionToolChoiceKind type = FunctionToolChoiceKind::FUNCTION;
+        KindFunctionToolChoice type{};
         std::string name;
     };
 
@@ -692,17 +692,17 @@ struct ToolsChoiceTypes {
     };
 
     struct MCP {
-        MCPToolChoiceKind type = MCPToolChoiceKind::MCP;
+        KindMCPToolChoice type{};
         std::string server_label;
         std::optional<std::string> name{};
     };
 
     struct SpecificApplyPatch {
-        SpecificApplyPatchToolChoiceKind type = SpecificApplyPatchToolChoiceKind::APPLY_PATCH;
+        KindSpecificApplyPatchToolChoice type{};
     };
 
     struct SpecificShell {
-        SpecificShellToolChoiceKind type = SpecificShellToolChoiceKind::SHELL;
+        KindSpecificShellToolChoice type{};
     };
 };
 

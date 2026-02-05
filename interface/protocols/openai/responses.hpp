@@ -19,7 +19,6 @@
 #include "responses_common.hpp"
 #include "responses_req.hpp"
 #include "responses_res.hpp"
-#include "../../core/types.hpp"
 
 
 namespace jai::llm::openai {
@@ -57,7 +56,7 @@ struct Request {
 
 
 struct Response {
-    ResponseKind object = ResponseKind::RESPONSE;
+    KindResponse object{};
     bool background;
     double completed_at;
     ConversationRef conversation;

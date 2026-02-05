@@ -7,17 +7,9 @@
 #include <variant>
 
 #include "../../core/types.hpp"
-#include "../../core/url.hpp"
 
 
 namespace jai::llm::gemini {
-
-
-/***
- * Forward declarations
- */
-struct Request;
-struct Response;
 
 
 /***
@@ -171,14 +163,14 @@ struct Schema {
     std::optional<std::string> description{};
     std::optional<bool> nullable{};
     std::optional<std::vector<std::string>> enum_values{};
-    std::optional<Int64>maxItems{};
-    std::optional<Int64>minItems{};
+    std::optional<Int64Str>maxItems{};
+    std::optional<Int64Str>minItems{};
     std::optional<std::map<std::string, Schema>> properties{};
     std::optional<std::vector<std::string>> required{};
-    std::optional<Int64> minProperties{};
-    std::optional<Int64> maxProperties{};
-    std::optional<Int64> minLength{};
-    std::optional<Int64> maxLength{};
+    std::optional<Int64Str> minProperties{};
+    std::optional<Int64Str> maxProperties{};
+    std::optional<Int64Str> minLength{};
+    std::optional<Int64Str> maxLength{};
     std::optional<std::string> pattern{};
     std::optional<json::Value> example{};
     std::optional<std::vector<Schema>> anyOf{};
