@@ -80,12 +80,14 @@ endif()
 
 # Define the library
 add_library(llm STATIC
-    src/providers/serialize/anthropic.cpp
-    src/providers/serialize/gemini.cpp
-    src/providers/serialize/openai.cpp
-    src/providers/deserialize/anthropic.cpp
-    src/providers/deserialize/gemini.cpp
-    src/providers/deserialize/openai.cpp
+    src/curl.cpp
+    src/http.cpp
+    src/protocols/serialize/anthropic_messages.cpp
+    src/protocols/serialize/gemini_generate_content.cpp
+    src/protocols/serialize/openai_responses.cpp
+    src/protocols/deserialize/anthropic_messages.cpp
+    src/protocols/deserialize/gemini_generate_content.cpp
+    src/protocols/deserialize/openai_responses.cpp
 )
 
 # Add include directories (Unified Sysroot)
@@ -143,3 +145,6 @@ target_link_libraries(test_anthropic PRIVATE llm)
 
 add_executable(test_gemini tests/unit/test_gemini.cpp)
 target_link_libraries(test_gemini PRIVATE llm)
+
+add_executable(test_openai tests/unit/test_openai.cpp)
+target_link_libraries(test_openai PRIVATE llm)

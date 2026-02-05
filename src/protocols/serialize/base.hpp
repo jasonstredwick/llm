@@ -195,6 +195,46 @@ inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builde
 
 
 inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
+                       const jai::llm::json::Value& value);
+
+
+inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
+                       const jai::llm::json::Array& value)
+{
+    builder.start_array();
+    if (!value.empty()) {
+        tag_invoke(simdjson::serialize_tag{}, builder, value[0]);
+        for (auto const& x : value | std::views::drop(1)) {
+            builder.append_comma();
+            tag_invoke(simdjson::serialize_tag{}, builder, x);
+        }
+    }
+    builder.end_array();
+}
+
+
+inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
+                       const jai::llm::json::Object& value)
+{
+    builder.start_object();
+    if (!value.empty()) {
+        auto it = value.begin();
+        builder.escape_and_append_with_quotes(it->first);
+        builder.append_colon();
+        tag_invoke(simdjson::serialize_tag{}, builder, it->second);
+        
+        for (++it; it != value.end(); ++it) {
+            builder.append_comma();
+            builder.escape_and_append_with_quotes(it->first);
+            builder.append_colon();
+            tag_invoke(simdjson::serialize_tag{}, builder, it->second);
+        }
+    }
+    builder.end_object();
+}
+
+
+inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
                        const jai::llm::json::Value& value)
 {
     std::visit([&](auto const& x) {
@@ -211,7 +251,7 @@ inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builde
         } else if constexpr (std::is_same_v<T, std::string>) {
             builder.escape_and_append_with_quotes(x);
         } else {
-            builder.append(x);
+            tag_invoke(simdjson::serialize_tag{}, builder, x);
         }
     }, value.data);
 }

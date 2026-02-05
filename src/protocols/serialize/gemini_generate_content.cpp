@@ -240,6 +240,17 @@ void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestCon
 }
 
 
+void tag_invoke(serialize_tag, string_builder& builder, const gemini::VideoMetadata& obj) {
+    builder.start_object();
+    AddOptKV<"startOffset", CommaDirection::NONE>  (builder, obj.startOffset);
+    if (obj.startOffset && obj.endOffset) { builder.append_comma(); }
+    AddOptKV<"endOffset",   CommaDirection::NONE>  (builder, obj.endOffset);
+    if ((obj.startOffset || obj.endOffset) && obj.fps) { builder.append_comma(); }
+    AddOptKV<"fps",         CommaDirection::NONE>  (builder, obj.fps);
+    builder.end_object();
+}
+
+
 void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestContent::RequestPart::Metadata& obj) {
     builder.start_object();
     std::visit([&](auto const& x) {
