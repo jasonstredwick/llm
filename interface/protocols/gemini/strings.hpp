@@ -1,8 +1,7 @@
 #pragma once
 
-#include <stdexcept>
-
 #include "../../core/strings_base.hpp"
+#include "../../core/error.hpp"
 #include "generate_content.hpp"
 
 
@@ -300,7 +299,7 @@ constexpr std::string_view to_string_view(gemini::AspectRatio val) {
         case gemini::AspectRatio::ASPECT_RATIO_9_16: return "9:16";
         case gemini::AspectRatio::ASPECT_RATIO_16_9: return "16:9";
         case gemini::AspectRatio::ASPECT_RATIO_21_9: return "21:9";
-        default: throw std::logic_error("invalid gemini::AspectRatio");
+        default: throw AnnotatedException{"invalid gemini::AspectRatio"};
     }
 }
 
@@ -310,7 +309,7 @@ constexpr std::string_view to_string_view(gemini::Behavior val) {
         case gemini::Behavior::UNSPECIFIED: return "UNSPECIFIED";
         case gemini::Behavior::BLOCKING: return "BLOCKING";
         case gemini::Behavior::NON_BLOCKING: return "NON_BLOCKING";
-        default: throw std::logic_error("invalid gemini::Behavior");
+        default: throw AnnotatedException{"invalid gemini::Behavior"};
     }
 }
 
@@ -323,7 +322,7 @@ constexpr std::string_view to_string_view(gemini::BlockReason val) {
         case gemini::BlockReason::BLOCKLIST: return "BLOCKLIST";
         case gemini::BlockReason::PROHIBITED_CONTENT: return "PROHIBITED_CONTENT";
         case gemini::BlockReason::IMAGE_SAFETY: return "IMAGE_SAFETY";
-        default: throw std::logic_error("invalid gemini::BlockReason");
+        default: throw AnnotatedException{"invalid gemini::BlockReason"};
     }
 }
 
@@ -332,7 +331,7 @@ constexpr std::string_view to_string_view(gemini::CodeLanguage val) {
     switch (val) {
         case gemini::CodeLanguage::LANGUAGE_UNSPECIFIED: return "LANGUAGE_UNSPECIFIED";
         case gemini::CodeLanguage::PYTHON: return "PYTHON";
-        default: throw std::logic_error("invalid gemini::CodeLanguage");
+        default: throw AnnotatedException{"invalid gemini::CodeLanguage"};
     }
 }
 
@@ -341,7 +340,7 @@ constexpr std::string_view to_string_view(gemini::DynamicRetrievalMode val) {
     switch (val) {
         case gemini::DynamicRetrievalMode::MODE_UNSPECIFIED: return "MODE_UNSPECIFIED";
         case gemini::DynamicRetrievalMode::MODE_DYNAMIC: return "MODE_DYNAMIC";
-        default: throw std::logic_error("invalid gemini::DynamicRetrievalMode");
+        default: throw AnnotatedException{"invalid gemini::DynamicRetrievalMode"};
     }
 }
 
@@ -350,7 +349,7 @@ constexpr std::string_view to_string_view(gemini::Environment val) {
     switch (val) {
         case gemini::Environment::ENVIRONMENT_UNSPECIFIED: return "ENVIRONMENT_UNSPECIFIED";
         case gemini::Environment::ENVIRONMENT_BROWSER: return "ENVIRONMENT_BROWSER";
-        default: throw std::logic_error("invalid gemini::Environment");
+        default: throw AnnotatedException{"invalid gemini::Environment"};
     }
 }
 
@@ -361,7 +360,7 @@ constexpr std::string_view to_string_view(gemini::ExecutionOutcome val) {
         case gemini::ExecutionOutcome::FAILED: return "OUTCOME_FAILED";
         case gemini::ExecutionOutcome::DEADLINE_EXCEEDED: return "OUTCOME_DEADLINE_EXCEEDED";
         case gemini::ExecutionOutcome::UNSPECIFIED: return "OUTCOME_UNSPECIFIED";
-        default: throw std::logic_error("invalid gemini::ExecutionOutcome");
+        default: throw AnnotatedException{"invalid gemini::ExecutionOutcome"};
     }
 }
 enum class FinishReason {
@@ -392,7 +391,7 @@ constexpr std::string_view to_string_view(gemini::FinishReason val) {
         case gemini::FinishReason::UNEXPECTED_TOOL_CALL: return "UNEXPECTED_TOOL_CALL";
         case gemini::FinishReason::TOO_MANY_TOOL_CALLS: return "TOO_MANY_TOOL_CALLS";
         case gemini::FinishReason::MISSING_THOUGHT_SIGNATURE: return "MISSING_THOUGHT_SIGNATURE";
-        default: throw std::logic_error("invalid gemini::FinishReason");
+        default: throw AnnotatedException{"invalid gemini::FinishReason"};
     }
 }
 
@@ -410,7 +409,7 @@ constexpr std::string_view to_string_view(gemini::HarmCategory val) {
         case gemini::HarmCategory::HARM_CATEGORY_HATE_SPEECH: return "HARM_CATEGORY_HATE_SPEECH";
         case gemini::HarmCategory::HARM_CATEGORY_SEXUALLY_EXPLICIT: return "HARM_CATEGORY_SEXUALLY_EXPLICIT";
         case gemini::HarmCategory::HARM_CATEGORY_DANGEROUS_CONTENT: return "HARM_CATEGORY_DANGEROUS_CONTENT";
-        default: throw std::logic_error("invalid gemini::HarmCategory");
+        default: throw AnnotatedException{"invalid gemini::HarmCategory"};
     }
 }
 
@@ -422,7 +421,7 @@ constexpr std::string_view to_string_view(gemini::HarmProbability val) {
         case gemini::HarmProbability::LOW: return "LOW";
         case gemini::HarmProbability::MEDIUM: return "MEDIUM";
         case gemini::HarmProbability::HIGH: return "HIGH";
-        default: throw std::logic_error("invalid gemini::HarmProbability");
+        default: throw AnnotatedException{"invalid gemini::HarmProbability"};
     }
 }
 
@@ -432,7 +431,7 @@ constexpr std::string_view to_string_view(gemini::ImageDim val) {
         case gemini::ImageDim::IMAGE_SIZE_1K: return "1K";
         case gemini::ImageDim::IMAGE_SIZE_2K: return "2K";
         case gemini::ImageDim::IMAGE_SIZE_4K: return "4K";
-        default: throw std::logic_error("invalid gemini::ImageDim");
+        default: throw AnnotatedException{"invalid gemini::ImageDim"};
     }
 }
 
@@ -443,7 +442,7 @@ constexpr std::string_view to_string_view(gemini::MediaResolution val) {
         case gemini::MediaResolution::MEDIA_RESOLUTION_LOW: return "MEDIA_RESOLUTION_LOW";
         case gemini::MediaResolution::MEDIA_RESOLUTION_MEDIUM: return "MEDIA_RESOLUTION_MEDIUM";
         case gemini::MediaResolution::MEDIA_RESOLUTION_HIGH: return "MEDIA_RESOLUTION_HIGH";
-        default: throw std::logic_error("invalid gemini::MediaResolution");
+        default: throw AnnotatedException{"invalid gemini::MediaResolution"};
     }
 }
 
@@ -470,7 +469,7 @@ constexpr std::string_view to_string_view(gemini::MediaType val) {
         case gemini::MediaType::VIDEO_OGG: return "video/ogg";
         case gemini::MediaType::VIDEO_QT: return "video/quicktime";
         case gemini::MediaType::VIDEO_WEBM: return "video/webm";
-        default: throw std::logic_error("invalid gemini::MediaType");
+        default: throw AnnotatedException{"invalid gemini::MediaType"};
     }
 }
 
@@ -483,7 +482,7 @@ constexpr std::string_view to_string_view(gemini::Modality val) {
         case gemini::Modality::VIDEO: return "VIDEO";
         case gemini::Modality::AUDIO: return "AUDIO";
         case gemini::Modality::DOCUMENT: return "DOCUMENT";
-        default: throw std::logic_error("invalid gemini::Modality");
+        default: throw AnnotatedException{"invalid gemini::Modality"};
     }
 }
 
@@ -496,7 +495,7 @@ constexpr std::string_view to_string_view(gemini::ModelStage val) {
         case gemini::ModelStage::STABLE: return "STABLE";
         case gemini::ModelStage::LEGACY: return "LEGACY";
         case gemini::ModelStage::RETIRED: return "RETIRED";
-        default: throw std::logic_error("invalid gemini::ModelStage");
+        default: throw AnnotatedException{"invalid gemini::ModelStage"};
     }
 }
 
@@ -506,7 +505,7 @@ constexpr std::string_view to_string_view(gemini::ResponseMimeType val) {
         case gemini::ResponseMimeType::APPLICATION_JSON: return "application/json";
         case gemini::ResponseMimeType::TEXT_X_ENUM: return "text/x.enum";
         case gemini::ResponseMimeType::TEXT_PLAIN: return "text/plain";
-        default: throw std::logic_error("invalid gemini::ResponseMimeType");
+        default: throw AnnotatedException{"invalid gemini::ResponseMimeType"};
     }
 }
 
@@ -516,7 +515,7 @@ constexpr std::string_view to_string_view(gemini::Role val) {
         case gemini::Role::USER: return "user";
         case gemini::Role::MODEL: return "model";
         case gemini::Role::SYSTEM: return "system";
-        default: throw std::logic_error("invalid gemini::Role");
+        default: throw AnnotatedException{"invalid gemini::Role"};
     }
 }
 
@@ -529,7 +528,7 @@ constexpr std::string_view to_string_view(gemini::HarmBlockThreshold val) {
         case gemini::HarmBlockThreshold::BLOCK_ONLY_HIGH: return "BLOCK_ONLY_HIGH";
         case gemini::HarmBlockThreshold::BLOCK_NONE: return "BLOCK_NONE";
         case gemini::HarmBlockThreshold::OFF: return "OFF";
-        default: throw std::logic_error("invalid gemini::HarmBlockThreshold");
+        default: throw AnnotatedException{"invalid gemini::HarmBlockThreshold"};
     }
 }
 
@@ -540,7 +539,7 @@ constexpr std::string_view to_string_view(gemini::Scheduling val) {
         case gemini::Scheduling::SILENT: return "SILENT";
         case gemini::Scheduling::WHEN_IDLE: return "WHEN_IDLE";
         case gemini::Scheduling::INTERRUPT: return "INTERRUPT";
-        default: throw std::logic_error("invalid gemini::Scheduling");
+        default: throw AnnotatedException{"invalid gemini::Scheduling"};
     }
 }
 
@@ -554,7 +553,7 @@ constexpr std::string_view to_string_view(gemini::SchemaType val) {
         case gemini::SchemaType::ARRAY: return "ARRAY";
         case gemini::SchemaType::OBJECT: return "OBJECT";
         case gemini::SchemaType::NULL_T: return "NULL";
-        default: throw std::logic_error("invalid gemini::SchemaType");
+        default: throw AnnotatedException{"invalid gemini::SchemaType"};
     }
 }
 
@@ -567,7 +566,7 @@ constexpr std::string_view to_string_view(gemini::ThinkingLevel val) {
         case gemini::ThinkingLevel::LOW: return "LOW";
         case gemini::ThinkingLevel::MEDIUM: return "MEDIUM";
         case gemini::ThinkingLevel::HIGH: return "HIGH";
-        default: throw std::logic_error("invalid gemini::ThinkingLevel");
+        default: throw AnnotatedException{"invalid gemini::ThinkingLevel"};
     }
 }
 
@@ -579,7 +578,7 @@ constexpr std::string_view to_string_view(gemini::ToolMode val) {
         case gemini::ToolMode::ANY: return "ANY";
         case gemini::ToolMode::NONE: return "NONE";
         case gemini::ToolMode::VALIDATED: return "VALIDATED";
-        default: throw std::logic_error("invalid gemini::ToolMode");
+        default: throw AnnotatedException{"invalid gemini::ToolMode"};
     }
 }
 
@@ -591,7 +590,7 @@ constexpr std::string_view to_string_view(gemini::UrlRetrievalStatus val) {
         case gemini::UrlRetrievalStatus::URL_RETRIEVAL_STATUS_ERROR: return "URL_RETRIEVAL_STATUS_ERROR";
         case gemini::UrlRetrievalStatus::URL_RETRIEVAL_STATUS_PAYWALL: return "URL_RETRIEVAL_STATUS_PAYWALL";
         case gemini::UrlRetrievalStatus::URL_RETRIEVAL_STATUS_UNSAFE: return "URL_RETRIEVAL_STATUS_UNSAFE";
-        default: throw std::logic_error("invalid gemini::UrlRetrievalStatus");
+        default: throw AnnotatedException{"invalid gemini::UrlRetrievalStatus"};
     }
 }
 

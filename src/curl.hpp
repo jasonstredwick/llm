@@ -1,14 +1,13 @@
 #pragma once
 
-
 #include "../interface/clients/policy.hpp"
+#include "../interface/core/error.hpp"
 #include "http.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <span>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -125,7 +124,7 @@ private:
     void Fail(const std::string message, bool should_raise = false) {
         response.state = Response::State::FAILED;
         response.error_message = message;
-        if (should_raise) { throw std::runtime_error(response.error_message); }
+        if (should_raise) { throw AnnotatedException{response.error_message}; }
     }
 
     // Callback Handlers

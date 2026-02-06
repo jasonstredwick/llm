@@ -1,4 +1,5 @@
 #include "../../../interface/protocols/gemini/generate_content.hpp"
+#include "../../../interface//core/error.hpp"
 #include "base.hpp"
 #include "../../curl.hpp"
 
@@ -248,7 +249,7 @@ gemini::GroundingChunk::ChunkType Parse<gemini::GroundingChunk::ChunkType>(const
     if (auto r = ExtractForVariant<"web">(obj); r.has_value()) {
         return T{jai::llm::Parse<gemini::GroundingChunk::Web>(*r)};
     }
-    throw std::logic_error{"gemini::GroundingChunk::ChunkType variant unsatisfied"};
+    throw AnnotatedException{"gemini::GroundingChunk::ChunkType variant unsatisfied"};
 }
 
 
@@ -263,7 +264,7 @@ gemini::ResponseContent::ResponsePart::ResponsePartData
     if (auto r = ExtractForVariant<"executableCode">(obj); r.has_value()) { return T{Parse<gemini::ExecutableCode>(*r)}; }
     if (auto r = ExtractForVariant<"fileData"      >(obj); r.has_value()) { return T{Parse<gemini::FileData>(*r)}; }
     if (auto r = ExtractForVariant<"functionCall"  >(obj); r.has_value()) { return T{Parse<gemini::FunctionCall>(*r)}; }
-    throw std::logic_error{"gemini::ResponseContent::ResponsePart::ResponsePartData variant unsatisfied"};
+    throw AnnotatedException{"gemini::ResponseContent::ResponsePart::ResponsePartData variant unsatisfied"};
 }
 
 
@@ -280,7 +281,7 @@ namespace jai::llm::gemini {
 
 Response Deserialize(const curl::Response& response) {
     if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
-        throw std::runtime_error("Simdjson padding check failed");
+        throw AnnotatedException{"Simdjson padding check failed"};
     }
 
     static thread_local simdjson::dom::parser parser{};

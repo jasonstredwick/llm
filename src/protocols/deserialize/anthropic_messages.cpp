@@ -1,4 +1,5 @@
 #include "../../../interface/protocols/anthropic/messages.hpp"
+#include "../../../interface//core/error.hpp"
 #include "base.hpp"
 #include "../../curl.hpp"
 
@@ -160,7 +161,8 @@ anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::elem
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<anthropic::CitationKinds>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected anthropic::TextCitation type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected anthropic::TextCitation type: "} +
+                                 std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -175,7 +177,7 @@ anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::elem
     case anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION:
         return T{Parse<anthropic::CitationsWebSearchResultLocation>(src)};
     default:
-        throw std::logic_error{"anthropic::TextCitation variant unsatisfied"};
+        throw AnnotatedException{"anthropic::TextCitation variant unsatisfied"};
     }
 }
 
@@ -186,7 +188,8 @@ anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const sim
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = jai::llm::from_string_view<anthropic::ResponseContentBlockKinds>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected anthropic::ResponseContentBlockKinds type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected anthropic::ResponseContentBlockKinds type: "} +
+                                 std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -203,7 +206,7 @@ anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const sim
     case anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT:
         return T{Parse<anthropic::WebSearchToolResultBlock>(src)};
     default:
-        throw std::logic_error{"anthropic::ResponseContentBlock variant unsatisfied"};
+        throw AnnotatedException{"anthropic::ResponseContentBlock variant unsatisfied"};
     }
 }
 
@@ -221,7 +224,7 @@ anthropic::WebSearchToolResultBlock::Content
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = jai::llm::from_string_view<anthropic::WebSearchToolResultErrorType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected anthropic::WebSearchToolResultBlock::Content type: " +
+        throw AnnotatedException{std::string{"Unexpected anthropic::WebSearchToolResultBlock::Content type: "} +
                                  std::string{type_sv}};
     }
 
@@ -229,7 +232,7 @@ anthropic::WebSearchToolResultBlock::Content
     case anthropic::WebSearchToolResultErrorType::TOOL_RESULT_ERROR:
         return T{Parse<anthropic::WebSearchToolResultBlock::WebSearchToolResultError>(src)};
     default:
-        throw std::logic_error{"anthropic::WebSearchToolResultErrorType variant unsatisfied"};
+        throw AnnotatedException{"anthropic::WebSearchToolResultErrorType variant unsatisfied"};
     }
 }
 
@@ -250,7 +253,7 @@ namespace jai::llm::anthropic {
 
 Response Deserialize(const curl::Response& response) {
     if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
-        throw std::runtime_error("Simdjson padding check failed");
+        throw AnnotatedException{"Simdjson padding check failed"};
     }
 
     static thread_local simdjson::dom::parser parser{};

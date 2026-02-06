@@ -1,8 +1,7 @@
 #pragma once
 
-#include <stdexcept>
-
 #include "../../core/strings_base.hpp"
+#include "../../core/error.hpp"
 #include "responses_enums.hpp"
 
 
@@ -1033,7 +1032,7 @@ constexpr std::string_view to_string_view(openai::AnnotationType val) {
         case openai::AnnotationType::URL_CITATION: return "url_citation";
         case openai::AnnotationType::CONTAINER_FILE_CITATION: return "container_file_citation";
         case openai::AnnotationType::FILE_PATH: return "file_path";
-        default: throw std::logic_error("invalid openai::AnnotationType");
+        default: throw AnnotatedException{"invalid openai::AnnotationType"};
     }
 }
 
@@ -1041,7 +1040,7 @@ constexpr std::string_view to_string_view(openai::ApplyPatchCallOutputStatus val
     switch (val) {
         case openai::ApplyPatchCallOutputStatus::COMPLETED: return "completed";
         case openai::ApplyPatchCallOutputStatus::FAILED: return "failed";
-        default: throw std::logic_error("invalid openai::ApplyPatchCallOutputStatus");
+        default: throw AnnotatedException{"invalid openai::ApplyPatchCallOutputStatus"};
     }
 }
 
@@ -1049,7 +1048,7 @@ constexpr std::string_view to_string_view(openai::ApplyPatchCallStatus val) {
     switch (val) {
         case openai::ApplyPatchCallStatus::IN_PROGRESS: return "in_progress";
         case openai::ApplyPatchCallStatus::COMPLETED: return "completed";
-        default: throw std::logic_error("invalid openai::ApplyPatchCallStatus");
+        default: throw AnnotatedException{"invalid openai::ApplyPatchCallStatus"};
     }
 }
 
@@ -1058,7 +1057,7 @@ constexpr std::string_view to_string_view(openai::ApplyPatchOperationType val) {
         case openai::ApplyPatchOperationType::CREATE_FILE: return "create_file";
         case openai::ApplyPatchOperationType::DELETE_FILE: return "delete_file";
         case openai::ApplyPatchOperationType::UPDATE_FILE: return "update_file";
-        default: throw std::logic_error("invalid openai::ApplyPatchOperationType");
+        default: throw AnnotatedException{"invalid openai::ApplyPatchOperationType"};
     }
 }
 
@@ -1069,7 +1068,7 @@ constexpr std::string_view to_string_view(openai::CallStatus val) {
         case openai::CallStatus::INCOMPLETE: return "incomplete";
         case openai::CallStatus::CALLING: return "calling";
         case openai::CallStatus::FAILED: return "failed";
-        default: throw std::logic_error("invalid openai::CallStatus");
+        default: throw AnnotatedException{"invalid openai::CallStatus"};
     }
 }
 
@@ -1077,7 +1076,7 @@ constexpr std::string_view to_string_view(openai::CodeInterpreterOutputType val)
     switch (val) {
         case openai::CodeInterpreterOutputType::LOGS: return "logs";
         case openai::CodeInterpreterOutputType::IMAGE: return "image";
-        default: throw std::logic_error("invalid openai::CodeInterpreterOutputType");
+        default: throw AnnotatedException{"invalid openai::CodeInterpreterOutputType"};
     }
 }
 
@@ -1088,7 +1087,7 @@ constexpr std::string_view to_string_view(openai::CodeInterpreterStatus val) {
         case openai::CodeInterpreterStatus::INCOMPLETE: return "incomplete";
         case openai::CodeInterpreterStatus::INTERPRETING: return "interpreting";
         case openai::CodeInterpreterStatus::FAILED: return "failed";
-        default: throw std::logic_error("invalid openai::CodeInterpreterStatus");
+        default: throw AnnotatedException{"invalid openai::CodeInterpreterStatus"};
     }
 }
 
@@ -1103,14 +1102,14 @@ constexpr std::string_view to_string_view(openai::ComputerActionType val) {
         case openai::ComputerActionType::SCROLL: return "scroll";
         case openai::ComputerActionType::TYPE: return "type";
         case openai::ComputerActionType::WAIT: return "wait";
-        default: throw std::logic_error("invalid openai::ComputerActionType");
+        default: throw AnnotatedException{"invalid openai::ComputerActionType"};
     }
 }
 
 constexpr std::string_view to_string_view(openai::ComputerCallOutputType val) {
     switch (val) {
         case openai::ComputerCallOutputType::COMPUTER_SCREENSHOT: return "computer_screenshot";
-        default: throw std::logic_error("invalid openai::ComputerCallOutputType");
+        default: throw AnnotatedException{"invalid openai::ComputerCallOutputType"};
     }
 }
 
@@ -1124,7 +1123,7 @@ constexpr std::string_view to_string_view(openai::ConnectId val) {
         case openai::ConnectId::OUTLOOK_CALENDAR: return "outlook_calendar";
         case openai::ConnectId::OUTLOOK_EMAIL: return "outlook_email";
         case openai::ConnectId::SHAREPOINT: return "sharepoint";
-        default: throw std::logic_error("invalid openai::ConnectId");
+        default: throw AnnotatedException{"invalid openai::ConnectId"};
     }
 }
 
@@ -1132,7 +1131,7 @@ constexpr std::string_view to_string_view(openai::CustomToolFormatType val) {
     switch (val) {
         case openai::CustomToolFormatType::TEXT: return "text";
         case openai::CustomToolFormatType::GRAMMAR: return "grammar";
-        default: throw std::logic_error("invalid openai::CustomToolFormatType");
+        default: throw AnnotatedException{"invalid openai::CustomToolFormatType"};
     }
 }
 
@@ -1141,7 +1140,7 @@ constexpr std::string_view to_string_view(openai::Detail val) {
         case openai::Detail::HIGH: return "high";
         case openai::Detail::LOW: return "low";
         case openai::Detail::AUTO: return "auto";
-        default: throw std::logic_error("invalid openai::Detail");
+        default: throw AnnotatedException{"invalid openai::Detail"};
     }
 }
 
@@ -1151,7 +1150,7 @@ constexpr std::string_view to_string_view(openai::FileSearchStatus val) {
         case openai::FileSearchStatus::SEARCHING: return "searching";
         case openai::FileSearchStatus::INCOMPLETE: return "incomplete";
         case openai::FileSearchStatus::FAILED: return "failed";
-        default: throw std::logic_error("invalid openai::FileSearchStatus");
+        default: throw AnnotatedException{"invalid openai::FileSearchStatus"};
     }
 }
 
@@ -1159,7 +1158,7 @@ constexpr std::string_view to_string_view(openai::FilterCompoundType val) {
     switch (val) {
         case openai::FilterCompoundType::AND: return "and";
         case openai::FilterCompoundType::OR: return "or";
-        default: throw std::logic_error("invalid openai::FilterCompoundType");
+        default: throw AnnotatedException{"invalid openai::FilterCompoundType"};
     }
 }
 
@@ -1173,7 +1172,7 @@ constexpr std::string_view to_string_view(openai::FilterOperator val) {
         case openai::FilterOperator::LTE: return "lte";
         case openai::FilterOperator::IN: return "in";
         case openai::FilterOperator::NIN: return "nin";
-        default: throw std::logic_error("invalid openai::FilterOperator");
+        default: throw AnnotatedException{"invalid openai::FilterOperator"};
     }
 }
 
@@ -1182,7 +1181,7 @@ constexpr std::string_view to_string_view(openai::FunctionCallStatus val) {
         case openai::FunctionCallStatus::IN_PROGRESS: return "in_progress";
         case openai::FunctionCallStatus::COMPLETED: return "completed";
         case openai::FunctionCallStatus::INCOMPLETE: return "incomplete";
-        default: throw std::logic_error("invalid openai::FunctionCallStatus");
+        default: throw AnnotatedException{"invalid openai::FunctionCallStatus"};
     }
 }
 
@@ -1190,7 +1189,7 @@ constexpr std::string_view to_string_view(openai::GrammarSyntax val) {
     switch (val) {
         case openai::GrammarSyntax::LARK: return "lark";
         case openai::GrammarSyntax::REGEX: return "regex";
-        default: throw std::logic_error("invalid openai::GrammarSyntax");
+        default: throw AnnotatedException{"invalid openai::GrammarSyntax"};
     }
 }
 
@@ -1201,7 +1200,7 @@ constexpr std::string_view to_string_view(openai::HostedToolMode val) {
         case openai::HostedToolMode::COMPUTER_USE_PREVIEW: return "computer_use_preview";
         case openai::HostedToolMode::CODE_INTERPRETER: return "code_interpreter";
         case openai::HostedToolMode::IMAGE_GENERATION: return "image_generation";
-        default: throw std::logic_error("invalid openai::HostedToolMode");
+        default: throw AnnotatedException{"invalid openai::HostedToolMode"};
     }
 }
 
@@ -1210,7 +1209,7 @@ constexpr std::string_view to_string_view(openai::ImageGenerationBackground val)
         case openai::ImageGenerationBackground::TRANSPARENT: return "transparent";
         case openai::ImageGenerationBackground::OPAQUE: return "opaque";
         case openai::ImageGenerationBackground::AUTO: return "auto";
-        default: throw std::logic_error("invalid openai::ImageGenerationBackground");
+        default: throw AnnotatedException{"invalid openai::ImageGenerationBackground"};
     }
 }
 
@@ -1218,7 +1217,7 @@ constexpr std::string_view to_string_view(openai::ImageGenerationFidelity val) {
     switch (val) {
         case openai::ImageGenerationFidelity::HIGH: return "high";
         case openai::ImageGenerationFidelity::LOW: return "low";
-        default: throw std::logic_error("invalid openai::ImageGenerationFidelity");
+        default: throw AnnotatedException{"invalid openai::ImageGenerationFidelity"};
     }
 }
 
@@ -1227,7 +1226,7 @@ constexpr std::string_view to_string_view(openai::ImageGenerationFormat val) {
         case openai::ImageGenerationFormat::PNG: return "png";
         case openai::ImageGenerationFormat::WEBP: return "webp";
         case openai::ImageGenerationFormat::JPEG: return "jpeg";
-        default: throw std::logic_error("invalid openai::ImageGenerationFormat");
+        default: throw AnnotatedException{"invalid openai::ImageGenerationFormat"};
     }
 }
 
@@ -1237,7 +1236,7 @@ constexpr std::string_view to_string_view(openai::ImageGenerationQuality val) {
         case openai::ImageGenerationQuality::MEDIUM: return "medium";
         case openai::ImageGenerationQuality::HIGH: return "high";
         case openai::ImageGenerationQuality::AUTO: return "auto";
-        default: throw std::logic_error("invalid openai::ImageGenerationQuality");
+        default: throw AnnotatedException{"invalid openai::ImageGenerationQuality"};
     }
 }
 
@@ -1247,7 +1246,7 @@ constexpr std::string_view to_string_view(openai::ImageGenerationSize val) {
         case openai::ImageGenerationSize::SIZE_1024_1536: return "1024x1536";
         case openai::ImageGenerationSize::SIZE_1536_1024: return "1536x1024";
         case openai::ImageGenerationSize::AUTO: return "auto";
-        default: throw std::logic_error("invalid openai::ImageGenerationSize");
+        default: throw AnnotatedException{"invalid openai::ImageGenerationSize"};
     }
 }
 
@@ -1260,7 +1259,7 @@ constexpr std::string_view to_string_view(openai::IncludeOutputData val) {
         case openai::IncludeOutputData::MESSAGE_OUTPUT_TEXT_LOGPROBS: return "message.output_text.logprobs";
         case openai::IncludeOutputData::REASONING_ENCRYPTED_CONTENT: return "reasoning.encrypted_content";
         case openai::IncludeOutputData::WEB_SEARCH_CALL_ACTION_SOURCES: return "web_search_call.action.sources";
-        default: throw std::logic_error("invalid openai::IncludeOutputData");
+        default: throw AnnotatedException{"invalid openai::IncludeOutputData"};
     }
 }
 
@@ -1268,7 +1267,7 @@ constexpr std::string_view to_string_view(openai::IncompleteReason val) {
     switch (val) {
         case openai::IncompleteReason::MAX_OUTPUT_TOKENS: return "max_output_tokens";
         case openai::IncompleteReason::CONTENT_FILTER: return "content_filter";
-        default: throw std::logic_error("invalid openai::IncompleteReason");
+        default: throw AnnotatedException{"invalid openai::IncompleteReason"};
     }
 }
 
@@ -1307,7 +1306,7 @@ constexpr std::string_view to_string_view(openai::InputItemType val) {
         case openai::InputItemType::CUSTOM_TOOL_CALL: return "custom_tool_call";
         case openai::InputItemType::CUSTOM_TOOL_CALL_OUTPUT: return "custom_tool_call_output";
         case openai::InputItemType::ITEM_REFERENCE: return "item_reference";
-        default: throw std::logic_error("invalid openai::InputItemType");
+        default: throw AnnotatedException{"invalid openai::InputItemType"};
     }
 }
 
@@ -1316,21 +1315,21 @@ constexpr std::string_view to_string_view(openai::ItemStatus val) {
         case openai::ItemStatus::IN_PROGRESS: return "in_progress";
         case openai::ItemStatus::COMPLETED: return "completed";
         case openai::ItemStatus::INCOMPLETE: return "incomplete";
-        default: throw std::logic_error("invalid openai::ItemStatus");
+        default: throw AnnotatedException{"invalid openai::ItemStatus"};
     }
 }
 
 constexpr std::string_view to_string_view(openai::LocalShellActionType val) {
     switch (val) {
         case openai::LocalShellActionType::EXEC: return "exec";
-        default: throw std::logic_error("invalid openai::LocalShellActionType");
+        default: throw AnnotatedException{"invalid openai::LocalShellActionType"};
     }
 }
 
 constexpr std::string_view to_string_view(openai::LocationType val) {
     switch (val) {
         case openai::LocationType::APPROXIMATE: return "approximate";
-        default: throw std::logic_error("invalid openai::LocationType");
+        default: throw AnnotatedException{"invalid openai::LocationType"};
     }
 }
 
@@ -1338,7 +1337,7 @@ constexpr std::string_view to_string_view(openai::MCPApprovalSetting val) {
     switch (val) {
         case openai::MCPApprovalSetting::ALWAYS: return "always";
         case openai::MCPApprovalSetting::NEVER: return "never";
-        default: throw std::logic_error("invalid openai::MCPApprovalSetting");
+        default: throw AnnotatedException{"invalid openai::MCPApprovalSetting"};
     }
 }
 
@@ -1349,7 +1348,7 @@ constexpr std::string_view to_string_view(openai::MouseButton val) {
         case openai::MouseButton::WHEEL: return "wheel";
         case openai::MouseButton::BACK: return "back";
         case openai::MouseButton::FORWARD: return "forward";
-        default: throw std::logic_error("invalid openai::MouseButton");
+        default: throw AnnotatedException{"invalid openai::MouseButton"};
     }
 }
 
@@ -1382,7 +1381,7 @@ constexpr std::string_view to_string_view(openai::OutputMessageContentType val) 
     switch (val) {
         case openai::OutputMessageContentType::OUTPUT_TEXT: return "output_text";
         case openai::OutputMessageContentType::REFUSAL: return "refusal";
-        default: throw std::logic_error("invalid openai::OutputMessageContentType");
+        default: throw AnnotatedException{"invalid openai::OutputMessageContentType"};
     }
 }
 
@@ -1391,14 +1390,14 @@ constexpr std::string_view to_string_view(openai::PendingSafetyCheckStatus val) 
         case openai::PendingSafetyCheckStatus::IN_PROGRESS: return "in_progress";
         case openai::PendingSafetyCheckStatus::COMPLETED: return "completed";
         case openai::PendingSafetyCheckStatus::INCOMPLETE: return "incomplete";
-        default: throw std::logic_error("invalid openai::PendingSafetyCheckStatus");
+        default: throw AnnotatedException{"invalid openai::PendingSafetyCheckStatus"};
     }
 }
 
 constexpr std::string_view to_string_view(openai::PromptCacheRetention val) {
     switch (val) {
         case openai::PromptCacheRetention::HOURS_24: return "24h";
-        default: throw std::logic_error("invalid openai::PromptCacheRetention");
+        default: throw AnnotatedException{"invalid openai::PromptCacheRetention"};
     }
 }
 
@@ -1410,7 +1409,7 @@ constexpr std::string_view to_string_view(openai::ReasoningEffort val) {
         case openai::ReasoningEffort::MEDIUM: return "medium";
         case openai::ReasoningEffort::HIGH: return "high";
         case openai::ReasoningEffort::XHIGH: return "xhigh";
-        default: throw std::logic_error("invalid openai::ReasoningEffort");
+        default: throw AnnotatedException{"invalid openai::ReasoningEffort"};
     }
 }
 
@@ -1418,7 +1417,7 @@ constexpr std::string_view to_string_view(openai::ReasoningItemContentType val) 
     switch (val) {
         case openai::ReasoningItemContentType::SUMMARY_TEXT: return "summary_text";
         case openai::ReasoningItemContentType::REASONING_TEXT: return "reasoning_text";
-        default: throw std::logic_error("invalid openai::ReasoningItemContentType");
+        default: throw AnnotatedException{"invalid openai::ReasoningItemContentType"};
     }
 }
 
@@ -1427,7 +1426,7 @@ constexpr std::string_view to_string_view(openai::ReasoningStatus val) {
         case openai::ReasoningStatus::IN_PROGRESS: return "in_progress";
         case openai::ReasoningStatus::COMPLETED: return "completed";
         case openai::ReasoningStatus::INCOMPLETE: return "incomplete";
-        default: throw std::logic_error("invalid openai::ReasoningStatus");
+        default: throw AnnotatedException{"invalid openai::ReasoningStatus"};
     }
 }
 
@@ -1436,7 +1435,7 @@ constexpr std::string_view to_string_view(openai::ReasoningSummary val) {
         case openai::ReasoningSummary::AUTO: return "auto";
         case openai::ReasoningSummary::CONCISE: return "concise";
         case openai::ReasoningSummary::DETAILED: return "detailed";
-        default: throw std::logic_error("invalid openai::ReasoningSummary");
+        default: throw AnnotatedException{"invalid openai::ReasoningSummary"};
     }
 }
 
@@ -1444,7 +1443,7 @@ constexpr std::string_view to_string_view(openai::ResponseFormatType val) {
     switch (val) {
         case openai::ResponseFormatType::TEXT: return "text";
         case openai::ResponseFormatType::JSON_SCHEMA: return "json_schema";
-        default: throw std::logic_error("invalid openai::ResponseFormatType");
+        default: throw AnnotatedException{"invalid openai::ResponseFormatType"};
     }
 }
 
@@ -1456,14 +1455,14 @@ constexpr std::string_view to_string_view(openai::ResponseStatus val) {
         case openai::ResponseStatus::CANCELLED: return "cancelled";
         case openai::ResponseStatus::QUEUED: return "queued";
         case openai::ResponseStatus::INCOMPLETE: return "incomplete";
-        default: throw std::logic_error("invalid openai::ResponseStatus");
+        default: throw AnnotatedException{"invalid openai::ResponseStatus"};
     }
 }
 
 constexpr std::string_view to_string_view(openai::RoleAssistant val) {
     switch (val) {
         case openai::RoleAssistant::ASSISTANT: return "assistant";
-        default: throw std::logic_error("invalid openai::RoleAssistant");
+        default: throw AnnotatedException{"invalid openai::RoleAssistant"};
     }
 }
 
@@ -1473,7 +1472,7 @@ constexpr std::string_view to_string_view(openai::RoleInputMessage val) {
         case openai::RoleInputMessage::ASSISTANT: return "assistant";
         case openai::RoleInputMessage::SYSTEM: return "system";
         case openai::RoleInputMessage::DEVELOPER: return "developer";
-        default: throw std::logic_error("invalid openai::RoleInputMessage");
+        default: throw AnnotatedException{"invalid openai::RoleInputMessage"};
     }
 }
 
@@ -1482,7 +1481,7 @@ constexpr std::string_view to_string_view(openai::RoleUser val) {
         case openai::RoleUser::USER: return "user";
         case openai::RoleUser::SYSTEM: return "system";
         case openai::RoleUser::DEVELOPER: return "developer";
-        default: throw std::logic_error("invalid openai::RoleUser");
+        default: throw AnnotatedException{"invalid openai::RoleUser"};
     }
 }
 
@@ -1491,7 +1490,7 @@ constexpr std::string_view to_string_view(openai::SearchContextSize val) {
         case openai::SearchContextSize::LOW: return "low";
         case openai::SearchContextSize::MEDIUM: return "medium";
         case openai::SearchContextSize::HIGH: return "high";
-        default: throw std::logic_error("invalid openai::SearchContextSize");
+        default: throw AnnotatedException{"invalid openai::SearchContextSize"};
     }
 }
 
@@ -1501,7 +1500,7 @@ constexpr std::string_view to_string_view(openai::ServiceTier val) {
         case openai::ServiceTier::DEFAULT: return "default";
         case openai::ServiceTier::FLEX: return "flex";
         case openai::ServiceTier::PRIORITY: return "priority";
-        default: throw std::logic_error("invalid openai::ServiceTier");
+        default: throw AnnotatedException{"invalid openai::ServiceTier"};
     }
 }
 
@@ -1509,7 +1508,7 @@ constexpr std::string_view to_string_view(openai::ShellCallOutcomeType val) {
     switch (val) {
         case openai::ShellCallOutcomeType::EXIT: return "exit";
         case openai::ShellCallOutcomeType::TIMEOUT: return "timeout";
-        default: throw std::logic_error("invalid openai::ShellCallOutcomeType");
+        default: throw AnnotatedException{"invalid openai::ShellCallOutcomeType"};
     }
 }
 
@@ -1518,7 +1517,7 @@ constexpr std::string_view to_string_view(openai::ToolChoiceMode val) {
         case openai::ToolChoiceMode::NONE: return "none";
         case openai::ToolChoiceMode::AUTO: return "auto";
         case openai::ToolChoiceMode::REQUIRED: return "required";
-        default: throw std::logic_error("invalid openai::ToolChoiceMode");
+        default: throw AnnotatedException{"invalid openai::ToolChoiceMode"};
     }
 }
 
@@ -1526,7 +1525,7 @@ constexpr std::string_view to_string_view(openai::ToolChoiceModeNotNone val) {
     switch (val) {
         case openai::ToolChoiceModeNotNone::AUTO: return "auto";
         case openai::ToolChoiceModeNotNone::REQUIRED: return "required";
-        default: throw std::logic_error("invalid openai::ToolChoiceModeNotNone");
+        default: throw AnnotatedException{"invalid openai::ToolChoiceModeNotNone"};
     }
 }
 
@@ -1538,7 +1537,7 @@ constexpr std::string_view to_string_view(openai::ToolChoiceType val) {
         case openai::ToolChoiceType::CUSTOM: return "custom";
         case openai::ToolChoiceType::APPLY_PATCH: return "apply_patch";
         case openai::ToolChoiceType::SHELL: return "shell";
-        default: throw std::logic_error("invalid openai::ToolChoiceType");
+        default: throw AnnotatedException{"invalid openai::ToolChoiceType"};
     }
 }
 
@@ -1556,7 +1555,7 @@ constexpr std::string_view to_string_view(openai::ToolType val) {
         case openai::ToolType::CUSTOM: return "custom";
         case openai::ToolType::WEB_SEARCH_PREVIEW: return "web_search_preview";
         case openai::ToolType::APPLY_PATCH: return "apply_patch";
-        default: throw std::logic_error("invalid openai::ToolType");
+        default: throw AnnotatedException{"invalid openai::ToolType"};
     }
 }
 
@@ -1564,7 +1563,7 @@ constexpr std::string_view to_string_view(openai::TruncationStrategy val) {
     switch (val) {
         case openai::TruncationStrategy::AUTO: return "auto";
         case openai::TruncationStrategy::DISABLED: return "disabled";
-        default: throw std::logic_error("invalid openai::TruncationStrategy");
+        default: throw AnnotatedException{"invalid openai::TruncationStrategy"};
     }
 }
 
@@ -1573,7 +1572,7 @@ constexpr std::string_view to_string_view(openai::Verbosity val) {
         case openai::Verbosity::LOW: return "low";
         case openai::Verbosity::MEDIUM: return "medium";
         case openai::Verbosity::HIGH: return "high";
-        default: throw std::logic_error("invalid openai::Verbosity");
+        default: throw AnnotatedException{"invalid openai::Verbosity"};
     }
 }
 
@@ -1582,7 +1581,7 @@ constexpr std::string_view to_string_view(openai::WebSearchActionType val) {
         case openai::WebSearchActionType::SEARCH: return "search";
         case openai::WebSearchActionType::OPEN_PAGE: return "open_page";
         case openai::WebSearchActionType::FIND: return "find";
-        default: throw std::logic_error("invalid openai::WebSearchActionType");
+        default: throw AnnotatedException{"invalid openai::WebSearchActionType"};
     }
 }
 
@@ -1590,7 +1589,7 @@ constexpr std::string_view to_string_view(openai::WebSearchPreviewToolKind val) 
     switch (val) {
         case openai::WebSearchPreviewToolKind::WEB_SEARCH_PREVIEW: return "web_search_preview";
         case openai::WebSearchPreviewToolKind::WEB_SEARCH_PREVIEW_2025_03_11: return "web_search_preview_2025_03_11";
-        default: throw std::logic_error("invalid openai::WebSearchPreviewToolKind");
+        default: throw AnnotatedException{"invalid openai::WebSearchPreviewToolKind"};
     }
 }
 
@@ -1598,7 +1597,7 @@ constexpr std::string_view to_string_view(openai::WebSearchPreviewToolType val) 
     switch (val) {
         case openai::WebSearchPreviewToolType::WEB_SEARCH_PREVIEW: return "web_search_preview";
         case openai::WebSearchPreviewToolType::WEB_SEARCH_PREVIEW_2025_03_11: return "web_search_preview_2025_03_11";
-        default: throw std::logic_error("invalid openai::WebSearchPreviewToolType");
+        default: throw AnnotatedException{"invalid openai::WebSearchPreviewToolType"};
     }
 }
 
@@ -1607,7 +1606,7 @@ constexpr std::string_view to_string_view(openai::WebSearchStatus val) {
         case openai::WebSearchStatus::IN_PROGRESS: return "in_progress";
         case openai::WebSearchStatus::COMPLETED: return "completed";
         case openai::WebSearchStatus::INCOMPLETE: return "incomplete";
-        default: throw std::logic_error("invalid openai::WebSearchStatus");
+        default: throw AnnotatedException{"invalid openai::WebSearchStatus"};
     }
 }
 
@@ -1615,7 +1614,7 @@ constexpr std::string_view to_string_view(openai::WebSearchToolKind val) {
     switch (val) {
         case openai::WebSearchToolKind::WEB_SEARCH: return "web_search";
         case openai::WebSearchToolKind::WEB_SEARCH_2025_08_26: return "web_search_2025_08_26";
-        default: throw std::logic_error("invalid openai::WebSearchToolKind");
+        default: throw AnnotatedException{"invalid openai::WebSearchToolKind"};
     }
 }
 
@@ -1623,7 +1622,7 @@ constexpr std::string_view to_string_view(openai::WebSearchToolType val) {
     switch (val) {
         case openai::WebSearchToolType::WEB_SEARCH: return "web_search";
         case openai::WebSearchToolType::WEB_SEARCH_2025_08_26: return "web_search_2025_08_26";
-        default: throw std::logic_error("invalid openai::WebSearchToolType");
+        default: throw AnnotatedException{"invalid openai::WebSearchToolType"};
     }
 }
 

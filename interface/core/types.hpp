@@ -7,11 +7,12 @@
 #include <map>
 #include <memory>
 #include <spanstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <variant>
 #include <vector>
+
+#include "error.hpp"
 
 
 namespace jai::llm {
@@ -149,17 +150,17 @@ public:
 private:
     static void VerifyWireSafe(std::string_view sv) {
         if (sv.empty()) {
-            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: empty string provided."};
+            throw AnnotatedException{"EncodedUrl must already be ASCII-encoded: empty string provided."};
         } else if (!std::ranges::all_of(sv, [](auto c) { return static_cast<unsigned char>(c) <= 127; })) {
-            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains non-ASCII characters."};
+            throw AnnotatedException{"EncodedUrl must already be ASCII-encoded: contains non-ASCII characters."};
         } else if (sv.find('\0') != std::string_view::npos) {
-            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains NUL (\\0) character"};
+            throw AnnotatedException{"EncodedUrl must already be ASCII-encoded: contains NUL (\\0) character"};
         } else if (sv.find('\n') != std::string_view::npos) {
-            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains newline (\\n) character"};
+            throw AnnotatedException{"EncodedUrl must already be ASCII-encoded: contains newline (\\n) character"};
         } else if (sv.find('\r') != std::string_view::npos) {
-            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains carriage return (\\r) character"};
+            throw AnnotatedException{"EncodedUrl must already be ASCII-encoded: contains carriage return (\\r) character"};
         } else if (sv.find(' ') != std::string_view::npos) {
-            throw std::invalid_argument{"EncodedUrl must already be ASCII-encoded: contains space character"};
+            throw AnnotatedException{"EncodedUrl must already be ASCII-encoded: contains space character"};
         }
     }
 };
@@ -231,7 +232,7 @@ public:
 
 private:
     void Validate() {
-        if (!IsValid(value)) { throw std::out_of_range{"IntN provided invalid value."}; }
+        if (!IsValid(value)) { throw AnnotatedException{"IntN provided invalid value."}; }
     }
 };
 
@@ -266,7 +267,7 @@ public:
     const std::string& Value() const { return name; }
 
     void Validate() {
-        if (!Name64::IsValid(name)) { throw std::runtime_error{"Name not valid: a-zA-Z_-"}; }
+        if (!Name64::IsValid(name)) { throw AnnotatedException{"Name not valid: a-zA-Z_-"}; }
     }
 };
 
@@ -293,7 +294,9 @@ public:
     std::string_view   Get()   const { return name; }
     const std::string& Value() const { return name; }
 
-    void Validate() { if (!NameLen::IsValid(name)) { throw std::runtime_error{"NameLen not valid"}; } }
+    void Validate() {
+        if (!NameLen::IsValid(name)) { throw AnnotatedException{"NameLen not valid"}; }
+    }
 };
 
 
@@ -332,7 +335,7 @@ struct RFC3339Timestamp : public Timestamp {
         std::ispanstream iss{std::span<const char>{sv.data(), sv.size()}};
         time_point tp{};
         iss >> std::chrono::parse("%FT%TZ", tp);
-        if (iss.fail()) { throw std::runtime_error{"Failed to convert string to RFC3339Timestamp."}; }
+        if (iss.fail()) { throw AnnotatedException{"Failed to convert string to RFC3339Timestamp."}; }
         return RFC3339Timestamp{tp};
     }
 };

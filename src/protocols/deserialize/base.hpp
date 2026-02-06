@@ -6,11 +6,11 @@
 #include <limits>
 #include <optional>
 #include <ranges>
-#include <stdexcept>
 #include <vector>
 
 #include <simdjson.h>
 
+#include "../../../interface/core/error.hpp"
 #include "../../../interface/core/types.hpp"
 #include "../../../interface/protocols/anthropic/strings.hpp"
 #include "../../../interface/protocols/gemini/strings.hpp"
@@ -65,7 +65,7 @@ requires (Kind_c<T> && !std::same_as<T, std::byte>)
 T Parse(const simdjson::dom::element& src) {
     auto sv = src.get_string().value();
     auto result = from_string_view<T>(sv);
-    if (!result) { throw std::runtime_error{ std::string{"Invalid Kind: "} + std::string{sv}}; }
+    if (!result) { throw AnnotatedException{ std::string{"Invalid Kind: "} + std::string{sv}}; }
     return *result;
 }
 
@@ -75,7 +75,7 @@ requires (std::is_enum_v<std::remove_cvref_t<T>> && !std::same_as<T, std::byte>)
 T Parse(const simdjson::dom::element& src) {
     auto sv = src.get_string().value();
     auto result = from_string_view<T>(sv);
-    if (!result) { throw std::runtime_error{ std::string{"Invalid enum: "} + std::string{sv}}; }
+    if (!result) { throw AnnotatedException{ std::string{"Invalid enum: "} + std::string{sv}}; }
     return *result;
 }
 
@@ -91,7 +91,7 @@ template <typename T>
 requires Like_c<std::byte, T>
 std::byte Parse(const simdjson::dom::element& src) {
     uint64_t v = src.get_uint64().value();
-    if (v > 0xFF) { throw std::runtime_error{"byte value out of range"}; }
+    if (v > 0xFF) { throw AnnotatedException{"byte value out of range"}; }
     return static_cast<std::byte>(v);
 }
 
@@ -126,7 +126,7 @@ Int64Str Parse(const simdjson::dom::element& src) {
     int64_t value = 0;
     auto [ptr, ec] = std::from_chars(it_begin, it_end, value);
     if (ec != std::errc{}) {
-        throw std::runtime_error{"Failed to parse string; expected number if string form."};
+        throw AnnotatedException{"Failed to parse string; expected number if string form."};
     }
     return Int64Str{value};
 }

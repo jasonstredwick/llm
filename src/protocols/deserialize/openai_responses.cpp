@@ -1,11 +1,11 @@
 #include <map>
 #include <ranges>
-#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
 
 #include "../../../interface/protocols/openai/responses.hpp"
+#include "../../../interface//core/error.hpp"
 #include "base.hpp"
 #include "../../curl.hpp"
 
@@ -78,7 +78,7 @@ openai::ComputerToolActions::All Parse<openai::ComputerToolActions::All>(const s
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ComputerActionType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::ComputerToolActions type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::ComputerToolActions type: "} + std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -91,7 +91,7 @@ openai::ComputerToolActions::All Parse<openai::ComputerToolActions::All>(const s
     case openai::ComputerActionType::SCROLL:       return T{Parse<openai::ComputerToolActions::Scroll>(src)};
     case openai::ComputerActionType::TYPE:         return T{Parse<openai::ComputerToolActions::Type>(src)};
     case openai::ComputerActionType::WAIT:         return T{Parse<openai::ComputerToolActions::Wait>(src)};
-    default: throw std::logic_error{"openai::ComputerToolActions variant unsatisfied"};
+    default: throw AnnotatedException{"openai::ComputerToolActions variant unsatisfied"};
     }
 }
 
@@ -179,13 +179,13 @@ openai::TextConfig::Format Parse<openai::TextConfig::Format>(const simdjson::dom
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ResponseFormatType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::TextConfig::Format type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::TextConfig::Format type: "} + std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::ResponseFormatType::TEXT:        return T{Parse<openai::TextConfig::FormatText>(src)};
     case openai::ResponseFormatType::JSON_SCHEMA: return T{Parse<openai::TextConfig::FormatJsonSchema>(src)};
-    default: throw std::logic_error{"openai::TextConfig::Format variant unsatisfied"};
+    default: throw AnnotatedException{"openai::TextConfig::Format variant unsatisfied"};
     }
 }
 
@@ -266,7 +266,7 @@ openai::response::ContentTypes::OutputText::Annotation
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::AnnotationType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::ContentTypes::OutputText::Annotation type: " +
+        throw AnnotatedException{std::string{"Unexpected openai::response::ContentTypes::OutputText::Annotation type: "} +
                                  std::string{type_sv}};
     }
 
@@ -275,7 +275,7 @@ openai::response::ContentTypes::OutputText::Annotation
     case openai::AnnotationType::URL_CITATION:            return T{Parse<BaseT::UrlCitation>(src)};
     case openai::AnnotationType::CONTAINER_FILE_CITATION: return T{Parse<BaseT::ContainerFileCitation>(src)};
     case openai::AnnotationType::FILE_PATH:               return T{Parse<BaseT::FilePath>(src)};
-    default: throw std::logic_error{"openai::response::ContentTypes::OutputText::Annotation variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::ContentTypes::OutputText::Annotation variant unsatisfied"};
     }
 }
 
@@ -329,14 +329,15 @@ openai::response::WebSearchToolActions::All Parse<openai::response::WebSearchToo
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::WebSearchActionType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::WebSearchToolActions type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::response::WebSearchToolActions type: "} +
+                                 std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::WebSearchActionType::FIND:      return T{Parse<openai::response::WebSearchToolActions::Find>(src)};
     case openai::WebSearchActionType::OPEN_PAGE: return T{Parse<openai::response::WebSearchToolActions::OpenPage>(src)};
     case openai::WebSearchActionType::SEARCH:    return T{Parse<openai::response::WebSearchToolActions::Search>(src)};
-    default: throw std::logic_error{"openai::response::WebSearchToolActions variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::WebSearchToolActions variant unsatisfied"};
     }
 }
 
@@ -351,7 +352,7 @@ openai::response::InputTypes::Message::Content
     using T = openai::response::InputTypes::Message::Content;
     if (src.is_string()) { return T{Parse<std::string>(src)}; }
     else if (src.is_array()) { return T{ParseArrayOf<openai::response::InputTypes::MessageContentUnit>(src)}; }
-    throw std::runtime_error{"Invalid InputTypes::Message::Content"};
+    throw AnnotatedException{"Invalid InputTypes::Message::Content"};
 }
 
 template <>
@@ -363,7 +364,7 @@ openai::response::InputTypes::MessageContentUnit
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ContentType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::InputTypes::MessageContentUnit type: " +
+        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::MessageContentUnit type: "} +
                                  std::string{type_sv}};
     }
 
@@ -371,7 +372,7 @@ openai::response::InputTypes::MessageContentUnit
     case openai::ContentType::INPUT_TEXT:  return T{Parse<openai::response::ContentTypes::Text>(src)};
     case openai::ContentType::INPUT_IMAGE: return T{Parse<openai::response::ContentTypes::Image>(src)};
     case openai::ContentType::INPUT_FILE:  return T{Parse<openai::response::ContentTypes::File>(src)};
-    default: throw std::logic_error{"openai::response::InputTypes::MessageContentUnit variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::InputTypes::MessageContentUnit variant unsatisfied"};
     }
 }
 
@@ -397,14 +398,14 @@ openai::response::InputTypes::Item::OutputMessage::Content
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::OutputMessageContentType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::InputTypes::Item::OutputMessage::Content type: " +
+        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::OutputMessage::Content type: "} +
                                  std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::OutputMessageContentType::OUTPUT_TEXT: return T{Parse<openai::response::ContentTypes::OutputText>(src)};
     case openai::OutputMessageContentType::REFUSAL:     return T{Parse<openai::response::ContentTypes::Refusal>(src)};
-    default: throw std::logic_error{"openai::response::InputTypes::Item::OutputMessage::Content variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::InputTypes::Item::OutputMessage::Content variant unsatisfied"};
     }
 }
 
@@ -433,7 +434,7 @@ std::variant<NameLen<512>, bool, double> Parse<std::variant<NameLen<512>, bool, 
     case simdjson::dom::element_type::INT64:
     case simdjson::dom::element_type::DOUBLE: return T{Parse<double>(src)};
     case simdjson::dom::element_type::STRING: return T{Parse<NameLen<512>>(src)};
-    default: throw std::runtime_error{"Unexpected type in FileSearch result attributes."};
+    default: throw AnnotatedException{"Unexpected type in FileSearch result attributes."};
     }
 }
 
@@ -569,14 +570,14 @@ openai::response::InputTypes::Item::CodeInterpreterToolCall::Output
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::CodeInterpreterOutputType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::InputTypes::Item::CodeInterpreterToolCall::Output type: " +
+        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::CodeInterpreterToolCall::Output type: "} +
                                  std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::CodeInterpreterOutputType::LOGS:  return T{Parse<BaseT::CodeInterpreterOutputLog>(src)};
     case openai::CodeInterpreterOutputType::IMAGE: return T{Parse<BaseT::CodeInterpreterOutputImage>(src)};
-    default: throw std::logic_error{"openai::response::InputTypes::Item::CodeInterpreterToolCall::Output variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::InputTypes::Item::CodeInterpreterToolCall::Output variant unsatisfied"};
     }
 }
 
@@ -646,7 +647,7 @@ openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ShellCallOutcomeType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome type: " +
+        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome type: "} +
                                  std::string{type_sv}};
     }
 
@@ -656,7 +657,7 @@ openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome
     case openai::ShellCallOutcomeType::TIMEOUT:
         return T{Parse<openai::response::InputTypes::Item::ShellToolCallOutput::ShellCallTimeoutOutcome>(src)};
     default:
-        throw std::logic_error{"openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome variant unsatisfied"};
+        throw AnnotatedException{"openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome variant unsatisfied"};
     }
 }
 
@@ -690,7 +691,7 @@ openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ApplyPatchOperationType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation type: " +
+        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation type: "} +
                                  std::string{type_sv}};
     }
 
@@ -698,7 +699,7 @@ openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation
     case openai::ApplyPatchOperationType::CREATE_FILE: return T{Parse<openai::PatchFileOperations::Create>(src)};
     case openai::ApplyPatchOperationType::DELETE_FILE: return T{Parse<openai::PatchFileOperations::Delete>(src)};
     case openai::ApplyPatchOperationType::UPDATE_FILE: return T{Parse<openai::PatchFileOperations::Update>(src)};
-    default: throw std::logic_error{"openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation variant unsatisfied"};
     }
 }
 
@@ -796,14 +797,15 @@ openai::response::Prompt::VariableTypes Parse<openai::response::Prompt::Variable
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ContentType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::Prompt::VariableTypes type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::response::Prompt::VariableTypes type: "} +
+                                 std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::ContentType::INPUT_TEXT:  return T{Parse<openai::response::ContentTypes::Text>(src)};
     case openai::ContentType::INPUT_IMAGE: return T{Parse<openai::response::ContentTypes::Image>(src)};
     case openai::ContentType::INPUT_FILE:  return T{Parse<openai::response::ContentTypes::File>(src)};
-    default: throw std::logic_error{"openai::response::Prompt::VariableTypes variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::Prompt::VariableTypes variant unsatisfied"};
     }
 }
 
@@ -844,7 +846,7 @@ openai::response::ToolTypes::FileSearch::ComparisonFilter::ValueType
         else if (first.is_number()) return T{ParseArrayOf<double>(src)};
         else if (first.is_bool())   return T{ParseArrayOf<bool>(src)};
     }
-    default: throw std::runtime_error{"openai::response::ToolTypes::FileSearch::ComparisonFilter::ValueType variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::ToolTypes::FileSearch::ComparisonFilter::ValueType variant unsatisfied"};
     }
 }
 
@@ -950,7 +952,7 @@ openai::response::ToolTypes::MCP::RequiredApproval
         auto sv = src.get_string().value();
         auto opt = from_string_view<openai::MCPApprovalSetting>(sv);
         if (opt) return T{*opt};
-        throw std::runtime_error{std::string{"openai::MCPApprovalSetting missing type: "} + std::string{sv}};
+        throw AnnotatedException{std::string{"openai::MCPApprovalSetting missing type: "} + std::string{sv}};
     }
     return T{Parse<openai::response::ToolTypes::MCP::ApprovalFilter>(src)};
 }
@@ -1036,13 +1038,14 @@ openai::response::ToolTypes::Custom::Format
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::CustomToolFormatType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::ToolTypes::Custom::Format type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::response::ToolTypes::Custom::Format type: "} +
+                                 std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::CustomToolFormatType::GRAMMAR: return T{Parse<openai::response::ToolTypes::Custom::GrammarFormat>(src)};
     case openai::CustomToolFormatType::TEXT:    return T{Parse<openai::response::ToolTypes::Custom::TextFormat>(src)};
-    default: throw std::logic_error{"openai::response::ToolTypes::Custom::Format variant unsatisfied"};
+    default: throw AnnotatedException{"openai::response::ToolTypes::Custom::Format variant unsatisfied"};
     }
 }
 
@@ -1126,7 +1129,7 @@ openai::response::Item Parse<openai::response::Item>(const simdjson::dom::elemen
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::OutputItemType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::Item type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::response::Item type: "} + std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -1148,7 +1151,7 @@ openai::response::Item Parse<openai::response::Item>(const simdjson::dom::elemen
     case openai::OutputItemType::MCP_APPROVAL_REQUEST:    return T{Parse<openai::response::InputTypes::Item::MCPApprovalRequest>(src)};
     case openai::OutputItemType::MCP_CALL:                return T{Parse<openai::response::InputTypes::Item::MCPToolCall>(src)};
     case openai::OutputItemType::CUSTOM_TOOL_CALL:        return T{Parse<openai::response::InputTypes::Item::CustomToolCall>(src)};
-    default: throw std::runtime_error{"openai::response::Item variant unsatisfied."};
+    default: throw AnnotatedException{"openai::response::Item variant unsatisfied."};
     }
 }
 
@@ -1159,7 +1162,7 @@ openai::response::Tool Parse<openai::response::Tool>(const simdjson::dom::elemen
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ToolType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::Tool type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::response::Tool type: "} + std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -1175,7 +1178,7 @@ openai::response::Tool Parse<openai::response::Tool>(const simdjson::dom::elemen
     case openai::ToolType::CUSTOM:               return T{Parse<openai::response::ToolTypes::Custom>(src)};
     case openai::ToolType::WEB_SEARCH_PREVIEW:   return T{Parse<openai::response::ToolTypes::WebSearchPreview>(src)};
     case openai::ToolType::APPLY_PATCH:          return T{Parse<openai::response::ToolTypes::ApplyPatch>(src)};
-    default: throw std::runtime_error{"openai::response::Tool variant unsatisfied."};
+    default: throw AnnotatedException{"openai::response::Tool variant unsatisfied."};
     }
 }
 
@@ -1186,7 +1189,8 @@ openai::response::OutputItemList Parse<openai::response::OutputItemList>(const s
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::OutputItemType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::response::OutputItemList type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::response::OutputItemList type: "} +
+                                 std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -1210,14 +1214,14 @@ openai::response::ToolChoice Parse<openai::response::ToolChoice>(const simdjson:
         auto type_sv = src.get_string().value();
         auto opt_mode = from_string_view<openai::ToolChoiceMode>(type_sv);
         if (opt_mode) return T{*opt_mode};
-        throw std::runtime_error{std::string{"openai::response::ToolChoice missing type: "} + std::string{type_sv}};
+        throw AnnotatedException{std::string{"openai::response::ToolChoice missing type: "} + std::string{type_sv}};
     }
     
     auto obj = src.get_object();
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ToolChoiceType>(type_sv);
     if (!opt_kind) {
-        throw std::runtime_error{"Unexpected openai::ToolChoiceType type: " + std::string{type_sv}};
+        throw AnnotatedException{std::string{"Unexpected openai::ToolChoiceType type: "} + std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -1234,7 +1238,7 @@ openai::response::ToolChoice Parse<openai::response::ToolChoice>(const simdjson:
         return T{openai::response::ToolsChoiceTypes::Hosted{*opt_hosted}};
     }
 
-    throw std::runtime_error{"openai::response::ToolChoice variant unsatisfied."};
+    throw AnnotatedException{"openai::response::ToolChoice variant unsatisfied."};
 }
 
 
@@ -1302,7 +1306,7 @@ namespace jai::llm::openai {
 
 Response Deserialize(const curl::Response& response) {
     if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
-        throw std::runtime_error("Simdjson padding check failed");
+        throw AnnotatedException{"Simdjson padding check failed"};
     }
 
     static thread_local simdjson::dom::parser parser{};

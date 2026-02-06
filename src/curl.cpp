@@ -83,7 +83,7 @@ HeaderList::HeaderList(const http::RequestHeaders& headers) : list{nullptr, &Del
     curl_slist* new_header_list = nullptr;
     for (const auto& header : headers.Entries()) {
         new_header_list = curl_slist_append(new_header_list, header.c_str());
-        if (!new_header_list) { throw std::runtime_error("Failed to create HeaderList."); }
+        if (!new_header_list) { throw AnnotatedException{"Failed to create HeaderList."}; }
     }
     list.reset(static_cast<void*>(new_header_list));
 }
@@ -335,14 +335,15 @@ void InterfaceMultiCleanup(void* ptr) { if (ptr) { curl_multi_cleanup(ToCurl<CUR
 Interface::Interface(const ConnectionPolicy& policy)
 : handle{static_cast<void*>(curl_multi_init()), &InterfaceMultiCleanup}
 {
-    if (!handle) { throw std::runtime_error("Failed to create curl::Interface; curl_multi_init failed."); }
+    if (!handle) { throw AnnotatedException{"Failed to create curl::Interface; curl_multi_init failed."}; }
     CURLM* curlm_ptr = ToCurl<CURLM>(handle.get());
 
     auto SetOpt = [h=curlm_ptr](auto opt, auto val) {
         const CURLMcode code = curl_multi_setopt(h, opt, val);
         if (code != CURLM_OK) {
-            throw std::runtime_error(std::string("Failed to create curl::Interface; failed to apply policy: ") +
-                                     curl_multi_strerror(code));
+            throw AnnotatedException{
+                std::string("Failed to create curl::Interface; failed to apply policy: ") +
+                curl_multi_strerror(code)};
         }
     };
 
@@ -372,8 +373,10 @@ std::vector<Attempt*> Interface::ExecOnce() {
     int still_running{0};
     CURLMcode mcode = curl_multi_perform(curlm_ptr, &still_running);
     if (mcode != CURLM_OK) {
-        throw std::runtime_error(std::string{"curl::Interface::ExecOnce curl_multi_perform failed with code "} +
-                                 curl_multi_strerror(mcode));
+        throw AnnotatedException{
+            std::string{"curl::Interface::ExecOnce curl_multi_perform failed with code "} +
+            curl_multi_strerror(mcode)
+        };
     }
 
     std::vector<Attempt*> attempts{};
@@ -386,8 +389,10 @@ std::vector<Attempt*> Interface::ExecOnce() {
         void* raw_ptr{nullptr};
         CURLcode ecode = curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &raw_ptr);
         if (ecode != CURLE_OK) {
-            throw std::runtime_error(std::string{"curl::Interface::ExecOnce failed to retrieve attempt: "} +
-                                     curl_easy_strerror(ecode));
+            throw AnnotatedException{
+                std::string{"curl::Interface::ExecOnce failed to retrieve attempt: "} +
+                curl_easy_strerror(ecode)
+            };
         }
 
         Attempt* attempt = static_cast<Attempt*>(raw_ptr);

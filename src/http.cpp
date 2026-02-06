@@ -2,7 +2,8 @@
 
 #include <algorithm>
 #include <ranges>
-#include <stdexcept>
+
+#include "../interface/core/error.hpp"
 
 
 namespace jai::llm::http {
@@ -44,7 +45,7 @@ std::vector<std::string> RequestHeaders::FromSeq(MergedHeaderRange_c auto const&
 
 void RequestHeaders::SecurityCheck(std::string_view sv) {
     if (sv.find('\0') != std::string_view::npos) {
-        throw std::invalid_argument(std::string{"Header contains embedded NUL (\\0) character."});
+        throw AnnotatedException{"Header contains embedded NUL (\\0) character."};
     }
 }
 

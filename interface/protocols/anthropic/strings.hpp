@@ -1,8 +1,7 @@
 #pragma once
 
-#include <stdexcept>
-
 #include "../../core/strings_base.hpp"
+#include "../../core/error.hpp"
 #include "messages.hpp"
 
 
@@ -386,7 +385,7 @@ constexpr std::string_view to_string_view(anthropic::CacheControlTTL val) {
     switch (val) {
         case anthropic::CacheControlTTL::TTL_5M: return "5m";
         case anthropic::CacheControlTTL::TTL_1H: return "1h";
-        default: throw std::logic_error("invalid anthropic::CacheControlTTL");
+        default: throw AnnotatedException{"invalid anthropic::CacheControlTTL"};
     }
 }
 
@@ -397,7 +396,7 @@ constexpr std::string_view to_string_view(anthropic::CitationKinds val) {
         case anthropic::CitationKinds::PAGE_LOCATION: return "page_location";
         case anthropic::CitationKinds::SEARCH_RESULT_LOCATION: return "search_result_location";
         case anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION: return "web_search_result_location";
-        default: throw std::logic_error("invalid anthropic::CitationKinds");
+        default: throw AnnotatedException{"invalid anthropic::CitationKinds"};
     }
 }
 
@@ -407,7 +406,7 @@ constexpr std::string_view to_string_view(anthropic::DocSrcKind val) {
         case anthropic::DocSrcKind::PDF: return "base64";
         case anthropic::DocSrcKind::PLAIN_TEXT: return "text";
         case anthropic::DocSrcKind::URL_PDF: return "url";
-        default: throw std::logic_error("invalid anthropic::DocSrcKind");
+        default: throw AnnotatedException{"invalid anthropic::DocSrcKind"};
     }
 }
 
@@ -417,7 +416,7 @@ constexpr std::string_view to_string_view(anthropic::ImageMediaType val) {
         case anthropic::ImageMediaType::IMAGE_PNG: return "image/png";
         case anthropic::ImageMediaType::IMAGE_GIF: return "image/gif";
         case anthropic::ImageMediaType::IMAGE_WEBP: return "image/webp";
-        default: throw std::logic_error("invalid anthropic::ImageMediaType");
+        default: throw AnnotatedException{"invalid anthropic::ImageMediaType"};
     }
 }
 
@@ -425,35 +424,35 @@ constexpr std::string_view to_string_view(anthropic::ImageSourceKinds val) {
     switch (val) {
         case anthropic::ImageSourceKinds::BASE64: return "base64";
         case anthropic::ImageSourceKinds::URL: return "url";
-        default: throw std::logic_error("invalid anthropic::ImageSourceKinds");
+        default: throw AnnotatedException{"invalid anthropic::ImageSourceKinds"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::PDFMediaType val) {
     switch (val) {
         case anthropic::PDFMediaType::APPLICATION_PDF: return "application/pdf";
-        default: throw std::logic_error("invalid anthropic::PDFMediaType");
+        default: throw AnnotatedException{"invalid anthropic::PDFMediaType"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::PlainTextMediaType val) {
     switch (val) {
         case anthropic::PlainTextMediaType::TEXT_PLAIN: return "text/plain";
-        default: throw std::logic_error("invalid anthropic::PlainTextMediaType");
+        default: throw AnnotatedException{"invalid anthropic::PlainTextMediaType"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::ReplaceBasedEditor val) {
     switch (val) {
         case anthropic::ReplaceBasedEditor::STRING: return "str_replace_based_edit_tool";
-        default: throw std::logic_error("invalid anthropic::ReplaceBasedEditor");
+        default: throw AnnotatedException{"invalid anthropic::ReplaceBasedEditor"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::ReplaceEditor val) {
     switch (val) {
         case anthropic::ReplaceEditor::STRING: return "str_replace_editor";
-        default: throw std::logic_error("invalid anthropic::ReplaceEditor");
+        default: throw AnnotatedException{"invalid anthropic::ReplaceEditor"};
     }
 }
 
@@ -461,7 +460,7 @@ constexpr std::string_view to_string_view(anthropic::RequestServiceTier val) {
     switch (val) {
         case anthropic::RequestServiceTier::AUTO: return "auto";
         case anthropic::RequestServiceTier::STANDARD_ONLY: return "standard_only";
-        default: throw std::logic_error("invalid anthropic::RequestServiceTier");
+        default: throw AnnotatedException{"invalid anthropic::RequestServiceTier"};
     }
 }
 
@@ -473,14 +472,14 @@ constexpr std::string_view to_string_view(anthropic::ResponseContentBlockKinds v
         case anthropic::ResponseContentBlockKinds::TOOL_USE: return "tool_use";
         case anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE: return "server_tool_use";
         case anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT: return "web_search_tool_result";
-        default: throw std::logic_error("invalid anthropic::ResponseContentBlockKinds");
+        default: throw AnnotatedException{"invalid anthropic::ResponseContentBlockKinds"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::ResponseRole val) {
     switch (val) {
         case anthropic::ResponseRole::ASSISTANT: return "assistant";
-        default: throw std::logic_error("invalid anthropic::ResponseRole");
+        default: throw AnnotatedException{"invalid anthropic::ResponseRole"};
     }
 }
 
@@ -488,7 +487,7 @@ constexpr std::string_view to_string_view(anthropic::Role val) {
     switch (val) {
         case anthropic::Role::USER: return "user";
         case anthropic::Role::ASSISTANT: return "assistant";
-        default: throw std::logic_error("invalid anthropic::Role");
+        default: throw AnnotatedException{"invalid anthropic::Role"};
     }
 }
 
@@ -500,7 +499,7 @@ constexpr std::string_view to_string_view(anthropic::StopReason val) {
         case anthropic::StopReason::TOOL_USE: return "tool_use";
         case anthropic::StopReason::PAUSE_TURN: return "pause_turn";
         case anthropic::StopReason::REFUSAL: return "refusal";
-        default: throw std::logic_error("invalid anthropic::StopReason");
+        default: throw AnnotatedException{"invalid anthropic::StopReason"};
     }
 }
 
@@ -508,14 +507,14 @@ constexpr std::string_view to_string_view(anthropic::ThinkingConfigType val) {
     switch (val) {
         case anthropic::ThinkingConfigType::ENABLED: return "enabled";
         case anthropic::ThinkingConfigType::DISABLED: return "disabled";
-        default: throw std::logic_error("invalid anthropic::ThinkingConfigType");
+        default: throw AnnotatedException{"invalid anthropic::ThinkingConfigType"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::ToolBash20250124Name val) {
     switch (val) {
         case anthropic::ToolBash20250124Name::BASH: return "bash";
-        default: throw std::logic_error("invalid anthropic::ToolBash20250124Name");
+        default: throw AnnotatedException{"invalid anthropic::ToolBash20250124Name"};
     }
 }
 
@@ -524,21 +523,21 @@ constexpr std::string_view to_string_view(anthropic::UsageServiceTier val) {
         case anthropic::UsageServiceTier::STANDARD: return "standard";
         case anthropic::UsageServiceTier::PRIORITY: return "priority";
         case anthropic::UsageServiceTier::BATCH: return "batch";
-        default: throw std::logic_error("invalid anthropic::UsageServiceTier");
+        default: throw AnnotatedException{"invalid anthropic::UsageServiceTier"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::UserLocationType val) {
     switch (val) {
         case anthropic::UserLocationType::APPROXIMATE: return "approximate";
-        default: throw std::logic_error("invalid anthropic::UserLocationType");
+        default: throw AnnotatedException{"invalid anthropic::UserLocationType"};
     }
 }
 
 constexpr std::string_view to_string_view(anthropic::WebSearchName val) {
     switch (val) {
         case anthropic::WebSearchName::WEB_SEARCH: return "web_search";
-        default: throw std::logic_error("invalid anthropic::WebSearchName");
+        default: throw AnnotatedException{"invalid anthropic::WebSearchName"};
     }
 }
 
@@ -550,7 +549,7 @@ constexpr std::string_view to_string_view(anthropic::WebSearchToolResultErrorCod
         case anthropic::WebSearchToolResultErrorCode::TOO_MANY_REQUESTS: return "too_many_requests";
         case anthropic::WebSearchToolResultErrorCode::QUERY_TOO_LONG: return "query_too_long";
         case anthropic::WebSearchToolResultErrorCode::REQUEST_TOO_LARGE: return "request_too_large";
-        default: throw std::logic_error("invalid anthropic::WebSearchToolResultErrorCode");
+        default: throw AnnotatedException{"invalid anthropic::WebSearchToolResultErrorCode"};
     }
 }
 
@@ -558,7 +557,7 @@ constexpr std::string_view to_string_view(anthropic::WebSearchToolResultErrorTyp
     switch (val) {
         case anthropic::WebSearchToolResultErrorType::TOOL_RESULT: return "web_search_tool_result";
         case anthropic::WebSearchToolResultErrorType::TOOL_RESULT_ERROR: return "web_search_tool_result_error";
-        default: throw std::logic_error("invalid anthropic::WebSearchToolResultErrorType");
+        default: throw AnnotatedException{"invalid anthropic::WebSearchToolResultErrorType"};
     }
 }
 
