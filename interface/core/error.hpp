@@ -14,6 +14,40 @@
 namespace jai::llm {
 
 
+namespace _detail {
+    inline std::string NormalizeFileName(std::string_view str_sv) {
+        static constexpr std::string_view rev_path{"/mll/"};
+        auto r = str_sv |
+                std::views::transform([](auto ch) { return ch == '\\' ? '/' : ch; }) |
+                std::views::reverse;
+        auto match = std::ranges::search(r, rev_path);
+        if (match.begin() == match.end()) { return {}; }
+        return std::ranges::subrange{r.begin(), match.begin()} |
+            std::views:: reverse |
+            std::ranges::to<std::string>();
+    }
+
+    inline std::string_view NormalizeFunctionName(std::string_view str_sv) {
+        // Cut templates / parameters
+        if (auto cut = str_sv.find_first_of("(<"); cut != std::string_view::npos) {
+            str_sv = str_sv.substr(0, cut);
+        }
+
+        // Trim trailing whitespace
+        while (!str_sv.empty() && str_sv.back() == ' ') {
+            str_sv.remove_suffix(1);
+        }
+
+        // Keep last whitespace-separated token
+        if (auto pos = str_sv.find_last_of(' '); pos != std::string_view::npos) {
+            str_sv = str_sv.substr(pos + 1);
+        }
+
+        return str_sv;
+    }
+}
+
+
 class AnnotatedException : public std::exception {
 public:
     struct Context {
@@ -80,17 +114,17 @@ public:
 
 
 inline std::string to_string(const AnnotatedException::Context& ctx) {
-    std::string suffix{};
+    std::string prefix{};
     if (!ctx.msg.empty()) {
-        suffix = ":\n";
-        suffix += ctx.msg;
+        prefix = ctx.msg;
+        prefix += "\n";
     }
-    return std::format("[{} ({}, {}, {})]{}",
-        ctx.source.file_name(),
-        ctx.source.function_name(),
+    return std::format("{}    [{} ({}, {}) - {}]\n",
+        prefix,
+        _detail::NormalizeFileName(ctx.source.file_name()),
         ctx.source.line(),
         ctx.source.column(),
-        suffix);
+        _detail::NormalizeFunctionName(ctx.source.function_name()));
 }
 
 
@@ -106,7 +140,7 @@ inline std::string to_string(R&& rg) {
 
 
 inline std::string to_string(const AnnotatedException& e) {
-    return std::format("{}\nContext\n{}", e.ErrorMsg(), jai::llm::to_string(e.ErrorContext()));
+    return std::format("Exception-\nReason: {}\n\nContext-\n{}", e.ErrorMsg(), jai::llm::to_string(e.ErrorContext()));
 }
 
 
