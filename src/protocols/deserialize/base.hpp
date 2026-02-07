@@ -10,6 +10,7 @@
 
 #include <simdjson.h>
 
+#include "debug.hpp"
 #include "../../../interface/core/error.hpp"
 #include "../../../interface/core/types.hpp"
 #include "../../../interface/protocols/anthropic/strings.hpp"
@@ -262,18 +263,30 @@ requires (Optional_c<member_type_t<T, Member>>)
 member_type_t<T, Member> Extract(const simdjson::dom::element& src) {
     using U = member_type_t<T, Member>::value_type;
 
-    auto obj = src.get_object();
-    auto r = obj.at_key(key);
-    if (r.error() == simdjson::NO_SUCH_FIELD) { return std::nullopt; }
+    try {
+        auto obj = src.get_object();
+        auto r = obj.at_key(key);
+        if (r.error() == simdjson::NO_SUCH_FIELD) { return std::nullopt; }
 
-    const simdjson::dom::element& elem = r.value();
-    if constexpr (StdVector_c<U>) {
-        return ParseArrayOf<typename U::value_type>(elem);
-    } else if constexpr (StdMap_c<U>) {
-        return ParseMapOf<typename U::key_type,
-                          typename U::mapped_type>(src[key]);
-    } else {
-        return Parse<typename member_type_t<T, Member>::value_type>(elem);
+        const simdjson::dom::element& elem = r.value();
+        if constexpr (StdVector_c<U>) {
+            return ParseArrayOf<typename U::value_type>(elem);
+        } else if constexpr (StdMap_c<U>) {
+            return ParseMapOf<typename U::key_type, typename U::mapped_type>(elem);
+        } else {
+            return Parse<typename member_type_t<T, Member>::value_type>(elem);
+        }
+    } catch (AnnotatedException& e) {
+        e.AddContext(std::string{"Failed to extract field "} + std::string{key});
+        e.AddContext(std::string{"while parsing "} + std::string{debug::type_name<T>()});
+        throw;
+    } catch (const simdjson::simdjson_error& e) {
+        AnnotatedException ex{
+            std::string{"Failed to extract field "} + std::string{key},
+            std::string{"while parsing "} + std::string{debug::type_name<T>()}
+        };
+        ex.AddContext(e.what());
+        throw ex;
     }
 }
 
@@ -282,13 +295,26 @@ template <simdjson::constevalutil::fixed_string key, typename T, auto Member>
 member_type_t<T, Member> Extract(const simdjson::dom::element& src) {
     using U = member_type_t<T, Member>;
 
-    if constexpr (StdVector_c<U>) {
-        return ParseArrayOf<typename member_type_t<T, Member>::value_type>(src[key]);
-    } else if constexpr (StdMap_c<U>) {
-        return ParseMapOf<typename member_type_t<T, Member>::key_type,
-                          typename member_type_t<T, Member>::mapped_type>(src[key]);
-    } else {
-        return Parse<member_type_t<T, Member>>(src[key]);
+    try {
+        if constexpr (StdVector_c<U>) {
+            return ParseArrayOf<typename member_type_t<T, Member>::value_type>(src[key]);
+        } else if constexpr (StdMap_c<U>) {
+            return ParseMapOf<typename member_type_t<T, Member>::key_type,
+                            typename member_type_t<T, Member>::mapped_type>(src[key]);
+        } else {
+            return Parse<member_type_t<T, Member>>(src[key]);
+        }
+    } catch (AnnotatedException& e) {
+        e.AddContext(std::string{"Failed to extract field "} + std::string{key});
+        e.AddContext(std::string{"while parsing "} + std::string{debug::type_name<T>()});
+        throw;
+    } catch (const simdjson::simdjson_error& e) {
+        AnnotatedException ex{
+            std::string{"Failed to extract field "} + std::string{key},
+            std::string{"while parsing "} + std::string{debug::type_name<T>()}
+        };
+        ex.AddContext(e.what());
+        throw ex;
     }
 }
 

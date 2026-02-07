@@ -570,14 +570,16 @@ openai::response::InputTypes::Item::CodeInterpreterToolCall::Output
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::CodeInterpreterOutputType>(type_sv);
     if (!opt_kind) {
-        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::CodeInterpreterToolCall::Output type: "} +
-                                 std::string{type_sv}};
+        throw AnnotatedException{
+            std::string{"Unexpected openai::response::InputTypes::Item::CodeInterpreterToolCall::Output type: "} +
+            std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::CodeInterpreterOutputType::LOGS:  return T{Parse<BaseT::CodeInterpreterOutputLog>(src)};
     case openai::CodeInterpreterOutputType::IMAGE: return T{Parse<BaseT::CodeInterpreterOutputImage>(src)};
-    default: throw AnnotatedException{"openai::response::InputTypes::Item::CodeInterpreterToolCall::Output variant unsatisfied"};
+    default:
+        throw AnnotatedException{"openai::response::InputTypes::Item::CodeInterpreterToolCall::Output variant unsatisfied"};
     }
 }
 
@@ -647,8 +649,9 @@ openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ShellCallOutcomeType>(type_sv);
     if (!opt_kind) {
-        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome type: "} +
-                                 std::string{type_sv}};
+        throw AnnotatedException{
+            std::string{"Unexpected openai::response::InputTypes::Item::ShellToolCallOutput::Output::Outcome type: "} +
+            std::string{type_sv}};
     }
 
     switch (*opt_kind) {
@@ -691,15 +694,17 @@ openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation
     auto type_sv = obj["type"].get_string().value();
     auto opt_kind = from_string_view<openai::ApplyPatchOperationType>(type_sv);
     if (!opt_kind) {
-        throw AnnotatedException{std::string{"Unexpected openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation type: "} +
-                                 std::string{type_sv}};
+        throw AnnotatedException{
+            std::string{"Unexpected openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation type: "} +
+            std::string{type_sv}};
     }
 
     switch (*opt_kind) {
     case openai::ApplyPatchOperationType::CREATE_FILE: return T{Parse<openai::PatchFileOperations::Create>(src)};
     case openai::ApplyPatchOperationType::DELETE_FILE: return T{Parse<openai::PatchFileOperations::Delete>(src)};
     case openai::ApplyPatchOperationType::UPDATE_FILE: return T{Parse<openai::PatchFileOperations::Update>(src)};
-    default: throw AnnotatedException{"openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation variant unsatisfied"};
+    default:
+        throw AnnotatedException{"openai::response::InputTypes::Item::ApplyPatchToolCall::ApplyPatchOperation variant unsatisfied"};
     }
 }
 
@@ -846,7 +851,8 @@ openai::response::ToolTypes::FileSearch::ComparisonFilter::ValueType
         else if (first.is_number()) return T{ParseArrayOf<double>(src)};
         else if (first.is_bool())   return T{ParseArrayOf<bool>(src)};
     }
-    default: throw AnnotatedException{"openai::response::ToolTypes::FileSearch::ComparisonFilter::ValueType variant unsatisfied"};
+    default:
+        throw AnnotatedException{"openai::response::ToolTypes::FileSearch::ComparisonFilter::ValueType variant unsatisfied"};
     }
 }
 
@@ -1310,10 +1316,14 @@ Response Deserialize(const curl::Response& response) {
     }
 
     static thread_local simdjson::dom::parser parser{};
-    simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body_len);
 
-    Response out = Parse<Response>(doc);
-    return out;
+    try {
+        simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()),
+                                                  response.body_len);
+        return Parse<Response>(doc);
+    } catch (const simdjson::simdjson_error& e) {
+        throw AnnotatedException{"openai::Deserialize Failed", e.what()};
+    }
 }
 
 

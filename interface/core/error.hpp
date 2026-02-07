@@ -45,9 +45,13 @@ private:
 public:
     AnnotatedException() = delete;
     explicit AnnotatedException(std::string msg_,
-                                std::optional<std::string> context_msg_ = {},
                                 std::source_location source_ = std::source_location::current())
-    : error_msg{std::move(msg_)}, context{{.msg=context_msg_.value_or(std::string{}), .source=source_}}
+    : AnnotatedException(std::move(msg_), std::string{}, source_)
+    {}
+    explicit AnnotatedException(std::string msg_,
+                                std::string context_msg_,
+                                std::source_location source_ = std::source_location::current())
+    : error_msg{std::move(msg_)}, context{{.msg=context_msg_, .source=source_}}
     {}
     AnnotatedException(const AnnotatedException&) = default;
     AnnotatedException(AnnotatedException&&) noexcept = default;

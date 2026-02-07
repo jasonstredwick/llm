@@ -257,10 +257,14 @@ Response Deserialize(const curl::Response& response) {
     }
 
     static thread_local simdjson::dom::parser parser{};
-    simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()), response.body_len);
 
-    Response out = Parse<Response>(doc);
-    return out;
+    try {
+        simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()),
+                                                  response.body_len);
+        return Parse<Response>(doc);
+    } catch (const simdjson::simdjson_error& e) {
+        throw AnnotatedException{"anthropic::Deserialize Failed", e.what()};
+    }
 }
 
 

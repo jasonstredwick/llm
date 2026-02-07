@@ -9,6 +9,7 @@
 
 #include "../../src/curl.hpp"
 
+#include "../../interface/core/error.hpp"
 #include "../../interface/protocols/openai/responses.hpp"
 #include "../../src/protocols/openai.hpp"
 
@@ -243,9 +244,8 @@ int main() {
         
         std::cout << "ALL OPENAI UNIT TESTS PASSED" << std::endl;
         return 0;
-    } catch (const simdjson::simdjson_error& e) {
-        simdjson::error_code code = e.error();
-        std::println("[ERROR] simdjson: {}", simdjson::error_message(code));
+    } catch (const jai::llm::AnnotatedException& e) {
+        std::println("[ERROR] AnnotatedException\n{}", jai::llm::to_string(e));
         return 1;
     } catch (const std::exception& e) {
         std::println("[ERROR] Test failed with exception: {}", e.what());

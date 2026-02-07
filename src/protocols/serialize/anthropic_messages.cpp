@@ -542,14 +542,30 @@ namespace jai::llm::anthropic {
 std::vector<std::byte> Serialize(const Request& request) {
     static thread_local string_builder builder{};
 
-    builder.clear();
-    simdjson::tag_invoke(simdjson::serialize_tag{}, builder, request);
-    builder.validate_unicode();
-    std::string_view json_str = builder.view();
+    try {
+        builder.clear();
+        simdjson::tag_invoke(simdjson::serialize_tag{}, builder, request);
 
-    return json_str |
-           std::views::transform([](auto const& c) { return static_cast<std::byte>(c); }) |
-           std::ranges::to<std::vector<std::byte>>();
+        if (!builder.validate_unicode()) {
+            throw AnnotatedException{"anthropic::Serialize Failed", "string_builder generated invalid unicode data."};
+        }
+
+        auto result = builder.view();
+        if (result.error() != simdjson::SUCCESS) {
+            throw AnnotatedException{"anthropic::Serialize Failed", simdjson::error_message(result.error())};
+        }
+        std::string_view json_str = result.value();
+
+        return json_str |
+               std::views::transform([](auto const& c) { return static_cast<std::byte>(c); }) |
+               std::ranges::to<std::vector<std::byte>>();
+    } catch (AnnotatedException const&) {
+        throw;
+    } catch (std::exception const& e) {
+        AnnotatedException ex{"anthropic::Serialize Failed", "string_builder failed to serialize anthropic::Response."};
+        ex.AddContext(e.what());
+        throw ex;
+    }
 }
 
 
