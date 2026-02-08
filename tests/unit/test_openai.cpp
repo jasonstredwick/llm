@@ -5,8 +5,6 @@
 #include <cstring>
 #include <simdjson.h>
 
-#include <simdjson.h>
-
 #include "../../src/curl.hpp"
 
 #include "../../interface/core/error.hpp"
@@ -97,7 +95,7 @@ void test_complex_serialization() {
 }
 
 void test_content_serialization() {
-    std::cout << "Testing OpenAI Content Serialization..." << std::endl;
+    std::println("Testing OpenAI Content Serialization...");
 
     openai::Request req;
 
@@ -109,7 +107,7 @@ void test_content_serialization() {
 
     openai::request::ContentTypes::Text text_unit;
     text_unit.text = "Here is an image.";
-    
+
     openai::request::ContentTypes::Image image_unit;
     image_unit.image_url = EncodedUrl(std::string_view("https://example.com/image.png"));
     image_unit.detail = openai::Detail::HIGH;
@@ -168,17 +166,17 @@ void test_response_deserialization() {
         "prompt": {"id": "prompt_123"},
         "prompt_cache_key": "none",
         "prompt_cache_retention": "none",
-        "reasoning": {"effort": "low", "summary": {"tokens": 0}},
+        "reasoning": {"effort": "low", "summary": "auto"},
         "safety_identifier": "none",
-        "service_tier": "standard",
+        "service_tier": "default",
         "status": "completed",
         "temperature": 1.0,
-        "text": {"format": "text", "verbosity": "high"},
+        "text": {"format": {"type": "text"}, "verbosity": "high"},
         "tool_choice": "auto",
         "tools": [],
         "top_logprobs": 0,
         "top_p": 1.0,
-        "truncation": {"type": "auto"},
+        "truncation": "auto",
         "usage": {
             "input_tokens": 10,
             "input_tokens_details": {"cached_tokens": 0},
@@ -195,15 +193,12 @@ void test_response_deserialization() {
     res.body.resize(res.body_len + simdjson::SIMDJSON_PADDING);
     std::memcpy(res.body.data(), json_response.data(), res.body_len);
 
-    std::println("  Deserializing...");
     auto resp = openai::Deserialize(res);
 
-    std::println("  Checking response metadata...");
     assert(resp.id == "res_123");
     assert(resp.model == "gpt-4o");
     assert(resp.output.size() == 1);
     
-    std::println("  Checking output item...");
     auto* item_ptr = &resp.output[0];
     auto* msg_item = std::get_if<openai::response::InputTypes::Item::OutputMessage>(item_ptr);
     if (!msg_item) {
@@ -212,7 +207,6 @@ void test_response_deserialization() {
     }
     assert(msg_item->role == openai::RoleAssistant::ASSISTANT);
     
-    std::println("  Checking content...");
     auto* text_content = std::get_if<openai::response::ContentTypes::OutputText>(&msg_item->content[0]);
     if (!text_content) {
         std::println("[ERROR] Content is NOT OutputText!");
@@ -225,24 +219,150 @@ void test_response_deserialization() {
     std::println("[SUCCESS] Response Deserialization passed.");
 }
 
-#include <iostream>
+void test_openai_doc_examples() {
+    std::println("Testing OpenAI Documentation Examples...");
+
+    // 1. Tool Call Response (mapped to semantic model)
+    {
+        std::string json_response = R"({
+            "id": "resp_123",
+            "object": "response",
+            "background": false,
+            "completed_at": 1677652288.0,
+            "conversation": {"id": "conv_123"},
+            "created_at": 1677652288.0,
+            "error": {"code": "none", "message": "none"},
+            "incomplete_details": {"reason": "none"},
+            "instructions": "",
+            "max_output_tokens": 1000,
+            "max_tool_calls": 10,
+            "metadata": {},
+            "model": "gpt-4o",
+            "output": [
+                {
+                    "type": "function_call",
+                    "id": "item_123",
+                    "call_id": "call_abc123",
+                    "name": "get_current_weather",
+                    "arguments": "{\n\"location\": \"Boston, MA\"\n}",
+                    "status": "completed"
+                }
+            ],
+            "parallel_tool_calls": true,
+            "previous_response_id": "none",
+            "prompt": {"id": "prompt_123"},
+            "prompt_cache_key": "none",
+            "prompt_cache_retention": "none",
+            "reasoning": {"effort": "low", "summary": "auto"},
+            "safety_identifier": "none",
+            "service_tier": "default",
+            "status": "completed",
+            "temperature": 1.0,
+            "text": {"format": {"type": "text"}, "verbosity": "high"},
+            "tool_choice": "auto",
+            "tools": [],
+            "top_logprobs": 0,
+            "top_p": 1.0,
+            "truncation": "auto",
+            "usage": {
+                "input_tokens": 10,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": 20,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 30
+            }
+        })";
+
+        curl::Response res;
+        res.state = curl::Response::State::COMPLETED;
+        res.availability = curl::Response::Availability::FINAL;
+        res.body_len = json_response.size();
+        res.body.resize(res.body_len + simdjson::SIMDJSON_PADDING);
+        std::memcpy(res.body.data(), json_response.data(), res.body_len);
+
+        auto resp = openai::Deserialize(res);
+
+        assert(resp.output.size() == 1);
+        auto* call = std::get_if<openai::response::InputTypes::Item::FunctionToolCall>(&resp.output[0]);
+        assert(call != nullptr);
+        assert(call->call_id == "call_abc123");
+        assert(call->name == "get_current_weather");
+    }
+
+    // 2. Structured Output Request (mapped to semantic model)
+    {
+        openai::Request req;
+        req.model = "gpt-4o-2024-08-06";
+        req.background = false;
+        req.input = "Analyze this data.";
+
+        openai::TextConfig tc;
+        openai::TextConfig::FormatJsonSchema schema_fmt;
+        schema_fmt.name = "analysis";
+        schema_fmt.strict = true;
+        schema_fmt.description = "Analysis schema";
+        
+        json::Object schema_obj;
+        schema_obj["type"] = "object";
+        schema_fmt.schema = schema_obj;
+
+        tc.format = schema_fmt;
+        tc.verbosity = openai::Verbosity::MEDIUM;
+        req.text = tc;
+
+        auto serialized = openai::Serialize(req);
+        std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
+        
+        assert(json_str.find("\"name\":\"analysis\"") != std::string::npos);
+        assert(json_str.find("\"strict\":true") != std::string::npos);
+        std::println("[SUCCESS] OpenAI Documentation Examples passed.");
+    }
+
+    // 3. Advanced Structured Output (Recursive/Nested Schema)
+    {
+        std::println("Testing OpenAI Advanced Documentation Examples (Nested Schema)...");
+        openai::Request req;
+        req.model = "gpt-4o-2024-08-06";
+        req.background = false;
+
+        openai::TextConfig tc;
+        openai::TextConfig::FormatJsonSchema schema_fmt;
+        schema_fmt.name = "math_solution";
+        schema_fmt.strict = true;
+        schema_fmt.description = "A detailed math solution";
+        
+        json::Object schema_obj;
+        schema_obj["type"] = "object";
+        json::Object props;
+        props["steps"] = json::Object{{"type", "array"}, {"items", json::Object{{"type", "string"}}}};
+        props["final_answer"] = json::Object{{"type", "string"}};
+        schema_obj["properties"] = props;
+        schema_obj["required"] = json::Array{"steps", "final_answer"};
+        schema_obj["additionalProperties"] = false;
+        
+        schema_fmt.schema = schema_obj;
+        tc.format = schema_fmt;
+        req.text = tc;
+
+        auto serialized = openai::Serialize(req);
+        std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
+        
+        assert(json_str.find("\"name\":\"math_solution\"") != std::string::npos);
+        assert(json_str.find("\"steps\"") != std::string::npos);
+        assert(json_str.find("\"additionalProperties\":false") != std::string::npos);
+
+        std::println("[SUCCESS] OpenAI Advanced Documentation Examples passed.");
+    }
+}
 
 int main() {
-    std::cout << "Starting OpenAI Tests (COUT)..." << std::endl;
+    std::println("Starting OpenAI Tests...");
     try {
-        std::cout << "Testing Simple Serialization..." << std::endl;
         test_simple_serialization();
-        
-        std::cout << "Testing Complex Serialization..." << std::endl;
         test_complex_serialization();
-        
-        std::cout << "Testing Content Serialization..." << std::endl;
-        //test_content_serialization();
-        
-        std::cout << "Testing Response Deserialization..." << std::endl;
+        test_content_serialization();
         test_response_deserialization();
-        
-        std::cout << "ALL OPENAI UNIT TESTS PASSED" << std::endl;
+        test_openai_doc_examples();
         return 0;
     } catch (const jai::llm::AnnotatedException& e) {
         std::println("[ERROR] AnnotatedException\n{}", jai::llm::to_string(e));

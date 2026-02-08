@@ -135,6 +135,30 @@ inline void AddOptKV(simdjson::builder::string_builder& builder, const T& v) {
 namespace simdjson {
 
 
+/***
+ * Consider adding this for variants instead of custom for each variant type.
+template <typename... Ts>
+void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, const std::variant<Ts...>& v) {
+    std::visit([&](auto const& x) {
+        tag_invoke(simdjson::serialize_tag{}, builder, x);
+    }, v);
+}
+*/
+
+
+template <typename... Ts>
+void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, const std::vector<std::variant<Ts...>>& v) {
+    builder.start_array();
+    if (!v.empty()) {
+        tag_invoke(simdjson::serialize_tag{}, builder, v[0]);
+        for (auto const& i : v | std::views::drop(1)) {
+            builder.append_comma();
+            tag_invoke(simdjson::serialize_tag{}, builder, i);
+        }
+    }
+    builder.end_array();
+}
+
 inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, std::byte value) {
     builder.append(static_cast<uint64_t>(value));
 }
@@ -163,7 +187,7 @@ inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builde
 
 template <int64_t L, int64_t U>
 inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::IntN<L, U>& value)
+                       const jai::llm::Int64Bounded<L, U>& value)
 {
     jai::llm::AppendNumber(builder, value.Get());
 }

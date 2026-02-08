@@ -300,7 +300,7 @@ struct GenerationConfig {
     std::optional<int64_t> seed{};
     std::optional<double> presencePenalty{};
     std::optional<bool> responseLogprobs{};
-    std::optional<IntN<0, 20>> logprobs{};
+    std::optional<Int64Bounded<0, 20>> logprobs{};
     std::optional<bool> enableEnhancedCivicAnswers{};
     std::optional<SpeechConfig> speechConfig{};
     std::optional<ThinkingConfig> thinkingConfig{};

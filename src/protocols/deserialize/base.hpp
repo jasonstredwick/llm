@@ -141,8 +141,8 @@ Int64 Parse(const simdjson::dom::element& src) {
 
 
 template <int64_t N1, int64_t N2>
-IntN<N1, N2> Parse(const simdjson::dom::element& src) {
-    return IntN<N1, N2>{src.get_int64().value()};
+Int64Bounded<N1, N2> Parse(const simdjson::dom::element& src) {
+    return Int64Bounded<N1, N2>{src.get_int64().value()};
 }
 
 

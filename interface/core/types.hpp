@@ -185,6 +185,34 @@ public:
 };
 
 
+template <int64_t N_lower, int64_t N_upper>
+class Int64Bounded {
+private:
+    static_assert(N_lower <= N_upper, "Int64Bounded provided invalid bounds.");
+
+    int64_t value;
+
+public:
+    Int64Bounded(int64_t in) : value{in} { Validate(); }
+    Int64Bounded(const Int64Bounded&) = default;
+    Int64Bounded(Int64Bounded&&) noexcept = default;
+    ~Int64Bounded() noexcept = default;
+    Int64Bounded& operator=(const Int64Bounded&) = default;
+    Int64Bounded& operator=(Int64Bounded&&) noexcept = default;
+
+    friend auto operator<=>(const Int64Bounded&, const Int64Bounded&) = default;
+    static bool IsValid(int64_t x) { return N_lower <= x && x <= N_upper; }
+
+    int64_t Get()   const { return value; }
+    int64_t Value() const { return value; }
+
+private:
+    void Validate() {
+        if (!IsValid(value)) { throw AnnotatedException{"Int64Bounded provided invalid value."}; }
+    }
+};
+
+
 class Int64Str {
 private:
     int64_t value;
@@ -206,34 +234,6 @@ public:
     }
 
     int64_t Value() const { return value; }
-};
-
-
-template <int64_t N_lower, int64_t N_upper>
-class IntN {
-private:
-    static_assert(N_lower <= N_upper, "IntN provided invalid bounds.");
-
-    int64_t value;
-
-public:
-    IntN(int64_t in) : value{in} { Validate(); }
-    IntN(const IntN&) = default;
-    IntN(IntN&&) noexcept = default;
-    ~IntN() noexcept = default;
-    IntN& operator=(const IntN&) = default;
-    IntN& operator=(IntN&&) noexcept = default;
-
-    friend auto operator<=>(const IntN&, const IntN&) = default;
-    static bool IsValid(int64_t x) { return N_lower <= x && x <= N_upper; }
-
-    int64_t Get()   const { return value; }
-    int64_t Value() const { return value; }
-
-private:
-    void Validate() {
-        if (!IsValid(value)) { throw AnnotatedException{"IntN provided invalid value."}; }
-    }
 };
 
 
@@ -297,6 +297,18 @@ public:
     void Validate() {
         if (!NameLen::IsValid(name)) { throw AnnotatedException{"NameLen not valid"}; }
     }
+};
+
+
+template<typename T>
+struct Required {
+private:
+    T val;
+
+public:
+    Required() = delete;
+    constexpr Required(T val) : val(val) {}
+    constexpr operator T() const { return val; }
 };
 
 

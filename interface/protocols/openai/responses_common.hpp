@@ -85,6 +85,11 @@ struct ConversationRef {
 };
 
 
+struct IncompleteDetails {
+    std::string reason;
+};
+
+
 struct PatchFileOperations {
     struct Create {
         KindCreateFileOperation type{};
@@ -104,11 +109,6 @@ struct PatchFileOperations {
     };
 };
 
-
-
-struct IncompleteDetails {
-    std::string reason;
-};
 
 
 struct Reasoning {
@@ -141,7 +141,7 @@ struct ResponseUsage {
 
 
 struct StreamOptions {
-    bool include_obfuscation;
+    std::optional<bool> include_obfuscation;
 };
 
 
@@ -154,14 +154,14 @@ struct TextConfig {
         KindFormatJsonSchema type{};
         std::string name;
         jai::llm::json::Object schema;
-        std::string description;
-        bool strict;
+        std::optional<std::string> description{};
+        std::optional<bool> strict{};
     };
 
     using Format = std::variant<FormatText, FormatJsonSchema>;
 
-    Format format;
-    Verbosity verbosity;
+    std::optional<Format> format{};
+    std::optional<Verbosity> verbosity{};
 };
 
 

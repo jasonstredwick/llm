@@ -320,6 +320,10 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::StreamOpti
     builder.end_object();
 }
 
+void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig::Format& obj) {
+    std::visit([&](auto const& x) { tag_invoke(serialize_tag{}, builder, x); }, obj);
+}
+
 void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig::FormatText& obj) {
     builder.start_object();
     AddReqKV<"type", CommaDirection::NONE>(builder, obj.type);
@@ -338,8 +342,8 @@ void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig
 
 void tag_invoke(serialize_tag, string_builder& builder, const openai::TextConfig& obj) {
     builder.start_object();
-    std::visit([&](auto const& x) { AddReqKV<"format", CommaDirection::NONE>(builder, x); }, obj.format);
-    AddReqKV<"verbosity", CommaDirection::BEFORE>(builder, obj.verbosity);
+    AddOptKV<"format",    CommaDirection::NONE>  (builder, obj.format);
+    AddOptKV<"verbosity", CommaDirection::BEFORE>(builder, obj.verbosity);
     builder.end_object();
 }
 
