@@ -19,6 +19,7 @@ namespace jai::llm {
 
 
 struct Kind {};
+template <typename T> class Required;
 
 
 /***
@@ -41,6 +42,11 @@ template <typename T, auto Member>
 using member_type_t = typename member_type<T, Member>::type;
 
 
+// Given a "Required<T>" member, extract the element type.
+template <typename T, auto Member>
+using field_element_t = typename std::remove_cvref_t<member_type_t<T, Member>>::value_type;
+
+
 // Variant
 template <typename T>
 struct is_variant : std::false_type {};
@@ -50,6 +56,14 @@ struct is_variant<std::variant<Ts...>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool is_variant_v = is_variant<T>::value;
+
+template <typename>
+struct variant_types;
+
+template <typename... Ts>
+struct variant_types<std::variant<Ts...>> {
+    using type = std::tuple<Ts...>;
+};
 
 
 // Concepts
@@ -61,6 +75,16 @@ concept AssocContainer_c = requires {
 };
 
 template <typename T>
+concept Int64Bounded_c =
+    requires(int64_t x) {
+        { T::LowerBound } -> std::convertible_to<int64_t>;
+        { T::UpperBound } -> std::convertible_to<int64_t>;
+        { T{x} };
+        { T::IsValid(x) } -> std::same_as<bool>;
+        { std::declval<const T&>().Value() } -> std::same_as<int64_t>;
+    };
+
+template <typename T>
 concept Kind_c = std::is_base_of_v<Kind, T>;
 
 template <typename TARGET, typename T>
@@ -68,6 +92,9 @@ concept Like_c = std::same_as<TARGET, std::remove_cvref_t<T>>;
 
 template <typename T>
 concept Optional_c = requires { typename T::value_type; } && std::same_as<T, std::optional<typename T::value_type>>;
+
+template <typename T>
+concept Required_c = requires { typename T::value_type; } && std::same_as<T, Required<typename T::value_type>>;
 
 template <typename T>
 concept StdMap_c = AssocContainer_c<T> &&
@@ -86,7 +113,16 @@ concept StdVector_c =
                     typename std::remove_cvref_t<T>::allocator_type>>;
 
 template <typename T>
-concept Variant_c = requires { typename std::variant_size<T>::type; };
+concept Variant_c = is_variant_v<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept ValueBox_c =
+    requires(T v) {
+        typename T::element_type;
+        { v.Get() }   -> std::same_as<const typename T::element_type&>;
+        { v.Value() } -> std::same_as<const typename T::element_type&>;
+        { v.operator->() } -> std::same_as<const typename T::element_type*>;
+    };
 
 
 /***
@@ -187,9 +223,13 @@ public:
 
 template <int64_t N_lower, int64_t N_upper>
 class Int64Bounded {
-private:
+public:
     static_assert(N_lower <= N_upper, "Int64Bounded provided invalid bounds.");
 
+    static constexpr int64_t LowerBound = N_lower;
+    static constexpr int64_t UpperBound = N_upper;
+
+private:
     int64_t value;
 
 public:
@@ -263,8 +303,9 @@ public:
 
     friend auto operator<=>(const Name64&, const Name64&) = default;
 
-    std::string_view   Get()   const { return name; }
-    const std::string& Value() const { return name; }
+    std::string_view   Get()   const noexcept { return name; }
+    const std::string& Value() const noexcept { return name; }
+    operator std::string_view() const noexcept { return Get(); }
 
     void Validate() {
         if (!Name64::IsValid(name)) { throw AnnotatedException{"Name not valid: a-zA-Z_-"}; }
@@ -291,8 +332,9 @@ public:
 
     friend auto operator<=>(const NameLen&, const NameLen&) = default;
 
-    std::string_view   Get()   const { return name; }
-    const std::string& Value() const { return name; }
+    std::string_view   Get()   const noexcept { return name; }
+    const std::string& Value() const noexcept { return name; }
+    operator std::string_view() const noexcept { return Get(); }
 
     void Validate() {
         if (!NameLen::IsValid(name)) { throw AnnotatedException{"NameLen not valid"}; }
@@ -301,14 +343,19 @@ public:
 
 
 template<typename T>
-struct Required {
+class Required {
+public:
+    using value_type = T;
+
 private:
-    T val;
+    value_type val;
 
 public:
     Required() = delete;
-    constexpr Required(T val) : val(val) {}
-    constexpr operator T() const { return val; }
+    constexpr Required(value_type val) : val(std::move(val)) {}
+    constexpr operator const value_type&() const { return val; }
+    constexpr value_type& Value() { return val; }
+    constexpr const value_type& Value() const { return val; }
 };
 
 

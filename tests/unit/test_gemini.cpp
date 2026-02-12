@@ -15,16 +15,22 @@ using namespace jai::llm;
 void test_simple_serialization() {
     std::println("Testing Simple Gemini Request Serialization...");
 
-    gemini::Request req;
-    
-    gemini::RequestContent content;
-    content.role = gemini::Role::USER;
-    
-    gemini::RequestContent::RequestPart part;
-    part.data = gemini::Text{"Hello, Gemini!"};
-    content.parts.push_back(part);
-    
-    req.contents.push_back(content);
+    gemini::Request req{
+        .contents = std::vector<gemini::RequestContent>{
+            gemini::RequestContent{
+                .parts = std::vector<gemini::RequestContent::RequestPart>{
+                    gemini::RequestContent::RequestPart{
+                        .data = gemini::RequestContent::RequestPart::Data{
+                            gemini::Text{std::string{"Hello, Gemini!"}}
+                        },
+                        .partMetadata = json::Object{},
+                        .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                    }
+                },
+                .role = gemini::Role::USER
+            }
+        }
+    };
 
     auto serialized = gemini::Serialize(req);
     std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -43,57 +49,72 @@ void test_simple_serialization() {
 void test_complex_serialization() {
     std::println("Testing Complex Gemini Request Serialization...");
 
-    gemini::Request req;
+    gemini::Request req{
+        .contents = std::vector<gemini::RequestContent>{
+            gemini::RequestContent{
+                .parts = std::vector<gemini::RequestContent::RequestPart>{
+                    gemini::RequestContent::RequestPart{
+                        .data = gemini::RequestContent::RequestPart::Data{
+                            gemini::Text{std::string{"I want to go to Tokyo."}}
+                        },
+                        .partMetadata = json::Object{},
+                        .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                    }
+                },
+                .role = gemini::Role::USER
+            }
+        }
+    };
     
     // System instruction
-    gemini::RequestContent system_instr;
-    gemini::RequestContent::RequestPart system_part;
-    system_part.data = gemini::Text{"You are a helpful travel agent."};
-    system_instr.parts.push_back(system_part);
-    req.systemInstruction = system_instr;
-
-    // Contents
-    gemini::RequestContent user_content;
-    user_content.role = gemini::Role::USER;
-    
-    gemini::RequestContent::RequestPart user_part;
-    user_part.data = gemini::Text{"I want to go to Tokyo."};
-    user_content.parts.push_back(user_part);
-    
-    req.contents.push_back(user_content);
+    req.systemInstruction = gemini::RequestContent{
+        .parts = std::vector<gemini::RequestContent::RequestPart>{
+            gemini::RequestContent::RequestPart{
+                .data = gemini::RequestContent::RequestPart::Data{
+                    gemini::Text{std::string{"You are a helpful travel agent."}}
+                },
+                .partMetadata = json::Object{},
+                .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+            }
+        }
+    };
 
     // Tools
     gemini::FunctionDeclaration get_flights{
         .name = Name64(std::string_view("get_flights")),
-        .description = "Search for flights to a destination"
+        .description = std::string{"Search for flights to a destination"}
     };
     
-    gemini::Schema params;
-    params.type = gemini::SchemaType::OBJECT;
+    gemini::Schema params{
+        .type = gemini::SchemaType::OBJECT
+    };
     
-    gemini::Schema dest_prop;
-    dest_prop.type = gemini::SchemaType::STRING;
-    dest_prop.description = "The destination city";
+    gemini::Schema dest_prop{
+        .type = gemini::SchemaType::STRING
+    };
+    dest_prop.description = std::string{"The destination city"};
     
     std::map<std::string, gemini::Schema> props;
-    props["destination"] = dest_prop;
+    props.emplace("destination", std::move(dest_prop));
     params.properties = props;
     params.required = std::vector<std::string>{"destination"};
     
     get_flights.parameters = params;
-    req.tools.push_back(get_flights);
+    req.tools.Value().push_back(get_flights);
 
     // Safety settings
-    gemini::SafetySetting safety;
-    safety.category = gemini::HarmCategory::HARM_CATEGORY_HARASSMENT;
-    safety.threshold = gemini::HarmBlockThreshold::BLOCK_LOW_AND_ABOVE;
-    req.safetySettings.push_back(safety);
+    req.safetySettings.Value().push_back(gemini::SafetySetting{
+        .category = gemini::HarmCategory::HARM_CATEGORY_HARASSMENT,
+        .threshold = gemini::HarmBlockThreshold::BLOCK_LOW_AND_ABOVE
+    });
 
     // Generation config
-    gemini::GenerationConfig gen_config;
+    gemini::GenerationConfig gen_config{
+        .stopSequences = std::vector<std::string>{"DONE", "FINISHED"},
+        .responseModalities = std::vector<gemini::Modality>{}
+    };
     gen_config.temperature = 0.5;
     gen_config.maxOutputTokens = 2048;
-    gen_config.stopSequences = {"DONE", "FINISHED"};
     req.generationConfig = gen_config;
 
     auto serialized = gemini::Serialize(req);
@@ -114,35 +135,53 @@ void test_complex_serialization() {
 void test_part_serialization() {
     std::println("Testing Gemini Part Serialization...");
 
-    gemini::Request req;
-    gemini::RequestContent content;
-    content.role = gemini::Role::USER;
-
-    // Blob (image)
-    gemini::RequestContent::RequestPart blob_part;
-    blob_part.data = gemini::Blob{gemini::MediaType::IMAGE_PNG, "YmFzZTY0X2RhdGE="};
-    content.parts.push_back(blob_part);
-
-    // FileData
-    gemini::RequestContent::RequestPart file_part;
-    file_part.data = gemini::FileData{gemini::MediaType::APPLICATION_PDF, "https://example.com/doc.pdf"};
-    content.parts.push_back(file_part);
-
-    // FunctionResponse
-    gemini::RequestContent::RequestPart func_part;
-    gemini::FunctionResponse fr{
-        .name = Name64(std::string_view("get_weather")),
-        .response = []() {
-            json::Object o;
-            o["temp"] = 72.0;
-            o["condition"] = "Sunny";
-            return o;
-        }()
+    gemini::Request req{
+        .contents = std::vector<gemini::RequestContent>{
+            gemini::RequestContent{
+                .parts = std::vector<gemini::RequestContent::RequestPart>{
+                    // Blob (image)
+                    gemini::RequestContent::RequestPart{
+                        .data = gemini::RequestContent::RequestPart::Data{
+                            gemini::Blob{
+                                .mimeType = gemini::MediaType::IMAGE_PNG,
+                                .data = std::string{"YmFzZTY0X2RhdGE="}
+                            }
+                        },
+                        .partMetadata = json::Object{},
+                        .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                    },
+                    // FileData
+                    gemini::RequestContent::RequestPart{
+                        .data = gemini::RequestContent::RequestPart::Data{
+                            gemini::FileData{
+                                .fileUri = std::string{"https://example.com/doc.pdf"}
+                            }
+                        },
+                        .partMetadata = json::Object{},
+                        .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                    },
+                    // FunctionResponse
+                    gemini::RequestContent::RequestPart{
+                        .data = gemini::RequestContent::RequestPart::Data{
+                            gemini::FunctionResponse{
+                                .name = Name64(std::string_view("get_weather")),
+                                .response = []() {
+                                    json::Object o;
+                                    o["temp"] = 72.0;
+                                    o["condition"] = "Sunny";
+                                    return o;
+                                }(),
+                                .parts = std::vector<gemini::FunctionResponse::Part>{}
+                            }
+                        },
+                        .partMetadata = json::Object{},
+                        .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                    }
+                },
+                .role = gemini::Role::USER
+            }
+        }
     };
-    func_part.data = fr;
-    content.parts.push_back(func_part);
-
-    req.contents.push_back(content);
 
     auto serialized = gemini::Serialize(req);
     std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -167,7 +206,7 @@ void test_response_deserialization() {
                     "role": "model",
                     "parts": [
                         {
-                            "data": {"text": {"text": "I've checked the weather for you."}},
+                            "text": "I've checked the weather for you.",
                             "partMetadata": {"videoMetadata": {}}
                         }
                     ]
@@ -217,18 +256,23 @@ void test_response_deserialization() {
 
     auto resp = gemini::Deserialize(res);
 
-    assert(resp.candidates.size() == 1);
-    assert(resp.candidates[0].content.role == gemini::Role::MODEL);
+    auto candidates = resp.candidates.Value();
+    assert(candidates.size() == 1);
+    auto content = candidates[0].content.Value();
+    assert(content.role == gemini::Role::MODEL);
     
-    auto* text_part = std::get_if<gemini::Text>(&resp.candidates[0].content.parts[0].data);
+    auto parts = content.parts.Value();
+    auto data = parts[0].data.Value();
+    auto* text_part = std::get_if<gemini::Text>(&data);
     assert(text_part != nullptr);
-    assert(text_part->text == "I've checked the weather for you.");
+    assert(text_part->text.Value() == "I've checked the weather for you.");
 
-    assert(resp.candidates[0].finishReason == gemini::FinishReason::STOP);
-    assert(resp.candidates[0].safetyRatings.size() == 1);
-    assert(resp.candidates[0].safetyRatings[0].category == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
+    assert(candidates[0].finishReason == gemini::FinishReason::STOP);
+    auto safety_ratings = candidates[0].safetyRatings.Value();
+    assert(safety_ratings.size() == 1);
+    assert(safety_ratings[0].category.Value() == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
     
-    assert(resp.usageMetadata.totalTokenCount == 30);
+    assert(resp.usageMetadata.Value().totalTokenCount.Value() == 30);
 
     std::println("[SUCCESS] Response Deserialization passed.");
 }
@@ -238,22 +282,32 @@ void test_gemini_doc_examples() {
 
     // 1. Multimodal Request (from docs)
     {
-        gemini::Request req;
-        gemini::RequestContent content;
-        content.role = gemini::Role::USER;
-
-        gemini::RequestContent::RequestPart text_part;
-        text_part.data = gemini::Text{"What is this?"};
-
-        gemini::RequestContent::RequestPart image_part;
-        gemini::Blob blob;
-        blob.mimeType = gemini::MediaType::IMAGE_JPEG;
-        blob.data = "YmFzZTY0X2RhdGE=";
-        image_part.data = blob;
-
-        content.parts.push_back(text_part);
-        content.parts.push_back(image_part);
-        req.contents.push_back(content);
+        gemini::Request req{
+            .contents = std::vector<gemini::RequestContent>{
+                gemini::RequestContent{
+                    .parts = std::vector<gemini::RequestContent::RequestPart>{
+                        gemini::RequestContent::RequestPart{
+                            .data = gemini::RequestContent::RequestPart::Data{
+                                gemini::Text{std::string{"What is this?"}}
+                            },
+                            .partMetadata = json::Object{},
+                            .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                        },
+                        gemini::RequestContent::RequestPart{
+                            .data = gemini::RequestContent::RequestPart::Data{
+                                gemini::Blob{
+                                    .mimeType = gemini::MediaType::IMAGE_JPEG,
+                                    .data = std::string{"YmFzZTY0X2RhdGE="}
+                                }
+                            },
+                            .partMetadata = json::Object{},
+                            .metadata = gemini::RequestContent::RequestPart::Metadata{gemini::VideoMetadata{}}
+                        }
+                    },
+                    .role = gemini::Role::USER
+                }
+            }
+        };
 
         auto serialized = gemini::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -271,7 +325,7 @@ void test_gemini_doc_examples() {
                     "content": {
                         "parts": [
                             {
-                                "data": {"text": {"text": "It's an ant."}},
+                                "text": "It's an ant.",
                                 "partMetadata": {}
                             }
                         ],
@@ -329,18 +383,23 @@ void test_gemini_doc_examples() {
 
         auto resp = gemini::Deserialize(res);
 
-        assert(resp.candidates.size() == 1);
-        assert(resp.candidates[0].content.role == gemini::Role::MODEL);
-        assert(resp.candidates[0].content.parts.size() == 1);
+        auto candidates = resp.candidates.Value();
+        assert(candidates.size() == 1);
+        auto content = candidates[0].content.Value();
+        assert(content.role == gemini::Role::MODEL);
+        auto parts = content.parts.Value();
+        assert(parts.size() == 1);
         
-        auto* text_part = std::get_if<gemini::Text>(&resp.candidates[0].content.parts[0].data);
+        auto data = parts[0].data.Value();
+        auto* text_part = std::get_if<gemini::Text>(&data);
         assert(text_part != nullptr);
-        assert(text_part->text == "It's an ant.");
+        assert(text_part->text.Value() == "It's an ant.");
         
-        assert(resp.candidates[0].safetyRatings.size() == 1);
-        assert(resp.candidates[0].safetyRatings[0].category == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
+        auto safety_ratings = candidates[0].safetyRatings.Value();
+        assert(safety_ratings.size() == 1);
+        assert(safety_ratings[0].category.Value() == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
         
-        assert(resp.usageMetadata.totalTokenCount == 15);
+        assert(resp.usageMetadata.Value().totalTokenCount.Value() == 15);
     }
 
     // 3. Advanced Grounding (from docs)
@@ -350,16 +409,14 @@ void test_gemini_doc_examples() {
             "candidates": [
                 {
                     "content": {
-                        "parts": [{"data": {"text": {"text": "The price of AAPL is $180."}}, "partMetadata": {}}],
+                        "parts": [{"text": "The price of AAPL is $180.", "partMetadata": {}}],
                         "role": "model"
                     },
                     "finishReason": "STOP",
                     "groundingMetadata": {
                         "groundingChunks": [
                             {
-                                "chunk_type": {
-                                    "web": {"uri": "https://google.com/finance", "title": "Google Finance"}
-                                }
+                                "web": {"uri": "https://google.com/finance", "title": "Google Finance"}
                             }
                         ],
                         "groundingSupports": [],
@@ -400,15 +457,19 @@ void test_gemini_doc_examples() {
 
         auto resp = gemini::Deserialize(res);
 
-        assert(resp.candidates.size() == 1);
-        auto& cand = resp.candidates[0];
-        assert(cand.groundingMetadata.webSearchQueries.size() == 1);
-        assert(cand.groundingMetadata.webSearchQueries[0] == "AAPL stock price");
-        assert(cand.groundingMetadata.groundingChunks.size() == 1);
+        auto candidates = resp.candidates.Value();
+        assert(candidates.size() == 1);
+        auto& cand = candidates[0];
+        auto grounding = cand.groundingMetadata.Value();
+        assert(grounding.webSearchQueries.Value().size() == 1);
+        assert(grounding.webSearchQueries.Value()[0] == "AAPL stock price");
+        assert(grounding.groundingChunks.Value().size() == 1);
         
-        auto* web = std::get_if<gemini::GroundingChunk::Web>(&cand.groundingMetadata.groundingChunks[0].chunk_type);
+        auto chunks = grounding.groundingChunks.Value();
+        auto chunk_type = chunks[0].chunk_type.Value();
+        auto const* web = std::get_if<gemini::GroundingChunk::Web>(&chunk_type);
         assert(web != nullptr);
-        assert(web->uri.Get() == "https://google.com/finance");
+        assert(web->uri.Value().Get() == "https://google.com/finance");
 
         std::println("  [SUCCESS] Gemini Advanced Documentation Examples passed.");
     }

@@ -1,456 +1,355 @@
-#include <cstddef>
-#include <ranges>
-#include <vector>
-
-#include <simdjson.h>
-
 #include "../../interface/protocols/gemini/generate_content.hpp"
 #include "base.hpp"
 
 
 using namespace simdjson::builder;
-using namespace jai::llm;
 
 
-namespace simdjson {
+namespace jai::llm::gemini {
 
 
-TAG_ENUM(gemini::AspectRatio)
-TAG_ENUM(gemini::Behavior)
-TAG_ENUM(gemini::BlockReason)
-TAG_ENUM(gemini::CodeLanguage)
-TAG_ENUM(gemini::DynamicRetrievalMode)
-TAG_ENUM(gemini::Environment)
-TAG_ENUM(gemini::ExecutionOutcome)
-TAG_ENUM(gemini::FinishReason)
-TAG_ENUM(gemini::HarmBlockThreshold)
-TAG_ENUM(gemini::HarmCategory)
-TAG_ENUM(gemini::HarmProbability)
-TAG_ENUM(gemini::ImageDim)
-TAG_ENUM(gemini::MediaResolution)
-TAG_ENUM(gemini::MediaType)
-TAG_ENUM(gemini::Modality)
-TAG_ENUM(gemini::ModelStage)
-TAG_ENUM(gemini::ResponseMimeType)
-TAG_ENUM(gemini::Role)
-TAG_ENUM(gemini::Scheduling)
-TAG_ENUM(gemini::SchemaType)
-TAG_ENUM(gemini::ThinkingLevel)
-TAG_ENUM(gemini::ToolMode)
-TAG_ENUM(gemini::UrlRetrievalStatus)
+BEGIN_SERIALIZE(Blob)
+    FIELD(obj, mimeType, CommaDirection::NONE)
+    FIELD(obj, data,     CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::Blob& obj) {
-    builder.start_object();
-    AddReqKV<"mimeType", CommaDirection::NONE>  (builder, obj.mimeType);
-    AddReqKV<"data",     CommaDirection::BEFORE>(builder, obj.data);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(CodeExecution)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::CodeExecution&) {
-    builder.start_object();
-    builder.end_object();
-}
+BEGIN_SERIALIZE(CodeExecutionResult)
+    FIELD(obj, outcome, CommaDirection::NONE)
+    FIELD(obj, output,  CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::CodeExecutionResult& obj) {
-    builder.start_object();
-    AddReqKV<"outcome", CommaDirection::NONE>  (builder, obj.outcome);
-    AddOptKV<"output",  CommaDirection::BEFORE>(builder, obj.output);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(ComputerUse)
+    FIELD(obj, environment,                 CommaDirection::NONE)
+    FIELD(obj, excludedPredefinedFunctions, CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ComputerUse& obj) {
-    builder.start_object();
-    AddReqKV<"environment",                 CommaDirection::NONE>  (builder, obj.environment);
-    AddOptKV<"excludedPredefinedFunctions", CommaDirection::BEFORE>(builder, obj.excludedPredefinedFunctions);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(FileData)
+    FIELD(obj, mimeType, CommaDirection::AFTER)
+    FIELD(obj, fileUri,  CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::FileData& obj) {
-    builder.start_object();
-    AddOptKV<"mimeType", CommaDirection::AFTER>(builder, obj.mimeType);
-    AddReqKV<"fileUri",  CommaDirection::NONE> (builder, obj.fileUri);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(FileSearch)
+    FIELD(obj, fileSearchStoreNames, CommaDirection::NONE)
+    FIELD(obj, metadataFilter,       CommaDirection::BEFORE)
+    FIELD(obj, topK,                 CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::FileSearch& obj) {
-    builder.start_object();
-    AddReqKV<"fileSearchStoreNames", CommaDirection::NONE>  (builder, obj.fileSearchStoreNames);
-    AddOptKV<"metadataFilter",       CommaDirection::BEFORE>(builder, obj.metadataFilter);
-    AddOptKV<"topK",                 CommaDirection::BEFORE>(builder, obj.topK);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(FunctionDeclaration)
+    FIELD(obj, name,                 CommaDirection::NONE)
+    FIELD(obj, description,          CommaDirection::BEFORE)
+    FIELD(obj, behavior,             CommaDirection::BEFORE)
+    FIELD(obj, parameters,           CommaDirection::BEFORE)
+    FIELD(obj, parametersJsonSchema, CommaDirection::BEFORE)
+    FIELD(obj, response,             CommaDirection::BEFORE)
+    FIELD(obj, responseJsonSchema,   CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionDeclaration& obj) {
-    builder.start_object();
-    AddReqKV<"name",                 CommaDirection::NONE>  (builder, obj.name);
-    AddReqKV<"description",          CommaDirection::BEFORE>(builder, obj.description);
-    AddOptKV<"behavior",             CommaDirection::BEFORE>(builder, obj.behavior);
-    AddOptKV<"parameters",           CommaDirection::BEFORE>(builder, obj.parameters);
-    AddOptKV<"parametersJsonSchema", CommaDirection::BEFORE>(builder, obj.parametersJsonSchema);
-    AddOptKV<"response",             CommaDirection::BEFORE>(builder, obj.response);
-    AddOptKV<"responseJsonSchema",   CommaDirection::BEFORE>(builder, obj.responseJsonSchema);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(FunctionResponse)
+    FIELD(obj, id,           CommaDirection::AFTER)
+    FIELD(obj, name,         CommaDirection::NONE)
+    FIELD(obj, response,     CommaDirection::BEFORE)
+    FIELD(obj, parts,        CommaDirection::BEFORE)
+    FIELD(obj, willContinue, CommaDirection::BEFORE)
+    FIELD(obj, scheduling,   CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionResponse& obj) {
-    builder.start_object();
-    AddOptKV<"id",           CommaDirection::AFTER> (builder, obj.id);
-    AddReqKV<"name",         CommaDirection::NONE>  (builder, obj.name);
-    AddReqKV<"response",     CommaDirection::BEFORE>(builder, obj.response);
-    AddOptKV<"parts",        CommaDirection::BEFORE>(builder, obj.parts);
-    AddOptKV<"willContinue", CommaDirection::BEFORE>(builder, obj.willContinue);
-    AddOptKV<"scheduling",   CommaDirection::BEFORE>(builder, obj.scheduling);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::FunctionResponse::Part& obj)
-{
-    builder.start_object();
+//void SerializeFrom(simdjson::builder::string_builder& builder, const FunctionResponse::Part& obj) {
+BEGIN_SERIALIZE(FunctionResponse::Part)
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
-        if constexpr (std::is_same_v<T, gemini::Blob>) { AddReqKV<"inlineData", CommaDirection::NONE>(builder, x); }
-        else { static_assert(always_false_v<T>, "tag_invoke: Unhandled FunctionResponse::Part variant alternative."); }
-    }, obj);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::GenerationConfig& obj) {
-    // Technically all the fields are optional, but to easy the writing of this function, I chose to use the
-    // default provided by the API doc for responseMimeType to ensure at least on field is present.
-    builder.start_object();
-    std::optional<gemini::ResponseMimeType> mime_type =
-        obj.responseMimeType.value_or(gemini::ResponseMimeType::TEXT_PLAIN);
-    AddOptKV<"responseMimeType",           CommaDirection::NONE>  (builder, mime_type);
-    AddOptKV<"stopSequences",              CommaDirection::BEFORE>(builder, obj.stopSequences);
-    AddOptKV<"responseSchema",             CommaDirection::BEFORE>(builder, obj.responseSchema);
-    AddOptKV<"_responseJsonSchema",        CommaDirection::BEFORE>(builder, obj._responseJsonSchema);
-    AddOptKV<"responseJsonSchema",         CommaDirection::BEFORE>(builder, obj.responseJsonSchema);
-    AddOptKV<"responseModalities",         CommaDirection::BEFORE>(builder, obj.responseModalities);
-    AddOptKV<"candidateCount",             CommaDirection::BEFORE>(builder, obj.candidateCount);
-    AddOptKV<"maxOutputTokens",            CommaDirection::BEFORE>(builder, obj.maxOutputTokens);
-    AddOptKV<"temperature",                CommaDirection::BEFORE>(builder, obj.temperature);
-    AddOptKV<"topP",                       CommaDirection::BEFORE>(builder, obj.topP);
-    AddOptKV<"topK",                       CommaDirection::BEFORE>(builder, obj.topK);
-    AddOptKV<"seed",                       CommaDirection::BEFORE>(builder, obj.seed);
-    AddOptKV<"presencePenalty",            CommaDirection::BEFORE>(builder, obj.presencePenalty);
-    AddOptKV<"responseLogprobs",           CommaDirection::BEFORE>(builder, obj.responseLogprobs);
-    AddOptKV<"logprobs",                   CommaDirection::BEFORE>(builder, obj.logprobs);
-    AddOptKV<"enableEnhancedCivicAnswers", CommaDirection::BEFORE>(builder, obj.enableEnhancedCivicAnswers);
-    AddOptKV<"speechConfig",               CommaDirection::BEFORE>(builder, obj.speechConfig);
-    AddOptKV<"thinkingConfig",             CommaDirection::BEFORE>(builder, obj.thinkingConfig);
-    AddOptKV<"imageConfig",                CommaDirection::BEFORE>(builder, obj.imageConfig);
-    AddOptKV<"mediaResolution",            CommaDirection::BEFORE>(builder, obj.mediaResolution);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleMaps& obj) {
-    builder.start_object();
-    AddOptKV<"enableWidget", CommaDirection::NONE>(builder, obj.enableWidget);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearch& obj) {
-    builder.start_object();
-    AddOptKV<"timeRangeFilter", CommaDirection::NONE>(builder, obj.timeRangeFilter);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearch::Interval& obj) {
-    builder.start_object();
-    AddOptKV<"startTime", CommaDirection::NONE>  (builder, obj.startTime);
-    if (obj.startTime && obj.endTime) { builder.append_comma(); }
-    AddOptKV<"endTime",   CommaDirection::NONE>  (builder, obj.endTime);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearchRetrieval& obj) {
-    builder.start_object();
-    AddReqKV<"dynamicRetrievalConfig", CommaDirection::NONE>(builder, obj.dynamicRetrievalConfig);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::GoogleSearchRetrieval::Config& obj) {
-    builder.start_object();
-    AddReqKV<"mode",             CommaDirection::NONE>  (builder, obj.mode);
-    AddOptKV<"dynamicThreshold", CommaDirection::BEFORE>(builder, obj.dynamicThreshold);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ImageConfig& obj) {
-    builder.start_object();
-    AddOptKV<"aspectRatio", CommaDirection::NONE>  (builder, obj.aspectRatio);
-    if (obj.aspectRatio && obj.imageSize) { builder.append_comma(); }
-    AddOptKV<"imageSize",   CommaDirection::NONE>  (builder, obj.imageSize);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::Request& obj) {
-    builder.start_object();
-    AddReqKV<"contents",          CommaDirection::NONE>  (builder, obj.contents);
-    AddOptKV<"tools",             CommaDirection::BEFORE>(builder, obj.tools);
-    AddOptKV<"toolConfig",        CommaDirection::BEFORE>(builder, obj.toolConfig);
-    AddOptKV<"safetySettings",    CommaDirection::BEFORE>(builder, obj.safetySettings);
-    AddOptKV<"systemInstruction", CommaDirection::BEFORE>(builder, obj.systemInstruction);
-    AddOptKV<"generationConfig",  CommaDirection::BEFORE>(builder, obj.generationConfig);
-    AddOptKV<"cachedContent",     CommaDirection::BEFORE>(builder, obj.cachedContent);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestContent& obj) {
-    builder.start_object();
-    AddReqKV<"parts", CommaDirection::NONE>  (builder, obj.parts);
-    AddOptKV<"role",  CommaDirection::BEFORE>(builder, obj.role);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestContent::RequestPart& obj) {
-    builder.start_object();
-    std::visit([&](auto const& x) {
-        using T = std::decay_t<decltype(x)>;
-        if      constexpr (std::is_same_v<T, gemini::Blob>)                { AddReqKV<"inlineData",          CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::CodeExecutionResult>) { AddReqKV<"codeExecutionResult", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::FileData>)            { AddReqKV<"fileData",            CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::FunctionResponse>)    { AddReqKV<"functionResponse",    CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::Text>)                { AddReqKV<"text",                CommaDirection::NONE>(builder, x); }
-        else { static_assert(always_false_v<T>, "tag_invoke: Unhandled RequestContent::Part variant alternative."); }
-    }, obj.data);
-    AddReqKV<"partMetadata",     CommaDirection::BEFORE>(builder, obj.partMetadata);
-    AddReqKV<"metadata",         CommaDirection::BEFORE>(builder, obj.metadata);
-    AddOptKV<"thoughtSignature", CommaDirection::BEFORE>(builder, obj.thoughtSignature);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::VideoMetadata& obj) {
-    builder.start_object();
-    AddOptKV<"startOffset", CommaDirection::NONE>  (builder, obj.startOffset);
-    if (obj.startOffset && obj.endOffset) { builder.append_comma(); }
-    AddOptKV<"endOffset",   CommaDirection::NONE>  (builder, obj.endOffset);
-    if ((obj.startOffset || obj.endOffset) && obj.fps) { builder.append_comma(); }
-    AddOptKV<"fps",         CommaDirection::NONE>  (builder, obj.fps);
-    builder.end_object();
-}
-
-
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::RequestContent::RequestPart::Metadata& obj) {
-    builder.start_object();
-    std::visit([&](auto const& x) {
-        using T = std::decay_t<decltype(x)>;
-        if constexpr (std::is_same_v<T, gemini::VideoMetadata>) { AddReqKV<"videoMetadata", CommaDirection::NONE>(builder, x); }
+        if constexpr (std::is_same_v<T, Blob>) { AddKV_base<"inlineData", CommaDirection::NONE>(builder, x); }
         else {
             static_assert(always_false_v<T>,
-                          "tag_invoke: Unhandled RequestContent::RequestPart::Metadata variant alternative.");
+                          "gemini::SerializeFrom: Unhandled FunctionResponse::Part variant alternative.");
         }
     }, obj);
-    builder.end_object();
-}
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::SafetySetting& obj) {
-    builder.start_object();
-    AddReqKV<"category",  CommaDirection::NONE>  (builder, obj.category);
-    AddReqKV<"threshold", CommaDirection::BEFORE>(builder, obj.threshold);
-    builder.end_object();
-}
+// Technically all the fields are optional, but to easy the writing of this function, I chose to use the
+// default provided by the API doc for responseMimeType to ensure at least on field is present.
+BEGIN_SERIALIZE(GenerationConfig)
+    std::optional<ResponseMimeType> mime_type =
+        obj.responseMimeType.value_or(ResponseMimeType::TEXT_PLAIN);
+    FIELD(obj, responseMimeType,           CommaDirection::NONE)
+    FIELD(obj, stopSequences,              CommaDirection::BEFORE)
+    FIELD(obj, responseSchema,             CommaDirection::BEFORE)
+    FIELD(obj, _responseJsonSchema,        CommaDirection::BEFORE)
+    FIELD(obj, responseJsonSchema,         CommaDirection::BEFORE)
+    FIELD(obj, responseModalities,         CommaDirection::BEFORE)
+    FIELD(obj, candidateCount,             CommaDirection::BEFORE)
+    FIELD(obj, maxOutputTokens,            CommaDirection::BEFORE)
+    FIELD(obj, temperature,                CommaDirection::BEFORE)
+    FIELD(obj, topP,                       CommaDirection::BEFORE)
+    FIELD(obj, topK,                       CommaDirection::BEFORE)
+    FIELD(obj, seed,                       CommaDirection::BEFORE)
+    FIELD(obj, presencePenalty,            CommaDirection::BEFORE)
+    FIELD(obj, responseLogprobs,           CommaDirection::BEFORE)
+    FIELD(obj, logprobs,                   CommaDirection::BEFORE)
+    FIELD(obj, enableEnhancedCivicAnswers, CommaDirection::BEFORE)
+    FIELD(obj, speechConfig,               CommaDirection::BEFORE)
+    FIELD(obj, thinkingConfig,             CommaDirection::BEFORE)
+    FIELD(obj, imageConfig,                CommaDirection::BEFORE)
+    FIELD(obj, mediaResolution,            CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::Schema& obj) {
-    builder.start_object();
-    AddReqKV<"type",             CommaDirection::NONE>  (builder, obj.type);
-    AddOptKV<"format",           CommaDirection::BEFORE>(builder, obj.format);
-    AddOptKV<"title",            CommaDirection::BEFORE>(builder, obj.title);
-    AddOptKV<"description",      CommaDirection::BEFORE>(builder, obj.description);
-    AddOptKV<"nullable",         CommaDirection::BEFORE>(builder, obj.nullable);
-    AddOptKV<"enum",             CommaDirection::BEFORE>(builder, obj.enum_values);
-    AddOptKV<"maxItems",         CommaDirection::BEFORE>(builder, obj.maxItems);
-    AddOptKV<"minItems",         CommaDirection::BEFORE>(builder, obj.minItems);
-    AddOptKV<"properties",       CommaDirection::BEFORE>(builder, obj.properties);
-    AddOptKV<"required",         CommaDirection::BEFORE>(builder, obj.required);
-    AddOptKV<"minProperties",    CommaDirection::BEFORE>(builder, obj.minProperties);
-    AddOptKV<"maxProperties",    CommaDirection::BEFORE>(builder, obj.maxProperties);
-    AddOptKV<"minLength",        CommaDirection::BEFORE>(builder, obj.minLength);
-    AddOptKV<"maxLength",        CommaDirection::BEFORE>(builder, obj.maxLength);
-    AddOptKV<"pattern",          CommaDirection::BEFORE>(builder, obj.pattern);
-    AddOptKV<"example",          CommaDirection::BEFORE>(builder, obj.example);
-    AddOptKV<"anyOf",            CommaDirection::BEFORE>(builder, obj.anyOf);
-    AddOptKV<"propertyOrdering", CommaDirection::BEFORE>(builder, obj.propertyOrdering);
-    AddOptKV<"default",          CommaDirection::BEFORE>(builder, obj.default_value);
-    AddOptKV<"items",            CommaDirection::BEFORE>(builder, obj.items);
-    AddOptKV<"minimum",          CommaDirection::BEFORE>(builder, obj.minimum);
-    AddOptKV<"maximum",          CommaDirection::BEFORE>(builder, obj.maximum);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(GoogleMaps)
+    FIELD(obj, enableWidget, CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig& obj) {
-    builder.start_object();
-    AddReqKV<"voiceConfig",             CommaDirection::NONE>  (builder, obj.voiceConfig);
-    AddOptKV<"multiSpeakerVoiceConfig", CommaDirection::BEFORE>(builder, obj.multiSpeakerVoiceConfig);
-    AddOptKV<"languageCode",            CommaDirection::BEFORE>(builder, obj.languageCode);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(GoogleSearch)
+    FIELD(obj, timeRangeFilter, CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::MultiSpeakerVoiceConfig& obj) {
-    builder.start_object();
-    AddReqKV<"speakerVoiceConfigs", CommaDirection::NONE>(builder, obj.speakerVoiceConfigs);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(GoogleSearch::Interval)
+    FIELD(obj, startTime, CommaDirection::NONE)
+    if (obj.startTime && obj.endTime) { builder.append_comma(); }
+    FIELD(obj, endTime,   CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::PrebuiltVoiceConfig& obj) {
-    builder.start_object();
-    AddReqKV<"voiceName", CommaDirection::NONE>(builder, obj.voiceName);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(GoogleSearchRetrieval)
+    FIELD(obj, dynamicRetrievalConfig, CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::SpeakerVoiceConfig& obj) {
-    builder.start_object();
-    AddReqKV<"speaker",     CommaDirection::NONE>  (builder, obj.speaker);
-    AddReqKV<"voiceConfig", CommaDirection::BEFORE>(builder, obj.voiceConfig);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(GoogleSearchRetrieval::Config)
+    FIELD(obj, mode,             CommaDirection::NONE)
+    FIELD(obj, dynamicThreshold, CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::SpeechConfig::VoiceConfig& obj) {
-    builder.start_object();
+BEGIN_SERIALIZE(ImageConfig)
+    FIELD(obj, aspectRatio, CommaDirection::NONE)
+    if (obj.aspectRatio && obj.imageSize) { builder.append_comma(); }
+    FIELD(obj, imageSize,   CommaDirection::NONE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(Request)
+    FIELD(obj, contents,          CommaDirection::NONE)
+    FIELD(obj, tools,             CommaDirection::BEFORE)
+    FIELD(obj, toolConfig,        CommaDirection::BEFORE)
+    FIELD(obj, safetySettings,    CommaDirection::BEFORE)
+    FIELD(obj, systemInstruction, CommaDirection::BEFORE)
+    FIELD(obj, generationConfig,  CommaDirection::BEFORE)
+    FIELD(obj, cachedContent,     CommaDirection::BEFORE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(RequestContent)
+    FIELD(obj, parts, CommaDirection::NONE)
+    FIELD(obj, role,  CommaDirection::BEFORE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(RequestContent::RequestPart::Data)
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
+        if      constexpr (std::is_same_v<T, Blob>)                { AddKV_base<"inlineData",          CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, CodeExecutionResult>) { AddKV_base<"codeExecutionResult", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, FileData>)            { AddKV_base<"fileData",            CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, FunctionResponse>)    { AddKV_base<"functionResponse",    CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, Text>)                { AddKV_base<"text",                CommaDirection::NONE>(builder, x); }
+        else { static_assert(always_false_v<T>, "gemini::SerializeFrom: Unhandled RequestContent::Part variant alternative."); }
+    }, obj);
+END_SERIALIZE
 
-        if constexpr (std::is_same_v<T, gemini::SpeechConfig::PrebuiltVoiceConfig>) {
-            AddReqKV<"prebuiltVoiceConfig", CommaDirection::NONE>(builder, x);
+
+BEGIN_SERIALIZE(RequestContent::RequestPart)
+    FIELD(obj, data,             CommaDirection::NONE)
+    FIELD(obj, partMetadata,     CommaDirection::BEFORE)
+    FIELD(obj, metadata,         CommaDirection::BEFORE)
+    FIELD(obj, thoughtSignature, CommaDirection::BEFORE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(VideoMetadata)
+    FIELD(obj, startOffset, CommaDirection::NONE)
+    if (obj.startOffset && obj.endOffset) { builder.append_comma(); }
+    FIELD(obj, endOffset,   CommaDirection::NONE)
+    if ((obj.startOffset || obj.endOffset) && obj.fps) { builder.append_comma(); }
+    FIELD(obj, fps,         CommaDirection::NONE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(RequestContent::RequestPart::Metadata)
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if constexpr (std::is_same_v<T, VideoMetadata>) {
+            AddKV_base<"videoMetadata", CommaDirection::NONE>(builder, x);
         } else {
             static_assert(always_false_v<T>,
-                          "tag_invoke: Unhandled SpeechConfig::VoiceConfig variant alternative.");
+                          "gemini::SerializeFrom: Unhandled RequestContent::RequestPart::Metadata variant alternative.");
         }
-    }, obj.voice_config);
-    builder.end_object();
-}
+    }, obj);
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::Text& obj) {
-    builder.start_object();
-    AddReqKV<"text", CommaDirection::NONE>(builder, obj.text);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(SafetySetting)
+    FIELD(obj, category,  CommaDirection::NONE)
+    FIELD(obj, threshold, CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ThinkingConfig& obj) {
-    builder.start_object();
-    AddReqKV<"includeThoughts", CommaDirection::NONE>  (builder, obj.includeThoughts);
-    AddReqKV<"thinkingBudget",  CommaDirection::BEFORE>(builder, obj.thinkingBudget);
-    AddOptKV<"thinkingLevel",   CommaDirection::BEFORE>(builder, obj.thinkingLevel);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(Schema)
+    FIELD(obj, type,             CommaDirection::NONE)
+    FIELD(obj, format,           CommaDirection::BEFORE)
+    FIELD(obj, title,            CommaDirection::BEFORE)
+    FIELD(obj, description,      CommaDirection::BEFORE)
+    FIELD(obj, nullable,         CommaDirection::BEFORE)
+    FIELD_ALT(obj, enum_values, "enum", CommaDirection::BEFORE)
+    FIELD(obj, maxItems,         CommaDirection::BEFORE)
+    FIELD(obj, minItems,         CommaDirection::BEFORE)
+    FIELD(obj, properties,       CommaDirection::BEFORE)
+    FIELD(obj, required,         CommaDirection::BEFORE)
+    FIELD(obj, minProperties,    CommaDirection::BEFORE)
+    FIELD(obj, maxProperties,    CommaDirection::BEFORE)
+    FIELD(obj, minLength,        CommaDirection::BEFORE)
+    FIELD(obj, maxLength,        CommaDirection::BEFORE)
+    FIELD(obj, pattern,          CommaDirection::BEFORE)
+    FIELD(obj, example,          CommaDirection::BEFORE)
+    FIELD(obj, anyOf,            CommaDirection::BEFORE)
+    FIELD(obj, propertyOrdering, CommaDirection::BEFORE)
+    FIELD_ALT(obj, default_value, "default", CommaDirection::BEFORE)
+    FIELD(obj, items,            CommaDirection::BEFORE)
+    FIELD(obj, minimum,          CommaDirection::BEFORE)
+    FIELD(obj, maximum,          CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::Tool& obj) {
-    builder.start_object();
+BEGIN_SERIALIZE(SpeechConfig)
+    FIELD(obj, voiceConfig,             CommaDirection::NONE)
+    FIELD(obj, multiSpeakerVoiceConfig, CommaDirection::BEFORE)
+    FIELD(obj, languageCode,            CommaDirection::BEFORE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(SpeechConfig::MultiSpeakerVoiceConfig)
+    FIELD(obj, speakerVoiceConfigs, CommaDirection::NONE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(SpeechConfig::PrebuiltVoiceConfig)
+    FIELD(obj, voiceName, CommaDirection::NONE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(std::variant<SpeechConfig::PrebuiltVoiceConfig>)
     std::visit([&](auto const& x) {
         using T = std::decay_t<decltype(x)>;
 
-        if      constexpr (std::is_same_v<T, gemini::CodeExecution>)         { AddReqKV<"codeExecution", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::ComputerUse>)           { AddReqKV<"computerUse", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::FileSearch>)            { AddReqKV<"fileSearch", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::FunctionDeclaration>)   { AddReqKV<"functionDeclarations", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::GoogleMaps>)            { AddReqKV<"googleMaps", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::GoogleSearch>)          { AddReqKV<"googleSearch", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::GoogleSearchRetrieval>) { AddReqKV<"googleSearchRetrieval", CommaDirection::NONE>(builder, x); }
-        else if constexpr (std::is_same_v<T, gemini::UrlContext>)            { AddReqKV<"urlContext", CommaDirection::NONE>(builder, x); }
-        else { static_assert(always_false_v<T>, "tag_invoke: Unhandled Tool variant alternative."); }
+        if constexpr (std::is_same_v<T, SpeechConfig::PrebuiltVoiceConfig>) {
+            AddKV_base<"prebuiltVoiceConfig", CommaDirection::NONE>(builder, x);
+        } else {
+            static_assert(always_false_v<T>,
+                          "gemini::SerializeFrom: Unhandled SpeechConfig::VoiceConfig variant alternative.");
+        }
     }, obj);
-    builder.end_object();
-}
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig& obj) {
-    builder.start_object();
-    AddOptKV<"functionCallingConfig", CommaDirection::NONE>(builder, obj.functionCallingConfig);
+BEGIN_SERIALIZE(SpeechConfig::SpeakerVoiceConfig)
+    FIELD(obj, speaker,     CommaDirection::NONE)
+    FIELD(obj, voiceConfig, CommaDirection::BEFORE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(SpeechConfig::VoiceConfig)
+    FIELD(obj, voice_config, CommaDirection::NONE);
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(Text)
+    FIELD(obj, text, CommaDirection::NONE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(ThinkingConfig)
+    FIELD(obj, includeThoughts, CommaDirection::NONE)
+    FIELD(obj, thinkingBudget,  CommaDirection::BEFORE)
+    FIELD(obj, thinkingLevel,   CommaDirection::BEFORE)
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(Tool)
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+        if      constexpr (std::is_same_v<T, CodeExecution>)         { AddKV_base<"codeExecution",         CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, ComputerUse>)           { AddKV_base<"computerUse",           CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, FileSearch>)            { AddKV_base<"fileSearch",            CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, FunctionDeclaration>)   { AddKV_base<"functionDeclarations",  CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, GoogleMaps>)            { AddKV_base<"googleMaps",            CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, GoogleSearch>)          { AddKV_base<"googleSearch",          CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, GoogleSearchRetrieval>) { AddKV_base<"googleSearchRetrieval", CommaDirection::NONE>(builder, x); }
+        else if constexpr (std::is_same_v<T, UrlContext>)            { AddKV_base<"urlContext",            CommaDirection::NONE>(builder, x); }
+        else { static_assert(always_false_v<T>, "gemini::SerializeFrom: Unhandled Tool variant alternative."); }
+    }, obj);
+END_SERIALIZE
+
+
+BEGIN_SERIALIZE(ToolConfig)
+    FIELD(obj, functionCallingConfig, CommaDirection::NONE)
     if (obj.functionCallingConfig && obj.retrievalConfig) { builder.append_comma(); }
-    AddOptKV<"retrievalConfig",       CommaDirection::NONE>(builder, obj.retrievalConfig);
-    builder.end_object();
-}
+    FIELD(obj, retrievalConfig,       CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig::FunctionCallingConfig& obj) {
-    builder.start_object();
-    AddOptKV<"mode",                  CommaDirection::NONE>(builder, obj.mode);
-    if (obj.mode && !obj.allowedFunctionNames.empty()) { builder.append_comma(); }
-    AddOptKV<"allowedFunctionNames", CommaDirection::NONE>(builder, obj.allowedFunctionNames);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(ToolConfig::FunctionCallingConfig)
+    FIELD(obj, mode,                  CommaDirection::NONE)
+    if (obj.mode && !obj.allowedFunctionNames.Value().empty()) { builder.append_comma(); }
+    FIELD(obj, allowedFunctionNames, CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig::RetrievalConfig& obj) {
-    builder.start_object();
-    AddOptKV<"latLng",       CommaDirection::NONE>(builder, obj.latLng);
+BEGIN_SERIALIZE(ToolConfig::RetrievalConfig)
+    FIELD(obj, latLng,       CommaDirection::NONE)
     if (obj.latLng && obj.languageCode) { builder.append_comma(); }
-    AddOptKV<"languageCode", CommaDirection::NONE>(builder, obj.languageCode);
-    builder.end_object();
-}
+    FIELD(obj, languageCode, CommaDirection::NONE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::ToolConfig::RetrievalConfig::LatLng& obj) {
-    builder.start_object();
-    AddReqKV<"latitude",  CommaDirection::NONE>  (builder, obj.latitude);
-    AddReqKV<"longitude", CommaDirection::BEFORE>(builder, obj.longitude);
-    builder.end_object();
-}
+BEGIN_SERIALIZE(ToolConfig::RetrievalConfig::LatLng)
+    FIELD(obj, latitude,  CommaDirection::NONE)
+    FIELD(obj, longitude, CommaDirection::BEFORE)
+END_SERIALIZE
 
 
-void tag_invoke(serialize_tag, string_builder& builder, const gemini::UrlContext&) {
-    builder.start_object();
-    builder.end_object();
-}
-
-
-} // namespace jai::llm
-
-
-#undef TAG_ENUM
-#undef KIND_ENUM
+BEGIN_SERIALIZE(UrlContext)
+END_SERIALIZE
 
 
 /***
  * Top-level Serialize
  */
-namespace jai::llm::gemini {
-
-
 std::vector<std::byte> Serialize(const Request& request) {
     static thread_local string_builder builder{};
 
     try {
         builder.clear();
-        simdjson::tag_invoke(simdjson::serialize_tag{}, builder, request);
+        SerializeFrom(builder, request);
 
         if (!builder.validate_unicode()) {
-            throw AnnotatedException{"gemini::Serialize Failed", "string_builder generated invalid unicode data."};
+            throw AnnotatedException{"Serialize Failed", "string_builder generated invalid unicode data."};
         }
 
         auto result = builder.view();
         if (result.error() != simdjson::SUCCESS) {
-            throw AnnotatedException{"gemini::Serialize Failed", simdjson::error_message(result.error())};
+            throw AnnotatedException{"Serialize Failed", simdjson::error_message(result.error())};
         }
         std::string_view json_str = result.value();
 
@@ -460,7 +359,7 @@ std::vector<std::byte> Serialize(const Request& request) {
     } catch (AnnotatedException const&) {
         throw;
     } catch (std::exception const& e) {
-        AnnotatedException ex{"gemini::Serialize Failed", "string_builder failed to serialize gemini::Response."};
+        AnnotatedException ex{"Serialize Failed", "string_builder failed to serialize Response."};
         ex.AddContext(e.what());
         throw ex;
     }

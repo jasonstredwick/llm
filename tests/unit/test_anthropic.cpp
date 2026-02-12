@@ -15,14 +15,16 @@ using namespace jai::llm;
 void test_simple_serialization() {
     std::println("Testing Simple Anthropic Request Serialization...");
 
-    anthropic::Request req;
-    req.model = "claude-3-5-sonnet-20240620";
-    req.max_tokens = 1024;
-    
-    anthropic::MessageParam msg;
-    msg.role = anthropic::Role::USER;
-    msg.content = "Hello, Claude!";
-    req.messages.push_back(msg);
+    anthropic::Request req{
+        .max_tokens = 1024,
+        .messages = std::vector<anthropic::MessageParam>{
+            anthropic::MessageParam{
+                .content = anthropic::MessageParam::Content{std::string{"Hello, Claude!"}},
+                .role = anthropic::Role::USER
+            }
+        },
+        .model = std::string{"claude-3-5-sonnet-20240620"}
+    };
 
     auto serialized = anthropic::Serialize(req);
     std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -41,38 +43,27 @@ void test_simple_serialization() {
 void test_complex_serialization() {
     std::println("Testing Complex Anthropic Request Serialization...");
 
-    anthropic::Request req;
-    req.model = "claude-3-5-sonnet-20240620";
-    req.max_tokens = 4096;
+    anthropic::Request req{
+        .max_tokens = 4096,
+        .messages = std::vector<anthropic::MessageParam>{
+            anthropic::MessageParam{
+                .content = anthropic::MessageParam::Content{std::string{"What is the weather?"}},
+                .role = anthropic::Role::USER
+            },
+            anthropic::MessageParam{
+                .content = anthropic::MessageParam::Content{std::string{"I need to check the weather. Which city?"}},
+                .role = anthropic::Role::ASSISTANT
+            }
+        },
+        .model = std::string{"claude-3-5-sonnet-20240620"}
+    };
     req.temperature = 0.7;
-    
-    // System prompt
-    req.system = "You are a helpful assistant.";
+    req.system = std::string{"You are a helpful assistant."};
 
-    // Metadata
     anthropic::Metadata meta;
     meta.user_id = "user_1234";
     req.metadata = meta;
 
-    // Messages
-    anthropic::MessageParam msg1;
-    msg1.role = anthropic::Role::USER;
-    msg1.content = "What is the weather?";
-    req.messages.push_back(msg1);
-
-    anthropic::MessageParam msg2;
-    msg2.role = anthropic::Role::ASSISTANT;
-    msg2.content = "I need to check the weather. Which city?";
-    req.messages.push_back(msg2);
-
-    // Tools
-    anthropic::Tool get_weather;
-    get_weather.name = "get_weather";
-    get_weather.description = "Get the current weather in a given location";
-    
-    anthropic::Tool::InputSchema schema;
-    schema.type = anthropic::KindJsonSchemaType{};
-    
     json::Object properties;
     
     json::Object location_prop;
@@ -80,10 +71,16 @@ void test_complex_serialization() {
     location_prop["description"] = "The city and state, e.g. San Francisco, CA";
     
     properties["location"] = location_prop;
-    schema.properties = properties;
-    schema.required = std::vector<std::string>{"location"};
-    
-    get_weather.input_schema = schema;
+
+    anthropic::Tool get_weather{
+        .input_schema = anthropic::Tool::InputSchema{
+            .type = {{}},
+            .properties = properties,
+            .required = std::vector<std::string>{"location"}
+        },
+        .name = std::string{"get_weather"},
+        .description = std::string{"Get the current weather in a given location"}
+    };
     
     req.tools = std::vector<anthropic::ToolUnion>{get_weather};
 
@@ -105,31 +102,38 @@ void test_complex_serialization() {
 void test_part_serialization() {
     std::println("Testing Anthropic Part Serialization...");
 
-    anthropic::Request req;
-    req.model = "claude-3-5-sonnet-20240620";
-    req.max_tokens = 4096;
-
-    anthropic::MessageParam msg;
-    msg.role = anthropic::Role::USER;
-
-    // Text part
-    anthropic::TextBlockParam text_part;
-    text_part.text = "Here is an image and a tool result.";
-    
-    // Image part
-    anthropic::ImageBlockParam image_part;
-    anthropic::Base64ImageSource img_src;
-    img_src.data = "YmFzZTY0X2RhdGE=";
-    img_src.media_type = anthropic::ImageMediaType::IMAGE_PNG;
-    image_part.source = img_src;
-
-    // Tool result part
-    anthropic::ToolResultBlockParam tool_result;
-    tool_result.tool_use_id = "tool_123";
-    tool_result.content = "Tool execution successful.";
-
-    msg.content = std::vector<anthropic::ContentBlockParam>{text_part, image_part, tool_result};
-    req.messages.push_back(msg);
+    anthropic::Request req{
+        .max_tokens = 4096,
+        .messages = std::vector<anthropic::MessageParam>{
+            anthropic::MessageParam{
+                .content = anthropic::MessageParam::Content{
+                    std::vector<anthropic::ContentBlockParam>{
+                        anthropic::TextBlockParam{
+                            .type = {{}},
+                            .text = std::string{"Here is an image and a tool result."}
+                        },
+                        anthropic::ImageBlockParam{
+                            .type = {{}},
+                            .source = anthropic::ImageSource{
+                                anthropic::Base64ImageSource{
+                                    .type = {{}},
+                                    .data = std::string{"YmFzZTY0X2RhdGE="},
+                                    .media_type = anthropic::ImageMediaType::IMAGE_PNG
+                                }
+                            }
+                        },
+                        anthropic::ToolResultBlockParam{
+                            .type = {{}},
+                            .tool_use_id = std::string{"tool_123"},
+                            .content = anthropic::ToolResultBlockParam::Content{std::string{"Tool execution successful."}}
+                        }
+                    }
+                },
+                .role = anthropic::Role::USER
+            }
+        },
+        .model = std::string{"claude-3-5-sonnet-20240620"}
+    };
 
     auto serialized = anthropic::Serialize(req);
     std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -188,25 +192,26 @@ void test_response_deserialization() {
 
     auto resp = anthropic::Deserialize(res);
 
-    assert(resp.id == "msg_01Xv6Xk");
-    assert(resp.model == "claude-3-5-sonnet-20240620");
-    assert(resp.content.size() == 2);
+    assert(resp.id.Value() == "msg_01Xv6Xk");
+    assert(resp.model.Value() == "claude-3-5-sonnet-20240620");
+    auto content = resp.content.Value();
+    assert(content.size() == 2);
     
     // Check text block
-    auto* text_block = std::get_if<anthropic::TextBlock>(&resp.content[0]);
+    auto* text_block = std::get_if<anthropic::TextBlock>(&content[0]);
     assert(text_block != nullptr);
-    assert(text_block->text == "Hello! I can help with that.");
+    assert(text_block->text.Value() == "Hello! I can help with that.");
 
     // Check tool use block
-    auto* tool_use = std::get_if<anthropic::ToolUseBlock>(&resp.content[1]);
+    auto* tool_use = std::get_if<anthropic::ToolUseBlock>(&content[1]);
     assert(tool_use != nullptr);
-    assert(tool_use->name == "get_weather");
-    assert(tool_use->id == "toolu_01A09z9HS");
-    assert(std::get<std::string>(tool_use->input.at("location").data) == "San Francisco, CA");
+    assert(tool_use->name.Value() == "get_weather");
+    assert(tool_use->id.Value() == "toolu_01A09z9HS");
+    assert(std::get<std::string>(tool_use->input.Value().at("location").data) == "San Francisco, CA");
 
-    assert(resp.stop_reason == anthropic::StopReason::TOOL_USE);
-    assert(resp.usage.input_tokens == 15);
-    assert(resp.usage.output_tokens == 40);
+    assert(resp.stop_reason.Value() == anthropic::StopReason::TOOL_USE);
+    assert(resp.usage.Value().input_tokens.Value() == 15);
+    assert(resp.usage.Value().output_tokens.Value() == 40);
 
     std::println("[SUCCESS] Response Deserialization passed.");
 }
@@ -216,24 +221,33 @@ void test_anthropic_doc_examples() {
 
     // 1. Vision Request (from docs)
     {
-        anthropic::Request req;
-        req.model = "claude-3-5-sonnet-20240620";
-        req.max_tokens = 1024;
-
-        anthropic::MessageParam msg;
-        msg.role = anthropic::Role::USER;
-
-        anthropic::ImageBlockParam image_part;
-        anthropic::Base64ImageSource img_src;
-        img_src.data = "YmFzZTY0X2RhdGE=";
-        img_src.media_type = anthropic::ImageMediaType::IMAGE_JPEG;
-        image_part.source = img_src;
-
-        anthropic::TextBlockParam text_part;
-        text_part.text = "What is in the above image?";
-
-        msg.content = std::vector<anthropic::ContentBlockParam>{image_part, text_part};
-        req.messages.push_back(msg);
+        anthropic::Request req{
+            .max_tokens = 1024,
+            .messages = std::vector<anthropic::MessageParam>{
+                anthropic::MessageParam{
+                    .content = anthropic::MessageParam::Content{
+                        std::vector<anthropic::ContentBlockParam>{
+                            anthropic::ImageBlockParam{
+                                .type = {{}},
+                                .source = anthropic::ImageSource{
+                                    anthropic::Base64ImageSource{
+                                        .type = {{}},
+                                        .data = std::string{"YmFzZTY0X2RhdGE="},
+                                        .media_type = anthropic::ImageMediaType::IMAGE_JPEG
+                                    }
+                                }
+                            },
+                            anthropic::TextBlockParam{
+                                .type = {{}},
+                                .text = std::string{"What is in the above image?"}
+                            }
+                        }
+                    },
+                    .role = anthropic::Role::USER
+                }
+            },
+            .model = std::string{"claude-3-5-sonnet-20240620"}
+        };
 
         auto serialized = anthropic::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -284,16 +298,17 @@ void test_anthropic_doc_examples() {
 
         auto resp = anthropic::Deserialize(res);
 
-        assert(resp.stop_reason == anthropic::StopReason::TOOL_USE);
-        assert(resp.content.size() == 2);
+        assert(resp.stop_reason.Value() == anthropic::StopReason::TOOL_USE);
+        auto content = resp.content.Value();
+        assert(content.size() == 2);
         
-        auto* tool_use = std::get_if<anthropic::ToolUseBlock>(&resp.content[1]);
+        auto* tool_use = std::get_if<anthropic::ToolUseBlock>(&content[1]);
         assert(tool_use != nullptr);
-        assert(tool_use->name == "get_weather");
-        assert(tool_use->id == "toolu_01A09z9HS");
+        assert(tool_use->name.Value() == "get_weather");
+        assert(tool_use->id.Value() == "toolu_01A09z9HS");
         
-        auto loc_it = tool_use->input.find("location");
-        assert(loc_it != tool_use->input.end());
+        auto loc_it = tool_use->input.Value().find("location");
+        assert(loc_it != tool_use->input.Value().end());
         assert(std::get<std::string>(loc_it->second.data) == "San Francisco, CA");
         std::println("  [SUCCESS] Anthropic Documentation Examples passed.");
     }
@@ -346,20 +361,21 @@ void test_anthropic_doc_examples() {
 
         auto resp = anthropic::Deserialize(res);
 
-        assert(resp.content.size() == 3);
-        assert(std::holds_alternative<anthropic::TextBlock>(resp.content[0]));
-        assert(std::holds_alternative<anthropic::ToolUseBlock>(resp.content[1]));
-        assert(std::holds_alternative<anthropic::ToolUseBlock>(resp.content[2]));
+        auto content = resp.content.Value();
+        assert(content.size() == 3);
+        assert(std::holds_alternative<anthropic::TextBlock>(content[0]));
+        assert(std::holds_alternative<anthropic::ToolUseBlock>(content[1]));
+        assert(std::holds_alternative<anthropic::ToolUseBlock>(content[2]));
         
-        auto& tool1 = std::get<anthropic::ToolUseBlock>(resp.content[1]);
-        assert(tool1.name == "get_weather");
+        auto& tool1 = std::get<anthropic::ToolUseBlock>(content[1]);
+        assert(tool1.name.Value() == "get_weather");
         
-        auto& tool2 = std::get<anthropic::ToolUseBlock>(resp.content[2]);
-        assert(tool2.name == "get_calendar");
+        auto& tool2 = std::get<anthropic::ToolUseBlock>(content[2]);
+        assert(tool2.name.Value() == "get_calendar");
 
-        assert(resp.usage.input_tokens == 150);
-        assert(resp.usage.cache_read_input_tokens == 50);
-        assert(resp.usage.service_tier == anthropic::UsageServiceTier::PRIORITY);
+        assert(resp.usage.Value().input_tokens.Value() == 150);
+        assert(resp.usage.Value().cache_read_input_tokens.Value() == 50);
+        assert(resp.usage.Value().service_tier.Value() == anthropic::UsageServiceTier::PRIORITY);
 
         std::println("  [SUCCESS] Anthropic Advanced Documentation Examples passed.");
     }

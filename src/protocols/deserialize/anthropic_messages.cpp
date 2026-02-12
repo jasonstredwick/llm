@@ -1,5 +1,5 @@
 #include "../../../interface/protocols/anthropic/messages.hpp"
-#include "../../../interface//core/error.hpp"
+#include "../../../interface/protocols/anthropic/strings.hpp"
 #include "base.hpp"
 #include "../../curl.hpp"
 
@@ -10,7 +10,7 @@ namespace jai::llm {
 /***
  * Response Citations
  */
-BEGIN_PARSE(anthropic::CitationCharLocation)
+BEGIN_DESERIALIZE(anthropic::CitationCharLocation)
     FIELD(src, type),
     FIELD(src, cited_text),
     FIELD(src, document_index),
@@ -18,9 +18,9 @@ BEGIN_PARSE(anthropic::CitationCharLocation)
     FIELD(src, end_char_index),
     FIELD(src, start_char_index),
     FIELD(src, file_id)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::CitationPageLocation)
+BEGIN_DESERIALIZE(anthropic::CitationPageLocation)
     FIELD(src, type),
     FIELD(src, cited_text),
     FIELD(src, document_index),
@@ -28,9 +28,9 @@ BEGIN_PARSE(anthropic::CitationPageLocation)
     FIELD(src, end_page_number),
     FIELD(src, start_page_number),
     FIELD(src, file_id)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::CitationContentBlockLocation)
+BEGIN_DESERIALIZE(anthropic::CitationContentBlockLocation)
     FIELD(src, type),
     FIELD(src, cited_text),
     FIELD(src, document_index),
@@ -38,17 +38,17 @@ BEGIN_PARSE(anthropic::CitationContentBlockLocation)
     FIELD(src, end_block_index),
     FIELD(src, start_block_index),
     FIELD(src, file_id)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::CitationsWebSearchResultLocation)
+BEGIN_DESERIALIZE(anthropic::CitationsWebSearchResultLocation)
     FIELD(src, type),
     FIELD(src, cited_text),
     FIELD(src, encrypted_index),
     FIELD(src, title),
     FIELD(src, url)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::CitationsSearchResultLocation)
+BEGIN_DESERIALIZE(anthropic::CitationsSearchResultLocation)
     FIELD(src, type),
     FIELD(src, cited_text),
     FIELD(src, end_block_index),
@@ -56,76 +56,103 @@ BEGIN_PARSE(anthropic::CitationsSearchResultLocation)
     FIELD(src, source),
     FIELD(src, start_block_index),
     FIELD(src, title)
-END_PARSE
+END_DESERIALIZE
 
+BEGIN_DESERIALIZE_VARIANT(anthropic::TextCitation)
+    auto kind = EXTRACT_KIND(anthropic::CitationKinds, src, "type");
+    FIELD_KIND(src, kind, anthropic::CitationKinds::CHAR_LOCATION,              anthropic::CitationCharLocation)
+    FIELD_KIND(src, kind, anthropic::CitationKinds::CONTENT_BLOCK_LOCATION,     anthropic::CitationContentBlockLocation)
+    FIELD_KIND(src, kind, anthropic::CitationKinds::PAGE_LOCATION,              anthropic::CitationPageLocation)
+    FIELD_KIND(src, kind, anthropic::CitationKinds::SEARCH_RESULT_LOCATION,     anthropic::CitationsSearchResultLocation)
+    FIELD_KIND(src, kind, anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION, anthropic::CitationsWebSearchResultLocation)
+END_DESERIALIZE_VARIANT(anthropic::TextCitation)
 
 /***
  * Response Content Blocks
  */
-BEGIN_PARSE(anthropic::TextBlock)
+BEGIN_DESERIALIZE(anthropic::TextBlock)
     FIELD(src, type),
     FIELD(src, citations),
     FIELD(src, text)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::ThinkingBlock)
+BEGIN_DESERIALIZE(anthropic::ThinkingBlock)
     FIELD(src, type),
     FIELD(src, signature),
     FIELD(src, thinking)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::RedactedThinkingBlock)
+BEGIN_DESERIALIZE(anthropic::RedactedThinkingBlock)
     FIELD(src, type),
     FIELD(src, data)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::ToolUseBlock)
+BEGIN_DESERIALIZE(anthropic::ToolUseBlock)
     FIELD(src, type),
     FIELD(src, id),
     FIELD(src, input),
     FIELD(src, name)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::ServerToolUseBlock)
+BEGIN_DESERIALIZE(anthropic::ServerToolUseBlock)
     FIELD(src, type),
     FIELD(src, id),
     FIELD(src, input),
     FIELD(src, name)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::WebSearchToolResultBlock)
+BEGIN_DESERIALIZE(anthropic::WebSearchToolResultBlock)
     FIELD(src, type),
     FIELD(src, content),
     FIELD(src, tool_use_id)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::WebSearchToolResultBlock::WebSearchResultBlock)
+BEGIN_DESERIALIZE(anthropic::WebSearchToolResultBlock::WebSearchResultBlock)
     FIELD(src, type),
     FIELD(src, encrypted_content),
     FIELD(src, page_age),
     FIELD(src, title),
     FIELD(src, url)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::WebSearchToolResultBlock::WebSearchToolResultError)
+BEGIN_DESERIALIZE(anthropic::WebSearchToolResultBlock::WebSearchToolResultError)
     FIELD(src, type),
     FIELD(src, error_code)
-END_PARSE
+END_DESERIALIZE
 
+BEGIN_DESERIALIZE_VARIANT(anthropic::WebSearchToolResultBlock::Content)
+    if (src.is_array()) {
+        return T{DeserializeTo<std::vector<anthropic::WebSearchToolResultBlock::WebSearchResultBlock>>(src)};
+    }
+    auto kind = EXTRACT_KIND(anthropic::WebSearchToolResultErrorType, src, "type");
+    FIELD_KIND(src, kind,
+               anthropic::WebSearchToolResultErrorType::TOOL_RESULT_ERROR,
+               anthropic::WebSearchToolResultBlock::WebSearchToolResultError)
+END_DESERIALIZE_VARIANT(anthropic::WebSearchToolResultBlock::Content)
+
+BEGIN_DESERIALIZE_VARIANT(anthropic::ResponseContentBlock)
+    auto kind = EXTRACT_KIND(anthropic::ResponseContentBlockKinds, src, "type");
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::TEXT,                   anthropic::TextBlock)
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::THINKING,               anthropic::ThinkingBlock)
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::REDACTED_THINKING,      anthropic::RedactedThinkingBlock)
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::TOOL_USE,               anthropic::ToolUseBlock)
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE,        anthropic::ServerToolUseBlock)
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT, anthropic::WebSearchToolResultBlock)
+END_DESERIALIZE_VARIANT(anthropic::ResponseContentBlock)
 
 /***
  * Usage and Substructures
  */
-BEGIN_PARSE(anthropic::CacheCreation)
+BEGIN_DESERIALIZE(anthropic::CacheCreation)
     FIELD(src, ephemeral_1h_input_tokens),
     FIELD(src, ephemeral_5m_input_tokens)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::ServerToolUsage)
+BEGIN_DESERIALIZE(anthropic::ServerToolUsage)
     FIELD(src, web_search_requests)
-END_PARSE
+END_DESERIALIZE
 
-BEGIN_PARSE(anthropic::Usage)
+BEGIN_DESERIALIZE(anthropic::Usage)
     FIELD(src, cache_creation),
     FIELD(src, cache_creation_input_tokens),
     FIELD(src, cache_read_input_tokens),
@@ -133,13 +160,13 @@ BEGIN_PARSE(anthropic::Usage)
     FIELD(src, output_tokens),
     FIELD(src, server_tool_use),
     FIELD(src, service_tier)
-END_PARSE
+END_DESERIALIZE
 
 
 /***
  * Top-level Response Message
  */
-BEGIN_PARSE(anthropic::Response)
+BEGIN_DESERIALIZE(anthropic::Response)
     FIELD(src, type),
     FIELD(src, id),
     FIELD(src, content),
@@ -148,124 +175,28 @@ BEGIN_PARSE(anthropic::Response)
     FIELD(src, stop_reason),
     FIELD(src, stop_sequence),
     FIELD(src, usage)
-END_PARSE
-
-
-/***
- * Variants
- */
-template <>
-anthropic::TextCitation Parse<anthropic::TextCitation>(const simdjson::dom::element& src) {
-    using T = anthropic::TextCitation;
-    auto obj = src.get_object();
-    auto type_sv = obj["type"].get_string().value();
-    auto opt_kind = from_string_view<anthropic::CitationKinds>(type_sv);
-    if (!opt_kind) {
-        throw AnnotatedException{std::string{"Unexpected anthropic::TextCitation type: "} +
-                                 std::string{type_sv}};
-    }
-
-    switch (*opt_kind) {
-    case anthropic::CitationKinds::CHAR_LOCATION:
-        return T{Parse<anthropic::CitationCharLocation>(src)};
-    case anthropic::CitationKinds::CONTENT_BLOCK_LOCATION:
-        return T{Parse<anthropic::CitationContentBlockLocation>(src)};
-    case anthropic::CitationKinds::PAGE_LOCATION:
-        return T{Parse<anthropic::CitationPageLocation>(src)};
-    case anthropic::CitationKinds::SEARCH_RESULT_LOCATION:
-        return T{Parse<anthropic::CitationsSearchResultLocation>(src)};
-    case anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION:
-        return T{Parse<anthropic::CitationsWebSearchResultLocation>(src)};
-    default:
-        throw AnnotatedException{"anthropic::TextCitation variant unsatisfied"};
-    }
-}
-
-template <>
-anthropic::ResponseContentBlock Parse<anthropic::ResponseContentBlock>(const simdjson::dom::element& src) {
-    using T = anthropic::ResponseContentBlock;
-    auto obj = src.get_object();
-    auto type_sv = obj["type"].get_string().value();
-    auto opt_kind = jai::llm::from_string_view<anthropic::ResponseContentBlockKinds>(type_sv);
-    if (!opt_kind) {
-        throw AnnotatedException{std::string{"Unexpected anthropic::ResponseContentBlockKinds type: "} +
-                                 std::string{type_sv}};
-    }
-
-    switch (*opt_kind) {
-    case anthropic::ResponseContentBlockKinds::TEXT:
-        return T{Parse<anthropic::TextBlock>(src)};
-    case anthropic::ResponseContentBlockKinds::THINKING:
-        return T{Parse<anthropic::ThinkingBlock>(src)};
-    case anthropic::ResponseContentBlockKinds::REDACTED_THINKING:
-        return T{Parse<anthropic::RedactedThinkingBlock>(src)};
-    case anthropic::ResponseContentBlockKinds::TOOL_USE:
-        return T{Parse<anthropic::ToolUseBlock>(src)};
-    case anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE:
-        return T{Parse<anthropic::ServerToolUseBlock>(src)};
-    case anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT:
-        return T{Parse<anthropic::WebSearchToolResultBlock>(src)};
-    default:
-        throw AnnotatedException{"anthropic::ResponseContentBlock variant unsatisfied"};
-    }
-}
-
-template <>
-anthropic::WebSearchToolResultBlock::Content
-    Parse<anthropic::WebSearchToolResultBlock::Content>(const simdjson::dom::element& src)
-{
-    using T = anthropic::WebSearchToolResultBlock::Content;
-
-    if (src.is_array()) {
-        return T{ParseArrayOf<anthropic::WebSearchToolResultBlock::WebSearchResultBlock>(src)};
-    }
-
-    auto obj = src.get_object();
-    auto type_sv = obj["type"].get_string().value();
-    auto opt_kind = jai::llm::from_string_view<anthropic::WebSearchToolResultErrorType>(type_sv);
-    if (!opt_kind) {
-        throw AnnotatedException{std::string{"Unexpected anthropic::WebSearchToolResultBlock::Content type: "} +
-                                 std::string{type_sv}};
-    }
-
-    switch (*opt_kind) {
-    case anthropic::WebSearchToolResultErrorType::TOOL_RESULT_ERROR:
-        return T{Parse<anthropic::WebSearchToolResultBlock::WebSearchToolResultError>(src)};
-    default:
-        throw AnnotatedException{"anthropic::WebSearchToolResultErrorType variant unsatisfied"};
-    }
-}
-
-
-} // namespace jai::llm
-
-
-#undef FIELD
-#undef BEGIN_PARSE
-#undef END_PARSE
+END_DESERIALIZE
 
 
 /***
  * Top-level Deserialize
  */
-namespace jai::llm::anthropic {
+namespace anthropic {
+    Response Deserialize(const curl::Response& response) {
+        if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
+            throw AnnotatedException{"Simdjson padding check failed"};
+        }
 
+        static thread_local simdjson::dom::parser parser{};
 
-Response Deserialize(const curl::Response& response) {
-    if (response.body.size() < response.body_len + simdjson::SIMDJSON_PADDING) {
-        throw AnnotatedException{"Simdjson padding check failed"};
-    }
-
-    static thread_local simdjson::dom::parser parser{};
-
-    try {
-        simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()),
-                                                  response.body_len);
-        return Parse<Response>(doc);
-    } catch (const simdjson::simdjson_error& e) {
-        throw AnnotatedException{"anthropic::Deserialize Failed", e.what()};
+        try {
+            simdjson::dom::element doc = parser.parse(reinterpret_cast<const char*>(response.body.data()),
+                                                    response.body_len);
+            return DeserializeTo<Response>(doc);
+        } catch (const simdjson::simdjson_error& e) {
+            throw AnnotatedException{"Deserialize Failed", e.what()};
+        }
     }
 }
-
 
 }

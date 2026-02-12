@@ -56,37 +56,37 @@ struct Request {
 
 
 struct Response {
-    KindResponse object{};
-    bool background;
-    double completed_at;
-    ConversationRef conversation;
-    double created_at;
-    ResponseError error;
-    std::string id;
-    IncompleteDetails incomplete_details;
-    response::Output instructions;
-    int64_t max_output_tokens;
-    int64_t max_tool_calls;
-    std::map<NameLen<64>, NameLen<512>> metadata;
-    std::string model;
-    std::vector<response::Item> output;
-    bool parallel_tool_calls;
-    std::string previous_response_id;
-    response::Prompt prompt;
-    std::string prompt_cache_key;
-    std::string prompt_cache_retention;
-    Reasoning reasoning;
-    std::string safety_identifier;
-    ServiceTier service_tier;
-    ResponseStatus status;
-    double temperature;
-    TextConfig text;
-    response::ToolChoice tool_choice;
-    std::vector<response::Tool> tools;
-    int64_t top_logprobs;
-    double top_p;
-    TruncationStrategy truncation;
-    ResponseUsage usage;
+    Required<KindResponse> object{{}};
+    Required<bool> background;
+    Required<double> completed_at;
+    Required<ConversationRef> conversation;
+    Required<double> created_at;
+    Required<ResponseError> error;
+    Required<std::string> id;
+    Required<IncompleteDetails> incomplete_details;
+    Required<response::Output> instructions;
+    Required<int64_t> max_output_tokens;
+    Required<int64_t> max_tool_calls;
+    Required<std::map<NameLen<64>, NameLen<512>>> metadata;
+    Required<std::string> model;
+    Required<std::vector<response::Item>> output;
+    Required<bool> parallel_tool_calls;
+    Required<std::string> previous_response_id;
+    Required<response::Prompt> prompt;
+    Required<std::string> prompt_cache_key;
+    Required<std::string> prompt_cache_retention;
+    Required<Reasoning> reasoning;
+    Required<std::string> safety_identifier;
+    Required<ServiceTier> service_tier;
+    Required<ResponseStatus> status;
+    Required<double> temperature;
+    Required<TextConfig> text;
+    Required<response::ToolChoice> tool_choice;
+    Required<std::vector<response::Tool>> tools;
+    Required<int64_t> top_logprobs;
+    Required<double> top_p;
+    Required<TruncationStrategy> truncation;
+    Required<ResponseUsage> usage;
 };
 
 

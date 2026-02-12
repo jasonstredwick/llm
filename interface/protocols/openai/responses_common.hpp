@@ -22,58 +22,58 @@ namespace jai::llm::openai {
 
 struct ComputerToolActions {
     struct Click {
-        KindClickAction type{};
-        MouseButton button;
-        int64_t x;
-        int64_t y;
+        Required<KindClickAction> type{{}};
+        Required<MouseButton> button;
+        Required<int64_t> x;
+        Required<int64_t> y;
     };
 
     struct DoubleClick {
-        KindDoubleClickAction type{};
-        int64_t x;
-        int64_t y;
+        Required<KindDoubleClickAction> type{{}};
+        Required<int64_t> x;
+        Required<int64_t> y;
     };
 
     struct Drag {
         struct Coordinate {
-            int64_t x;
-            int64_t y;
+            Required<int64_t> x;
+            Required<int64_t> y;
         };
 
-        KindDragAction type{};
-        std::vector<Coordinate> path;
+        Required<KindDragAction> type{{}};
+        Required<std::vector<Coordinate>> path;
     };
 
     struct KeyPress {
-        KindKeyPressAction type{};
-        std::vector<std::string> keys;
+        Required<KindKeyPressAction> type{{}};
+        Required<std::vector<std::string>> keys;
     };
 
     struct Move {
-        KindMoveAction type{};
-        int64_t x;
-        int64_t y;
+        Required<KindMoveAction> type{{}};
+        Required<int64_t> x;
+        Required<int64_t> y;
     };
 
     struct Screenshot {
-        KindScreenshotAction type{};
+        Required<KindScreenshotAction> type{{}};
     };
 
     struct Scroll {
-        KindScrollAction type{};
-        int64_t scroll_x;
-        int64_t scroll_y;
-        int64_t x;
-        int64_t y;
+        Required<KindScrollAction> type{{}};
+        Required<int64_t> scroll_x;
+        Required<int64_t> scroll_y;
+        Required<int64_t> x;
+        Required<int64_t> y;
     };
 
     struct Type {
-        KindTypeAction type{};
-        std::string text;
+        Required<KindTypeAction> type{{}};
+        Required<std::string> text;
     };
 
     struct Wait {
-        KindWaitAction type{};
+        Required<KindWaitAction> type{{}};
     };
 
     using All = std::variant<Click, DoubleClick, Drag, KeyPress, Move, Screenshot, Scroll, Type, Wait>;
@@ -81,62 +81,62 @@ struct ComputerToolActions {
 
 
 struct ConversationRef {
-    std::string id;
+    Required<std::string> id;
 };
 
 
 struct IncompleteDetails {
-    std::string reason;
+    Required<std::string> reason;
 };
 
 
 struct PatchFileOperations {
     struct Create {
-        KindCreateFileOperation type{};
-        std::string diff;
-        std::string path;
+        Required<KindCreateFileOperation> type{{}};
+        Required<std::string> diff;
+        Required<std::string> path;
     };
 
     struct Delete {
-        KindDeleteFileOperation type{};
-        std::string path;
+        Required<KindDeleteFileOperation> type{{}};
+        Required<std::string> path;
     };
 
     struct Update {
-        KindUpdateFileOperation type{};
-        std::string diff;
-        std::string path;
+        Required<KindUpdateFileOperation> type{{}};
+        Required<std::string> diff;
+        Required<std::string> path;
     };
 };
 
 
 
 struct Reasoning {
-    ReasoningEffort effort;
-    ReasoningSummary summary;
+    Required<ReasoningEffort> effort;
+    Required<ReasoningSummary> summary;
 };
 
 
 struct ResponseError {
-    std::string code;
-    std::string message;
+    Required<std::string> code;
+    Required<std::string> message;
 };
 
 
 struct ResponseUsage {
     struct InputTokenDetails {
-        int64_t cached_tokens;
+        Required<int64_t> cached_tokens;
     };
 
     struct OutputTokenDetails {
-        int64_t reasoning_tokens;
+        Required<int64_t> reasoning_tokens;
     };
 
-    int64_t input_tokens;
-    InputTokenDetails input_tokens_details;
-    int64_t output_tokens;
-    OutputTokenDetails output_tokens_details;
-    int64_t total_tokens;
+    Required<int64_t> input_tokens;
+    Required<InputTokenDetails> input_tokens_details;
+    Required<int64_t> output_tokens;
+    Required<OutputTokenDetails> output_tokens_details;
+    Required<int64_t> total_tokens;
 };
 
 
@@ -147,13 +147,13 @@ struct StreamOptions {
 
 struct TextConfig {
     struct FormatText {
-        KindFormatText type{};
+        Required<KindFormatText> type{{}};
     };
 
     struct FormatJsonSchema {
-        KindFormatJsonSchema type{};
-        std::string name;
-        jai::llm::json::Object schema;
+        Required<KindFormatJsonSchema> type{{}};
+        Required<std::string> name;
+        Required<jai::llm::json::Object> schema;
         std::optional<std::string> description{};
         std::optional<bool> strict{};
     };

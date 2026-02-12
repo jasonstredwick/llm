@@ -68,32 +68,32 @@ enum class UrlRetrievalStatus {
  * Content data structures
  */
 struct Blob {
-    MediaType mimeType;
-    std::string data; // base64
+    Required<MediaType> mimeType;
+    Required<std::string> data; // base64
 };
 
 
 struct CodeExecutionResult {
-    ExecutionOutcome outcome;
+    Required<ExecutionOutcome> outcome;
     std::optional<std::string> output{};
 };
 
 
 struct ExecutableCode {
-    CodeLanguage language;
-    std::string code;
+    Required<CodeLanguage> language;
+    Required<std::string> code;
 };
 
 
 struct FileData {
     std::optional<MediaType> mimeType{};
-    std::string fileUri;
+    Required<std::string> fileUri;
 };
 
 
 struct FunctionCall {
-    Name64 name;
-    json::Object args;
+    Required<Name64> name;
+    Required<json::Object> args;
     std::optional<std::string> id{};
 };
 
@@ -101,17 +101,17 @@ struct FunctionCall {
 struct FunctionResponse {
     using Part = std::variant<Blob>;
 
-    Name64 name;
-    json::Object response;
+    Required<Name64> name;
+    Required<json::Object> response;
     std::optional<std::string> id{};
-    std::vector<Part> parts{};
+    Required<std::vector<Part>> parts{{}};
     std::optional<bool> willContinue{};
     std::optional<Scheduling> scheduling{};
 };
 
 
 struct Text {
-    std::string text;
+    Required<std::string> text;
 };
 
 
@@ -127,13 +127,13 @@ struct RequestContent {
         using Data = std::variant<Blob, CodeExecutionResult, FileData, FunctionResponse, Text>;
         using Metadata = std::variant<VideoMetadata>;
 
-        Data data;
-        json::Object partMetadata;
-        Metadata metadata;
+        Required<Data> data;
+        Required<json::Object> partMetadata;
+        Required<Metadata> metadata;
         std::optional<std::string> thoughtSignature{};
     };
 
-    std::vector<RequestPart> parts;
+    Required<std::vector<RequestPart>> parts;
     std::optional<Role> role{};
 };
 
@@ -142,13 +142,13 @@ struct ResponseContent {
     struct ResponsePart {
         using ResponsePartData = std::variant<Blob, ExecutableCode, FileData, FunctionCall, Text>;
 
-        ResponsePartData data;
-        json::Object partMetadata;
+        Required<ResponsePartData> data;
+        Required<json::Object> partMetadata;
         std::optional<std::string> thoughtSignature{};
         std::optional<bool> thought{};
     };
 
-    std::vector<ResponsePart> parts{};
+    Required<std::vector<ResponsePart>> parts{{}};
     std::optional<Role> role{};
 };
 
@@ -157,7 +157,7 @@ struct ResponseContent {
  * Tool data structures
  */
 struct Schema {
-    SchemaType type;
+    Required<SchemaType> type;
     std::optional<std::string> format{};
     std::optional<std::string> title{};
     std::optional<std::string> description{};
@@ -186,21 +186,21 @@ struct CodeExecution {};
 
 
 struct ComputerUse {
-    Environment environment;
-    std::vector<std::string> excludedPredefinedFunctions{};
+    Required<Environment> environment;
+    Required<std::vector<std::string>> excludedPredefinedFunctions{{}};
 };
 
 
 struct FileSearch {
-    std::vector<std::string> fileSearchStoreNames;
+    Required<std::vector<std::string>> fileSearchStoreNames;
     std::optional<std::string> metadataFilter{};
     std::optional<int64_t> topK{};
 };
 
 
 struct FunctionDeclaration {
-    Name64 name;
-    std::string description;
+    Required<Name64> name;
+    Required<std::string> description;
     std::optional<Behavior> behavior{};
     std::optional<Schema> parameters{};
     std::optional<json::Value> parametersJsonSchema{};
@@ -226,11 +226,11 @@ struct GoogleSearch {
 
 struct GoogleSearchRetrieval {
     struct Config {
-        DynamicRetrievalMode mode;
+        Required<DynamicRetrievalMode> mode;
         std::optional<int64_t> dynamicThreshold{};
     };
 
-    Config dynamicRetrievalConfig;
+    Required<Config> dynamicRetrievalConfig;
 };
 
 
@@ -252,23 +252,23 @@ struct ImageConfig {
 
 struct SpeechConfig {
     struct PrebuiltVoiceConfig{
-        std::string voiceName;
+        Required<std::string> voiceName;
     };
 
     struct VoiceConfig {
-        std::variant<PrebuiltVoiceConfig> voice_config;
+        Required<std::variant<PrebuiltVoiceConfig>> voice_config;
     };
 
     struct SpeakerVoiceConfig {
-        std::string speaker;
-        VoiceConfig voiceConfig;
+        Required<std::string> speaker;
+        Required<VoiceConfig> voiceConfig;
     };
 
     struct MultiSpeakerVoiceConfig {
-        std::vector<SpeakerVoiceConfig> speakerVoiceConfigs;
+        Required<std::vector<SpeakerVoiceConfig>> speakerVoiceConfigs;
     };
 
-    VoiceConfig voiceConfig;
+    Required<VoiceConfig> voiceConfig;
     std::optional<MultiSpeakerVoiceConfig> multiSpeakerVoiceConfig{};
     std::optional<std::string> languageCode{};
     // TODO: Add enum?
@@ -279,19 +279,19 @@ struct SpeechConfig {
 
 
 struct ThinkingConfig {
-    int64_t thinkingBudget;
+    Required<int64_t> thinkingBudget;
     std::optional<ThinkingLevel> thinkingLevel{};
-    bool includeThoughts;
+    Required<bool> includeThoughts;
 };
 
 
 struct GenerationConfig {
-    std::vector<std::string> stopSequences{};
+    Required<std::vector<std::string>> stopSequences{{}};
     std::optional<ResponseMimeType> responseMimeType{};
     std::optional<Schema> responseSchema{};
     std::optional<json::Value> _responseJsonSchema{};
     std::optional<json::Value> responseJsonSchema{};
-    std::vector<Modality> responseModalities{};
+    Required<std::vector<Modality>> responseModalities{{}};
     std::optional<int64_t> candidateCount{};
     std::optional<int64_t> maxOutputTokens{};
     std::optional<double> temperature{};
@@ -310,21 +310,21 @@ struct GenerationConfig {
 
 
 struct SafetySetting {
-    HarmCategory category;
-    HarmBlockThreshold threshold;
+    Required<HarmCategory> category;
+    Required<HarmBlockThreshold> threshold;
 };
 
 
 struct ToolConfig {
     struct FunctionCallingConfig {
         std::optional<ToolMode> mode{};
-        std::vector<std::string> allowedFunctionNames{};
+        Required<std::vector<std::string>> allowedFunctionNames{{}};
     };
 
     struct RetrievalConfig {
         struct LatLng {
-            double latitude;
-            double longitude;
+            Required<double> latitude;
+            Required<double> longitude;
         };
         std::optional<LatLng> latLng{};
         std::optional<std::string> languageCode{};
@@ -336,10 +336,10 @@ struct ToolConfig {
 
 
 struct Request {
-    std::vector<RequestContent> contents;
-    std::vector<Tool> tools{};
+    Required<std::vector<RequestContent>> contents;
+    Required<std::vector<Tool>> tools{{}};
     std::optional<ToolConfig> toolConfig{};
-    std::vector<SafetySetting> safetySettings{};
+    Required<std::vector<SafetySetting>> safetySettings{{}};
     std::optional<RequestContent> systemInstruction{};
     std::optional<GenerationConfig> generationConfig{};
     std::optional<std::string> cachedContent{};
@@ -357,7 +357,7 @@ struct CitationMetadata {
         std::optional<std::string> license{};
     };
 
-    std::vector<CitationSource> citationSources;
+    Required<std::vector<CitationSource>> citationSources;
 };
 
 
@@ -365,19 +365,19 @@ struct GroundingChunk {
     struct Maps {
         struct PlaceAnswerSources {
             struct ReviewSnippets {
-                std::string reviewId;
-                EncodedUrl googleMapsUri;
-                std::string title;
+                Required<std::string> reviewId;
+                Required<EncodedUrl> googleMapsUri;
+                Required<std::string> title;
             };
 
-            std::vector<ReviewSnippets> reviewSnippets;
+            Required<std::vector<ReviewSnippets>> reviewSnippets;
         };
 
-        EncodedUrl uri;
-        std::string title;
-        std::string text;
-        std::string placeId;
-        PlaceAnswerSources placeAnswerSources;
+        Required<EncodedUrl> uri;
+        Required<std::string> title;
+        Required<std::string> text;
+        Required<std::string> placeId;
+        Required<PlaceAnswerSources> placeAnswerSources;
     };
 
     struct RetrievedContext {
@@ -388,27 +388,27 @@ struct GroundingChunk {
     };
 
     struct Web {
-        EncodedUrl uri;
-        std::string title;
+        Required<EncodedUrl> uri;
+        Required<std::string> title;
     };
 
     using ChunkType = std::variant<Maps, RetrievedContext, Web>;
 
-    ChunkType chunk_type;
+    Required<ChunkType> chunk_type;
 };
 
 
 struct GroundingSupport {
     struct Segment {
-        int64_t partIndex;
-        int64_t startIndex;
-        int64_t endIndex;
-        std::string text;
+        Required<int64_t> partIndex;
+        Required<int64_t> startIndex;
+        Required<int64_t> endIndex;
+        Required<std::string> text;
     };
 
     std::optional<std::vector<int64_t>> groundingChunkIndices{};
     std::optional<std::vector<double>> confidenceScores{};
-    Segment segment;
+    Required<Segment> segment;
 };
 
 
@@ -423,9 +423,9 @@ struct GroundingMetadata {
         std::optional<double> googleSearchDynamicRetrievalScore{};
     };
 
-    std::vector<GroundingChunk> groundingChunks;
-    std::vector<GroundingSupport> groundingSupports;
-    std::vector<std::string> webSearchQueries;
+    Required<std::vector<GroundingChunk>> groundingChunks;
+    Required<std::vector<GroundingSupport>> groundingSupports;
+    Required<std::vector<std::string>> webSearchQueries;
     std::optional<SearchEntryPoint> searchEntryPoint{};
     std::optional<RetrievalMetadata> retrievalMetadata;
     std::optional<std::string> googleMapsWidgetContextToken{};
@@ -434,92 +434,92 @@ struct GroundingMetadata {
 
 struct LogprobsResult {
     struct Candidate {
-        std::string token;
-        int64_t tokenId;
-        double logProbability;
+        Required<std::string> token;
+        Required<int64_t> tokenId;
+        Required<double> logProbability;
     };
 
     struct TopCandidate {
-        std::vector<LogprobsResult::Candidate> candidates;
+        Required<std::vector<LogprobsResult::Candidate>> candidates;
     };
 
-    std::vector<TopCandidate> topCandidates;
-    std::vector<LogprobsResult::Candidate> chosenCandidates;
-    double logProbabilitySum;
+    Required<std::vector<TopCandidate>> topCandidates;
+    Required<std::vector<LogprobsResult::Candidate>> chosenCandidates;
+    Required<double> logProbabilitySum;
 };
 
 
 struct SafetyRating {
-    HarmCategory category;
-    HarmProbability probability;
-    bool blocked;
+    Required<HarmCategory> category;
+    Required<HarmProbability> probability;
+    Required<bool> blocked;
 };
 
 
 struct UrlContextMetadata {
     struct UrlMetadata {
-        std::string retrievedUrl;
-        UrlRetrievalStatus urlRetrievalStatus;
+        Required<std::string> retrievedUrl;
+        Required<UrlRetrievalStatus> urlRetrievalStatus;
     };
 
-    std::vector<UrlMetadata> urlMetadata;
+    Required<std::vector<UrlMetadata>> urlMetadata;
 };
 
 
 struct Candidate {
-    ResponseContent content;
+    Required<ResponseContent> content;
     std::optional<FinishReason> finishReason{};
-    std::vector<SafetyRating> safetyRatings{};
-    CitationMetadata citationMetadata;
-    int64_t tokenCount;
-    GroundingMetadata groundingMetadata;
+    Required<std::vector<SafetyRating>> safetyRatings{{}};
+    Required<CitationMetadata> citationMetadata;
+    Required<int64_t> tokenCount;
+    Required<GroundingMetadata> groundingMetadata;
     std::optional<double> avgLogprobs;
     std::optional<LogprobsResult> logprobsResult;
-    UrlContextMetadata urlContextMetadata;
-    int64_t index;
+    Required<UrlContextMetadata> urlContextMetadata;
+    Required<int64_t> index;
     std::optional<std::string> finishMessage{};
 };
 
 
 struct ModelStatus {
-    ModelStage modelStage;
-    RFC3339Timestamp retirementTime;
-    std::string message;
+    Required<ModelStage> modelStage;
+    Required<RFC3339Timestamp> retirementTime;
+    Required<std::string> message;
 };
 
 
 struct PromptFeedback {
     std::optional<BlockReason> blockReason{};
-    std::vector<SafetyRating> safetyRatings;
+    Required<std::vector<SafetyRating>> safetyRatings;
 };
 
 
 struct UsageMetadata {
     struct ModalityTokenCount {
-        Modality modality;
-        int64_t tokenCount;
+        Required<Modality> modality;
+        Required<int64_t> tokenCount;
     };
 
-    int64_t promptTokenCount;
-    int64_t cachedContentTokenCount;
-    int64_t candidatesTokenCount;
-    int64_t toolUsePromptTokenCount;
-    int64_t thoughtsTokenCount;
-    int64_t totalTokenCount;
-    std::vector<ModalityTokenCount> promptTokensDetails;
-    std::vector<ModalityTokenCount> cacheTokensDetails;
-    std::vector<ModalityTokenCount> candidatesTokensDetails;
-    std::vector<ModalityTokenCount> toolUsePromptTokensDetails;
+    Required<int64_t> promptTokenCount;
+    Required<int64_t> cachedContentTokenCount;
+    Required<int64_t> candidatesTokenCount;
+    Required<int64_t> toolUsePromptTokenCount;
+    Required<int64_t> thoughtsTokenCount;
+    Required<int64_t> totalTokenCount;
+    Required<std::vector<ModalityTokenCount>> promptTokensDetails;
+    Required<std::vector<ModalityTokenCount>> cacheTokensDetails;
+    Required<std::vector<ModalityTokenCount>> candidatesTokensDetails;
+    Required<std::vector<ModalityTokenCount>> toolUsePromptTokensDetails;
 };
 
 
 struct Response {
-    std::vector<Candidate> candidates;
-    PromptFeedback promptFeedback;
-    UsageMetadata usageMetadata;
-    std::string modelVersion;
-    std::string responseId;
-    ModelStatus modelStatus;
+    Required<std::vector<Candidate>> candidates;
+    Required<PromptFeedback> promptFeedback;
+    Required<UsageMetadata> usageMetadata;
+    Required<std::string> modelVersion;
+    Required<std::string> responseId;
+    Required<ModelStatus> modelStatus;
 };
 
 

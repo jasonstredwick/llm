@@ -1,9 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <format>
 #include <optional>
-#include <ranges>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -16,18 +16,200 @@
 #include "../../../interface/protocols/openai/strings.hpp"
 
 
-#define TAG_ENUM(T) \
-    inline void tag_invoke(simdjson::serialize_tag, string_builder& builder, T v) { \
-        builder.escape_and_append_with_quotes(to_string_view(v)); \
-    }
-
-#define TAG_KIND(T) \
-    inline void tag_invoke(simdjson::serialize_tag, string_builder& builder, T v) { \
-        builder.escape_and_append_with_quotes(to_string_view(v)); \
-    }
+/***
+ * MACROs for source file only.
+ */
+#define FIELD(obj, member, comma) AddKV<#member, comma>(builder, (obj.member));
+#define FIELD_ALT(obj, member, name, comma) AddKV<name, comma>(builder, (obj.member));
+#define BEGIN_SERIALIZE(Type)\
+void SerializeFrom(simdjson::builder::string_builder& builder, const Type& obj) {\
+    builder.start_object();
+#define END_SERIALIZE\
+    builder.end_object();\
+}
 
 
 namespace jai::llm {
+
+
+/***
+ * Forward declarations
+ */
+template <typename T>
+void SerializeFrom(simdjson::builder::string_builder&, const T&) = delete;
+
+template <typename T>
+inline void SerializeFrom(simdjson::builder::string_builder&, const std::optional<T>&);
+
+template <typename T>
+inline void SerializeFrom(simdjson::builder::string_builder&, const std::vector<T>&);
+
+template <typename... Ts>
+inline void SerializeFrom(simdjson::builder::string_builder&, const std::variant<Ts...>&);
+
+template <typename K, typename V>
+requires std::convertible_to<K, std::string_view>
+inline void SerializeFrom(simdjson::builder::string_builder&, const std::map<K, V>&);
+
+inline void SerializeFrom(simdjson::builder::string_builder&, const std::string&);
+inline void SerializeFrom(simdjson::builder::string_builder&, const std::string_view&);
+
+inline void SerializeFrom(simdjson::builder::string_builder&, const json::Value&);
+
+
+/***
+ * Serialize
+ */
+// Kinds + enums
+template <typename T>
+requires ((std::is_enum_v<std::remove_cvref_t<T>> || Kind_c<T>) && !std::same_as<T, std::byte>)
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const T& v) {
+    std::string_view name = to_string_view(v);
+    builder.escape_and_append_with_quotes(name);
+}
+
+
+// Base types
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const bool& value) {
+    builder.append(value);
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::byte& value) {
+    builder.append(static_cast<uint64_t>(value));
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const char& value) {
+    builder.append(value);
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const double& value) {
+    builder.append(value);
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const EncodedUrl& obj) {
+    builder.escape_and_append_with_quotes(obj.Get());
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const int64_t& value) {
+    builder.append(value);
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const Int64& obj) {
+    builder.append(obj.Get());
+}
+
+template <int64_t N1, int64_t N2>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const Int64Bounded<N1, N2>& obj) {
+    builder.append(obj.Get());
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const Int64Str& obj) {
+    builder.escape_and_append_with_quotes(obj.Get());
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const Name64& obj) {
+    builder.escape_and_append_with_quotes(obj.Get());
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const NameLen<64>& obj) {
+    builder.escape_and_append_with_quotes(obj.Get());
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const NameLen<512>& obj) {
+    builder.escape_and_append_with_quotes(obj.Get());
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const RFC3339Timestamp& obj) {
+    char buf[64];
+    auto it = std::format_to(buf, "{:%FT%TZ}", obj.Get());
+    builder.escape_and_append_with_quotes(std::string_view(buf, it - buf));
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::string& obj) {
+    builder.escape_and_append_with_quotes(obj);
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::string_view& obj) {
+    builder.escape_and_append_with_quotes(obj);
+}
+
+
+// Containers
+template <typename K, typename V>
+requires std::convertible_to<K, std::string_view>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::map<K, V>& obj) {
+    builder.start_object();
+    if (!obj.empty()) {
+        bool add_comma = false;
+        for (auto const& [key, value] : obj) {
+            if (add_comma) { builder.append_comma(); }
+            else           { add_comma = true; }
+            builder.escape_and_append_with_quotes(key);
+            builder.append_colon();
+            SerializeFrom(builder, value);
+        }
+    }
+    builder.end_object();
+}
+
+template <typename T>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::optional<T>& obj) {
+    if (obj.has_value()) { SerializeFrom(builder, *obj); }
+    else                 { builder.append_null(); }
+}
+
+template <typename T>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const Required<T>& obj) {
+    SerializeFrom(builder, static_cast<T>(obj));
+}
+
+template <typename... Ts>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::variant<Ts...>& obj) {
+    std::visit([&](auto const& x) { SerializeFrom(builder, x); }, obj);
+}
+
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const json::Value& obj) {
+    std::visit([&](auto const& x) {
+        using T = std::decay_t<decltype(x)>;
+
+        if constexpr (std::is_same_v<T, std::nullptr_t>) {
+            builder.append_null();
+        } else if constexpr (std::is_same_v<T, bool>) {
+            builder.append(x);
+        } else if constexpr (std::is_same_v<T, int64_t>) {
+            builder.append(x);
+        } else if constexpr (std::is_same_v<T, double>) {
+            builder.append(x);
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            builder.escape_and_append_with_quotes(x);
+        } else if constexpr (std::is_same_v<T, json::Array>) {
+            SerializeFrom(builder, x);
+        } else if constexpr (std::is_same_v<T, json::Object>) {
+            SerializeFrom(builder, x);
+        } else {
+            static_assert(always_false_v<T>, "json::Value contains a non-serializable alternative");
+        }
+    }, obj.data);
+}
+
+template <typename T>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const ValueBox<T>& obj) {
+    SerializeFrom(builder, obj.Get());
+}
+
+template <typename T>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::vector<T>& obj) {
+    builder.start_array();
+    if (!obj.empty()) {
+        bool add_comma = false;
+        for (auto const& value : obj) {
+            if (add_comma) { builder.append_comma(); }
+            else           { add_comma = true; }
+            SerializeFrom(builder, value);
+        }
+    }
+    builder.end_array();
+}
 
 
 /***
@@ -39,252 +221,36 @@ namespace jai::llm {
 enum class CommaDirection : uint8_t { NONE, BEFORE, AFTER, BOTH };
 
 
-template <typename T>
-inline void AppendNumber(simdjson::builder::string_builder& builder, T v) {
-    builder.append(v);
-}
-
-
-template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
+template <simdjson::constevalutil::fixed_string key_, CommaDirection Dir = CommaDirection::NONE, typename T>
 inline void AddKV_base(simdjson::builder::string_builder& builder, const T& v) {
     if constexpr (Dir == CommaDirection::BEFORE || Dir == CommaDirection::BOTH) { builder.append_comma(); }
-    if constexpr (std::is_arithmetic_v<T> &&
-                  !std::is_same_v<std::remove_cv_t<T>, char> &&
-                  !std::is_same_v<std::remove_cv_t<T>, signed char> &&
-                  !std::is_same_v<std::remove_cv_t<T>, unsigned char>)
-    {
-        builder.escape_and_append_with_quotes(key);
-        builder.append_colon();
-        builder.append<T>(v);
-    } else {
-        builder.append_key_value<key>(v);
-    }
+    std::string_view key{key_};
+    builder.escape_and_append_with_quotes(key);
+    builder.append_colon();
+    SerializeFrom(builder, v);
     if constexpr (Dir == CommaDirection::AFTER || Dir == CommaDirection::BOTH) { builder.append_comma(); }
 }
 
 
 // Required fields; adds field no matter what.
 template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-inline void AddReqKV(simdjson::builder::string_builder& builder, const std::vector<T>& v) {
+inline void AddKV(simdjson::builder::string_builder& builder, const Required<T>& v) {
     AddKV_base<key, Dir>(builder, v);
 }
 
-
 template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-requires (std::is_arithmetic_v<T> &&
-          !std::same_as<T, char> && !std::same_as<T, signed char> && !std::same_as<T, unsigned char>)
-inline void AddReqKV(simdjson::builder::string_builder& builder, const std::vector<T>& v) {
-    auto Append = [&builder](T const& x) {
-        if constexpr (std::same_as<T, bool>) {
-            builder.append<bool>(x);
-        } else {
-            builder.append<T>(x);
-        }
-    };
-
-    if constexpr (Dir == CommaDirection::BEFORE || Dir == CommaDirection::BOTH) { builder.append_comma(); }
-    builder.escape_and_append_with_quotes(key);
-    builder.append_colon();
-    builder.start_array();
-    if (!v.empty()) {
-        Append(v[0]);
-        for (auto const& x : v | std::views::drop(1)) {
-            builder.append_comma();
-            Append(x);
-        }
-    }
-    builder.end_array();
-    if constexpr (Dir == CommaDirection::AFTER || Dir == CommaDirection::BOTH) { builder.append_comma(); }
-}
-
-
-template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-inline void AddReqKV(simdjson::builder::string_builder& builder, const std::optional<T>& v) {
-    AddKV_base<key, Dir>(builder, v);
-}
-
-
-template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-inline void AddReqKV(simdjson::builder::string_builder& builder, const T& v) {
-    AddKV_base<key, Dir>(builder, v);
-}
-
-
-// Optional fields; does not add field if optional is nullopt.
-template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-inline void AddOptKV(simdjson::builder::string_builder& builder, const std::vector<T>& v) {
-    if (!v.empty()) { AddReqKV<key, Dir>(builder, v); }
-}
-
-
-template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-inline void AddOptKV(simdjson::builder::string_builder& builder, const std::optional<T>& v) {
+inline void AddKV(simdjson::builder::string_builder& builder, const std::optional<T>& v) {
     if (v) { AddKV_base<key, Dir>(builder, *v); }
 }
 
-
 template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename T>
-inline void AddOptKV(simdjson::builder::string_builder& builder, const T& v) {
-    AddKV_base<key, Dir>(builder, v);
+inline void AddKV(simdjson::builder::string_builder& builder, const std::vector<T>& v) {
+    if (!v.empty()) { AddKV_base<key, Dir>(builder, v); }
 }
 
-
-}
-
-
-namespace simdjson {
-
-
-/***
- * Consider adding this for variants instead of custom for each variant type.
-template <typename... Ts>
-void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, const std::variant<Ts...>& v) {
-    std::visit([&](auto const& x) {
-        tag_invoke(simdjson::serialize_tag{}, builder, x);
-    }, v);
-}
-*/
-
-
-template <typename... Ts>
-void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, const std::vector<std::variant<Ts...>>& v) {
-    builder.start_array();
-    if (!v.empty()) {
-        tag_invoke(simdjson::serialize_tag{}, builder, v[0]);
-        for (auto const& i : v | std::views::drop(1)) {
-            builder.append_comma();
-            tag_invoke(simdjson::serialize_tag{}, builder, i);
-        }
-    }
-    builder.end_array();
-}
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder, std::byte value) {
-    builder.append(static_cast<uint64_t>(value));
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::EncodedUrl& value)
-{
-    builder.escape_and_append_with_quotes(value.Get());
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::Int64& value)
-{
-    jai::llm::AppendNumber(builder, value.Get());
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::Int64Str& value)
-{
-    builder.escape_and_append_with_quotes(value.Get());
-}
-
-
-template <int64_t L, int64_t U>
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::Int64Bounded<L, U>& value)
-{
-    jai::llm::AppendNumber(builder, value.Get());
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::Name64& value)
-{
-    builder.escape_and_append_with_quotes(value.Get());
-}
-
-
-template <size_t N>
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::NameLen<N>& value)
-{
-    builder.escape_and_append_with_quotes(value.Get());
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::RFC3339Timestamp& value)
-{
-    char buf[64];
-    auto it = std::format_to(buf, "{:%FT%TZ}", value.Get());
-    builder.escape_and_append_with_quotes(std::string_view(buf, it - buf));
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::json::Value& value);
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::json::Array& value)
-{
-    builder.start_array();
-    if (!value.empty()) {
-        tag_invoke(simdjson::serialize_tag{}, builder, value[0]);
-        for (auto const& x : value | std::views::drop(1)) {
-            builder.append_comma();
-            tag_invoke(simdjson::serialize_tag{}, builder, x);
-        }
-    }
-    builder.end_array();
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::json::Object& value)
-{
-    builder.start_object();
-    if (!value.empty()) {
-        auto it = value.begin();
-        builder.escape_and_append_with_quotes(it->first);
-        builder.append_colon();
-        tag_invoke(simdjson::serialize_tag{}, builder, it->second);
-        
-        for (++it; it != value.end(); ++it) {
-            builder.append_comma();
-            builder.escape_and_append_with_quotes(it->first);
-            builder.append_colon();
-            tag_invoke(simdjson::serialize_tag{}, builder, it->second);
-        }
-    }
-    builder.end_object();
-}
-
-
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::json::Value& value)
-{
-    std::visit([&](auto const& x) {
-        using T = std::decay_t<decltype(x)>;
-
-        if constexpr (std::is_same_v<T, std::nullptr_t>) {
-            builder.append_null();
-        } else if constexpr (std::is_same_v<T, bool>) {
-            builder.append<bool>(x);
-        } else if constexpr (std::is_same_v<T, int64_t>) {
-            builder.append<int64_t>(x);
-        } else if constexpr (std::is_same_v<T, double>) {
-            builder.append<double>(x);
-        } else if constexpr (std::is_same_v<T, std::string>) {
-            builder.escape_and_append_with_quotes(x);
-        } else {
-            tag_invoke(simdjson::serialize_tag{}, builder, x);
-        }
-    }, value.data);
-}
-
-
-template <typename T>
-inline void tag_invoke(simdjson::serialize_tag, simdjson::builder::string_builder& builder,
-                       const jai::llm::ValueBox<T>& value)
-{
-    tag_invoke(simdjson::serialize_tag{}, builder, value.Get());
+template <simdjson::constevalutil::fixed_string key, CommaDirection Dir = CommaDirection::NONE, typename K, typename V>
+inline void AddKV(simdjson::builder::string_builder& builder, const std::map<K, V>& v) {
+    if (!v.empty()) { AddKV_base<key, Dir>(builder, v); }
 }
 
 

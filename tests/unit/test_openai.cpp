@@ -52,11 +52,6 @@ void test_complex_serialization() {
     req.tool_choice = openai::ToolChoiceMode::AUTO;
 
     // Tools
-    openai::request::ToolTypes::Function func;
-    func.type = openai::KindFunctionTool{};
-    func.name = "get_stock_price";
-    func.description = "Get the current stock price for a given symbol";
-    
     json::Object params;
     params["type"] = "object";
     
@@ -71,9 +66,14 @@ void test_complex_serialization() {
     json::Array required;
     required.push_back("symbol");
     params["required"] = required;
-    
-    func.parameters = params;
-    func.strict = true;
+
+    openai::request::ToolTypes::Function func{
+        .type = {{}},
+        .name = std::string{"get_stock_price"},
+        .parameters = params,
+        .strict = true,
+        .description = std::string{"Get the current stock price for a given symbol"}
+    };
     
     openai::request::Tool get_stock_price = func;
     
@@ -102,17 +102,24 @@ void test_content_serialization() {
     req.background = false;
     req.model = "gpt-4o";
     
-    openai::request::InputTypes::Message msg;
-    msg.role = openai::RoleInputMessage::USER;
+    openai::request::ContentTypes::Text text_unit{
+        .type = {{}},
+        .text = std::string{"Here is an image."}
+    };
 
-    openai::request::ContentTypes::Text text_unit;
-    text_unit.text = "Here is an image.";
+    openai::request::ContentTypes::Image image_unit{
+        .type = {{}},
+        .detail = openai::Detail::HIGH,
+        .image_url = EncodedUrl(std::string_view("https://example.com/image.png"))
+    };
 
-    openai::request::ContentTypes::Image image_unit;
-    image_unit.image_url = EncodedUrl(std::string_view("https://example.com/image.png"));
-    image_unit.detail = openai::Detail::HIGH;
-
-    msg.content = std::vector<openai::request::InputTypes::MessageContentUnit>{text_unit, image_unit};
+    openai::request::InputTypes::Message msg{
+        .type = {{}},
+        .content = openai::request::InputTypes::Message::Content{
+            std::vector<openai::request::InputTypes::MessageContentUnit>{text_unit, image_unit}
+        },
+        .role = openai::RoleInputMessage::USER
+    };
     
     req.input = std::vector<openai::request::InputItemList>{msg};
 
@@ -195,26 +202,30 @@ void test_response_deserialization() {
 
     auto resp = openai::Deserialize(res);
 
-    assert(resp.id == "res_123");
-    assert(resp.model == "gpt-4o");
-    assert(resp.output.size() == 1);
+    assert(resp.id.Value() == "res_123");
+    assert(resp.model.Value() == "gpt-4o");
+    auto const& output_vec = resp.output.Value();
+    assert(output_vec.size() == 1);
     
-    auto* item_ptr = &resp.output[0];
-    auto* msg_item = std::get_if<openai::response::InputTypes::Item::OutputMessage>(item_ptr);
+    auto const* item_ptr = &output_vec[0];
+    auto const* msg_item = std::get_if<openai::response::InputTypes::Item::OutputMessage>(item_ptr);
     if (!msg_item) {
         std::println("[ERROR] Variant is NOT OutputMessage! It is index: {}", item_ptr->index());
         return;
     }
-    assert(msg_item->role == openai::RoleAssistant::ASSISTANT);
+    assert(msg_item->id.Value() == "msg_456");
+    assert(msg_item->role.Value() == openai::RoleAssistant::ASSISTANT);
+    assert(msg_item->status.Value() == openai::ItemStatus::COMPLETED);
     
-    auto* text_content = std::get_if<openai::response::ContentTypes::OutputText>(&msg_item->content[0]);
+    auto const& content_vec = msg_item->content.Value();
+    auto const* text_content = std::get_if<openai::response::ContentTypes::OutputText>(&content_vec[0]);
     if (!text_content) {
         std::println("[ERROR] Content is NOT OutputText!");
         return;
     }
-    assert(text_content->text == "Hello! I am OpenAI assistant.");
+    assert(text_content->text.Value() == "Hello! I am OpenAI assistant.");
 
-    assert(resp.usage.total_tokens == 30);
+    assert(resp.usage.Value().total_tokens.Value() == 30);
 
     std::println("[SUCCESS] Response Deserialization passed.");
 }
@@ -281,12 +292,15 @@ void test_openai_doc_examples() {
         std::memcpy(res.body.data(), json_response.data(), res.body_len);
 
         auto resp = openai::Deserialize(res);
+        auto const& output = resp.output.Value();
 
-        assert(resp.output.size() == 1);
-        auto* call = std::get_if<openai::response::InputTypes::Item::FunctionToolCall>(&resp.output[0]);
+        assert(output.size() == 1);
+        auto const* call = std::get_if<openai::response::InputTypes::Item::FunctionToolCall>(&output[0]);
         assert(call != nullptr);
-        assert(call->call_id == "call_abc123");
-        assert(call->name == "get_current_weather");
+        assert(call->id.Value() == "item_123");
+        assert(call->call_id.Value() == "call_abc123");
+        assert(call->name.Value() == "get_current_weather");
+        assert(call->status.Value() == openai::ItemStatus::COMPLETED);
     }
 
     // 2. Structured Output Request (mapped to semantic model)
@@ -296,17 +310,17 @@ void test_openai_doc_examples() {
         req.background = false;
         req.input = "Analyze this data.";
 
-        openai::TextConfig tc;
-        openai::TextConfig::FormatJsonSchema schema_fmt;
-        schema_fmt.name = "analysis";
-        schema_fmt.strict = true;
-        schema_fmt.description = "Analysis schema";
-        
         json::Object schema_obj;
         schema_obj["type"] = "object";
-        schema_fmt.schema = schema_obj;
 
-        tc.format = schema_fmt;
+        openai::TextConfig tc;
+        tc.format = openai::TextConfig::FormatJsonSchema{
+            .type = {{}},
+            .name = std::string{"analysis"},
+            .schema = schema_obj,
+            .description = std::string{"Analysis schema"},
+            .strict = true
+        };
         tc.verbosity = openai::Verbosity::MEDIUM;
         req.text = tc;
 
@@ -325,12 +339,6 @@ void test_openai_doc_examples() {
         req.model = "gpt-4o-2024-08-06";
         req.background = false;
 
-        openai::TextConfig tc;
-        openai::TextConfig::FormatJsonSchema schema_fmt;
-        schema_fmt.name = "math_solution";
-        schema_fmt.strict = true;
-        schema_fmt.description = "A detailed math solution";
-        
         json::Object schema_obj;
         schema_obj["type"] = "object";
         json::Object props;
@@ -339,9 +347,15 @@ void test_openai_doc_examples() {
         schema_obj["properties"] = props;
         schema_obj["required"] = json::Array{"steps", "final_answer"};
         schema_obj["additionalProperties"] = false;
-        
-        schema_fmt.schema = schema_obj;
-        tc.format = schema_fmt;
+
+        openai::TextConfig tc;
+        tc.format = openai::TextConfig::FormatJsonSchema{
+            .type = {{}},
+            .name = std::string{"math_solution"},
+            .schema = schema_obj,
+            .description = std::string{"A detailed math solution"},
+            .strict = true
+        };
         req.text = tc;
 
         auto serialized = openai::Serialize(req);
