@@ -211,6 +211,20 @@ inline void SerializeFrom(simdjson::builder::string_builder& builder, const std:
     builder.end_array();
 }
 
+template <>
+inline void SerializeFrom(simdjson::builder::string_builder& builder, const std::vector<bool>& obj) {
+    builder.start_array();
+    if (!obj.empty()) {
+        bool add_comma = false;
+        for (bool value : obj) {
+            if (add_comma) { builder.append_comma(); }
+            else           { add_comma = true; }
+            builder.append(value);
+        }
+    }
+    builder.end_array();
+}
+
 
 /***
  * Helper functions for designating whether the key/field is required or optionally present:

@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.25)
 
+# Hard-set defaults for MacOS BEFORE the project() call
+if(APPLE)
+    if(NOT DEFINED CMAKE_C_COMPILER)
+        set(CMAKE_C_COMPILER "clang" CACHE STRING "")
+    endif()
+    if(NOT DEFINED CMAKE_CXX_COMPILER)
+        set(CMAKE_CXX_COMPILER "clang++" CACHE STRING "")
+    endif()
+endif()
+
 project(llm
     VERSION 0.1.0
     DESCRIPTION "LLM access management for C/C++"
@@ -139,6 +149,7 @@ if(MSVC)
 else()
     target_compile_options(llm PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
 # Production Tests
 add_executable(test_anthropic tests/unit/test_anthropic.cpp)
 target_link_libraries(test_anthropic PRIVATE llm)

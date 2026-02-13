@@ -6,7 +6,14 @@
 #include <format>
 #include <map>
 #include <memory>
+
+#include <version> // Standard header for feature-test macros
+#if defined(__cpp_lib_spanstream) && defined(__cpp_lib_chrono) && __cpp_lib_chrono >= 201907L
 #include <spanstream>
+#else
+#include <charconv> // Used for the zero-copy fallback parser
+#endif
+
 #include <string>
 #include <string_view>
 #include <variant>
@@ -353,6 +360,11 @@ private:
 public:
     Required() = delete;
     constexpr Required(value_type val) : val(std::move(val)) {}
+
+    template <typename U>
+    requires (!std::is_same_v<std::decay_t<U>, value_type>) && std::is_constructible_v<value_type, U>
+    constexpr Required(U&& val) : val(std::forward<U>(val)) {}
+
     constexpr operator const value_type&() const { return val; }
     constexpr value_type& Value() { return val; }
     constexpr const value_type& Value() const { return val; }
@@ -391,11 +403,47 @@ struct RFC3339Timestamp : public Timestamp {
     using Timestamp::Timestamp;
 
     static RFC3339Timestamp Parse(std::string_view sv) {
+#if defined(__cpp_lib_spanstream) && defined(__cpp_lib_chrono) && __cpp_lib_chrono >= 201907L
         std::ispanstream iss{std::span<const char>{sv.data(), sv.size()}};
         time_point tp{};
         iss >> std::chrono::parse("%FT%TZ", tp);
         if (iss.fail()) { throw AnnotatedException{"Failed to convert string to RFC3339Timestamp."}; }
         return RFC3339Timestamp{tp};
+#else
+        // Fallback: Zero-copy manual parser
+        // Expected format: YYYY-MM-DDTHH:MM:SSZ
+        if (sv.size() < 20) { throw AnnotatedException{"RFC3339Timestamp string too short."}; }
+
+        int y, m, d, h, min, s;
+        auto res = std::from_chars(sv.data(), sv.data() + 4, y);
+        if (res.ec != std::errc{} || sv[4] != '-') throw AnnotatedException{"Invalid year format."};
+
+        res = std::from_chars(sv.data() + 5, sv.data() + 7, m);
+        if (res.ec != std::errc{} || sv[7] != '-') throw AnnotatedException{"Invalid month format."};
+
+        res = std::from_chars(sv.data() + 8, sv.data() + 10, d);
+        if (res.ec != std::errc{} || sv[10] != 'T') throw AnnotatedException{"Invalid day format."};
+
+        res = std::from_chars(sv.data() + 11, sv.data() + 13, h);
+        if (res.ec != std::errc{} || sv[13] != ':') throw AnnotatedException{"Invalid hour format."};
+
+        res = std::from_chars(sv.data() + 14, sv.data() + 16, min);
+        if (res.ec != std::errc{} || sv[16] != ':') throw AnnotatedException{"Invalid minute format."};
+
+        res = std::from_chars(sv.data() + 17, sv.data() + 19, s);
+        if (res.ec != std::errc{}) throw AnnotatedException{"Invalid second format."};
+
+        // Construct using C++20 chrono (safe and zero-copy)
+        auto date = std::chrono::year(y) / m / d;
+        if (!date.ok()) throw AnnotatedException{"Invalid date components."};
+
+        auto tp_fallback = std::chrono::sys_days{date} + 
+                           std::chrono::hours{h} + 
+                           std::chrono::minutes{min} + 
+                           std::chrono::seconds{s};
+
+        return RFC3339Timestamp{tp_fallback};
+#endif
     }
 };
 
