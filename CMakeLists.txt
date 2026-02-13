@@ -148,3 +148,20 @@ target_link_libraries(test_gemini PRIVATE llm)
 
 add_executable(test_openai tests/unit/test_openai.cpp)
 target_link_libraries(test_openai PRIVATE llm)
+
+add_executable(test_http tests/unit/test_http.cpp)
+target_link_libraries(test_http PRIVATE llm)
+
+add_executable(test_curl tests/unit/test_curl.cpp)
+target_link_libraries(test_curl PRIVATE llm)
+
+# CTest registration
+enable_testing()
+add_test(NAME test_anthropic COMMAND test_anthropic)
+add_test(NAME test_gemini    COMMAND test_gemini)
+add_test(NAME test_openai    COMMAND test_openai)
+add_test(NAME test_http      COMMAND test_http)
+add_test(NAME test_curl      COMMAND test_curl)
+
+# Label curl tests as integration (require mock server)
+set_tests_properties(test_curl PROPERTIES LABELS "integration")

@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include <cassert>
+#include "test_assert.hpp"
 #include <print>
 #include <cstring>
 #include <simdjson.h>
@@ -38,10 +38,10 @@ void test_simple_serialization() {
     std::println("Serialized JSON: {}", json_str);
 
     // Basic structural checks
-    assert(json_str.find("\"role\":\"user\"") != std::string::npos);
-    assert(json_str.find("\"text\":\"Hello, Gemini!\"") != std::string::npos);
-    assert(json_str.find("\"parts\":[") != std::string::npos);
-    assert(json_str.find("\"contents\":[") != std::string::npos);
+    REQUIRE(json_str.find("\"role\":\"user\"") != std::string::npos);
+    REQUIRE(json_str.find("\"text\":\"Hello, Gemini!\"") != std::string::npos);
+    REQUIRE(json_str.find("\"parts\":[") != std::string::npos);
+    REQUIRE(json_str.find("\"contents\":[") != std::string::npos);
 
     std::println("[SUCCESS] Simple Serialization passed.");
 }
@@ -123,11 +123,11 @@ void test_complex_serialization() {
     std::println("Serialized JSON: {}", json_str);
 
     // Structural checks
-    assert(json_str.find("\"systemInstruction\":{") != std::string::npos);
-    assert(json_str.find("\"name\":\"get_flights\"") != std::string::npos);
-    assert(json_str.find("\"category\":\"HARM_CATEGORY_HARASSMENT\"") != std::string::npos);
-    assert(json_str.find("\"temperature\":0.5") != std::string::npos);
-    assert(json_str.find("\"maxOutputTokens\":2048") != std::string::npos);
+    REQUIRE(json_str.find("\"systemInstruction\":{") != std::string::npos);
+    REQUIRE(json_str.find("\"name\":\"get_flights\"") != std::string::npos);
+    REQUIRE(json_str.find("\"category\":\"HARM_CATEGORY_HARASSMENT\"") != std::string::npos);
+    REQUIRE(json_str.find("\"temperature\":0.5") != std::string::npos);
+    REQUIRE(json_str.find("\"maxOutputTokens\":2048") != std::string::npos);
 
     std::println("[SUCCESS] Complex Serialization passed.");
 }
@@ -188,10 +188,10 @@ void test_part_serialization() {
 
     std::println("Serialized JSON: {}", json_str);
 
-    assert(json_str.find("\"mimeType\":\"image/png\"") != std::string::npos);
-    assert(json_str.find("\"fileUri\":\"https://example.com/doc.pdf\"") != std::string::npos);
-    assert(json_str.find("\"name\":\"get_weather\"") != std::string::npos);
-    assert(json_str.find("\"temp\":72.0") != std::string::npos);
+    REQUIRE(json_str.find("\"mimeType\":\"image/png\"") != std::string::npos);
+    REQUIRE(json_str.find("\"fileUri\":\"https://example.com/doc.pdf\"") != std::string::npos);
+    REQUIRE(json_str.find("\"name\":\"get_weather\"") != std::string::npos);
+    REQUIRE(json_str.find("\"temp\":72.0") != std::string::npos);
 
     std::println("[SUCCESS] Part Serialization passed.");
 }
@@ -211,8 +211,11 @@ void test_response_deserialization() {
                         }
                     ]
                 },
+                "finishReason": "STOP",
                 "index": 0,
-                "safetyRatings": [],
+                "safetyRatings": [
+                    {"category": "HARM_CATEGORY_HARASSMENT", "probability": "NEGLIGIBLE", "blocked": false}
+                ],
                 "citationMetadata": {"citationSources": []},
                 "tokenCount": 20,
                 "groundingMetadata": {
@@ -238,8 +241,8 @@ void test_response_deserialization() {
             "candidatesTokensDetails": [],
             "toolUsePromptTokensDetails": []
         },
-        "modelVersion": "gemini-1.5-pro",
         "responseId": "resp_123",
+        "modelVersion": "gemini-1.5-pro",
         "modelStatus": {
             "modelStage": "STABLE",
             "retirementTime": "2025-12-31T23:59:59Z",
@@ -257,22 +260,22 @@ void test_response_deserialization() {
     auto resp = gemini::Deserialize(res);
 
     auto candidates = resp.candidates.Value();
-    assert(candidates.size() == 1);
+    REQUIRE(candidates.size() == 1);
     auto content = candidates[0].content.Value();
-    assert(content.role == gemini::Role::MODEL);
+    REQUIRE(content.role == gemini::Role::MODEL);
     
     auto parts = content.parts.Value();
     auto data = parts[0].data.Value();
     auto* text_part = std::get_if<gemini::Text>(&data);
-    assert(text_part != nullptr);
-    assert(text_part->text.Value() == "I've checked the weather for you.");
+    REQUIRE(text_part != nullptr);
+    REQUIRE(text_part->text.Value() == "I've checked the weather for you.");
 
-    assert(candidates[0].finishReason == gemini::FinishReason::STOP);
+    REQUIRE(candidates[0].finishReason == gemini::FinishReason::STOP);
     auto safety_ratings = candidates[0].safetyRatings.Value();
-    assert(safety_ratings.size() == 1);
-    assert(safety_ratings[0].category.Value() == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
+    REQUIRE(safety_ratings.size() == 1);
+    REQUIRE(safety_ratings[0].category.Value() == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
     
-    assert(resp.usageMetadata.Value().totalTokenCount.Value() == 30);
+    REQUIRE(resp.usageMetadata.Value().totalTokenCount.Value() == 30);
 
     std::println("[SUCCESS] Response Deserialization passed.");
 }
@@ -312,9 +315,9 @@ void test_gemini_doc_examples() {
         auto serialized = gemini::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
         
-        assert(json_str.find("\"text\":\"What is this?\"") != std::string::npos);
-        assert(json_str.find("\"inlineData\":") != std::string::npos);
-        assert(json_str.find("\"mimeType\":\"image/jpeg\"") != std::string::npos);
+        REQUIRE(json_str.find("\"text\":\"What is this?\"") != std::string::npos);
+        REQUIRE(json_str.find("\"inlineData\":") != std::string::npos);
+        REQUIRE(json_str.find("\"mimeType\":\"image/jpeg\"") != std::string::npos);
     }
 
     // 2. Full Response (from docs)
@@ -384,22 +387,22 @@ void test_gemini_doc_examples() {
         auto resp = gemini::Deserialize(res);
 
         auto candidates = resp.candidates.Value();
-        assert(candidates.size() == 1);
+        REQUIRE(candidates.size() == 1);
         auto content = candidates[0].content.Value();
-        assert(content.role == gemini::Role::MODEL);
+        REQUIRE(content.role == gemini::Role::MODEL);
         auto parts = content.parts.Value();
-        assert(parts.size() == 1);
+        REQUIRE(parts.size() == 1);
         
         auto data = parts[0].data.Value();
         auto* text_part = std::get_if<gemini::Text>(&data);
-        assert(text_part != nullptr);
-        assert(text_part->text.Value() == "It's an ant.");
+        REQUIRE(text_part != nullptr);
+        REQUIRE(text_part->text.Value() == "It's an ant.");
         
         auto safety_ratings = candidates[0].safetyRatings.Value();
-        assert(safety_ratings.size() == 1);
-        assert(safety_ratings[0].category.Value() == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
+        REQUIRE(safety_ratings.size() == 1);
+        REQUIRE(safety_ratings[0].category.Value() == gemini::HarmCategory::HARM_CATEGORY_HARASSMENT);
         
-        assert(resp.usageMetadata.Value().totalTokenCount.Value() == 15);
+        REQUIRE(resp.usageMetadata.Value().totalTokenCount.Value() == 15);
     }
 
     // 3. Advanced Grounding (from docs)
@@ -458,24 +461,191 @@ void test_gemini_doc_examples() {
         auto resp = gemini::Deserialize(res);
 
         auto candidates = resp.candidates.Value();
-        assert(candidates.size() == 1);
+        REQUIRE(candidates.size() == 1);
         auto& cand = candidates[0];
         auto grounding = cand.groundingMetadata.Value();
-        assert(grounding.webSearchQueries.Value().size() == 1);
-        assert(grounding.webSearchQueries.Value()[0] == "AAPL stock price");
-        assert(grounding.groundingChunks.Value().size() == 1);
+        REQUIRE(grounding.webSearchQueries.Value().size() == 1);
+        REQUIRE(grounding.webSearchQueries.Value()[0] == "AAPL stock price");
+        REQUIRE(grounding.groundingChunks.Value().size() == 1);
         
         auto chunks = grounding.groundingChunks.Value();
         auto chunk_type = chunks[0].chunk_type.Value();
         auto const* web = std::get_if<gemini::GroundingChunk::Web>(&chunk_type);
-        assert(web != nullptr);
-        assert(web->uri.Value().Get() == "https://google.com/finance");
+        REQUIRE(web != nullptr);
+        REQUIRE(web->uri.Value().Get() == "https://google.com/finance");
 
         std::println("  [SUCCESS] Gemini Advanced Documentation Examples passed.");
     }
 
     std::println("[SUCCESS] Gemini Documentation Examples passed.");
 }
+
+void test_function_call_deserialization() {
+    std::println("Testing Gemini FunctionCall Response Deserialization...");
+
+    std::string json_response = R"({
+        "responseId": "resp_123",
+        "candidates": [
+            {
+                "content": {
+                    "role": "model",
+                    "parts": [
+                        {
+                            "functionCall": {
+                                "id": "call_001",
+                                "name": "get_weather",
+                                "args": {"location": "Tokyo", "unit": "celsius"}
+                            },
+                            "partMetadata": {}
+                        }
+                    ]
+                },
+                "finishReason": "STOP",
+                "index": 0,
+                "safetyRatings": [],
+                "citationMetadata": {"citationSources": []},
+                "tokenCount": 15,
+                "groundingMetadata": {
+                    "groundingChunks": [],
+                    "groundingSupports": [],
+                    "webSearchQueries": []
+                },
+                "urlContextMetadata": {"urlMetadata": []}
+            }
+        ],
+        "promptFeedback": {"safetyRatings": []},
+        "usageMetadata": {
+            "promptTokenCount": 10,
+            "cachedContentTokenCount": 0,
+            "candidatesTokenCount": 15,
+            "toolUsePromptTokenCount": 0,
+            "thoughtsTokenCount": 0,
+            "totalTokenCount": 25,
+            "promptTokensDetails": [],
+            "cacheTokensDetails": [],
+            "candidatesTokensDetails": [],
+            "toolUsePromptTokensDetails": []
+        },
+        "modelVersion": "gemini-2.0-flash",
+        "modelStatus": {"modelStage": "STABLE", "retirementTime": "2099-01-01T00:00:00Z", "message": ""}
+    })";
+
+    curl::Response res;
+    res.state = curl::Response::State::COMPLETED;
+    res.availability = curl::Response::Availability::FINAL;
+    res.body_len = json_response.size();
+    res.body.resize(res.body_len + simdjson::SIMDJSON_PADDING);
+    std::memcpy(res.body.data(), json_response.data(), res.body_len);
+
+    auto resp = gemini::Deserialize(res);
+
+    auto candidates = resp.candidates.Value();
+    REQUIRE(candidates.size() == 1);
+    auto parts = candidates[0].content.Value().parts.Value();
+    REQUIRE(parts.size() == 1);
+
+    auto data = parts[0].data.Value();
+    auto* fc = std::get_if<gemini::FunctionCall>(&data);
+    REQUIRE(fc != nullptr);
+    REQUIRE(fc->name.Value().Get() == "get_weather");
+    REQUIRE(fc->id.has_value());
+    REQUIRE(fc->id.value() == "call_001");
+
+    // Verify args
+    auto& args = fc->args.Value();
+    REQUIRE(std::get<std::string>(args.at("location").data) == "Tokyo");
+    REQUIRE(std::get<std::string>(args.at("unit").data) == "celsius");
+
+    std::println("[SUCCESS] FunctionCall Response Deserialization passed.");
+}
+
+
+void test_thought_deserialization() {
+    std::println("Testing Gemini Thought/ThoughtSignature Deserialization...");
+
+    std::string json_response = R"({
+        "candidates": [
+            {
+                "content": {
+                    "role": "model",
+                    "parts": [
+                        {
+                            "text": "Let me think about this...",
+                            "partMetadata": {},
+                            "thought": true,
+                            "thoughtSignature": "sig_abc123"
+                        },
+                        {
+                            "text": "The answer is 42.",
+                            "partMetadata": {}
+                        }
+                    ]
+                },
+                "finishReason": "STOP",
+                "index": 0,
+                "safetyRatings": [],
+                "citationMetadata": {"citationSources": []},
+                "tokenCount": 25,
+                "groundingMetadata": {
+                    "groundingChunks": [],
+                    "groundingSupports": [],
+                    "webSearchQueries": []
+                },
+                "urlContextMetadata": {"urlMetadata": []}
+            }
+        ],
+        "promptFeedback": {"safetyRatings": []},
+        "usageMetadata": {
+            "promptTokenCount": 5,
+            "cachedContentTokenCount": 0,
+            "candidatesTokenCount": 25,
+            "toolUsePromptTokenCount": 0,
+            "thoughtsTokenCount": 10,
+            "totalTokenCount": 30,
+            "promptTokensDetails": [],
+            "cacheTokensDetails": [],
+            "candidatesTokensDetails": [],
+            "toolUsePromptTokensDetails": []
+        },
+        "modelVersion": "gemini-2.5-pro",
+        "modelStatus": {"modelStage": "STABLE", "retirementTime": "2099-01-01T00:00:00Z", "message": ""},
+        "responseId": "resp_123"
+    })";
+
+    curl::Response res;
+    res.state = curl::Response::State::COMPLETED;
+    res.availability = curl::Response::Availability::FINAL;
+    res.body_len = json_response.size();
+    res.body.resize(res.body_len + simdjson::SIMDJSON_PADDING);
+    std::memcpy(res.body.data(), json_response.data(), res.body_len);
+
+    auto resp = gemini::Deserialize(res);
+
+    auto parts = resp.candidates.Value()[0].content.Value().parts.Value();
+    REQUIRE(parts.size() == 2);
+
+    // First part: thought
+    REQUIRE(parts[0].thought.has_value());
+    REQUIRE(parts[0].thought.value() == true);
+    REQUIRE(parts[0].thoughtSignature.has_value());
+    REQUIRE(parts[0].thoughtSignature.value() == "sig_abc123");
+    auto* thought_text = std::get_if<gemini::Text>(&parts[0].data.Value());
+    REQUIRE(thought_text != nullptr);
+    REQUIRE(thought_text->text.Value() == "Let me think about this...");
+
+    // Second part: no thought fields
+    REQUIRE(!parts[1].thought.has_value());
+    REQUIRE(!parts[1].thoughtSignature.has_value());
+    auto* answer_text = std::get_if<gemini::Text>(&parts[1].data.Value());
+    REQUIRE(answer_text != nullptr);
+    REQUIRE(answer_text->text.Value() == "The answer is 42.");
+
+    // Verify thoughtsTokenCount in usage
+    REQUIRE(resp.usageMetadata.Value().thoughtsTokenCount.Value() == 10);
+
+    std::println("[SUCCESS] Thought/ThoughtSignature Deserialization passed.");
+}
+
 
 int main() {
     try {
@@ -484,6 +654,8 @@ int main() {
         test_part_serialization();
         test_response_deserialization();
         test_gemini_doc_examples();
+        test_function_call_deserialization();
+        test_thought_deserialization();
         std::println("ALL GEMINI UNIT TESTS PASSED");
         return 0;
     } catch (const jai::llm::AnnotatedException& e) {

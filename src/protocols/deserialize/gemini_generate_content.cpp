@@ -54,9 +54,9 @@ END_DESERIALIZE
 
 
 BEGIN_DESERIALIZE(gemini::FunctionCall)
+    FIELD(src, id),
     FIELD(src, name),
-    FIELD(src, args),
-    FIELD(src, id)
+    FIELD(src, args)
 END_DESERIALIZE
 
 
@@ -243,11 +243,11 @@ END_DESERIALIZE
 
 
 BEGIN_DESERIALIZE_VARIANT(gemini::ResponseContent::ResponsePart::ResponsePartData)
-    FIELD_VARIANT(src, "text",          gemini::Text)
-    FIELD_VARIANT(src, "inlineData",    gemini::Blob)
-    FIELD_VARIANT(src, "executableCode",gemini::ExecutableCode)
-    FIELD_VARIANT(src, "fileData",      gemini::FileData)
-    FIELD_VARIANT(src, "functionCall",  gemini::FunctionCall)
+    FIELD_VARIANT   (src, "text",          gemini::Text)
+    FIELD_VARIANT_KV(src, "inlineData",    gemini::Blob)
+    FIELD_VARIANT_KV(src, "executableCode",gemini::ExecutableCode)
+    FIELD_VARIANT_KV(src, "fileData",      gemini::FileData)
+    FIELD_VARIANT_KV(src, "functionCall",  gemini::FunctionCall)
 END_DESERIALIZE_VARIANT(gemini::ResponseContent::ResponsePart::ResponsePartData)
 
 

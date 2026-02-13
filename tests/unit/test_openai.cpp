@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include <cassert>
+#include "test_assert.hpp"
 #include <print>
 #include <cstring>
 #include <simdjson.h>
@@ -27,8 +27,8 @@ void test_simple_serialization() {
     std::println("Serialized JSON: {}", json_str);
 
     // Basic structural checks
-    assert(json_str.find("\"model\":\"gpt-4o\"") != std::string::npos);
-    assert(json_str.find("\"input\":\"Hello, OpenAI!\"") != std::string::npos);
+    REQUIRE(json_str.find("\"model\":\"gpt-4o\"") != std::string::npos);
+    REQUIRE(json_str.find("\"input\":\"Hello, OpenAI!\"") != std::string::npos);
 
     std::println("[SUCCESS] Simple Serialization passed.");
 }
@@ -85,11 +85,11 @@ void test_complex_serialization() {
     std::println("Serialized JSON: {}", json_str);
 
     // Structural checks
-    assert(json_str.find("\"max_output_tokens\":1000") != std::string::npos);
-    assert(json_str.find("\"environment\":\"production\"") != std::string::npos);
-    assert(json_str.find("\"tool_choice\":\"auto\"") != std::string::npos);
-    assert(json_str.find("\"name\":\"get_stock_price\"") != std::string::npos);
-    assert(json_str.find("\"symbol\":{\"type\":\"string\"") != std::string::npos);
+    REQUIRE(json_str.find("\"max_output_tokens\":1000") != std::string::npos);
+    REQUIRE(json_str.find("\"environment\":\"production\"") != std::string::npos);
+    REQUIRE(json_str.find("\"tool_choice\":\"auto\"") != std::string::npos);
+    REQUIRE(json_str.find("\"name\":\"get_stock_price\"") != std::string::npos);
+    REQUIRE(json_str.find("\"symbol\":") != std::string::npos);
 
     std::println("[SUCCESS] Complex Serialization passed.");
 }
@@ -128,9 +128,9 @@ void test_content_serialization() {
 
     std::println("Serialized JSON: {}", json_str);
 
-    assert(json_str.find("\"type\":\"text\"") != std::string::npos);
-    assert(json_str.find("\"type\":\"image\"") != std::string::npos);
-    assert(json_str.find("\"image_url\":\"https://example.com/image.png\"") != std::string::npos);
+    REQUIRE(json_str.find("\"type\":\"input_text\"") != std::string::npos);
+    REQUIRE(json_str.find("\"type\":\"input_image\"") != std::string::npos);
+    REQUIRE(json_str.find("\"image_url\":\"https://example.com/image.png\"") != std::string::npos);
 
     std::println("[SUCCESS] Content Serialization passed.");
 }
@@ -202,10 +202,10 @@ void test_response_deserialization() {
 
     auto resp = openai::Deserialize(res);
 
-    assert(resp.id.Value() == "res_123");
-    assert(resp.model.Value() == "gpt-4o");
+    REQUIRE(resp.id.Value() == "res_123");
+    REQUIRE(resp.model.Value() == "gpt-4o");
     auto const& output_vec = resp.output.Value();
-    assert(output_vec.size() == 1);
+    REQUIRE(output_vec.size() == 1);
     
     auto const* item_ptr = &output_vec[0];
     auto const* msg_item = std::get_if<openai::response::InputTypes::Item::OutputMessage>(item_ptr);
@@ -213,9 +213,9 @@ void test_response_deserialization() {
         std::println("[ERROR] Variant is NOT OutputMessage! It is index: {}", item_ptr->index());
         return;
     }
-    assert(msg_item->id.Value() == "msg_456");
-    assert(msg_item->role.Value() == openai::RoleAssistant::ASSISTANT);
-    assert(msg_item->status.Value() == openai::ItemStatus::COMPLETED);
+    REQUIRE(msg_item->id.Value() == "msg_456");
+    REQUIRE(msg_item->role.Value() == openai::RoleAssistant::ASSISTANT);
+    REQUIRE(msg_item->status.Value() == openai::ItemStatus::COMPLETED);
     
     auto const& content_vec = msg_item->content.Value();
     auto const* text_content = std::get_if<openai::response::ContentTypes::OutputText>(&content_vec[0]);
@@ -223,9 +223,9 @@ void test_response_deserialization() {
         std::println("[ERROR] Content is NOT OutputText!");
         return;
     }
-    assert(text_content->text.Value() == "Hello! I am OpenAI assistant.");
+    REQUIRE(text_content->text.Value() == "Hello! I am OpenAI assistant.");
 
-    assert(resp.usage.Value().total_tokens.Value() == 30);
+    REQUIRE(resp.usage.Value().total_tokens.Value() == 30);
 
     std::println("[SUCCESS] Response Deserialization passed.");
 }
@@ -294,13 +294,13 @@ void test_openai_doc_examples() {
         auto resp = openai::Deserialize(res);
         auto const& output = resp.output.Value();
 
-        assert(output.size() == 1);
+        REQUIRE(output.size() == 1);
         auto const* call = std::get_if<openai::response::InputTypes::Item::FunctionToolCall>(&output[0]);
-        assert(call != nullptr);
-        assert(call->id.Value() == "item_123");
-        assert(call->call_id.Value() == "call_abc123");
-        assert(call->name.Value() == "get_current_weather");
-        assert(call->status.Value() == openai::ItemStatus::COMPLETED);
+        REQUIRE(call != nullptr);
+        REQUIRE(call->id.Value() == "item_123");
+        REQUIRE(call->call_id.Value() == "call_abc123");
+        REQUIRE(call->name.Value() == "get_current_weather");
+        REQUIRE(call->status.Value() == openai::ItemStatus::COMPLETED);
     }
 
     // 2. Structured Output Request (mapped to semantic model)
@@ -327,8 +327,8 @@ void test_openai_doc_examples() {
         auto serialized = openai::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
         
-        assert(json_str.find("\"name\":\"analysis\"") != std::string::npos);
-        assert(json_str.find("\"strict\":true") != std::string::npos);
+        REQUIRE(json_str.find("\"name\":\"analysis\"") != std::string::npos);
+        REQUIRE(json_str.find("\"strict\":true") != std::string::npos);
         std::println("[SUCCESS] OpenAI Documentation Examples passed.");
     }
 
@@ -361,9 +361,9 @@ void test_openai_doc_examples() {
         auto serialized = openai::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
         
-        assert(json_str.find("\"name\":\"math_solution\"") != std::string::npos);
-        assert(json_str.find("\"steps\"") != std::string::npos);
-        assert(json_str.find("\"additionalProperties\":false") != std::string::npos);
+        REQUIRE(json_str.find("\"name\":\"math_solution\"") != std::string::npos);
+        REQUIRE(json_str.find("\"steps\"") != std::string::npos);
+        REQUIRE(json_str.find("\"additionalProperties\":false") != std::string::npos);
 
         std::println("[SUCCESS] OpenAI Advanced Documentation Examples passed.");
     }

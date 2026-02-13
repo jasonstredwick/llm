@@ -92,9 +92,9 @@ struct FileData {
 
 
 struct FunctionCall {
+    std::optional<std::string> id{};
     Required<Name64> name;
     Required<json::Object> args;
-    std::optional<std::string> id{};
 };
 
 

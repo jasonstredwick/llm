@@ -9,53 +9,9 @@
 namespace jai::llm::http {
 
 
-std::vector<std::string> RequestHeaders::FromKVRange(HeaderKVRange_c auto const& in) {
-    return
-        in |
-        std::views::transform([](auto const& kv) {
-            auto const& [k, v] = kv;
-            std::string str{};
-            std::string_view key{k};
-            std::string value = RequestHeaders::ToValueStr(v);
-
-            str.reserve(key.size() + 2 + value.size());
-            str += key;
-            str += ": ";
-            str += value;
-
-            RequestHeaders::SecurityCheck(str);
-
-            return str;
-        }) |
-        std::ranges::to<std::vector<std::string>>();
-}
-
-
-std::vector<std::string> RequestHeaders::FromSeq(MergedHeaderRange_c auto const& in) {
-    return
-        in |
-        std::views::transform([](std::string_view sv) {
-            std::string str{sv};
-            RequestHeaders::SecurityCheck(str);
-            return str;
-        }) |
-        std::ranges::to<std::vector<std::string>>();
-}
-
-
 void RequestHeaders::SecurityCheck(std::string_view sv) {
     if (sv.find('\0') != std::string_view::npos) {
         throw AnnotatedException{"Header contains embedded NUL (\\0) character."};
-    }
-}
-
-
-std::string RequestHeaders::ToValueStr(auto const& v) {
-    if constexpr (std::convertible_to<decltype(v), std::string_view>) {
-        return std::string{std::string_view{v}};
-    } else {
-        std::string_view sv{v};
-        return std::string{reinterpret_cast<const char*>(sv.data()), sv.size()};
     }
 }
 
