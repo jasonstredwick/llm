@@ -135,7 +135,376 @@ void test_content_serialization() {
     std::println("[SUCCESS] Content Serialization passed.");
 }
 
-void test_response_deserialization() {
+void test_openai_full_request_serialization() {
+    std::println("Testing OpenAI Full Request Serialization...");
+
+    openai::Request req;
+    req.model = "o1-preview";
+    req.background = true;
+    
+    // Reasoning (o1 models)
+    openai::Reasoning r{
+        .effort = openai::ReasoningEffort::HIGH,
+        .summary = openai::ReasoningSummary::AUTO
+    };
+    req.reasoning = r;
+    
+    // Service Tier
+    req.service_tier = openai::ServiceTier::PRIORITY;
+    
+    // Stream Options
+    req.stream = true;
+    openai::StreamOptions stream_opts;
+    stream_opts.include_obfuscation = true;
+    req.stream_options = stream_opts;
+    
+    // Prompt Caching
+    req.prompt_cache_key = "cache_key_123";
+    req.prompt_cache_retention = "2 days";
+
+    // User metadata (moved to metadata or removed if not in struct)
+    // req.user = "user_123"; // Removed as per protocol definition
+
+    auto serialized = openai::Serialize(req);
+    std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
+
+    std::println("Serialized JSON: {}", json_str);
+
+    REQUIRE(json_str.find("\"effort\":\"high\"") != std::string::npos);
+    REQUIRE(json_str.find("\"service_tier\":\"priority\"") != std::string::npos);
+    REQUIRE(json_str.find("\"stream\":true") != std::string::npos);
+    REQUIRE(json_str.find("\"include_obfuscation\":true") != std::string::npos);
+    REQUIRE(json_str.find("\"prompt_cache_key\":\"cache_key_123\"") != std::string::npos);
+    REQUIRE(json_str.find("\"prompt_cache_retention\":\"2 days\"") != std::string::npos);
+
+    std::println("[SUCCESS] Full Request Serialization passed.");
+}
+
+void test_openai_tool_types_serialization() {
+    std::println("Testing OpenAI Tool Types Serialization...");
+
+    // File Search Tool
+    openai::request::ToolTypes::FileSearch file_search{
+        .type = openai::KindFileSearchTool{},
+        .vector_store_ids = std::vector<std::string>{"vs_123"},
+        .max_num_results = 5
+    };
+    
+    // Code Interpreter Tool
+    openai::request::ToolTypes::CodeInterpreter code_interpreter{
+        .type = openai::KindCodeInterpreterTool{},
+        .container = std::string("container_123") // Variant string
+    };
+
+    // MCP Tool (Model Context Protocol)
+    openai::request::ToolTypes::MCP mcp_tool{
+        .type = openai::KindMCPTool{},
+        .server_label = std::string("my_server"),
+        .allowed_tools = std::vector<std::string>{"read_file", "list_files"}, // Variant should accept vector
+        .authorization = std::string("auth_token"),
+        .connector_id = openai::ConnectId::GOOGLE_DRIVE,
+        .require_approval = openai::MCPApprovalSetting::ALWAYS,
+        .server_description = std::string("A file server"),
+        .server_url = jai::llm::EncodedUrl{std::string("https://mcp.example.com")} // jai::llm::EncodedUrl struct
+    };
+
+    // Computer Use Tool
+    openai::request::ToolTypes::ComputerUse computer_tool{
+        .type = openai::KindComputerUseTool{},
+        .display_height = 1080,
+        .display_width = 1920,
+        .environment = std::string("ubuntu")
+    };
+
+    openai::Request req;
+    req.tools = std::vector<openai::request::Tool>{
+        file_search,
+        code_interpreter,
+        mcp_tool,
+        computer_tool
+    };
+
+    auto serialized = openai::Serialize(req);
+    std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
+
+    std::println("Serialized JSON: {}", json_str);
+
+    // File Search Check
+    REQUIRE(json_str.find("\"type\":\"file_search\"") != std::string::npos);
+    REQUIRE(json_str.find("\"vector_store_ids\":[\"vs_123\"]") != std::string::npos);
+    
+    // Code Interpreter Check
+    REQUIRE(json_str.find("\"type\":\"code_interpreter\"") != std::string::npos);
+    REQUIRE(json_str.find("\"container\":\"container_123\"") != std::string::npos);
+
+    // MCP Check
+    REQUIRE(json_str.find("\"type\":\"mcp\"") != std::string::npos);
+    REQUIRE(json_str.find("\"server_label\":\"my_server\"") != std::string::npos);
+    REQUIRE(json_str.find("\"connector_id\":\"google_drive\"") != std::string::npos); // Serializes to snake_case
+
+    // Computer Use Check
+    REQUIRE(json_str.find("\"type\":\"computer_use_preview\"") != std::string::npos);
+    REQUIRE(json_str.find("\"display_width\":1920") != std::string::npos);
+
+    std::println("[SUCCESS] Tool Types Serialization passed.");
+}
+
+void test_openai_input_types_serialization() {
+    std::println("Testing OpenAI Input Types Serialization...");
+
+    openai::Request req;
+    req.model = "gpt-4o";
+
+    // Text Content
+    openai::request::ContentTypes::Text text_content{
+        .type = openai::KindInputText{},
+        .text = std::string("Analyze this file and image.")
+    };
+
+    // Image Content with URL and Detail
+    openai::request::ContentTypes::Image image_content_url{
+        .type = openai::KindInputImage{},
+        .detail = openai::Detail::HIGH,
+        .image_url = jai::llm::EncodedUrl{std::string("https://example.com/chart.png")}
+    };
+
+    // Image Content with File ID (variant usage handled by optional)
+    // Note: Image struct has optional file_id and image_url.
+    openai::request::ContentTypes::Image image_content_file_id{
+        .type = openai::KindInputImage{},
+        .detail = openai::Detail::AUTO,
+        .file_id = "file-abc12345"
+    };
+
+    // File Content
+    // Note: File struct has optional file_data, file_id, file_url, filename.
+    openai::request::ContentTypes::File file_content{
+        .type = openai::KindInputFile{},
+        .file_url = jai::llm::EncodedUrl{std::string("https://example.com/data.csv")},
+        .filename = "data.csv"
+    };
+
+    // Construct Message
+    openai::request::InputTypes::Message message{
+        .type = openai::KindInputMessage{},
+        .content = openai::request::InputTypes::Message::Content(std::vector<openai::request::InputTypes::MessageContentUnit>{
+            text_content,
+            image_content_url,
+            image_content_file_id,
+            file_content
+        }),
+        .role = openai::RoleInputMessage::USER
+    };
+
+    req.input = std::vector<openai::request::InputItemList>{message};
+
+    auto serialized = openai::Serialize(req);
+    std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
+
+    std::println("Serialized JSON: {}", json_str);
+
+    // Text Check
+    REQUIRE(json_str.find("\"type\":\"input_text\"") != std::string::npos);
+    REQUIRE(json_str.find("\"text\":\"Analyze this file and image.\"") != std::string::npos);
+
+    // Image URL Check
+    REQUIRE(json_str.find("\"type\":\"input_image\"") != std::string::npos);
+    REQUIRE(json_str.find("\"image_url\":\"https://example.com/chart.png\"") != std::string::npos);
+    REQUIRE(json_str.find("\"detail\":\"high\"") != std::string::npos);
+
+    // Image File ID Check
+    REQUIRE(json_str.find("\"file_id\":\"file-abc12345\"") != std::string::npos);
+    REQUIRE(json_str.find("\"detail\":\"auto\"") != std::string::npos);
+
+    // File Check
+    REQUIRE(json_str.find("\"type\":\"input_file\"") != std::string::npos);
+    REQUIRE(json_str.find("\"file_url\":\"https://example.com/data.csv\"") != std::string::npos);
+    REQUIRE(json_str.find("\"filename\":\"data.csv\"") != std::string::npos);
+
+    std::println("[SUCCESS] Input Types Serialization passed.");
+}
+
+void test_openai_advanced_response_deserialization() {
+    std::println("Testing OpenAI Advanced Response Deserialization...");
+
+    std::string json_response = R"json(
+    {
+        "id": "resp_advanced_123",
+        "object": "response",
+        "created_at": 1234567890,
+        "model": "gpt-4o",
+        "status": "completed",
+        "background": false,
+        "completed_at": 1234567899,
+        "conversation": { "id": "conv_123" },
+        "incomplete_details": { "reason": "none" },
+        "instructions": "You are a helpful assistant.",
+        "max_output_tokens": 4096,
+        "max_tool_calls": 5,
+        "metadata": {},
+        "output": [
+            {
+                "type": "message",
+                "id": "msg_refusal",
+                "role": "assistant",
+                "status": "completed",
+                "content": [
+                    {
+                        "type": "refusal",
+                        "refusal": "I cannot answer that question."
+                    }
+                ]
+            },
+            {
+                "type": "message",
+                "id": "msg_text_with_citation",
+                "role": "assistant",
+                "status": "completed",
+                "content": [
+                    {
+                        "type": "output_text",
+                        "text": "Here is the data [1].",
+                        "annotations": [
+                            {
+                                "type": "file_citation",
+                                "file_id": "file-123",
+                                "filename": "data.csv",
+                                "index": 0
+                            }
+                        ],
+                        "logprobs": [
+                            {
+                                "token": "Here",
+                                "logprob": -0.1,
+                                "bytes": [72, 101, 114, 101],
+                                "top_logprobs": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "code_interpreter_call",
+                "id": "call_ci_123",
+                "status": "completed",
+                "code": "print('hello')",
+                "container_id": "cont_123",
+                "outputs": [
+                    {
+                        "type": "logs",
+                        "logs": "hello\n"
+                    }
+                ]
+            },
+            {
+                "type": "mcp_call",
+                "id": "call_mcp_123",
+                "status": "completed",
+                "name": "read_file",
+                "arguments": "{\"path\": \"/foo.txt\"}",
+                "server_label": "fs_server",
+                "approval_request_id": "app_req_1",
+                "error": "",
+                "output": "file content here"
+            }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": "prev_resp",
+        "prompt": { "id": "prompt_1" },
+        "prompt_cache_key": "cache_key",
+        "prompt_cache_retention": "24h",
+        "reasoning": { "effort": "low", "summary": "auto" },
+        "safety_identifier": "safe_id",
+        "service_tier": "default",
+        "temperature": 0.7,
+        "text": { "type": "text" },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_logprobs": 0,
+        "top_p": 1.0,
+        "truncation": "auto",
+        "usage": {
+            "input_tokens": 10,
+            "input_tokens_details": { "cached_tokens": 0 },
+            "output_tokens": 20,
+            "output_tokens_details": { "reasoning_tokens": 0 },
+            "total_tokens": 30
+        }
+    })json";
+
+    jai::llm::curl::Response curl_resp;
+    curl_resp.state = jai::llm::curl::Response::State::COMPLETED;
+    curl_resp.status_code = 200;
+    curl_resp.body_len = json_response.size();
+    curl_resp.body.resize(curl_resp.body_len + simdjson::SIMDJSON_PADDING);
+    std::memcpy(curl_resp.body.data(), json_response.data(), curl_resp.body_len);
+
+    std::optional<openai::Response> result_opt;
+    try {
+        result_opt = openai::Deserialize(curl_resp);
+    } catch (const std::exception& e) {
+        std::println("[ERROR] Exception during deserialization: {}", e.what());
+        return;
+    }
+    auto& result = *result_opt;
+
+    // Verify Refusal
+    auto& output = result.output;
+    bool found_refusal = false;
+    bool found_citation = false;
+    bool found_ci = false;
+    bool found_mcp = false;
+
+    for (const auto& item : output.Value()) {
+        if (std::holds_alternative<openai::response::InputTypes::Item::OutputMessage>(item)) {
+            const auto& msg = std::get<openai::response::InputTypes::Item::OutputMessage>(item);
+            for (const auto& content : msg.content.Value()) {
+                if (std::holds_alternative<openai::response::ContentTypes::Refusal>(content)) {
+                    const auto& refusal = std::get<openai::response::ContentTypes::Refusal>(content);
+                    if (refusal.refusal.Value() == "I cannot answer that question.") {
+                        found_refusal = true;
+                    }
+                } else if (std::holds_alternative<openai::response::ContentTypes::OutputText>(content)) {
+                    const auto& out_text = std::get<openai::response::ContentTypes::OutputText>(content);
+                    const auto& annotations_vec = out_text.annotations.Value();
+                    for (size_t i = 0; i < annotations_vec.size(); ++i) {
+                        const auto& annotation = annotations_vec[i];
+                        if (std::holds_alternative<openai::response::ContentTypes::OutputText::FileCitation>(annotation)) {
+                            const auto& citation = std::get<openai::response::ContentTypes::OutputText::FileCitation>(annotation);
+                            if (citation.file_id.Value() == "file-123") {
+                                found_citation = true;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (std::holds_alternative<openai::response::InputTypes::Item::CodeInterpreterToolCall>(item)) {
+            const auto& ci = std::get<openai::response::InputTypes::Item::CodeInterpreterToolCall>(item);
+            if (ci.code.Value() == "print('hello')" && !ci.outputs.Value().empty()) {
+                found_ci = true;
+            }
+        } else if (std::holds_alternative<openai::response::InputTypes::Item::MCPToolCall>(item)) {
+            const auto& mcp = std::get<openai::response::InputTypes::Item::MCPToolCall>(item);
+            if (mcp.name.Value() == "read_file" && mcp.server_label.Value() == "fs_server") {
+                found_mcp = true;
+            }
+        }
+    }
+
+    if (!found_refusal) std::println("[ERROR] Refusal not found or incorrect.");
+    if (!found_citation) std::println("[ERROR] File citation not found.");
+    if (!found_ci) std::println("[ERROR] Code Interpreter call not found.");
+    if (!found_mcp) std::println("[ERROR] MCP call not found.");
+
+    REQUIRE(found_refusal);
+    REQUIRE(found_citation);
+    REQUIRE(found_ci);
+    REQUIRE(found_mcp);
+
+    std::println("[SUCCESS] Advanced Response Deserialization passed.");
+}
+
+void test_simple_response_deserialization() {
     std::println("Testing OpenAI Response Deserialization...");
 
     std::string json_response = R"({
@@ -375,7 +744,11 @@ int main() {
         test_simple_serialization();
         test_complex_serialization();
         test_content_serialization();
-        test_response_deserialization();
+        test_openai_full_request_serialization();
+        test_openai_tool_types_serialization();
+        test_openai_input_types_serialization();
+        test_openai_advanced_response_deserialization();
+        test_simple_response_deserialization();
         test_openai_doc_examples();
         return 0;
     } catch (const jai::llm::AnnotatedException& e) {

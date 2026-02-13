@@ -227,7 +227,7 @@ struct GoogleSearch {
 struct GoogleSearchRetrieval {
     struct Config {
         Required<DynamicRetrievalMode> mode;
-        std::optional<int64_t> dynamicThreshold{};
+        std::optional<double> dynamicThreshold{};
     };
 
     Required<Config> dynamicRetrievalConfig;
