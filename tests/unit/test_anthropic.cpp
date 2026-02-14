@@ -925,6 +925,31 @@ void test_thinking_config_serialization() {
         REQUIRE(json_str.find("\"budget_tokens\"") == std::string::npos);
     }
 
+    // 3. ThinkingConfigAdaptive
+    {
+        anthropic::Request req{
+            .max_tokens = 4096,
+            .messages = std::vector<anthropic::MessageParam>{
+                anthropic::MessageParam{
+                    .content = anthropic::MessageParam::Content{std::string{"Hello"}},
+                    .role = anthropic::Role::USER
+                }
+            },
+            .model = std::string{"claude-sonnet-4-20250514"}
+        };
+        req.thinking = anthropic::ThinkingConfig{
+            anthropic::ThinkingConfigDisabled{
+                .type = anthropic::ThinkingConfigType::ADAPTIVE
+            }
+        };
+
+        auto serialized = anthropic::Serialize(req);
+        std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
+
+        REQUIRE(json_str.find("\"type\":\"disabled\"") != std::string::npos);
+        REQUIRE(json_str.find("\"budget_tokens\"") == std::string::npos);
+    }
+
     std::println("[SUCCESS] ThinkingConfig Serialization passed.");
 }
 

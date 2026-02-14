@@ -88,7 +88,8 @@ enum class ResponseContentBlockKinds {
 enum class ResponseRole { ASSISTANT };
 enum class Role { USER, ASSISTANT };
 enum class StopReason { END_TURN, MAX_TOKENS, STOP_SEQUENCE, TOOL_USE, PAUSE_TURN, REFUSAL };
-enum class ThinkingConfigType { ENABLED, DISABLED };
+enum class ThinkingConfigType { ENABLED, DISABLED, ADAPTIVE };
+enum class ThinkingEffort { LOW, MEDIUM, HIGH, MAX };
 enum class ToolBash20250124Name { BASH };
 enum class UsageServiceTier { STANDARD, PRIORITY, BATCH };
 enum class UserLocationType { APPROXIMATE };
@@ -443,6 +444,7 @@ struct OutputConfig {
         Required<KindStructuredOutputFormat> type{{}};
         Required<jai::llm::json::Object> schema;
     };
+    std::optional<ThinkingEffort> effort{};
     std::optional<Format> format{};
 };
 
@@ -455,9 +457,14 @@ struct ThinkingConfigDisabled {
     Required<ThinkingConfigType> type;
 };
 
+struct ThinkingConfigAdaptive {
+    Required<ThinkingConfigType> type;
+};
+
 using ThinkingConfig = std::variant<
     ThinkingConfigEnabled,
-    ThinkingConfigDisabled
+    ThinkingConfigDisabled,
+    ThinkingConfigAdaptive
 >;
 
 

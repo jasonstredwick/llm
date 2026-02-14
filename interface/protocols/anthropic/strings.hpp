@@ -342,6 +342,16 @@ template <>
 constexpr std::optional<anthropic::ThinkingConfigType> from_string_view<anthropic::ThinkingConfigType>(std::string_view sv) {
     if (sv == "enabled") return anthropic::ThinkingConfigType::ENABLED;
     if (sv == "disabled") return anthropic::ThinkingConfigType::DISABLED;
+    if (sv == "adaptive") return anthropic::ThinkingConfigType::ADAPTIVE;
+    return std::nullopt;
+}
+
+template <>
+constexpr std::optional<anthropic::ThinkingEffort> from_string_view<anthropic::ThinkingEffort>(std::string_view sv) {
+    if (sv == "low") return anthropic::ThinkingEffort::LOW;
+    if (sv == "medium") return anthropic::ThinkingEffort::MEDIUM;
+    if (sv == "high") return anthropic::ThinkingEffort::HIGH;
+    if (sv == "max") return anthropic::ThinkingEffort::MAX;
     return std::nullopt;
 }
 
@@ -507,7 +517,18 @@ constexpr std::string_view to_string_view(anthropic::ThinkingConfigType val) {
     switch (val) {
         case anthropic::ThinkingConfigType::ENABLED: return "enabled";
         case anthropic::ThinkingConfigType::DISABLED: return "disabled";
+        case anthropic::ThinkingConfigType::ADAPTIVE: return "adaptive";
         default: throw AnnotatedException{"invalid anthropic::ThinkingConfigType"};
+    }
+}
+
+constexpr std::string_view to_string_view(anthropic::ThinkingEffort val) {
+    switch (val) {
+        case anthropic::ThinkingEffort::LOW: return "low";
+        case anthropic::ThinkingEffort::MEDIUM: return "medium";
+        case anthropic::ThinkingEffort::HIGH: return "high";
+        case anthropic::ThinkingEffort::MAX: return "max";
+        default: throw AnnotatedException{"invalid anthropic::ThinkingEffort"};
     }
 }
 
