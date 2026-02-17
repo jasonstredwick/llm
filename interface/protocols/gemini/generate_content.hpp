@@ -128,8 +128,8 @@ struct RequestContent {
         using Metadata = std::variant<VideoMetadata>;
 
         Required<Data> data;
-        Required<json::Object> partMetadata;
-        Required<Metadata> metadata;
+        std::optional<json::Object> partMetadata;
+        std::optional<Metadata> metadata;
         std::optional<std::string> thoughtSignature{};
     };
 
@@ -279,19 +279,19 @@ struct SpeechConfig {
 
 
 struct ThinkingConfig {
-    Required<int64_t> thinkingBudget;
+    std::optional<int64_t> thinkingBudget{};
     std::optional<ThinkingLevel> thinkingLevel{};
-    Required<bool> includeThoughts;
+    std::optional<bool> includeThoughts{};
 };
 
 
 struct GenerationConfig {
-    Required<std::vector<std::string>> stopSequences{{}};
+    std::optional<std::vector<std::string>> stopSequences{};
     std::optional<ResponseMimeType> responseMimeType{};
     std::optional<Schema> responseSchema{};
     std::optional<json::Value> _responseJsonSchema{};
     std::optional<json::Value> responseJsonSchema{};
-    Required<std::vector<Modality>> responseModalities{{}};
+    std::optional<std::vector<Modality>> responseModalities{};
     std::optional<int64_t> candidateCount{};
     std::optional<int64_t> maxOutputTokens{};
     std::optional<double> temperature{};
@@ -337,9 +337,9 @@ struct ToolConfig {
 
 struct Request {
     Required<std::vector<RequestContent>> contents;
-    Required<std::vector<Tool>> tools{{}};
+    std::optional<std::vector<Tool>> tools{};
     std::optional<ToolConfig> toolConfig{};
-    Required<std::vector<SafetySetting>> safetySettings{{}};
+    std::optional<std::vector<SafetySetting>> safetySettings{};
     std::optional<RequestContent> systemInstruction{};
     std::optional<GenerationConfig> generationConfig{};
     std::optional<std::string> cachedContent{};

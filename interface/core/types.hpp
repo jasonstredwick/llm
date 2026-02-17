@@ -72,6 +72,11 @@ struct variant_types<std::variant<Ts...>> {
     using type = std::tuple<Ts...>;
 };
 
+template<class... Ts>
+struct overloaded : Ts... {
+    using Ts::operator()...;
+};
+
 
 // Concepts
 template <typename T>

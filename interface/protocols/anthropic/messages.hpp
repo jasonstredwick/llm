@@ -449,16 +449,16 @@ struct OutputConfig {
 };
 
 struct ThinkingConfigEnabled {
-    Required<ThinkingConfigType> type;
+    Required<ThinkingConfigType> type{ThinkingConfigType::ENABLED};
     Required<int64_t> budget_tokens;
 };
 
 struct ThinkingConfigDisabled {
-    Required<ThinkingConfigType> type;
+    Required<ThinkingConfigType> type{ThinkingConfigType::DISABLED};
 };
 
 struct ThinkingConfigAdaptive {
-    Required<ThinkingConfigType> type;
+    Required<ThinkingConfigType> type{ThinkingConfigType::ADAPTIVE};
 };
 
 using ThinkingConfig = std::variant<
@@ -481,7 +481,7 @@ struct MessageParam {
 using System = std::variant<std::string, std::vector<TextBlockParam>>;
 
 struct Request {
-    Required<int64_t> max_tokens;
+    std::optional<int64_t> max_tokens;
     Required<std::vector<MessageParam>> messages;
     Required<std::string> model;
     std::optional<Metadata> metadata{};
