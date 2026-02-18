@@ -67,6 +67,7 @@ BEGIN_DESERIALIZE_VARIANT(anthropic::TextCitation)
     FIELD_KIND(src, kind, anthropic::CitationKinds::WEB_SEARCH_RESULT_LOCATION, anthropic::CitationsWebSearchResultLocation)
 END_DESERIALIZE_VARIANT(anthropic::TextCitation)
 
+
 /***
  * Response Content Blocks
  */
@@ -132,11 +133,11 @@ END_DESERIALIZE_VARIANT(anthropic::WebSearchToolResultBlock::Content)
 
 BEGIN_DESERIALIZE_VARIANT(anthropic::ResponseContentBlock)
     auto kind = EXTRACT_KIND(anthropic::ResponseContentBlockKinds, src, "type");
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::REDACTED_THINKING,      anthropic::RedactedThinkingBlock)
+    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE,        anthropic::ServerToolUseBlock)
     FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::TEXT,                   anthropic::TextBlock)
     FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::THINKING,               anthropic::ThinkingBlock)
-    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::REDACTED_THINKING,      anthropic::RedactedThinkingBlock)
     FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::TOOL_USE,               anthropic::ToolUseBlock)
-    FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::SERVER_TOOL_USE,        anthropic::ServerToolUseBlock)
     FIELD_KIND(src, kind, anthropic::ResponseContentBlockKinds::WEB_SEARCH_TOOL_RESULT, anthropic::WebSearchToolResultBlock)
 END_DESERIALIZE_VARIANT(anthropic::ResponseContentBlock)
 

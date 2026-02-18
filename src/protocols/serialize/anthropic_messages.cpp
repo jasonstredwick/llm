@@ -174,9 +174,9 @@ END_SERIALIZE
 
 BEGIN_SERIALIZE(ServerToolUseBlockParam)
     FIELD(obj, type,          CommaDirection::NONE)
-    FIELD(obj, name,          CommaDirection::BEFORE)
     FIELD(obj, id,            CommaDirection::BEFORE)
     FIELD(obj, input,         CommaDirection::BEFORE)
+    FIELD(obj, name,          CommaDirection::BEFORE)
     FIELD(obj, cache_control, CommaDirection::BEFORE)
 END_SERIALIZE
 
@@ -296,13 +296,13 @@ BEGIN_SERIALIZE(OutputConfig)
     FIELD(obj, format, CommaDirection::NONE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(ThinkingConfigDisabled)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(ThinkingConfigEnabled)
     FIELD(obj, budget_tokens, CommaDirection::NONE)
     FIELD(obj, type,          CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(ThinkingConfigDisabled)
-    FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE
 
 
@@ -315,9 +315,9 @@ BEGIN_SERIALIZE(MessageParam)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request)
-    FIELD(obj, max_tokens,     CommaDirection::NONE)
-    FIELD(obj, messages,       CommaDirection::BEFORE)
+    FIELD(obj, messages,       CommaDirection::NONE)
     FIELD(obj, model,          CommaDirection::BEFORE)
+    FIELD(obj, max_tokens,     CommaDirection::BEFORE)
     FIELD(obj, metadata,       CommaDirection::BEFORE)
     FIELD(obj, output_config,  CommaDirection::BEFORE)
     FIELD(obj, service_tier,   CommaDirection::BEFORE)

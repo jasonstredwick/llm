@@ -61,7 +61,7 @@ struct KindWebSearchToolResultError   : Kind { static constexpr std::string_view
 /***
  * Vocabulary
  */
-enum class CacheControlTTL { TTL_5M, TTL_1H };
+enum class CacheControlTTL { TTL_1H, TTL_5M };
 enum class CitationKinds {
     CHAR_LOCATION,
     CONTENT_BLOCK_LOCATION,
@@ -70,7 +70,7 @@ enum class CitationKinds {
     WEB_SEARCH_RESULT_LOCATION
 };
 enum class DocSrcKind { BLOCK, PDF, PLAIN_TEXT, URL_PDF};
-enum class ImageMediaType { IMAGE_JPEG, IMAGE_PNG, IMAGE_GIF, IMAGE_WEBP };
+enum class ImageMediaType { IMAGE_GIF, IMAGE_JPEG, IMAGE_PNG, IMAGE_WEBP };
 enum class ImageSourceKinds { BASE64, URL };
 enum class PDFMediaType { APPLICATION_PDF };
 enum class PlainTextMediaType { TEXT_PLAIN };
@@ -78,24 +78,24 @@ enum class ReplaceBasedEditor { STRING };
 enum class ReplaceEditor { STRING };
 enum class RequestServiceTier { AUTO, STANDARD_ONLY };
 enum class ResponseContentBlockKinds {
+    REDACTED_THINKING,
+    SERVER_TOOL_USE,
     TEXT,
     THINKING,
-    REDACTED_THINKING,
     TOOL_USE,
-    SERVER_TOOL_USE,
     WEB_SEARCH_TOOL_RESULT
 };
 enum class ResponseRole { ASSISTANT };
-enum class Role { USER, ASSISTANT };
-enum class StopReason { END_TURN, MAX_TOKENS, STOP_SEQUENCE, TOOL_USE, PAUSE_TURN, REFUSAL };
-enum class ThinkingConfigType { ENABLED, DISABLED, ADAPTIVE };
-enum class ThinkingEffort { LOW, MEDIUM, HIGH, MAX };
+enum class Role { ASSISTANT, USER };
+enum class StopReason { END_TURN, MAX_TOKENS, PAUSE_TURN, REFUSAL, STOP_SEQUENCE, TOOL_USE };
+enum class ThinkingConfigType { ADAPTIVE, DISABLED, ENABLED };
+enum class ThinkingEffort { HIGH, LOW, MAX, MEDIUM };
 enum class ToolBash20250124Name { BASH };
-enum class UsageServiceTier { STANDARD, PRIORITY, BATCH };
+enum class UsageServiceTier { BATCH, PRIORITY, STANDARD };
 enum class UserLocationType { APPROXIMATE };
 enum class WebSearchName { WEB_SEARCH };
 enum class WebSearchToolResultErrorCode {
-    INVALID_TOOL_INPUT, UNAVAILABLE, MAX_USES_EXCEEDED, TOO_MANY_REQUESTS, QUERY_TOO_LONG, REQUEST_TOO_LARGE
+    INVALID_TOOL_INPUT, MAX_USES_EXCEEDED, QUERY_TOO_LONG, REQUEST_TOO_LARGE, TOO_MANY_REQUESTS, UNAVAILABLE
 };
 enum class WebSearchToolResultErrorType { TOOL_RESULT, TOOL_RESULT_ERROR };
 
@@ -167,10 +167,10 @@ struct CitationSearchResultLocationParam {
 
 using TextCitationParam = std::variant<
     CitationCharLocationParam,
-    CitationPageLocationParam,
     CitationContentBlockLocationParam,
-    CitationWebSearchResultLocationParam,
-    CitationSearchResultLocationParam
+    CitationPageLocationParam,
+    CitationSearchResultLocationParam,
+    CitationWebSearchResultLocationParam
 >;
 
 
@@ -231,8 +231,8 @@ struct ContentBlockSource {
 
 using DocumentSource = std::variant<
     Base64PDFSource,
-    PlainTextSource,
     ContentBlockSource,
+    PlainTextSource,
     URLPDFSource
 >;
 
@@ -274,7 +274,7 @@ struct ToolUseBlockParam {
 };
 
 struct ToolResultBlockParam {
-    using ContentUnit = std::variant<TextBlockParam, ImageBlockParam, SearchResultBlockParam, DocumentBlockParam>;
+    using ContentUnit = std::variant<DocumentBlockParam, ImageBlockParam, SearchResultBlockParam, TextBlockParam>;
     using Content = std::variant<std::string, std::vector<ContentUnit>>;
 
     Required<KindToolResultBlock> type{{}};
@@ -286,9 +286,9 @@ struct ToolResultBlockParam {
 
 struct ServerToolUseBlockParam {
     Required<KindServerToolUseBlock> type{{}};
-    Required<WebSearchName> name;
     Required<std::string> id;
     Required<jai::llm::json::Object> input;
+    Required<WebSearchName> name;
     std::optional<CacheControlEphemeral> cache_control{};
 };
 
@@ -315,15 +315,15 @@ struct WebSearchToolResultBlockParam {
 };
 
 using ContentBlockParam = std::variant<
-    TextBlockParam,
-    ImageBlockParam,
     DocumentBlockParam,
-    SearchResultBlockParam,
-    ThinkingBlockParam,
+    ImageBlockParam,
     RedactedThinkingBlockParam,
-    ToolUseBlockParam,
-    ToolResultBlockParam,
+    SearchResultBlockParam,
     ServerToolUseBlockParam,
+    TextBlockParam,
+    ThinkingBlockParam,
+    ToolResultBlockParam,
+    ToolUseBlockParam,
     WebSearchToolResultBlockParam
 >;
 
@@ -428,10 +428,10 @@ struct ToolChoiceNone {
 };
 
 using ToolChoice = std::variant<
-    ToolChoiceAuto,
     ToolChoiceAny,
-    ToolChoiceTool,
-    ToolChoiceNone
+    ToolChoiceAuto,
+    ToolChoiceNone,
+    ToolChoiceTool
 >;
 
 
@@ -448,23 +448,23 @@ struct OutputConfig {
     std::optional<Format> format{};
 };
 
-struct ThinkingConfigEnabled {
-    Required<ThinkingConfigType> type{ThinkingConfigType::ENABLED};
-    Required<int64_t> budget_tokens;
+struct ThinkingConfigAdaptive {
+    Required<ThinkingConfigType> type{ThinkingConfigType::ADAPTIVE};
 };
 
 struct ThinkingConfigDisabled {
     Required<ThinkingConfigType> type{ThinkingConfigType::DISABLED};
 };
 
-struct ThinkingConfigAdaptive {
-    Required<ThinkingConfigType> type{ThinkingConfigType::ADAPTIVE};
+struct ThinkingConfigEnabled {
+    Required<ThinkingConfigType> type{ThinkingConfigType::ENABLED};
+    Required<int64_t> budget_tokens;
 };
 
 using ThinkingConfig = std::variant<
-    ThinkingConfigEnabled,
+    ThinkingConfigAdaptive,
     ThinkingConfigDisabled,
-    ThinkingConfigAdaptive
+    ThinkingConfigEnabled
 >;
 
 
@@ -481,9 +481,9 @@ struct MessageParam {
 using System = std::variant<std::string, std::vector<TextBlockParam>>;
 
 struct Request {
-    std::optional<int64_t> max_tokens;
     Required<std::vector<MessageParam>> messages;
     Required<std::string> model;
+    std::optional<int64_t> max_tokens{};
     std::optional<Metadata> metadata{};
     std::optional<OutputConfig> output_config{};
     std::optional<RequestServiceTier> service_tier{};
@@ -553,10 +553,10 @@ struct CitationsSearchResultLocation {
 
 using TextCitation = std::variant<
     CitationCharLocation,
-    CitationPageLocation,
     CitationContentBlockLocation,
-    CitationsWebSearchResultLocation,
-    CitationsSearchResultLocation
+    CitationPageLocation,
+    CitationsSearchResultLocation,
+    CitationsWebSearchResultLocation
 >;
 
 struct TextBlock {
@@ -612,11 +612,11 @@ struct WebSearchToolResultBlock {
 };
 
 using ResponseContentBlock = std::variant<
+    RedactedThinkingBlock,
+    ServerToolUseBlock,
     TextBlock,
     ThinkingBlock,
-    RedactedThinkingBlock,
     ToolUseBlock,
-    ServerToolUseBlock,
     WebSearchToolResultBlock
 >;
 
