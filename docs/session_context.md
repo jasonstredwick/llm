@@ -50,7 +50,7 @@ See `docs/roadmap.md` for detailed status.
 | `docs/transport.md`          | curl/http layer: Interface, Attempt, Response lifecycle     |
 | `docs/roadmap.md`            | What's done, what's remaining, prioritized task list        |
 | `docs/decisions.md`          | Running log of design decisions with rationale              |
-| `docs/specs/api-parity.md`   | Workflow for auditing protocol structs against live APIs     |
+| `docs/api_parity_pipeline.md`| API parity pipeline design (fetch, extract, diff, report)    |
 
 ## Directory Layout
 
@@ -79,6 +79,8 @@ tests/
   run_integration_tests.py
 
 docs/                   Project documentation
+scripts/
+  api_parity/           API parity pipeline (Python): fetch, extract, diff, report
 scratch/                Working files, drafts, transient artifacts (not in git)
 deps/                   Third-party dependencies (managed by scripts/manage_deps.py)
 scripts/                Build and dependency tooling

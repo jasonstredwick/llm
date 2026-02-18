@@ -188,3 +188,31 @@ the author's memory. Need a structure that supports AI-assisted development acro
 **Rationale:** A single `session_context.md` entry point gives AI assistants everything they need
 to be productive quickly. Detailed docs are split by concern so they can be read selectively.
 The `scratch/` folder keeps working artifacts visible and accessible without polluting git.
+
+### 2026-02-17 — API parity pipeline design
+
+**Context:** While working on `interface/projections/text.hpp`, discovered that OpenAI had made
+significant changes to their Responses API. Needed a repeatable workflow to detect and propagate
+API spec changes into C++ protocol structs.
+
+**Decision:** Build a four-stage Python pipeline (`scripts/api_parity/`): Fetch → Extract → Diff →
+Report, with a conceptual fifth stage (Agent) where a human or LLM applies changes to C++ code.
+Key design choices:
+
+- Full verbatim descriptions captured (no summarization) — descriptions contain type refinement
+  info (e.g., "max 64 characters") that the agent needs for C++ type mapping decisions.
+- Structural diff only — type, required, kind_value, enum values, and object/field presence are
+  diffed. Description changes are tracked separately to avoid noisy diffs from editorial prose.
+- No type_overrides.json — rejected hand-maintained overlay file. The agent (human or AI) makes
+  type mapping decisions using descriptions + context, not a pre-built lookup table.
+- OpenAI and Anthropic share identical markdown doc format; single shared parser handles both.
+- Gemini deferred — different format across multiple pages, will get its own parser later.
+- Pipeline is for maintainers only, not library consumers. Manual first, CI later.
+
+**Alternatives rejected:**
+- First-sentence-only description capture (loses type constraint info).
+- Hand-maintained type_overrides.json (too much manual bookkeeping).
+- LLM-only extraction (harder to set up, Python parsing works well for the structured format).
+
+**Files:** `docs/api_parity_pipeline.md` (design), `scripts/api_parity/` (implementation),
+`docs/specs/protocols/{openai,anthropic}/` (specs, extracted JSON, baselines).

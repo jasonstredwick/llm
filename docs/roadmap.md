@@ -140,8 +140,10 @@ This is an inferred priority list based on code analysis. Adjust as needed.
 
 ### Lower Priority
 
-10. **API parity audits** — Periodic re-audit of protocol structs against live API docs.
-    Anthropic and Gemini specs have not been snapshotted yet (only OpenAI has a local copy).
+10. **API parity audits** — The Python pipeline (`scripts/api_parity/`) is implemented and
+    tested for OpenAI and Anthropic. Baselines are established for both providers. Gemini
+    extractor is deferred (different doc format). See `docs/api_parity_pipeline.md` for the
+    full design including the agent step for propagating changes to C++ code.
 
 11. **Additional providers** — The architecture supports arbitrary providers, but only three
     are implemented.
