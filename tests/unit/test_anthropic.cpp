@@ -16,14 +16,14 @@ void test_simple_serialization() {
     std::println("Testing Simple Anthropic Request Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 1024,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{std::string{"Hello, Claude!"}},
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-3-5-sonnet-20240620"}
+        .model = std::string{"claude-3-5-sonnet-20240620"},
+        .max_tokens = 1024
     };
 
     auto serialized = anthropic::Serialize(req);
@@ -44,7 +44,6 @@ void test_complex_serialization() {
     std::println("Testing Complex Anthropic Request Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 4096,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{std::string{"What is the weather?"}},
@@ -55,7 +54,8 @@ void test_complex_serialization() {
                 .role = anthropic::Role::ASSISTANT
             }
         },
-        .model = std::string{"claude-3-5-sonnet-20240620"}
+        .model = std::string{"claude-3-5-sonnet-20240620"},
+        .max_tokens = 4096
     };
     req.temperature = 0.7;
     req.system = std::string{"You are a helpful assistant."};
@@ -103,7 +103,6 @@ void test_part_serialization() {
     std::println("Testing Anthropic Part Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 4096,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{
@@ -132,7 +131,8 @@ void test_part_serialization() {
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-3-5-sonnet-20240620"}
+        .model = std::string{"claude-3-5-sonnet-20240620"},
+        .max_tokens = 4096
     };
 
     auto serialized = anthropic::Serialize(req);
@@ -222,7 +222,6 @@ void test_anthropic_doc_examples() {
     // 1. Vision Request (from docs)
     {
         anthropic::Request req{
-            .max_tokens = 1024,
             .messages = std::vector<anthropic::MessageParam>{
                 anthropic::MessageParam{
                     .content = anthropic::MessageParam::Content{
@@ -246,7 +245,8 @@ void test_anthropic_doc_examples() {
                     .role = anthropic::Role::USER
                 }
             },
-            .model = std::string{"claude-3-5-sonnet-20240620"}
+            .model = std::string{"claude-3-5-sonnet-20240620"},
+            .max_tokens = 1024
         };
 
         auto serialized = anthropic::Serialize(req);
@@ -877,14 +877,14 @@ void test_thinking_config_serialization() {
     // 1. ThinkingConfigEnabled
     {
         anthropic::Request req{
-            .max_tokens = 16384,
             .messages = std::vector<anthropic::MessageParam>{
                 anthropic::MessageParam{
                     .content = anthropic::MessageParam::Content{std::string{"Think step by step."}},
                     .role = anthropic::Role::USER
                 }
             },
-            .model = std::string{"claude-sonnet-4-20250514"}
+            .model = std::string{"claude-sonnet-4-20250514"},
+            .max_tokens = 16384
         };
         req.thinking = anthropic::ThinkingConfig{
             anthropic::ThinkingConfigEnabled{
@@ -903,14 +903,14 @@ void test_thinking_config_serialization() {
     // 2. ThinkingConfigDisabled
     {
         anthropic::Request req{
-            .max_tokens = 4096,
             .messages = std::vector<anthropic::MessageParam>{
                 anthropic::MessageParam{
                     .content = anthropic::MessageParam::Content{std::string{"Hello"}},
                     .role = anthropic::Role::USER
                 }
             },
-            .model = std::string{"claude-sonnet-4-20250514"}
+            .model = std::string{"claude-sonnet-4-20250514"},
+            .max_tokens = 4096
         };
         req.thinking = anthropic::ThinkingConfig{
             anthropic::ThinkingConfigDisabled{
@@ -928,17 +928,17 @@ void test_thinking_config_serialization() {
     // 3. ThinkingConfigAdaptive
     {
         anthropic::Request req{
-            .max_tokens = 4096,
             .messages = std::vector<anthropic::MessageParam>{
                 anthropic::MessageParam{
                     .content = anthropic::MessageParam::Content{std::string{"Hello"}},
                     .role = anthropic::Role::USER
                 }
             },
-            .model = std::string{"claude-sonnet-4-20250514"}
+            .model = std::string{"claude-sonnet-4-20250514"},
+            .max_tokens = 4096
         };
         req.thinking = anthropic::ThinkingConfig{
-            anthropic::ThinkingConfigDisabled{
+            anthropic::ThinkingConfigAdaptive{
                 .type = anthropic::ThinkingConfigType::ADAPTIVE
             }
         };
@@ -946,7 +946,7 @@ void test_thinking_config_serialization() {
         auto serialized = anthropic::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
 
-        REQUIRE(json_str.find("\"type\":\"disabled\"") != std::string::npos);
+        REQUIRE(json_str.find("\"type\":\"adaptive\"") != std::string::npos);
         REQUIRE(json_str.find("\"budget_tokens\"") == std::string::npos);
     }
 
@@ -959,14 +959,14 @@ void test_tool_choice_serialization() {
 
     auto make_base_req = []() {
         return anthropic::Request{
-            .max_tokens = 1024,
             .messages = std::vector<anthropic::MessageParam>{
                 anthropic::MessageParam{
                     .content = anthropic::MessageParam::Content{std::string{"Hello"}},
                     .role = anthropic::Role::USER
                 }
             },
-            .model = std::string{"claude-3-5-sonnet-20240620"}
+            .model = std::string{"claude-3-5-sonnet-20240620"},
+            .max_tokens = 1024
         };
     };
 
@@ -1028,14 +1028,14 @@ void test_web_search_tool_serialization() {
     std::println("Testing Anthropic WebSearchTool20250305 Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 4096,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{std::string{"Search for recent AI news."}},
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-sonnet-4-20250514"}
+        .model = std::string{"claude-sonnet-4-20250514"},
+        .max_tokens = 4096
     };
 
     anthropic::WebSearchTool20250305 ws_tool{
@@ -1075,14 +1075,14 @@ void test_system_as_text_blocks_serialization() {
     std::println("Testing Anthropic System as vector<TextBlockParam> Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 1024,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{std::string{"Hello"}},
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-3-5-sonnet-20240620"}
+        .model = std::string{"claude-3-5-sonnet-20240620"},
+        .max_tokens = 1024
     };
 
     req.system = anthropic::System{
@@ -1115,14 +1115,14 @@ void test_computer_use_tools_serialization() {
     std::println("Testing Anthropic Computer Use Tools Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 4096,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{std::string{"Run a command."}},
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-sonnet-4-20250514"}
+        .model = std::string{"claude-sonnet-4-20250514"},
+        .max_tokens = 4096
     };
 
     anthropic::ToolBash20250124 bash_tool{
@@ -1172,7 +1172,6 @@ void test_tool_result_with_content_blocks() {
     std::println("Testing Anthropic ToolResultBlockParam with content blocks and is_error...");
 
     anthropic::Request req{
-        .max_tokens = 4096,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{
@@ -1213,7 +1212,8 @@ void test_tool_result_with_content_blocks() {
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-sonnet-4-20250514"}
+        .model = std::string{"claude-sonnet-4-20250514"},
+        .max_tokens = 4096
     };
 
     auto serialized = anthropic::Serialize(req);
@@ -1237,7 +1237,6 @@ void test_url_image_source_serialization() {
     std::println("Testing Anthropic URLImageSource Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 1024,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{
@@ -1260,7 +1259,8 @@ void test_url_image_source_serialization() {
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-3-5-sonnet-20240620"}
+        .model = std::string{"claude-3-5-sonnet-20240620"},
+        .max_tokens = 1024
     };
 
     auto serialized = anthropic::Serialize(req);
@@ -1278,7 +1278,6 @@ void test_cache_control_serialization() {
     std::println("Testing Anthropic cache_control Serialization...");
 
     anthropic::Request req{
-        .max_tokens = 4096,
         .messages = std::vector<anthropic::MessageParam>{
             anthropic::MessageParam{
                 .content = anthropic::MessageParam::Content{
@@ -1296,7 +1295,8 @@ void test_cache_control_serialization() {
                 .role = anthropic::Role::USER
             }
         },
-        .model = std::string{"claude-3-5-sonnet-20240620"}
+        .model = std::string{"claude-3-5-sonnet-20240620"},
+        .max_tokens = 4096
     };
 
     auto serialized = anthropic::Serialize(req);
@@ -1390,7 +1390,6 @@ void test_full_request_serialization() {
     schema["properties"] = schema_props;
 
     anthropic::Request req{
-        .max_tokens = 8192,
         .messages = std::vector<anthropic::MessageParam>{
             // User message with multi-type content blocks
             anthropic::MessageParam{
@@ -1423,7 +1422,8 @@ void test_full_request_serialization() {
                 .role = anthropic::Role::ASSISTANT
             }
         },
-        .model = std::string{"claude-sonnet-4-20250514"}
+        .model = std::string{"claude-sonnet-4-20250514"},
+        .max_tokens = 8192
     };
 
     // Set ALL optional fields

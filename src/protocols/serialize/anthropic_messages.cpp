@@ -296,6 +296,10 @@ BEGIN_SERIALIZE(OutputConfig)
     FIELD(obj, format, CommaDirection::NONE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(ThinkingConfigAdaptive)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(ThinkingConfigDisabled)
     FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE

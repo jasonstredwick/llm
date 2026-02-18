@@ -100,10 +100,10 @@ void test_complex_serialization() {
     params.required = std::vector<std::string>{"destination"};
     
     get_flights.parameters = params;
-    req.tools.Value().push_back(get_flights);
+    req.tools.value().push_back(get_flights);
 
     // Safety settings
-    req.safetySettings.Value().push_back(gemini::SafetySetting{
+    req.safetySettings.value().push_back(gemini::SafetySetting{
         .category = gemini::HarmCategory::HARM_CATEGORY_HARASSMENT,
         .threshold = gemini::HarmBlockThreshold::BLOCK_LOW_AND_ABOVE
     });
@@ -751,8 +751,8 @@ void test_tool_variants_serialization() {
     };
 
     // 1. CodeExecution
-    req.tools.Value().clear();
-    req.tools.Value().push_back(gemini::CodeExecution{});
+    req.tools.value().clear();
+    req.tools.value().push_back(gemini::CodeExecution{});
     {
         auto serialized = gemini::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -760,8 +760,8 @@ void test_tool_variants_serialization() {
     }
 
     // 2. ComputerUse
-    req.tools.Value().clear();
-    req.tools.Value().push_back(gemini::ComputerUse{
+    req.tools.value().clear();
+    req.tools.value().push_back(gemini::ComputerUse{
         .environment = gemini::Environment::ENVIRONMENT_BROWSER,
         .excludedPredefinedFunctions = std::vector<std::string>{"exclude_me"}
     });
@@ -774,8 +774,8 @@ void test_tool_variants_serialization() {
     }
 
     // 3. GoogleSearch
-    req.tools.Value().clear();
-    req.tools.Value().push_back(gemini::GoogleSearch{});
+    req.tools.value().clear();
+    req.tools.value().push_back(gemini::GoogleSearch{});
     {
         auto serialized = gemini::Serialize(req);
         std::string json_str(reinterpret_cast<const char*>(serialized.data()), serialized.size());
@@ -783,8 +783,8 @@ void test_tool_variants_serialization() {
     }
 
     // 4. GoogleSearchRetrieval
-    req.tools.Value().clear();
-    req.tools.Value().push_back(gemini::GoogleSearchRetrieval{
+    req.tools.value().clear();
+    req.tools.value().push_back(gemini::GoogleSearchRetrieval{
         .dynamicRetrievalConfig = gemini::GoogleSearchRetrieval::Config{
             .mode = gemini::DynamicRetrievalMode::MODE_DYNAMIC,
             .dynamicThreshold = 75
@@ -915,8 +915,8 @@ void test_full_request_serialization() {
     };
 
     // Tools
-    req.tools.Value().push_back(gemini::CodeExecution{});
-    req.tools.Value().push_back(gemini::GoogleSearchRetrieval{
+    req.tools.value().push_back(gemini::CodeExecution{});
+    req.tools.value().push_back(gemini::GoogleSearchRetrieval{
         .dynamicRetrievalConfig = gemini::GoogleSearchRetrieval::Config{
             .mode = gemini::DynamicRetrievalMode::MODE_DYNAMIC,
             .dynamicThreshold = 0.7
@@ -932,7 +932,7 @@ void test_full_request_serialization() {
     };
 
     // Safety Settings
-    req.safetySettings.Value().push_back(gemini::SafetySetting{
+    req.safetySettings.value().push_back(gemini::SafetySetting{
         .category = gemini::HarmCategory::HARM_CATEGORY_HATE_SPEECH,
         .threshold = gemini::HarmBlockThreshold::BLOCK_LOW_AND_ABOVE
     });
