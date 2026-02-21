@@ -6,6 +6,7 @@
 // ============================================================================
 
 #include "../../../interface/protocols/openai/responses.hpp"
+#include "../../../interface/protocols/openai/responses_strings.hpp"
 #include "base.hpp"
 
 using namespace simdjson::builder;

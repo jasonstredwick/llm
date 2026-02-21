@@ -876,6 +876,7 @@ class CppCodegen:
         parts: list[str] = [
             _GENERATED_BANNER +
             f'#include "{iface}/{self.endpoint}.hpp"\n'
+            f'#include "{iface}/{self.endpoint}_strings.hpp"\n'
             f'#include "base.hpp"\n\n'
             f"using namespace simdjson::builder;\n\n"
             f"namespace jai::llm::{ns} {{\n\n"

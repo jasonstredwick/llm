@@ -3,7 +3,7 @@
     "provider": "openai",
     "endpoint": "responses",
     "source_url": "https://developers.openai.com/api/reference/resources/responses/methods/create/index.md",
-    "fetched_at": "2026-02-21T18:21:44Z",
+    "fetched_at": "2026-02-21T18:38:19Z",
     "raw_file": "scratch/api_parity/openai/responses.raw.md"
   },
   "request": {

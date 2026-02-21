@@ -3,7 +3,7 @@
     "provider": "gemini",
     "endpoint": "generate_content",
     "source_url": "https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta",
-    "fetched_at": "2026-02-21T18:21:44Z",
+    "fetched_at": "2026-02-21T18:38:19Z",
     "parser": "discovery",
     "discovery_version": "v1beta",
     "discovery_revision": "20260218"

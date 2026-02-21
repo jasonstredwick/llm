@@ -1,2119 +1,92 @@
 {
-  "version_module": true,
-  "ownerDomain": "google.com",
-  "protocol": "rest",
+  "discoveryVersion": "v1",
   "title": "Generative Language API",
-  "auth": {
-    "oauth2": {
-      "scopes": {
-        "https://www.googleapis.com/auth/devstorage.read_only": {
-          "description": "View your data in Google Cloud Storage"
-        }
-      }
-    }
-  },
-  "kind": "discovery#restDescription",
+  "basePath": "",
+  "batchPath": "batch",
   "description": "The Gemini API allows developers to build generative AI applications using Gemini models. Gemini is our most capable model, built from the ground up to be multimodal. It can generalize and seamlessly understand, operate across, and combine different types of information including language, images, audio, video, and code. You can use the Gemini API for use cases like reasoning across text and images, content generation, dialogue agents, summarization and classification systems, and more.",
-  "resources": {
-    "batches": {
-      "methods": {
-        "list": {
-          "id": "generativelanguage.batches.list",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/batches",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "The name of the operation's parent resource.",
-              "pattern": "^batches$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "filter": {
-              "description": "The standard list filter.",
-              "location": "query",
-              "type": "string"
-            },
-            "pageSize": {
-              "description": "The standard list page size.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "The standard list page token.",
-              "location": "query",
-              "type": "string"
-            },
-            "returnPartialSuccess": {
-              "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the ListOperationsResponse.unreachable field. This can only be `true` when reading across collections. For example, when `parent` is set to `\"projects/example/locations/-\"`. This field is not supported by default and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
-              "location": "query",
-              "type": "boolean"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "ListOperationsResponse"
-          },
-          "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`."
-        },
-        "get": {
-          "id": "generativelanguage.batches.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/batches/{batchesId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "The name of the operation resource.",
-              "pattern": "^batches/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-        },
-        "delete": {
-          "id": "generativelanguage.batches.delete",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/batches/{batchesId}",
-          "httpMethod": "DELETE",
-          "parameters": {
-            "name": {
-              "description": "The name of the operation resource to be deleted.",
-              "pattern": "^batches/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`."
-        },
-        "cancel": {
-          "id": "generativelanguage.batches.cancel",
-          "path": "v1beta/{+name}:cancel",
-          "flatPath": "v1beta/batches/{batchesId}:cancel",
-          "httpMethod": "POST",
-          "parameters": {
-            "name": {
-              "description": "The name of the operation resource to be cancelled.",
-              "pattern": "^batches/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`."
-        },
-        "updateGenerateContentBatch": {
-          "id": "generativelanguage.batches.updateGenerateContentBatch",
-          "path": "v1beta/{+name}:updateGenerateContentBatch",
-          "flatPath": "v1beta/batches/{batchesId}:updateGenerateContentBatch",
-          "httpMethod": "PATCH",
-          "parameters": {
-            "name": {
-              "description": "Output only. Identifier. Resource name of the batch. Format: `batches/{batch_id}`.",
-              "pattern": "^batches/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "updateMask": {
-              "description": "Optional. The list of fields to update.",
-              "location": "query",
-              "type": "string",
-              "format": "google-fieldmask"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "request": {
-            "$ref": "GenerateContentBatch"
-          },
-          "response": {
-            "$ref": "GenerateContentBatch"
-          },
-          "description": "Updates a batch of GenerateContent requests for batch processing."
-        },
-        "updateEmbedContentBatch": {
-          "id": "generativelanguage.batches.updateEmbedContentBatch",
-          "path": "v1beta/{+name}:updateEmbedContentBatch",
-          "flatPath": "v1beta/batches/{batchesId}:updateEmbedContentBatch",
-          "httpMethod": "PATCH",
-          "parameters": {
-            "name": {
-              "description": "Output only. Identifier. Resource name of the batch. Format: `batches/{batch_id}`.",
-              "pattern": "^batches/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "updateMask": {
-              "description": "Optional. The list of fields to update.",
-              "location": "query",
-              "type": "string",
-              "format": "google-fieldmask"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "request": {
-            "$ref": "EmbedContentBatch"
-          },
-          "response": {
-            "$ref": "EmbedContentBatch"
-          },
-          "description": "Updates a batch of EmbedContent requests for batch processing."
-        }
-      }
+  "canonicalName": "Generative Language",
+  "kind": "discovery#restDescription",
+  "servicePath": "",
+  "documentationLink": "https://developers.generativeai.google/api",
+  "parameters": {
+    "access_token": {
+      "type": "string",
+      "description": "OAuth access token.",
+      "location": "query"
     },
-    "models": {
-      "methods": {
-        "generateContent": {
-          "id": "generativelanguage.models.generateContent",
-          "path": "v1beta/{+model}:generateContent",
-          "flatPath": "v1beta/models/{modelsId}:generateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateContentRequest"
-          },
-          "response": {
-            "$ref": "GenerateContentResponse"
-          },
-          "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the [text generation guide](https://ai.google.dev/gemini-api/docs/text-generation) for detailed usage information. Input capabilities differ between models, including tuned models. Refer to the [model guide](https://ai.google.dev/gemini-api/docs/models/gemini) and [tuning guide](https://ai.google.dev/gemini-api/docs/model-tuning) for details."
-        },
-        "generateAnswer": {
-          "id": "generativelanguage.models.generateAnswer",
-          "path": "v1beta/{+model}:generateAnswer",
-          "flatPath": "v1beta/models/{modelsId}:generateAnswer",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the grounded response. Format: `model=models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateAnswerRequest"
-          },
-          "response": {
-            "$ref": "GenerateAnswerResponse"
-          },
-          "description": "Generates a grounded answer from the model given an input `GenerateAnswerRequest`."
-        },
-        "streamGenerateContent": {
-          "id": "generativelanguage.models.streamGenerateContent",
-          "path": "v1beta/{+model}:streamGenerateContent",
-          "flatPath": "v1beta/models/{modelsId}:streamGenerateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateContentRequest"
-          },
-          "response": {
-            "$ref": "GenerateContentResponse"
-          },
-          "description": "Generates a [streamed response](https://ai.google.dev/gemini-api/docs/text-generation?lang=python#generate-a-text-stream) from the model given an input `GenerateContentRequest`."
-        },
-        "embedContent": {
-          "id": "generativelanguage.models.embedContent",
-          "path": "v1beta/{+model}:embedContent",
-          "flatPath": "v1beta/models/{modelsId}:embedContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "EmbedContentRequest"
-          },
-          "response": {
-            "$ref": "EmbedContentResponse"
-          },
-          "description": "Generates a text embedding vector from the input `Content` using the specified [Gemini Embedding model](https://ai.google.dev/gemini-api/docs/models/gemini#text-embedding)."
-        },
-        "batchEmbedContents": {
-          "id": "generativelanguage.models.batchEmbedContents",
-          "path": "v1beta/{+model}:batchEmbedContents",
-          "flatPath": "v1beta/models/{modelsId}:batchEmbedContents",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "BatchEmbedContentsRequest"
-          },
-          "response": {
-            "$ref": "BatchEmbedContentsResponse"
-          },
-          "description": "Generates multiple embedding vectors from the input `Content` which consists of a batch of strings represented as `EmbedContentRequest` objects."
-        },
-        "countTokens": {
-          "id": "generativelanguage.models.countTokens",
-          "path": "v1beta/{+model}:countTokens",
-          "flatPath": "v1beta/models/{modelsId}:countTokens",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "CountTokensRequest"
-          },
-          "response": {
-            "$ref": "CountTokensResponse"
-          },
-          "description": "Runs a model's tokenizer on input `Content` and returns the token count. Refer to the [tokens guide](https://ai.google.dev/gemini-api/docs/tokens) to learn more about tokens."
-        },
-        "batchGenerateContent": {
-          "id": "generativelanguage.models.batchGenerateContent",
-          "path": "v1beta/{+model}:batchGenerateContent",
-          "flatPath": "v1beta/models/{modelsId}:batchGenerateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "BatchGenerateContentRequest"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Enqueues a batch of `GenerateContent` requests for batch processing."
-        },
-        "asyncBatchEmbedContent": {
-          "id": "generativelanguage.models.asyncBatchEmbedContent",
-          "path": "v1beta/{+model}:asyncBatchEmbedContent",
-          "flatPath": "v1beta/models/{modelsId}:asyncBatchEmbedContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "AsyncBatchEmbedContentRequest"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Enqueues a batch of `EmbedContent` requests for batch processing. We have a `BatchEmbedContents` handler in `GenerativeService`, but it was synchronized. So we name this one to be `Async` to avoid confusion."
-        },
-        "generateMessage": {
-          "id": "generativelanguage.models.generateMessage",
-          "path": "v1beta/{+model}:generateMessage",
-          "flatPath": "v1beta/models/{modelsId}:generateMessage",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the model to use. Format: `name=models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateMessageRequest"
-          },
-          "response": {
-            "$ref": "GenerateMessageResponse"
-          },
-          "description": "Generates a response from the model given an input `MessagePrompt`."
-        },
-        "countMessageTokens": {
-          "id": "generativelanguage.models.countMessageTokens",
-          "path": "v1beta/{+model}:countMessageTokens",
-          "flatPath": "v1beta/models/{modelsId}:countMessageTokens",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "CountMessageTokensRequest"
-          },
-          "response": {
-            "$ref": "CountMessageTokensResponse"
-          },
-          "description": "Runs a model's tokenizer on a string and returns the token count."
-        },
-        "get": {
-          "id": "generativelanguage.models.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/models/{modelsId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name of the model. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Model"
-          },
-          "description": "Gets information about a specific `Model` such as its version number, token limits, [parameters](https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters) and other metadata. Refer to the [Gemini models guide](https://ai.google.dev/gemini-api/docs/models/gemini) for detailed model information."
-        },
-        "list": {
-          "id": "generativelanguage.models.list",
-          "path": "v1beta/models",
-          "flatPath": "v1beta/models",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "The maximum number of `Models` to return (per page). If unspecified, 50 models will be returned per page. This method returns at most 1000 models per page, even if you pass a larger page_size.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "A page token, received from a previous `ListModels` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListModels` must match the call that provided the page token.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListModelsResponse"
-          },
-          "description": "Lists the [`Model`s](https://ai.google.dev/gemini-api/docs/models/gemini) available through the Gemini API."
-        },
-        "predict": {
-          "id": "generativelanguage.models.predict",
-          "path": "v1beta/{+model}:predict",
-          "flatPath": "v1beta/models/{modelsId}:predict",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the model for prediction. Format: `name=models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "PredictRequest"
-          },
-          "response": {
-            "$ref": "PredictResponse"
-          },
-          "description": "Performs a prediction request."
-        },
-        "predictLongRunning": {
-          "id": "generativelanguage.models.predictLongRunning",
-          "path": "v1beta/{+model}:predictLongRunning",
-          "flatPath": "v1beta/models/{modelsId}:predictLongRunning",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the model for prediction. Format: `name=models/{model}`.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "PredictLongRunningRequest"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Same as Predict but returns an LRO."
-        },
-        "generateText": {
-          "id": "generativelanguage.models.generateText",
-          "path": "v1beta/{+model}:generateText",
-          "flatPath": "v1beta/models/{modelsId}:generateText",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` or `TunedModel` to use for generating the completion. Examples: models/text-bison-001 tunedModels/sentence-translator-u3b7m",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateTextRequest"
-          },
-          "response": {
-            "$ref": "GenerateTextResponse"
-          },
-          "description": "Generates a response from the model given an input message."
-        },
-        "embedText": {
-          "id": "generativelanguage.models.embedText",
-          "path": "v1beta/{+model}:embedText",
-          "flatPath": "v1beta/models/{modelsId}:embedText",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The model name to use with the format model=models/{model}.",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "EmbedTextRequest"
-          },
-          "response": {
-            "$ref": "EmbedTextResponse"
-          },
-          "description": "Generates an embedding from the model given an input message."
-        },
-        "batchEmbedText": {
-          "id": "generativelanguage.models.batchEmbedText",
-          "path": "v1beta/{+model}:batchEmbedText",
-          "flatPath": "v1beta/models/{modelsId}:batchEmbedText",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the embedding. Examples: models/embedding-gecko-001",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "BatchEmbedTextRequest"
-          },
-          "response": {
-            "$ref": "BatchEmbedTextResponse"
-          },
-          "description": "Generates multiple embeddings from the model given input text in a synchronous call."
-        },
-        "countTextTokens": {
-          "id": "generativelanguage.models.countTextTokens",
-          "path": "v1beta/{+model}:countTextTokens",
-          "flatPath": "v1beta/models/{modelsId}:countTextTokens",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
-              "pattern": "^models/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "CountTextTokensRequest"
-          },
-          "response": {
-            "$ref": "CountTextTokensResponse"
-          },
-          "description": "Runs a model's tokenizer on a text and returns the token count."
-        }
-      },
-      "resources": {
-        "operations": {
-          "methods": {
-            "list": {
-              "id": "generativelanguage.models.operations.list",
-              "path": "v1beta/{+name}/operations",
-              "flatPath": "v1beta/models/{modelsId}/operations",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation's parent resource.",
-                  "pattern": "^models/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "filter": {
-                  "description": "The standard list filter.",
-                  "location": "query",
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "The standard list page size.",
-                  "location": "query",
-                  "type": "integer",
-                  "format": "int32"
-                },
-                "pageToken": {
-                  "description": "The standard list page token.",
-                  "location": "query",
-                  "type": "string"
-                },
-                "returnPartialSuccess": {
-                  "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the ListOperationsResponse.unreachable field. This can only be `true` when reading across collections. For example, when `parent` is set to `\"projects/example/locations/-\"`. This field is not supported by default and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
-                  "location": "query",
-                  "type": "boolean"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "ListOperationsResponse"
-              },
-              "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`."
-            },
-            "get": {
-              "id": "generativelanguage.models.operations.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/models/{modelsId}/operations/{operationsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation resource.",
-                  "pattern": "^models/[^/]+/operations/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Operation"
-              },
-              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-            }
-          }
-        }
-      }
+    "alt": {
+      "type": "string",
+      "description": "Data format for response.",
+      "default": "json",
+      "enum": [
+        "json",
+        "media",
+        "proto"
+      ],
+      "enumDescriptions": [
+        "Responses with Content-Type of application/json",
+        "Media download with context-dependent Content-Type",
+        "Responses with Content-Type of application/x-protobuf"
+      ],
+      "location": "query"
     },
-    "tunedModels": {
-      "methods": {
-        "generateContent": {
-          "id": "generativelanguage.tunedModels.generateContent",
-          "path": "v1beta/{+model}:generateContent",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}:generateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateContentRequest"
-          },
-          "response": {
-            "$ref": "GenerateContentResponse"
-          },
-          "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the [text generation guide](https://ai.google.dev/gemini-api/docs/text-generation) for detailed usage information. Input capabilities differ between models, including tuned models. Refer to the [model guide](https://ai.google.dev/gemini-api/docs/models/gemini) and [tuning guide](https://ai.google.dev/gemini-api/docs/model-tuning) for details."
-        },
-        "streamGenerateContent": {
-          "id": "generativelanguage.tunedModels.streamGenerateContent",
-          "path": "v1beta/{+model}:streamGenerateContent",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}:streamGenerateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateContentRequest"
-          },
-          "response": {
-            "$ref": "GenerateContentResponse"
-          },
-          "description": "Generates a [streamed response](https://ai.google.dev/gemini-api/docs/text-generation?lang=python#generate-a-text-stream) from the model given an input `GenerateContentRequest`."
-        },
-        "batchGenerateContent": {
-          "id": "generativelanguage.tunedModels.batchGenerateContent",
-          "path": "v1beta/{+model}:batchGenerateContent",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}:batchGenerateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "BatchGenerateContentRequest"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Enqueues a batch of `GenerateContent` requests for batch processing."
-        },
-        "asyncBatchEmbedContent": {
-          "id": "generativelanguage.tunedModels.asyncBatchEmbedContent",
-          "path": "v1beta/{+model}:asyncBatchEmbedContent",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}:asyncBatchEmbedContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "AsyncBatchEmbedContentRequest"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Enqueues a batch of `EmbedContent` requests for batch processing. We have a `BatchEmbedContents` handler in `GenerativeService`, but it was synchronized. So we name this one to be `Async` to avoid confusion."
-        },
-        "get": {
-          "id": "generativelanguage.tunedModels.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name of the model. Format: `tunedModels/my-model-id`",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "TunedModel"
-          },
-          "description": "Gets information about a specific TunedModel."
-        },
-        "list": {
-          "id": "generativelanguage.tunedModels.list",
-          "path": "v1beta/tunedModels",
-          "flatPath": "v1beta/tunedModels",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "Optional. The maximum number of `TunedModels` to return (per page). The service may return fewer tuned models. If unspecified, at most 10 tuned models will be returned. This method returns at most 1000 models per page, even if you pass a larger page_size.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "Optional. A page token, received from a previous `ListTunedModels` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListTunedModels` must match the call that provided the page token.",
-              "location": "query",
-              "type": "string"
-            },
-            "filter": {
-              "description": "Optional. A filter is a full text search over the tuned model's description and display name. By default, results will not include tuned models shared with everyone. Additional operators: - owner:me - writers:me - readers:me - readers:everyone Examples: \"owner:me\" returns all tuned models to which caller has owner role \"readers:me\" returns all tuned models to which caller has reader role \"readers:everyone\" returns all tuned models that are shared with everyone",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListTunedModelsResponse"
-          },
-          "description": "Lists created tuned models."
-        },
-        "create": {
-          "id": "generativelanguage.tunedModels.create",
-          "path": "v1beta/tunedModels",
-          "flatPath": "v1beta/tunedModels",
-          "httpMethod": "POST",
-          "parameters": {
-            "tunedModelId": {
-              "description": "Optional. The unique id for the tuned model if specified. This value should be up to 40 characters, the first character must be a letter, the last could be a letter or a number. The id must match the regular expression: `[a-z]([a-z0-9-]{0,38}[a-z0-9])?`.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "request": {
-            "$ref": "TunedModel"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Creates a tuned model. Check intermediate tuning progress (if any) through the [google.longrunning.Operations] service. Access status and results through the Operations service. Example: GET /v1/tunedModels/az2mb0bpw6i/operations/000-111-222"
-        },
-        "patch": {
-          "id": "generativelanguage.tunedModels.patch",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}",
-          "httpMethod": "PATCH",
-          "parameters": {
-            "name": {
-              "description": "Output only. The tuned model name. A unique name will be generated on create. Example: `tunedModels/az2mb0bpw6i` If display_name is set on create, the id portion of the name will be set by concatenating the words of the display_name with hyphens and adding a random portion for uniqueness. Example: * display_name = `Sentence Translator` * name = `tunedModels/sentence-translator-u3b7m`",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "updateMask": {
-              "description": "Optional. The list of fields to update.",
-              "location": "query",
-              "type": "string",
-              "format": "google-fieldmask"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "request": {
-            "$ref": "TunedModel"
-          },
-          "response": {
-            "$ref": "TunedModel"
-          },
-          "description": "Updates a tuned model."
-        },
-        "delete": {
-          "id": "generativelanguage.tunedModels.delete",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}",
-          "httpMethod": "DELETE",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name of the model. Format: `tunedModels/my-model-id`",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Deletes a tuned model."
-        },
-        "transferOwnership": {
-          "id": "generativelanguage.tunedModels.transferOwnership",
-          "path": "v1beta/{+name}:transferOwnership",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}:transferOwnership",
-          "httpMethod": "POST",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name of the tuned model to transfer ownership. Format: `tunedModels/my-model-id`",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "request": {
-            "$ref": "TransferOwnershipRequest"
-          },
-          "response": {
-            "$ref": "TransferOwnershipResponse"
-          },
-          "description": "Transfers ownership of the tuned model. This is the only way to change ownership of the tuned model. The current owner will be downgraded to writer role."
-        },
-        "generateText": {
-          "id": "generativelanguage.tunedModels.generateText",
-          "path": "v1beta/{+model}:generateText",
-          "flatPath": "v1beta/tunedModels/{tunedModelsId}:generateText",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` or `TunedModel` to use for generating the completion. Examples: models/text-bison-001 tunedModels/sentence-translator-u3b7m",
-              "pattern": "^tunedModels/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateTextRequest"
-          },
-          "response": {
-            "$ref": "GenerateTextResponse"
-          },
-          "description": "Generates a response from the model given an input message."
-        }
-      },
-      "resources": {
-        "operations": {
-          "methods": {
-            "list": {
-              "id": "generativelanguage.tunedModels.operations.list",
-              "path": "v1beta/{+name}/operations",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/operations",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation's parent resource.",
-                  "pattern": "^tunedModels/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "filter": {
-                  "description": "The standard list filter.",
-                  "location": "query",
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "The standard list page size.",
-                  "location": "query",
-                  "type": "integer",
-                  "format": "int32"
-                },
-                "pageToken": {
-                  "description": "The standard list page token.",
-                  "location": "query",
-                  "type": "string"
-                },
-                "returnPartialSuccess": {
-                  "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the ListOperationsResponse.unreachable field. This can only be `true` when reading across collections. For example, when `parent` is set to `\"projects/example/locations/-\"`. This field is not supported by default and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
-                  "location": "query",
-                  "type": "boolean"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "ListOperationsResponse"
-              },
-              "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`."
-            },
-            "get": {
-              "id": "generativelanguage.tunedModels.operations.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/operations/{operationsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation resource.",
-                  "pattern": "^tunedModels/[^/]+/operations/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Operation"
-              },
-              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-            }
-          }
-        },
-        "permissions": {
-          "methods": {
-            "create": {
-              "id": "generativelanguage.tunedModels.permissions.create",
-              "path": "v1beta/{+parent}/permissions",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions",
-              "httpMethod": "POST",
-              "parameters": {
-                "parent": {
-                  "description": "Required. The parent resource of the `Permission`. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
-                  "pattern": "^tunedModels/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "parent"
-              ],
-              "request": {
-                "$ref": "Permission"
-              },
-              "response": {
-                "$ref": "Permission"
-              },
-              "description": "Create a permission to a specific resource."
-            },
-            "get": {
-              "id": "generativelanguage.tunedModels.permissions.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions/{permissionsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
-                  "pattern": "^tunedModels/[^/]+/permissions/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Permission"
-              },
-              "description": "Gets information about a specific Permission."
-            },
-            "list": {
-              "id": "generativelanguage.tunedModels.permissions.list",
-              "path": "v1beta/{+parent}/permissions",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions",
-              "httpMethod": "GET",
-              "parameters": {
-                "parent": {
-                  "description": "Required. The parent resource of the permissions. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
-                  "pattern": "^tunedModels/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Optional. The maximum number of `Permission`s to return (per page). The service may return fewer permissions. If unspecified, at most 10 permissions will be returned. This method returns at most 1000 permissions per page, even if you pass larger page_size.",
-                  "location": "query",
-                  "type": "integer",
-                  "format": "int32"
-                },
-                "pageToken": {
-                  "description": "Optional. A page token, received from a previous `ListPermissions` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListPermissions` must match the call that provided the page token.",
-                  "location": "query",
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "parent"
-              ],
-              "response": {
-                "$ref": "ListPermissionsResponse"
-              },
-              "description": "Lists permissions for the specific resource."
-            },
-            "patch": {
-              "id": "generativelanguage.tunedModels.permissions.patch",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions/{permissionsId}",
-              "httpMethod": "PATCH",
-              "parameters": {
-                "name": {
-                  "description": "Output only. Identifier. The permission name. A unique name will be generated on create. Examples: tunedModels/{tuned_model}/permissions/{permission} corpora/{corpus}/permissions/{permission} Output only.",
-                  "pattern": "^tunedModels/[^/]+/permissions/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "updateMask": {
-                  "description": "Required. The list of fields to update. Accepted ones: - role (`Permission.role` field)",
-                  "location": "query",
-                  "type": "string",
-                  "format": "google-fieldmask"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "request": {
-                "$ref": "Permission"
-              },
-              "response": {
-                "$ref": "Permission"
-              },
-              "description": "Updates the permission."
-            },
-            "delete": {
-              "id": "generativelanguage.tunedModels.permissions.delete",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions/{permissionsId}",
-              "httpMethod": "DELETE",
-              "parameters": {
-                "name": {
-                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
-                  "pattern": "^tunedModels/[^/]+/permissions/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Empty"
-              },
-              "description": "Deletes the permission."
-            }
-          }
-        }
-      }
+    "callback": {
+      "type": "string",
+      "description": "JSONP",
+      "location": "query"
     },
-    "dynamic": {
-      "methods": {
-        "generateContent": {
-          "id": "generativelanguage.dynamic.generateContent",
-          "path": "v1beta/{+model}:generateContent",
-          "flatPath": "v1beta/dynamic/{dynamicId}:generateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^dynamic/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateContentRequest"
-          },
-          "response": {
-            "$ref": "GenerateContentResponse"
-          },
-          "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the [text generation guide](https://ai.google.dev/gemini-api/docs/text-generation) for detailed usage information. Input capabilities differ between models, including tuned models. Refer to the [model guide](https://ai.google.dev/gemini-api/docs/models/gemini) and [tuning guide](https://ai.google.dev/gemini-api/docs/model-tuning) for details."
-        },
-        "streamGenerateContent": {
-          "id": "generativelanguage.dynamic.streamGenerateContent",
-          "path": "v1beta/{+model}:streamGenerateContent",
-          "flatPath": "v1beta/dynamic/{dynamicId}:streamGenerateContent",
-          "httpMethod": "POST",
-          "parameters": {
-            "model": {
-              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
-              "pattern": "^dynamic/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "model"
-          ],
-          "request": {
-            "$ref": "GenerateContentRequest"
-          },
-          "response": {
-            "$ref": "GenerateContentResponse"
-          },
-          "description": "Generates a [streamed response](https://ai.google.dev/gemini-api/docs/text-generation?lang=python#generate-a-text-stream) from the model given an input `GenerateContentRequest`."
-        }
-      }
+    "fields": {
+      "type": "string",
+      "description": "Selector specifying which fields to include in a partial response.",
+      "location": "query"
     },
-    "cachedContents": {
-      "methods": {
-        "list": {
-          "id": "generativelanguage.cachedContents.list",
-          "path": "v1beta/cachedContents",
-          "flatPath": "v1beta/cachedContents",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "Optional. The maximum number of cached contents to return. The service may return fewer than this value. If unspecified, some default (under maximum) number of items will be returned. The maximum value is 1000; values above 1000 will be coerced to 1000.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "Optional. A page token, received from a previous `ListCachedContents` call. Provide this to retrieve the subsequent page. When paginating, all other parameters provided to `ListCachedContents` must match the call that provided the page token.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListCachedContentsResponse"
-          },
-          "description": "Lists CachedContents."
-        },
-        "create": {
-          "id": "generativelanguage.cachedContents.create",
-          "path": "v1beta/cachedContents",
-          "flatPath": "v1beta/cachedContents",
-          "httpMethod": "POST",
-          "parameters": {},
-          "parameterOrder": [],
-          "request": {
-            "$ref": "CachedContent"
-          },
-          "response": {
-            "$ref": "CachedContent"
-          },
-          "description": "Creates CachedContent resource."
-        },
-        "get": {
-          "id": "generativelanguage.cachedContents.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/cachedContents/{cachedContentsId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name referring to the content cache entry. Format: `cachedContents/{id}`",
-              "pattern": "^cachedContents/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "CachedContent"
-          },
-          "description": "Reads CachedContent resource."
-        },
-        "patch": {
-          "id": "generativelanguage.cachedContents.patch",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/cachedContents/{cachedContentsId}",
-          "httpMethod": "PATCH",
-          "parameters": {
-            "name": {
-              "description": "Output only. Identifier. The resource name referring to the cached content. Format: `cachedContents/{id}`",
-              "pattern": "^cachedContents/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "updateMask": {
-              "description": "The list of fields to update.",
-              "location": "query",
-              "type": "string",
-              "format": "google-fieldmask"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "request": {
-            "$ref": "CachedContent"
-          },
-          "response": {
-            "$ref": "CachedContent"
-          },
-          "description": "Updates CachedContent resource (only expiration is updatable)."
-        },
-        "delete": {
-          "id": "generativelanguage.cachedContents.delete",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/cachedContents/{cachedContentsId}",
-          "httpMethod": "DELETE",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name referring to the content cache entry Format: `cachedContents/{id}`",
-              "pattern": "^cachedContents/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Deletes CachedContent resource."
-        }
-      }
+    "key": {
+      "type": "string",
+      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+      "location": "query"
     },
-    "media": {
-      "methods": {
-        "upload": {
-          "id": "generativelanguage.media.upload",
-          "path": "v1beta/files",
-          "flatPath": "v1beta/files",
-          "httpMethod": "POST",
-          "parameters": {},
-          "parameterOrder": [],
-          "supportsMediaUpload": true,
-          "mediaUpload": {
-            "accept": [
-              "*/*"
-            ],
-            "maxSize": "2147483648",
-            "protocols": {
-              "resumable": {
-                "multipart": true,
-                "path": "/resumable/upload/v1beta/files"
-              },
-              "simple": {
-                "multipart": true,
-                "path": "/upload/v1beta/files"
-              }
-            }
-          },
-          "request": {
-            "$ref": "CreateFileRequest"
-          },
-          "response": {
-            "$ref": "CreateFileResponse"
-          },
-          "description": "Creates a `File`."
-        },
-        "uploadToFileSearchStore": {
-          "id": "generativelanguage.media.uploadToFileSearchStore",
-          "path": "v1beta/{+fileSearchStoreName}:uploadToFileSearchStore",
-          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}:uploadToFileSearchStore",
-          "httpMethod": "POST",
-          "parameters": {
-            "fileSearchStoreName": {
-              "description": "Required. Immutable. The name of the `FileSearchStore` to upload the file into. Example: `fileSearchStores/my-file-search-store-123`",
-              "pattern": "^fileSearchStores/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "fileSearchStoreName"
-          ],
-          "supportsMediaUpload": true,
-          "mediaUpload": {
-            "accept": [
-              "*/*"
-            ],
-            "maxSize": "104857600",
-            "protocols": {
-              "resumable": {
-                "multipart": true,
-                "path": "/resumable/upload/v1beta/{+fileSearchStoreName}:uploadToFileSearchStore"
-              },
-              "simple": {
-                "multipart": true,
-                "path": "/upload/v1beta/{+fileSearchStoreName}:uploadToFileSearchStore"
-              }
-            }
-          },
-          "request": {
-            "$ref": "UploadToFileSearchStoreRequest"
-          },
-          "response": {
-            "$ref": "CustomLongRunningOperation"
-          },
-          "description": "Uploads data to a FileSearchStore, preprocesses and chunks before storing it in a FileSearchStore Document."
-        }
-      }
+    "oauth_token": {
+      "type": "string",
+      "description": "OAuth 2.0 token for the current user.",
+      "location": "query"
     },
-    "files": {
-      "methods": {
-        "register": {
-          "id": "generativelanguage.files.register",
-          "path": "v1beta/files:register",
-          "flatPath": "v1beta/files:register",
-          "httpMethod": "POST",
-          "parameters": {},
-          "parameterOrder": [],
-          "request": {
-            "$ref": "RegisterFilesRequest"
-          },
-          "response": {
-            "$ref": "RegisterFilesResponse"
-          },
-          "scopes": [
-            "https://www.googleapis.com/auth/devstorage.read_only"
-          ],
-          "description": "Registers a Google Cloud Storage files with FileService. The user is expected to provide Google Cloud Storage URIs and will receive a File resource for each URI in return. Note that the files are not copied, just registered with File API. If one file fails to register, the whole request fails."
-        },
-        "list": {
-          "id": "generativelanguage.files.list",
-          "path": "v1beta/files",
-          "flatPath": "v1beta/files",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "Optional. Maximum number of `File`s to return per page. If unspecified, defaults to 10. Maximum `page_size` is 100.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "Optional. A page token from a previous `ListFiles` call.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListFilesResponse"
-          },
-          "description": "Lists the metadata for `File`s owned by the requesting project."
-        },
-        "get": {
-          "id": "generativelanguage.files.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/files/{filesId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "Required. The name of the `File` to get. Example: `files/abc-123`",
-              "pattern": "^files/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "File"
-          },
-          "description": "Gets the metadata for the given `File`."
-        },
-        "delete": {
-          "id": "generativelanguage.files.delete",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/files/{filesId}",
-          "httpMethod": "DELETE",
-          "parameters": {
-            "name": {
-              "description": "Required. The name of the `File` to delete. Example: `files/abc-123`",
-              "pattern": "^files/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Deletes the `File`."
-        }
-      }
+    "prettyPrint": {
+      "type": "boolean",
+      "description": "Returns response with indentations and line breaks.",
+      "default": "true",
+      "location": "query"
     },
-    "generatedFiles": {
-      "methods": {
-        "list": {
-          "id": "generativelanguage.generatedFiles.list",
-          "path": "v1beta/generatedFiles",
-          "flatPath": "v1beta/generatedFiles",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "Optional. Maximum number of `GeneratedFile`s to return per page. If unspecified, defaults to 10. Maximum `page_size` is 50.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "Optional. A page token from a previous `ListGeneratedFiles` call.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListGeneratedFilesResponse"
-          },
-          "description": "Lists the generated files owned by the requesting project."
-        }
-      },
-      "resources": {
-        "operations": {
-          "methods": {
-            "get": {
-              "id": "generativelanguage.generatedFiles.operations.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/generatedFiles/{generatedFilesId}/operations/{operationsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation resource.",
-                  "pattern": "^generatedFiles/[^/]+/operations/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Operation"
-              },
-              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-            }
-          }
-        }
-      }
+    "quotaUser": {
+      "type": "string",
+      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+      "location": "query"
     },
-    "fileSearchStores": {
-      "methods": {
-        "create": {
-          "id": "generativelanguage.fileSearchStores.create",
-          "path": "v1beta/fileSearchStores",
-          "flatPath": "v1beta/fileSearchStores",
-          "httpMethod": "POST",
-          "parameters": {},
-          "parameterOrder": [],
-          "request": {
-            "$ref": "FileSearchStore"
-          },
-          "response": {
-            "$ref": "FileSearchStore"
-          },
-          "description": "Creates an empty `FileSearchStore`."
-        },
-        "get": {
-          "id": "generativelanguage.fileSearchStores.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "Required. The name of the `FileSearchStore`. Example: `fileSearchStores/my-file-search-store-123`",
-              "pattern": "^fileSearchStores/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "FileSearchStore"
-          },
-          "description": "Gets information about a specific `FileSearchStore`."
-        },
-        "delete": {
-          "id": "generativelanguage.fileSearchStores.delete",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}",
-          "httpMethod": "DELETE",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name of the `FileSearchStore`. Example: `fileSearchStores/my-file-search-store-123`",
-              "pattern": "^fileSearchStores/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "force": {
-              "description": "Optional. If set to true, any `Document`s and objects related to this `FileSearchStore` will also be deleted. If false (the default), a `FAILED_PRECONDITION` error will be returned if `FileSearchStore` contains any `Document`s.",
-              "location": "query",
-              "type": "boolean"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Deletes a `FileSearchStore`."
-        },
-        "list": {
-          "id": "generativelanguage.fileSearchStores.list",
-          "path": "v1beta/fileSearchStores",
-          "flatPath": "v1beta/fileSearchStores",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "Optional. The maximum number of `FileSearchStores` to return (per page). The service may return fewer `FileSearchStores`. If unspecified, at most 10 `FileSearchStores` will be returned. The maximum size limit is 20 `FileSearchStores` per page.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "Optional. A page token, received from a previous `ListFileSearchStores` call. Provide the `next_page_token` returned in the response as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListFileSearchStores` must match the call that provided the page token.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListFileSearchStoresResponse"
-          },
-          "description": "Lists all `FileSearchStores` owned by the user."
-        },
-        "importFile": {
-          "id": "generativelanguage.fileSearchStores.importFile",
-          "path": "v1beta/{+fileSearchStoreName}:importFile",
-          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}:importFile",
-          "httpMethod": "POST",
-          "parameters": {
-            "fileSearchStoreName": {
-              "description": "Required. Immutable. The name of the `FileSearchStore` to import the file into. Example: `fileSearchStores/my-file-search-store-123`",
-              "pattern": "^fileSearchStores/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "fileSearchStoreName"
-          ],
-          "request": {
-            "$ref": "ImportFileRequest"
-          },
-          "response": {
-            "$ref": "Operation"
-          },
-          "description": "Imports a `File` from File Service to a `FileSearchStore`."
-        }
-      },
-      "resources": {
-        "operations": {
-          "methods": {
-            "get": {
-              "id": "generativelanguage.fileSearchStores.operations.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/operations/{operationsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation resource.",
-                  "pattern": "^fileSearchStores/[^/]+/operations/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Operation"
-              },
-              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-            }
-          }
-        },
-        "upload": {
-          "resources": {
-            "operations": {
-              "methods": {
-                "get": {
-                  "id": "generativelanguage.fileSearchStores.upload.operations.get",
-                  "path": "v1beta/{+name}",
-                  "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/upload/operations/{operationsId}",
-                  "httpMethod": "GET",
-                  "parameters": {
-                    "name": {
-                      "description": "The name of the operation resource.",
-                      "pattern": "^fileSearchStores/[^/]+/upload/operations/[^/]+$",
-                      "location": "path",
-                      "required": true,
-                      "type": "string"
-                    }
-                  },
-                  "parameterOrder": [
-                    "name"
-                  ],
-                  "response": {
-                    "$ref": "Operation"
-                  },
-                  "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-                }
-              }
-            }
-          }
-        },
-        "documents": {
-          "methods": {
-            "get": {
-              "id": "generativelanguage.fileSearchStores.documents.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/documents/{documentsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "Required. The name of the `Document` to retrieve. Example: `fileSearchStores/my-file-search-store-123/documents/the-doc-abc`",
-                  "pattern": "^fileSearchStores/[^/]+/documents/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Document"
-              },
-              "description": "Gets information about a specific `Document`."
-            },
-            "delete": {
-              "id": "generativelanguage.fileSearchStores.documents.delete",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/documents/{documentsId}",
-              "httpMethod": "DELETE",
-              "parameters": {
-                "name": {
-                  "description": "Required. The resource name of the `Document` to delete. Example: `fileSearchStores/my-file-search-store-123/documents/the-doc-abc`",
-                  "pattern": "^fileSearchStores/[^/]+/documents/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "force": {
-                  "description": "Optional. If set to true, any `Chunk`s and objects related to this `Document` will also be deleted. If false (the default), a `FAILED_PRECONDITION` error will be returned if `Document` contains any `Chunk`s.",
-                  "location": "query",
-                  "type": "boolean"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Empty"
-              },
-              "description": "Deletes a `Document`."
-            },
-            "list": {
-              "id": "generativelanguage.fileSearchStores.documents.list",
-              "path": "v1beta/{+parent}/documents",
-              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/documents",
-              "httpMethod": "GET",
-              "parameters": {
-                "parent": {
-                  "description": "Required. The name of the `FileSearchStore` containing `Document`s. Example: `fileSearchStores/my-file-search-store-123`",
-                  "pattern": "^fileSearchStores/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Optional. The maximum number of `Document`s to return (per page). The service may return fewer `Document`s. If unspecified, at most 10 `Document`s will be returned. The maximum size limit is 20 `Document`s per page.",
-                  "location": "query",
-                  "type": "integer",
-                  "format": "int32"
-                },
-                "pageToken": {
-                  "description": "Optional. A page token, received from a previous `ListDocuments` call. Provide the `next_page_token` returned in the response as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListDocuments` must match the call that provided the page token.",
-                  "location": "query",
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "parent"
-              ],
-              "response": {
-                "$ref": "ListDocumentsResponse"
-              },
-              "description": "Lists all `Document`s in a `Corpus`."
-            }
-          }
-        }
-      }
+    "upload_protocol": {
+      "type": "string",
+      "description": "Upload protocol for media (e.g. \"raw\", \"multipart\").",
+      "location": "query"
     },
-    "corpora": {
-      "methods": {
-        "create": {
-          "id": "generativelanguage.corpora.create",
-          "path": "v1beta/corpora",
-          "flatPath": "v1beta/corpora",
-          "httpMethod": "POST",
-          "parameters": {},
-          "parameterOrder": [],
-          "request": {
-            "$ref": "Corpus"
-          },
-          "response": {
-            "$ref": "Corpus"
-          },
-          "description": "Creates an empty `Corpus`."
-        },
-        "get": {
-          "id": "generativelanguage.corpora.get",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/corpora/{corporaId}",
-          "httpMethod": "GET",
-          "parameters": {
-            "name": {
-              "description": "Required. The name of the `Corpus`. Example: `corpora/my-corpus-123`",
-              "pattern": "^corpora/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Corpus"
-          },
-          "description": "Gets information about a specific `Corpus`."
-        },
-        "delete": {
-          "id": "generativelanguage.corpora.delete",
-          "path": "v1beta/{+name}",
-          "flatPath": "v1beta/corpora/{corporaId}",
-          "httpMethod": "DELETE",
-          "parameters": {
-            "name": {
-              "description": "Required. The resource name of the `Corpus`. Example: `corpora/my-corpus-123`",
-              "pattern": "^corpora/[^/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            },
-            "force": {
-              "description": "Optional. If set to true, any `Document`s and objects related to this `Corpus` will also be deleted. If false (the default), a `FAILED_PRECONDITION` error will be returned if `Corpus` contains any `Document`s.",
-              "location": "query",
-              "type": "boolean"
-            }
-          },
-          "parameterOrder": [
-            "name"
-          ],
-          "response": {
-            "$ref": "Empty"
-          },
-          "description": "Deletes a `Corpus`."
-        },
-        "list": {
-          "id": "generativelanguage.corpora.list",
-          "path": "v1beta/corpora",
-          "flatPath": "v1beta/corpora",
-          "httpMethod": "GET",
-          "parameters": {
-            "pageSize": {
-              "description": "Optional. The maximum number of `Corpora` to return (per page). The service may return fewer `Corpora`. If unspecified, at most 10 `Corpora` will be returned. The maximum size limit is 20 `Corpora` per page.",
-              "location": "query",
-              "type": "integer",
-              "format": "int32"
-            },
-            "pageToken": {
-              "description": "Optional. A page token, received from a previous `ListCorpora` call. Provide the `next_page_token` returned in the response as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListCorpora` must match the call that provided the page token.",
-              "location": "query",
-              "type": "string"
-            }
-          },
-          "parameterOrder": [],
-          "response": {
-            "$ref": "ListCorporaResponse"
-          },
-          "description": "Lists all `Corpora` owned by the user."
-        }
-      },
-      "resources": {
-        "operations": {
-          "methods": {
-            "get": {
-              "id": "generativelanguage.corpora.operations.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/corpora/{corporaId}/operations/{operationsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "The name of the operation resource.",
-                  "pattern": "^corpora/[^/]+/operations/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Operation"
-              },
-              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
-            }
-          }
-        },
-        "permissions": {
-          "methods": {
-            "create": {
-              "id": "generativelanguage.corpora.permissions.create",
-              "path": "v1beta/{+parent}/permissions",
-              "flatPath": "v1beta/corpora/{corporaId}/permissions",
-              "httpMethod": "POST",
-              "parameters": {
-                "parent": {
-                  "description": "Required. The parent resource of the `Permission`. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
-                  "pattern": "^corpora/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "parent"
-              ],
-              "request": {
-                "$ref": "Permission"
-              },
-              "response": {
-                "$ref": "Permission"
-              },
-              "description": "Create a permission to a specific resource."
-            },
-            "get": {
-              "id": "generativelanguage.corpora.permissions.get",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/corpora/{corporaId}/permissions/{permissionsId}",
-              "httpMethod": "GET",
-              "parameters": {
-                "name": {
-                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
-                  "pattern": "^corpora/[^/]+/permissions/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Permission"
-              },
-              "description": "Gets information about a specific Permission."
-            },
-            "list": {
-              "id": "generativelanguage.corpora.permissions.list",
-              "path": "v1beta/{+parent}/permissions",
-              "flatPath": "v1beta/corpora/{corporaId}/permissions",
-              "httpMethod": "GET",
-              "parameters": {
-                "parent": {
-                  "description": "Required. The parent resource of the permissions. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
-                  "pattern": "^corpora/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "pageSize": {
-                  "description": "Optional. The maximum number of `Permission`s to return (per page). The service may return fewer permissions. If unspecified, at most 10 permissions will be returned. This method returns at most 1000 permissions per page, even if you pass larger page_size.",
-                  "location": "query",
-                  "type": "integer",
-                  "format": "int32"
-                },
-                "pageToken": {
-                  "description": "Optional. A page token, received from a previous `ListPermissions` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListPermissions` must match the call that provided the page token.",
-                  "location": "query",
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "parent"
-              ],
-              "response": {
-                "$ref": "ListPermissionsResponse"
-              },
-              "description": "Lists permissions for the specific resource."
-            },
-            "patch": {
-              "id": "generativelanguage.corpora.permissions.patch",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/corpora/{corporaId}/permissions/{permissionsId}",
-              "httpMethod": "PATCH",
-              "parameters": {
-                "name": {
-                  "description": "Output only. Identifier. The permission name. A unique name will be generated on create. Examples: tunedModels/{tuned_model}/permissions/{permission} corpora/{corpus}/permissions/{permission} Output only.",
-                  "pattern": "^corpora/[^/]+/permissions/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                },
-                "updateMask": {
-                  "description": "Required. The list of fields to update. Accepted ones: - role (`Permission.role` field)",
-                  "location": "query",
-                  "type": "string",
-                  "format": "google-fieldmask"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "request": {
-                "$ref": "Permission"
-              },
-              "response": {
-                "$ref": "Permission"
-              },
-              "description": "Updates the permission."
-            },
-            "delete": {
-              "id": "generativelanguage.corpora.permissions.delete",
-              "path": "v1beta/{+name}",
-              "flatPath": "v1beta/corpora/{corporaId}/permissions/{permissionsId}",
-              "httpMethod": "DELETE",
-              "parameters": {
-                "name": {
-                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
-                  "pattern": "^corpora/[^/]+/permissions/[^/]+$",
-                  "location": "path",
-                  "required": true,
-                  "type": "string"
-                }
-              },
-              "parameterOrder": [
-                "name"
-              ],
-              "response": {
-                "$ref": "Empty"
-              },
-              "description": "Deletes the permission."
-            }
-          }
-        }
-      }
+    "uploadType": {
+      "type": "string",
+      "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\").",
+      "location": "query"
+    },
+    "$.xgafv": {
+      "type": "string",
+      "description": "V1 error format.",
+      "enum": [
+        "1",
+        "2"
+      ],
+      "enumDescriptions": [
+        "v1 error format",
+        "v2 error format"
+      ],
+      "location": "query"
     }
   },
-  "rootUrl": "https://generativelanguage.googleapis.com/",
+  "name": "generativelanguage",
+  "fullyEncodeReservedExpansion": true,
   "schemas": {
     "ListOperationsResponse": {
       "id": "ListOperationsResponse",
@@ -6614,99 +4587,2126 @@
       }
     }
   },
+  "version_module": true,
   "mtlsRootUrl": "https://generativelanguage.mtls.googleapis.com/",
-  "canonicalName": "Generative Language",
-  "basePath": "",
-  "fullyEncodeReservedExpansion": true,
-  "ownerName": "Google",
-  "batchPath": "batch",
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/devstorage.read_only": {
+          "description": "View your data in Google Cloud Storage"
+        }
+      }
+    }
+  },
+  "id": "generativelanguage:v1beta",
   "icons": {
     "x16": "http://www.google.com/images/icons/product/search-16.gif",
     "x32": "http://www.google.com/images/icons/product/search-32.gif"
   },
-  "baseUrl": "https://generativelanguage.googleapis.com/",
-  "version": "v1beta",
-  "name": "generativelanguage",
-  "discoveryVersion": "v1",
-  "servicePath": "",
   "revision": "20260218",
-  "id": "generativelanguage:v1beta",
-  "documentationLink": "https://developers.generativeai.google/api",
-  "parameters": {
-    "access_token": {
-      "type": "string",
-      "description": "OAuth access token.",
-      "location": "query"
+  "protocol": "rest",
+  "resources": {
+    "batches": {
+      "methods": {
+        "list": {
+          "id": "generativelanguage.batches.list",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/batches",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "The name of the operation's parent resource.",
+              "pattern": "^batches$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "filter": {
+              "description": "The standard list filter.",
+              "location": "query",
+              "type": "string"
+            },
+            "pageSize": {
+              "description": "The standard list page size.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "The standard list page token.",
+              "location": "query",
+              "type": "string"
+            },
+            "returnPartialSuccess": {
+              "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the ListOperationsResponse.unreachable field. This can only be `true` when reading across collections. For example, when `parent` is set to `\"projects/example/locations/-\"`. This field is not supported by default and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+              "location": "query",
+              "type": "boolean"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "ListOperationsResponse"
+          },
+          "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`."
+        },
+        "get": {
+          "id": "generativelanguage.batches.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/batches/{batchesId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "The name of the operation resource.",
+              "pattern": "^batches/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+        },
+        "delete": {
+          "id": "generativelanguage.batches.delete",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/batches/{batchesId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "name": {
+              "description": "The name of the operation resource to be deleted.",
+              "pattern": "^batches/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`."
+        },
+        "cancel": {
+          "id": "generativelanguage.batches.cancel",
+          "path": "v1beta/{+name}:cancel",
+          "flatPath": "v1beta/batches/{batchesId}:cancel",
+          "httpMethod": "POST",
+          "parameters": {
+            "name": {
+              "description": "The name of the operation resource to be cancelled.",
+              "pattern": "^batches/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of `1`, corresponding to `Code.CANCELLED`."
+        },
+        "updateGenerateContentBatch": {
+          "id": "generativelanguage.batches.updateGenerateContentBatch",
+          "path": "v1beta/{+name}:updateGenerateContentBatch",
+          "flatPath": "v1beta/batches/{batchesId}:updateGenerateContentBatch",
+          "httpMethod": "PATCH",
+          "parameters": {
+            "name": {
+              "description": "Output only. Identifier. Resource name of the batch. Format: `batches/{batch_id}`.",
+              "pattern": "^batches/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "updateMask": {
+              "description": "Optional. The list of fields to update.",
+              "location": "query",
+              "type": "string",
+              "format": "google-fieldmask"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "GenerateContentBatch"
+          },
+          "response": {
+            "$ref": "GenerateContentBatch"
+          },
+          "description": "Updates a batch of GenerateContent requests for batch processing."
+        },
+        "updateEmbedContentBatch": {
+          "id": "generativelanguage.batches.updateEmbedContentBatch",
+          "path": "v1beta/{+name}:updateEmbedContentBatch",
+          "flatPath": "v1beta/batches/{batchesId}:updateEmbedContentBatch",
+          "httpMethod": "PATCH",
+          "parameters": {
+            "name": {
+              "description": "Output only. Identifier. Resource name of the batch. Format: `batches/{batch_id}`.",
+              "pattern": "^batches/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "updateMask": {
+              "description": "Optional. The list of fields to update.",
+              "location": "query",
+              "type": "string",
+              "format": "google-fieldmask"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "EmbedContentBatch"
+          },
+          "response": {
+            "$ref": "EmbedContentBatch"
+          },
+          "description": "Updates a batch of EmbedContent requests for batch processing."
+        }
+      }
     },
-    "alt": {
-      "type": "string",
-      "description": "Data format for response.",
-      "default": "json",
-      "enum": [
-        "json",
-        "media",
-        "proto"
-      ],
-      "enumDescriptions": [
-        "Responses with Content-Type of application/json",
-        "Media download with context-dependent Content-Type",
-        "Responses with Content-Type of application/x-protobuf"
-      ],
-      "location": "query"
+    "models": {
+      "methods": {
+        "generateContent": {
+          "id": "generativelanguage.models.generateContent",
+          "path": "v1beta/{+model}:generateContent",
+          "flatPath": "v1beta/models/{modelsId}:generateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateContentRequest"
+          },
+          "response": {
+            "$ref": "GenerateContentResponse"
+          },
+          "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the [text generation guide](https://ai.google.dev/gemini-api/docs/text-generation) for detailed usage information. Input capabilities differ between models, including tuned models. Refer to the [model guide](https://ai.google.dev/gemini-api/docs/models/gemini) and [tuning guide](https://ai.google.dev/gemini-api/docs/model-tuning) for details."
+        },
+        "generateAnswer": {
+          "id": "generativelanguage.models.generateAnswer",
+          "path": "v1beta/{+model}:generateAnswer",
+          "flatPath": "v1beta/models/{modelsId}:generateAnswer",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the grounded response. Format: `model=models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateAnswerRequest"
+          },
+          "response": {
+            "$ref": "GenerateAnswerResponse"
+          },
+          "description": "Generates a grounded answer from the model given an input `GenerateAnswerRequest`."
+        },
+        "streamGenerateContent": {
+          "id": "generativelanguage.models.streamGenerateContent",
+          "path": "v1beta/{+model}:streamGenerateContent",
+          "flatPath": "v1beta/models/{modelsId}:streamGenerateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateContentRequest"
+          },
+          "response": {
+            "$ref": "GenerateContentResponse"
+          },
+          "description": "Generates a [streamed response](https://ai.google.dev/gemini-api/docs/text-generation?lang=python#generate-a-text-stream) from the model given an input `GenerateContentRequest`."
+        },
+        "embedContent": {
+          "id": "generativelanguage.models.embedContent",
+          "path": "v1beta/{+model}:embedContent",
+          "flatPath": "v1beta/models/{modelsId}:embedContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "EmbedContentRequest"
+          },
+          "response": {
+            "$ref": "EmbedContentResponse"
+          },
+          "description": "Generates a text embedding vector from the input `Content` using the specified [Gemini Embedding model](https://ai.google.dev/gemini-api/docs/models/gemini#text-embedding)."
+        },
+        "batchEmbedContents": {
+          "id": "generativelanguage.models.batchEmbedContents",
+          "path": "v1beta/{+model}:batchEmbedContents",
+          "flatPath": "v1beta/models/{modelsId}:batchEmbedContents",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "BatchEmbedContentsRequest"
+          },
+          "response": {
+            "$ref": "BatchEmbedContentsResponse"
+          },
+          "description": "Generates multiple embedding vectors from the input `Content` which consists of a batch of strings represented as `EmbedContentRequest` objects."
+        },
+        "countTokens": {
+          "id": "generativelanguage.models.countTokens",
+          "path": "v1beta/{+model}:countTokens",
+          "flatPath": "v1beta/models/{modelsId}:countTokens",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "CountTokensRequest"
+          },
+          "response": {
+            "$ref": "CountTokensResponse"
+          },
+          "description": "Runs a model's tokenizer on input `Content` and returns the token count. Refer to the [tokens guide](https://ai.google.dev/gemini-api/docs/tokens) to learn more about tokens."
+        },
+        "batchGenerateContent": {
+          "id": "generativelanguage.models.batchGenerateContent",
+          "path": "v1beta/{+model}:batchGenerateContent",
+          "flatPath": "v1beta/models/{modelsId}:batchGenerateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "BatchGenerateContentRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Enqueues a batch of `GenerateContent` requests for batch processing."
+        },
+        "asyncBatchEmbedContent": {
+          "id": "generativelanguage.models.asyncBatchEmbedContent",
+          "path": "v1beta/{+model}:asyncBatchEmbedContent",
+          "flatPath": "v1beta/models/{modelsId}:asyncBatchEmbedContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "AsyncBatchEmbedContentRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Enqueues a batch of `EmbedContent` requests for batch processing. We have a `BatchEmbedContents` handler in `GenerativeService`, but it was synchronized. So we name this one to be `Async` to avoid confusion."
+        },
+        "generateMessage": {
+          "id": "generativelanguage.models.generateMessage",
+          "path": "v1beta/{+model}:generateMessage",
+          "flatPath": "v1beta/models/{modelsId}:generateMessage",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the model to use. Format: `name=models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateMessageRequest"
+          },
+          "response": {
+            "$ref": "GenerateMessageResponse"
+          },
+          "description": "Generates a response from the model given an input `MessagePrompt`."
+        },
+        "countMessageTokens": {
+          "id": "generativelanguage.models.countMessageTokens",
+          "path": "v1beta/{+model}:countMessageTokens",
+          "flatPath": "v1beta/models/{modelsId}:countMessageTokens",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "CountMessageTokensRequest"
+          },
+          "response": {
+            "$ref": "CountMessageTokensResponse"
+          },
+          "description": "Runs a model's tokenizer on a string and returns the token count."
+        },
+        "get": {
+          "id": "generativelanguage.models.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/models/{modelsId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name of the model. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Model"
+          },
+          "description": "Gets information about a specific `Model` such as its version number, token limits, [parameters](https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters) and other metadata. Refer to the [Gemini models guide](https://ai.google.dev/gemini-api/docs/models/gemini) for detailed model information."
+        },
+        "list": {
+          "id": "generativelanguage.models.list",
+          "path": "v1beta/models",
+          "flatPath": "v1beta/models",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "The maximum number of `Models` to return (per page). If unspecified, 50 models will be returned per page. This method returns at most 1000 models per page, even if you pass a larger page_size.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "A page token, received from a previous `ListModels` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListModels` must match the call that provided the page token.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListModelsResponse"
+          },
+          "description": "Lists the [`Model`s](https://ai.google.dev/gemini-api/docs/models/gemini) available through the Gemini API."
+        },
+        "predict": {
+          "id": "generativelanguage.models.predict",
+          "path": "v1beta/{+model}:predict",
+          "flatPath": "v1beta/models/{modelsId}:predict",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the model for prediction. Format: `name=models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "PredictRequest"
+          },
+          "response": {
+            "$ref": "PredictResponse"
+          },
+          "description": "Performs a prediction request."
+        },
+        "predictLongRunning": {
+          "id": "generativelanguage.models.predictLongRunning",
+          "path": "v1beta/{+model}:predictLongRunning",
+          "flatPath": "v1beta/models/{modelsId}:predictLongRunning",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the model for prediction. Format: `name=models/{model}`.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "PredictLongRunningRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Same as Predict but returns an LRO."
+        },
+        "generateText": {
+          "id": "generativelanguage.models.generateText",
+          "path": "v1beta/{+model}:generateText",
+          "flatPath": "v1beta/models/{modelsId}:generateText",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` or `TunedModel` to use for generating the completion. Examples: models/text-bison-001 tunedModels/sentence-translator-u3b7m",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateTextRequest"
+          },
+          "response": {
+            "$ref": "GenerateTextResponse"
+          },
+          "description": "Generates a response from the model given an input message."
+        },
+        "embedText": {
+          "id": "generativelanguage.models.embedText",
+          "path": "v1beta/{+model}:embedText",
+          "flatPath": "v1beta/models/{modelsId}:embedText",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The model name to use with the format model=models/{model}.",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "EmbedTextRequest"
+          },
+          "response": {
+            "$ref": "EmbedTextResponse"
+          },
+          "description": "Generates an embedding from the model given an input message."
+        },
+        "batchEmbedText": {
+          "id": "generativelanguage.models.batchEmbedText",
+          "path": "v1beta/{+model}:batchEmbedText",
+          "flatPath": "v1beta/models/{modelsId}:batchEmbedText",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the embedding. Examples: models/embedding-gecko-001",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "BatchEmbedTextRequest"
+          },
+          "response": {
+            "$ref": "BatchEmbedTextResponse"
+          },
+          "description": "Generates multiple embeddings from the model given input text in a synchronous call."
+        },
+        "countTextTokens": {
+          "id": "generativelanguage.models.countTextTokens",
+          "path": "v1beta/{+model}:countTextTokens",
+          "flatPath": "v1beta/models/{modelsId}:countTextTokens",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The model's resource name. This serves as an ID for the Model to use. This name should match a model name returned by the `ListModels` method. Format: `models/{model}`",
+              "pattern": "^models/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "CountTextTokensRequest"
+          },
+          "response": {
+            "$ref": "CountTextTokensResponse"
+          },
+          "description": "Runs a model's tokenizer on a text and returns the token count."
+        }
+      },
+      "resources": {
+        "operations": {
+          "methods": {
+            "list": {
+              "id": "generativelanguage.models.operations.list",
+              "path": "v1beta/{+name}/operations",
+              "flatPath": "v1beta/models/{modelsId}/operations",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation's parent resource.",
+                  "pattern": "^models/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "The standard list filter.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "The standard list page size.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "The standard list page token.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "returnPartialSuccess": {
+                  "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the ListOperationsResponse.unreachable field. This can only be `true` when reading across collections. For example, when `parent` is set to `\"projects/example/locations/-\"`. This field is not supported by default and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+                  "location": "query",
+                  "type": "boolean"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "ListOperationsResponse"
+              },
+              "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`."
+            },
+            "get": {
+              "id": "generativelanguage.models.operations.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/models/{modelsId}/operations/{operationsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation resource.",
+                  "pattern": "^models/[^/]+/operations/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Operation"
+              },
+              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+            }
+          }
+        }
+      }
     },
-    "callback": {
-      "type": "string",
-      "description": "JSONP",
-      "location": "query"
+    "tunedModels": {
+      "methods": {
+        "generateContent": {
+          "id": "generativelanguage.tunedModels.generateContent",
+          "path": "v1beta/{+model}:generateContent",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}:generateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateContentRequest"
+          },
+          "response": {
+            "$ref": "GenerateContentResponse"
+          },
+          "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the [text generation guide](https://ai.google.dev/gemini-api/docs/text-generation) for detailed usage information. Input capabilities differ between models, including tuned models. Refer to the [model guide](https://ai.google.dev/gemini-api/docs/models/gemini) and [tuning guide](https://ai.google.dev/gemini-api/docs/model-tuning) for details."
+        },
+        "streamGenerateContent": {
+          "id": "generativelanguage.tunedModels.streamGenerateContent",
+          "path": "v1beta/{+model}:streamGenerateContent",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}:streamGenerateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateContentRequest"
+          },
+          "response": {
+            "$ref": "GenerateContentResponse"
+          },
+          "description": "Generates a [streamed response](https://ai.google.dev/gemini-api/docs/text-generation?lang=python#generate-a-text-stream) from the model given an input `GenerateContentRequest`."
+        },
+        "batchGenerateContent": {
+          "id": "generativelanguage.tunedModels.batchGenerateContent",
+          "path": "v1beta/{+model}:batchGenerateContent",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}:batchGenerateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "BatchGenerateContentRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Enqueues a batch of `GenerateContent` requests for batch processing."
+        },
+        "asyncBatchEmbedContent": {
+          "id": "generativelanguage.tunedModels.asyncBatchEmbedContent",
+          "path": "v1beta/{+model}:asyncBatchEmbedContent",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}:asyncBatchEmbedContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "AsyncBatchEmbedContentRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Enqueues a batch of `EmbedContent` requests for batch processing. We have a `BatchEmbedContents` handler in `GenerativeService`, but it was synchronized. So we name this one to be `Async` to avoid confusion."
+        },
+        "get": {
+          "id": "generativelanguage.tunedModels.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name of the model. Format: `tunedModels/my-model-id`",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "TunedModel"
+          },
+          "description": "Gets information about a specific TunedModel."
+        },
+        "list": {
+          "id": "generativelanguage.tunedModels.list",
+          "path": "v1beta/tunedModels",
+          "flatPath": "v1beta/tunedModels",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "Optional. The maximum number of `TunedModels` to return (per page). The service may return fewer tuned models. If unspecified, at most 10 tuned models will be returned. This method returns at most 1000 models per page, even if you pass a larger page_size.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "Optional. A page token, received from a previous `ListTunedModels` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListTunedModels` must match the call that provided the page token.",
+              "location": "query",
+              "type": "string"
+            },
+            "filter": {
+              "description": "Optional. A filter is a full text search over the tuned model's description and display name. By default, results will not include tuned models shared with everyone. Additional operators: - owner:me - writers:me - readers:me - readers:everyone Examples: \"owner:me\" returns all tuned models to which caller has owner role \"readers:me\" returns all tuned models to which caller has reader role \"readers:everyone\" returns all tuned models that are shared with everyone",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListTunedModelsResponse"
+          },
+          "description": "Lists created tuned models."
+        },
+        "create": {
+          "id": "generativelanguage.tunedModels.create",
+          "path": "v1beta/tunedModels",
+          "flatPath": "v1beta/tunedModels",
+          "httpMethod": "POST",
+          "parameters": {
+            "tunedModelId": {
+              "description": "Optional. The unique id for the tuned model if specified. This value should be up to 40 characters, the first character must be a letter, the last could be a letter or a number. The id must match the regular expression: `[a-z]([a-z0-9-]{0,38}[a-z0-9])?`.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "request": {
+            "$ref": "TunedModel"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Creates a tuned model. Check intermediate tuning progress (if any) through the [google.longrunning.Operations] service. Access status and results through the Operations service. Example: GET /v1/tunedModels/az2mb0bpw6i/operations/000-111-222"
+        },
+        "patch": {
+          "id": "generativelanguage.tunedModels.patch",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}",
+          "httpMethod": "PATCH",
+          "parameters": {
+            "name": {
+              "description": "Output only. The tuned model name. A unique name will be generated on create. Example: `tunedModels/az2mb0bpw6i` If display_name is set on create, the id portion of the name will be set by concatenating the words of the display_name with hyphens and adding a random portion for uniqueness. Example: * display_name = `Sentence Translator` * name = `tunedModels/sentence-translator-u3b7m`",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "updateMask": {
+              "description": "Optional. The list of fields to update.",
+              "location": "query",
+              "type": "string",
+              "format": "google-fieldmask"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "TunedModel"
+          },
+          "response": {
+            "$ref": "TunedModel"
+          },
+          "description": "Updates a tuned model."
+        },
+        "delete": {
+          "id": "generativelanguage.tunedModels.delete",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name of the model. Format: `tunedModels/my-model-id`",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Deletes a tuned model."
+        },
+        "transferOwnership": {
+          "id": "generativelanguage.tunedModels.transferOwnership",
+          "path": "v1beta/{+name}:transferOwnership",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}:transferOwnership",
+          "httpMethod": "POST",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name of the tuned model to transfer ownership. Format: `tunedModels/my-model-id`",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "TransferOwnershipRequest"
+          },
+          "response": {
+            "$ref": "TransferOwnershipResponse"
+          },
+          "description": "Transfers ownership of the tuned model. This is the only way to change ownership of the tuned model. The current owner will be downgraded to writer role."
+        },
+        "generateText": {
+          "id": "generativelanguage.tunedModels.generateText",
+          "path": "v1beta/{+model}:generateText",
+          "flatPath": "v1beta/tunedModels/{tunedModelsId}:generateText",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` or `TunedModel` to use for generating the completion. Examples: models/text-bison-001 tunedModels/sentence-translator-u3b7m",
+              "pattern": "^tunedModels/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateTextRequest"
+          },
+          "response": {
+            "$ref": "GenerateTextResponse"
+          },
+          "description": "Generates a response from the model given an input message."
+        }
+      },
+      "resources": {
+        "operations": {
+          "methods": {
+            "list": {
+              "id": "generativelanguage.tunedModels.operations.list",
+              "path": "v1beta/{+name}/operations",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/operations",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation's parent resource.",
+                  "pattern": "^tunedModels/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "filter": {
+                  "description": "The standard list filter.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "The standard list page size.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "The standard list page token.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "returnPartialSuccess": {
+                  "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the ListOperationsResponse.unreachable field. This can only be `true` when reading across collections. For example, when `parent` is set to `\"projects/example/locations/-\"`. This field is not supported by default and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+                  "location": "query",
+                  "type": "boolean"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "ListOperationsResponse"
+              },
+              "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`."
+            },
+            "get": {
+              "id": "generativelanguage.tunedModels.operations.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/operations/{operationsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation resource.",
+                  "pattern": "^tunedModels/[^/]+/operations/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Operation"
+              },
+              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+            }
+          }
+        },
+        "permissions": {
+          "methods": {
+            "create": {
+              "id": "generativelanguage.tunedModels.permissions.create",
+              "path": "v1beta/{+parent}/permissions",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions",
+              "httpMethod": "POST",
+              "parameters": {
+                "parent": {
+                  "description": "Required. The parent resource of the `Permission`. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
+                  "pattern": "^tunedModels/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "request": {
+                "$ref": "Permission"
+              },
+              "response": {
+                "$ref": "Permission"
+              },
+              "description": "Create a permission to a specific resource."
+            },
+            "get": {
+              "id": "generativelanguage.tunedModels.permissions.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions/{permissionsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
+                  "pattern": "^tunedModels/[^/]+/permissions/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Permission"
+              },
+              "description": "Gets information about a specific Permission."
+            },
+            "list": {
+              "id": "generativelanguage.tunedModels.permissions.list",
+              "path": "v1beta/{+parent}/permissions",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions",
+              "httpMethod": "GET",
+              "parameters": {
+                "parent": {
+                  "description": "Required. The parent resource of the permissions. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
+                  "pattern": "^tunedModels/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Optional. The maximum number of `Permission`s to return (per page). The service may return fewer permissions. If unspecified, at most 10 permissions will be returned. This method returns at most 1000 permissions per page, even if you pass larger page_size.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Optional. A page token, received from a previous `ListPermissions` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListPermissions` must match the call that provided the page token.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "response": {
+                "$ref": "ListPermissionsResponse"
+              },
+              "description": "Lists permissions for the specific resource."
+            },
+            "patch": {
+              "id": "generativelanguage.tunedModels.permissions.patch",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions/{permissionsId}",
+              "httpMethod": "PATCH",
+              "parameters": {
+                "name": {
+                  "description": "Output only. Identifier. The permission name. A unique name will be generated on create. Examples: tunedModels/{tuned_model}/permissions/{permission} corpora/{corpus}/permissions/{permission} Output only.",
+                  "pattern": "^tunedModels/[^/]+/permissions/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "updateMask": {
+                  "description": "Required. The list of fields to update. Accepted ones: - role (`Permission.role` field)",
+                  "location": "query",
+                  "type": "string",
+                  "format": "google-fieldmask"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "request": {
+                "$ref": "Permission"
+              },
+              "response": {
+                "$ref": "Permission"
+              },
+              "description": "Updates the permission."
+            },
+            "delete": {
+              "id": "generativelanguage.tunedModels.permissions.delete",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/tunedModels/{tunedModelsId}/permissions/{permissionsId}",
+              "httpMethod": "DELETE",
+              "parameters": {
+                "name": {
+                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
+                  "pattern": "^tunedModels/[^/]+/permissions/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Empty"
+              },
+              "description": "Deletes the permission."
+            }
+          }
+        }
+      }
     },
-    "fields": {
-      "type": "string",
-      "description": "Selector specifying which fields to include in a partial response.",
-      "location": "query"
+    "dynamic": {
+      "methods": {
+        "generateContent": {
+          "id": "generativelanguage.dynamic.generateContent",
+          "path": "v1beta/{+model}:generateContent",
+          "flatPath": "v1beta/dynamic/{dynamicId}:generateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^dynamic/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateContentRequest"
+          },
+          "response": {
+            "$ref": "GenerateContentResponse"
+          },
+          "description": "Generates a model response given an input `GenerateContentRequest`. Refer to the [text generation guide](https://ai.google.dev/gemini-api/docs/text-generation) for detailed usage information. Input capabilities differ between models, including tuned models. Refer to the [model guide](https://ai.google.dev/gemini-api/docs/models/gemini) and [tuning guide](https://ai.google.dev/gemini-api/docs/model-tuning) for details."
+        },
+        "streamGenerateContent": {
+          "id": "generativelanguage.dynamic.streamGenerateContent",
+          "path": "v1beta/{+model}:streamGenerateContent",
+          "flatPath": "v1beta/dynamic/{dynamicId}:streamGenerateContent",
+          "httpMethod": "POST",
+          "parameters": {
+            "model": {
+              "description": "Required. The name of the `Model` to use for generating the completion. Format: `models/{model}`.",
+              "pattern": "^dynamic/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "model"
+          ],
+          "request": {
+            "$ref": "GenerateContentRequest"
+          },
+          "response": {
+            "$ref": "GenerateContentResponse"
+          },
+          "description": "Generates a [streamed response](https://ai.google.dev/gemini-api/docs/text-generation?lang=python#generate-a-text-stream) from the model given an input `GenerateContentRequest`."
+        }
+      }
     },
-    "key": {
-      "type": "string",
-      "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
-      "location": "query"
+    "cachedContents": {
+      "methods": {
+        "list": {
+          "id": "generativelanguage.cachedContents.list",
+          "path": "v1beta/cachedContents",
+          "flatPath": "v1beta/cachedContents",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "Optional. The maximum number of cached contents to return. The service may return fewer than this value. If unspecified, some default (under maximum) number of items will be returned. The maximum value is 1000; values above 1000 will be coerced to 1000.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "Optional. A page token, received from a previous `ListCachedContents` call. Provide this to retrieve the subsequent page. When paginating, all other parameters provided to `ListCachedContents` must match the call that provided the page token.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListCachedContentsResponse"
+          },
+          "description": "Lists CachedContents."
+        },
+        "create": {
+          "id": "generativelanguage.cachedContents.create",
+          "path": "v1beta/cachedContents",
+          "flatPath": "v1beta/cachedContents",
+          "httpMethod": "POST",
+          "parameters": {},
+          "parameterOrder": [],
+          "request": {
+            "$ref": "CachedContent"
+          },
+          "response": {
+            "$ref": "CachedContent"
+          },
+          "description": "Creates CachedContent resource."
+        },
+        "get": {
+          "id": "generativelanguage.cachedContents.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/cachedContents/{cachedContentsId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name referring to the content cache entry. Format: `cachedContents/{id}`",
+              "pattern": "^cachedContents/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "CachedContent"
+          },
+          "description": "Reads CachedContent resource."
+        },
+        "patch": {
+          "id": "generativelanguage.cachedContents.patch",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/cachedContents/{cachedContentsId}",
+          "httpMethod": "PATCH",
+          "parameters": {
+            "name": {
+              "description": "Output only. Identifier. The resource name referring to the cached content. Format: `cachedContents/{id}`",
+              "pattern": "^cachedContents/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "updateMask": {
+              "description": "The list of fields to update.",
+              "location": "query",
+              "type": "string",
+              "format": "google-fieldmask"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "CachedContent"
+          },
+          "response": {
+            "$ref": "CachedContent"
+          },
+          "description": "Updates CachedContent resource (only expiration is updatable)."
+        },
+        "delete": {
+          "id": "generativelanguage.cachedContents.delete",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/cachedContents/{cachedContentsId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name referring to the content cache entry Format: `cachedContents/{id}`",
+              "pattern": "^cachedContents/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Deletes CachedContent resource."
+        }
+      }
     },
-    "oauth_token": {
-      "type": "string",
-      "description": "OAuth 2.0 token for the current user.",
-      "location": "query"
+    "media": {
+      "methods": {
+        "upload": {
+          "id": "generativelanguage.media.upload",
+          "path": "v1beta/files",
+          "flatPath": "v1beta/files",
+          "httpMethod": "POST",
+          "parameters": {},
+          "parameterOrder": [],
+          "supportsMediaUpload": true,
+          "mediaUpload": {
+            "accept": [
+              "*/*"
+            ],
+            "maxSize": "2147483648",
+            "protocols": {
+              "resumable": {
+                "multipart": true,
+                "path": "/resumable/upload/v1beta/files"
+              },
+              "simple": {
+                "multipart": true,
+                "path": "/upload/v1beta/files"
+              }
+            }
+          },
+          "request": {
+            "$ref": "CreateFileRequest"
+          },
+          "response": {
+            "$ref": "CreateFileResponse"
+          },
+          "description": "Creates a `File`."
+        },
+        "uploadToFileSearchStore": {
+          "id": "generativelanguage.media.uploadToFileSearchStore",
+          "path": "v1beta/{+fileSearchStoreName}:uploadToFileSearchStore",
+          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}:uploadToFileSearchStore",
+          "httpMethod": "POST",
+          "parameters": {
+            "fileSearchStoreName": {
+              "description": "Required. Immutable. The name of the `FileSearchStore` to upload the file into. Example: `fileSearchStores/my-file-search-store-123`",
+              "pattern": "^fileSearchStores/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "fileSearchStoreName"
+          ],
+          "supportsMediaUpload": true,
+          "mediaUpload": {
+            "accept": [
+              "*/*"
+            ],
+            "maxSize": "104857600",
+            "protocols": {
+              "resumable": {
+                "multipart": true,
+                "path": "/resumable/upload/v1beta/{+fileSearchStoreName}:uploadToFileSearchStore"
+              },
+              "simple": {
+                "multipart": true,
+                "path": "/upload/v1beta/{+fileSearchStoreName}:uploadToFileSearchStore"
+              }
+            }
+          },
+          "request": {
+            "$ref": "UploadToFileSearchStoreRequest"
+          },
+          "response": {
+            "$ref": "CustomLongRunningOperation"
+          },
+          "description": "Uploads data to a FileSearchStore, preprocesses and chunks before storing it in a FileSearchStore Document."
+        }
+      }
     },
-    "prettyPrint": {
-      "type": "boolean",
-      "description": "Returns response with indentations and line breaks.",
-      "default": "true",
-      "location": "query"
+    "files": {
+      "methods": {
+        "register": {
+          "id": "generativelanguage.files.register",
+          "path": "v1beta/files:register",
+          "flatPath": "v1beta/files:register",
+          "httpMethod": "POST",
+          "parameters": {},
+          "parameterOrder": [],
+          "request": {
+            "$ref": "RegisterFilesRequest"
+          },
+          "response": {
+            "$ref": "RegisterFilesResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/devstorage.read_only"
+          ],
+          "description": "Registers a Google Cloud Storage files with FileService. The user is expected to provide Google Cloud Storage URIs and will receive a File resource for each URI in return. Note that the files are not copied, just registered with File API. If one file fails to register, the whole request fails."
+        },
+        "list": {
+          "id": "generativelanguage.files.list",
+          "path": "v1beta/files",
+          "flatPath": "v1beta/files",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "Optional. Maximum number of `File`s to return per page. If unspecified, defaults to 10. Maximum `page_size` is 100.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "Optional. A page token from a previous `ListFiles` call.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListFilesResponse"
+          },
+          "description": "Lists the metadata for `File`s owned by the requesting project."
+        },
+        "get": {
+          "id": "generativelanguage.files.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/files/{filesId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "Required. The name of the `File` to get. Example: `files/abc-123`",
+              "pattern": "^files/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "File"
+          },
+          "description": "Gets the metadata for the given `File`."
+        },
+        "delete": {
+          "id": "generativelanguage.files.delete",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/files/{filesId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "name": {
+              "description": "Required. The name of the `File` to delete. Example: `files/abc-123`",
+              "pattern": "^files/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Deletes the `File`."
+        }
+      }
     },
-    "quotaUser": {
-      "type": "string",
-      "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
-      "location": "query"
+    "generatedFiles": {
+      "methods": {
+        "list": {
+          "id": "generativelanguage.generatedFiles.list",
+          "path": "v1beta/generatedFiles",
+          "flatPath": "v1beta/generatedFiles",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "Optional. Maximum number of `GeneratedFile`s to return per page. If unspecified, defaults to 10. Maximum `page_size` is 50.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "Optional. A page token from a previous `ListGeneratedFiles` call.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListGeneratedFilesResponse"
+          },
+          "description": "Lists the generated files owned by the requesting project."
+        }
+      },
+      "resources": {
+        "operations": {
+          "methods": {
+            "get": {
+              "id": "generativelanguage.generatedFiles.operations.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/generatedFiles/{generatedFilesId}/operations/{operationsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation resource.",
+                  "pattern": "^generatedFiles/[^/]+/operations/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Operation"
+              },
+              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+            }
+          }
+        }
+      }
     },
-    "upload_protocol": {
-      "type": "string",
-      "description": "Upload protocol for media (e.g. \"raw\", \"multipart\").",
-      "location": "query"
+    "fileSearchStores": {
+      "methods": {
+        "create": {
+          "id": "generativelanguage.fileSearchStores.create",
+          "path": "v1beta/fileSearchStores",
+          "flatPath": "v1beta/fileSearchStores",
+          "httpMethod": "POST",
+          "parameters": {},
+          "parameterOrder": [],
+          "request": {
+            "$ref": "FileSearchStore"
+          },
+          "response": {
+            "$ref": "FileSearchStore"
+          },
+          "description": "Creates an empty `FileSearchStore`."
+        },
+        "get": {
+          "id": "generativelanguage.fileSearchStores.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "Required. The name of the `FileSearchStore`. Example: `fileSearchStores/my-file-search-store-123`",
+              "pattern": "^fileSearchStores/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "FileSearchStore"
+          },
+          "description": "Gets information about a specific `FileSearchStore`."
+        },
+        "delete": {
+          "id": "generativelanguage.fileSearchStores.delete",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name of the `FileSearchStore`. Example: `fileSearchStores/my-file-search-store-123`",
+              "pattern": "^fileSearchStores/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "force": {
+              "description": "Optional. If set to true, any `Document`s and objects related to this `FileSearchStore` will also be deleted. If false (the default), a `FAILED_PRECONDITION` error will be returned if `FileSearchStore` contains any `Document`s.",
+              "location": "query",
+              "type": "boolean"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Deletes a `FileSearchStore`."
+        },
+        "list": {
+          "id": "generativelanguage.fileSearchStores.list",
+          "path": "v1beta/fileSearchStores",
+          "flatPath": "v1beta/fileSearchStores",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "Optional. The maximum number of `FileSearchStores` to return (per page). The service may return fewer `FileSearchStores`. If unspecified, at most 10 `FileSearchStores` will be returned. The maximum size limit is 20 `FileSearchStores` per page.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "Optional. A page token, received from a previous `ListFileSearchStores` call. Provide the `next_page_token` returned in the response as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListFileSearchStores` must match the call that provided the page token.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListFileSearchStoresResponse"
+          },
+          "description": "Lists all `FileSearchStores` owned by the user."
+        },
+        "importFile": {
+          "id": "generativelanguage.fileSearchStores.importFile",
+          "path": "v1beta/{+fileSearchStoreName}:importFile",
+          "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}:importFile",
+          "httpMethod": "POST",
+          "parameters": {
+            "fileSearchStoreName": {
+              "description": "Required. Immutable. The name of the `FileSearchStore` to import the file into. Example: `fileSearchStores/my-file-search-store-123`",
+              "pattern": "^fileSearchStores/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "fileSearchStoreName"
+          ],
+          "request": {
+            "$ref": "ImportFileRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "description": "Imports a `File` from File Service to a `FileSearchStore`."
+        }
+      },
+      "resources": {
+        "operations": {
+          "methods": {
+            "get": {
+              "id": "generativelanguage.fileSearchStores.operations.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/operations/{operationsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation resource.",
+                  "pattern": "^fileSearchStores/[^/]+/operations/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Operation"
+              },
+              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+            }
+          }
+        },
+        "upload": {
+          "resources": {
+            "operations": {
+              "methods": {
+                "get": {
+                  "id": "generativelanguage.fileSearchStores.upload.operations.get",
+                  "path": "v1beta/{+name}",
+                  "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/upload/operations/{operationsId}",
+                  "httpMethod": "GET",
+                  "parameters": {
+                    "name": {
+                      "description": "The name of the operation resource.",
+                      "pattern": "^fileSearchStores/[^/]+/upload/operations/[^/]+$",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+                }
+              }
+            }
+          }
+        },
+        "documents": {
+          "methods": {
+            "get": {
+              "id": "generativelanguage.fileSearchStores.documents.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/documents/{documentsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "Required. The name of the `Document` to retrieve. Example: `fileSearchStores/my-file-search-store-123/documents/the-doc-abc`",
+                  "pattern": "^fileSearchStores/[^/]+/documents/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Document"
+              },
+              "description": "Gets information about a specific `Document`."
+            },
+            "delete": {
+              "id": "generativelanguage.fileSearchStores.documents.delete",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/documents/{documentsId}",
+              "httpMethod": "DELETE",
+              "parameters": {
+                "name": {
+                  "description": "Required. The resource name of the `Document` to delete. Example: `fileSearchStores/my-file-search-store-123/documents/the-doc-abc`",
+                  "pattern": "^fileSearchStores/[^/]+/documents/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "force": {
+                  "description": "Optional. If set to true, any `Chunk`s and objects related to this `Document` will also be deleted. If false (the default), a `FAILED_PRECONDITION` error will be returned if `Document` contains any `Chunk`s.",
+                  "location": "query",
+                  "type": "boolean"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Empty"
+              },
+              "description": "Deletes a `Document`."
+            },
+            "list": {
+              "id": "generativelanguage.fileSearchStores.documents.list",
+              "path": "v1beta/{+parent}/documents",
+              "flatPath": "v1beta/fileSearchStores/{fileSearchStoresId}/documents",
+              "httpMethod": "GET",
+              "parameters": {
+                "parent": {
+                  "description": "Required. The name of the `FileSearchStore` containing `Document`s. Example: `fileSearchStores/my-file-search-store-123`",
+                  "pattern": "^fileSearchStores/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Optional. The maximum number of `Document`s to return (per page). The service may return fewer `Document`s. If unspecified, at most 10 `Document`s will be returned. The maximum size limit is 20 `Document`s per page.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Optional. A page token, received from a previous `ListDocuments` call. Provide the `next_page_token` returned in the response as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListDocuments` must match the call that provided the page token.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "response": {
+                "$ref": "ListDocumentsResponse"
+              },
+              "description": "Lists all `Document`s in a `Corpus`."
+            }
+          }
+        }
+      }
     },
-    "uploadType": {
-      "type": "string",
-      "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\").",
-      "location": "query"
-    },
-    "$.xgafv": {
-      "type": "string",
-      "description": "V1 error format.",
-      "enum": [
-        "1",
-        "2"
-      ],
-      "enumDescriptions": [
-        "v1 error format",
-        "v2 error format"
-      ],
-      "location": "query"
+    "corpora": {
+      "methods": {
+        "create": {
+          "id": "generativelanguage.corpora.create",
+          "path": "v1beta/corpora",
+          "flatPath": "v1beta/corpora",
+          "httpMethod": "POST",
+          "parameters": {},
+          "parameterOrder": [],
+          "request": {
+            "$ref": "Corpus"
+          },
+          "response": {
+            "$ref": "Corpus"
+          },
+          "description": "Creates an empty `Corpus`."
+        },
+        "get": {
+          "id": "generativelanguage.corpora.get",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/corpora/{corporaId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "name": {
+              "description": "Required. The name of the `Corpus`. Example: `corpora/my-corpus-123`",
+              "pattern": "^corpora/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Corpus"
+          },
+          "description": "Gets information about a specific `Corpus`."
+        },
+        "delete": {
+          "id": "generativelanguage.corpora.delete",
+          "path": "v1beta/{+name}",
+          "flatPath": "v1beta/corpora/{corporaId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "name": {
+              "description": "Required. The resource name of the `Corpus`. Example: `corpora/my-corpus-123`",
+              "pattern": "^corpora/[^/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "force": {
+              "description": "Optional. If set to true, any `Document`s and objects related to this `Corpus` will also be deleted. If false (the default), a `FAILED_PRECONDITION` error will be returned if `Corpus` contains any `Document`s.",
+              "location": "query",
+              "type": "boolean"
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Empty"
+          },
+          "description": "Deletes a `Corpus`."
+        },
+        "list": {
+          "id": "generativelanguage.corpora.list",
+          "path": "v1beta/corpora",
+          "flatPath": "v1beta/corpora",
+          "httpMethod": "GET",
+          "parameters": {
+            "pageSize": {
+              "description": "Optional. The maximum number of `Corpora` to return (per page). The service may return fewer `Corpora`. If unspecified, at most 10 `Corpora` will be returned. The maximum size limit is 20 `Corpora` per page.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "pageToken": {
+              "description": "Optional. A page token, received from a previous `ListCorpora` call. Provide the `next_page_token` returned in the response as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListCorpora` must match the call that provided the page token.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [],
+          "response": {
+            "$ref": "ListCorporaResponse"
+          },
+          "description": "Lists all `Corpora` owned by the user."
+        }
+      },
+      "resources": {
+        "operations": {
+          "methods": {
+            "get": {
+              "id": "generativelanguage.corpora.operations.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/corpora/{corporaId}/operations/{operationsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "The name of the operation resource.",
+                  "pattern": "^corpora/[^/]+/operations/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Operation"
+              },
+              "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service."
+            }
+          }
+        },
+        "permissions": {
+          "methods": {
+            "create": {
+              "id": "generativelanguage.corpora.permissions.create",
+              "path": "v1beta/{+parent}/permissions",
+              "flatPath": "v1beta/corpora/{corporaId}/permissions",
+              "httpMethod": "POST",
+              "parameters": {
+                "parent": {
+                  "description": "Required. The parent resource of the `Permission`. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
+                  "pattern": "^corpora/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "request": {
+                "$ref": "Permission"
+              },
+              "response": {
+                "$ref": "Permission"
+              },
+              "description": "Create a permission to a specific resource."
+            },
+            "get": {
+              "id": "generativelanguage.corpora.permissions.get",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/corpora/{corporaId}/permissions/{permissionsId}",
+              "httpMethod": "GET",
+              "parameters": {
+                "name": {
+                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
+                  "pattern": "^corpora/[^/]+/permissions/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Permission"
+              },
+              "description": "Gets information about a specific Permission."
+            },
+            "list": {
+              "id": "generativelanguage.corpora.permissions.list",
+              "path": "v1beta/{+parent}/permissions",
+              "flatPath": "v1beta/corpora/{corporaId}/permissions",
+              "httpMethod": "GET",
+              "parameters": {
+                "parent": {
+                  "description": "Required. The parent resource of the permissions. Formats: `tunedModels/{tuned_model}` `corpora/{corpus}`",
+                  "pattern": "^corpora/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Optional. The maximum number of `Permission`s to return (per page). The service may return fewer permissions. If unspecified, at most 10 permissions will be returned. This method returns at most 1000 permissions per page, even if you pass larger page_size.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Optional. A page token, received from a previous `ListPermissions` call. Provide the `page_token` returned by one request as an argument to the next request to retrieve the next page. When paginating, all other parameters provided to `ListPermissions` must match the call that provided the page token.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "response": {
+                "$ref": "ListPermissionsResponse"
+              },
+              "description": "Lists permissions for the specific resource."
+            },
+            "patch": {
+              "id": "generativelanguage.corpora.permissions.patch",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/corpora/{corporaId}/permissions/{permissionsId}",
+              "httpMethod": "PATCH",
+              "parameters": {
+                "name": {
+                  "description": "Output only. Identifier. The permission name. A unique name will be generated on create. Examples: tunedModels/{tuned_model}/permissions/{permission} corpora/{corpus}/permissions/{permission} Output only.",
+                  "pattern": "^corpora/[^/]+/permissions/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                },
+                "updateMask": {
+                  "description": "Required. The list of fields to update. Accepted ones: - role (`Permission.role` field)",
+                  "location": "query",
+                  "type": "string",
+                  "format": "google-fieldmask"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "request": {
+                "$ref": "Permission"
+              },
+              "response": {
+                "$ref": "Permission"
+              },
+              "description": "Updates the permission."
+            },
+            "delete": {
+              "id": "generativelanguage.corpora.permissions.delete",
+              "path": "v1beta/{+name}",
+              "flatPath": "v1beta/corpora/{corporaId}/permissions/{permissionsId}",
+              "httpMethod": "DELETE",
+              "parameters": {
+                "name": {
+                  "description": "Required. The resource name of the permission. Formats: `tunedModels/{tuned_model}/permissions/{permission}` `corpora/{corpus}/permissions/{permission}`",
+                  "pattern": "^corpora/[^/]+/permissions/[^/]+$",
+                  "location": "path",
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "name"
+              ],
+              "response": {
+                "$ref": "Empty"
+              },
+              "description": "Deletes the permission."
+            }
+          }
+        }
+      }
     }
-  }
+  },
+  "ownerDomain": "google.com",
+  "version": "v1beta",
+  "ownerName": "Google",
+  "baseUrl": "https://generativelanguage.googleapis.com/",
+  "rootUrl": "https://generativelanguage.googleapis.com/"
 }

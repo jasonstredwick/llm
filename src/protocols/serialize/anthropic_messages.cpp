@@ -6,6 +6,7 @@
 // ============================================================================
 
 #include "../../../interface/protocols/anthropic/messages.hpp"
+#include "../../../interface/protocols/anthropic/messages_strings.hpp"
 #include "base.hpp"
 
 using namespace simdjson::builder;

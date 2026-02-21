@@ -6,6 +6,7 @@
 // ============================================================================
 
 #include "../../../interface/protocols/gemini/generate_content.hpp"
+#include "../../../interface/protocols/gemini/generate_content_strings.hpp"
 #include "base.hpp"
 
 using namespace simdjson::builder;
