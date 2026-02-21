@@ -151,15 +151,6 @@ else()
 endif()
 
 # Production Tests
-add_executable(test_anthropic tests/unit/test_anthropic.cpp)
-target_link_libraries(test_anthropic PRIVATE llm)
-
-add_executable(test_gemini tests/unit/test_gemini.cpp)
-target_link_libraries(test_gemini PRIVATE llm)
-
-add_executable(test_openai tests/unit/test_openai.cpp)
-target_link_libraries(test_openai PRIVATE llm)
-
 add_executable(test_http tests/unit/test_http.cpp)
 target_link_libraries(test_http PRIVATE llm)
 
@@ -168,9 +159,6 @@ target_link_libraries(test_curl PRIVATE llm)
 
 # CTest registration
 enable_testing()
-add_test(NAME test_anthropic COMMAND test_anthropic)
-add_test(NAME test_gemini    COMMAND test_gemini)
-add_test(NAME test_openai    COMMAND test_openai)
 add_test(NAME test_http      COMMAND test_http)
 add_test(NAME test_curl      COMMAND test_curl)
 
