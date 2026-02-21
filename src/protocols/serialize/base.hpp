@@ -10,10 +10,8 @@
 
 #include <simdjson.h>
 
-#include "../../interface/core/types.hpp"
-#include "../../../interface/protocols/anthropic/messages_strings.hpp"
-#include "../../../interface/protocols/gemini/generate_content_strings.hpp"
-#include "../../../interface/protocols/openai/responses_strings.hpp"
+#include "../../../interface/core/strings_base.hpp"
+#include "../../../interface/core/types.hpp"
 
 
 /***
