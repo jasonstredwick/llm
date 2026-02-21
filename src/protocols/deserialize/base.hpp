@@ -21,6 +21,7 @@
  * MACROs for source file only.
  */
 #define FIELD(src, member) Extract<#member, T, &T::member>((src))
+#define FIELD_ALT(src, member, name) Extract<name, T, &T::member>((src))
 #define FIELD_PLACEHOLDER(src, member) ExtractPlaceholder<T, &T::member>((src))
 #define BEGIN_DESERIALIZE(Type)\
 template <>\

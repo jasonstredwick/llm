@@ -1,4 +1,4 @@
-"""
+r"""
 Parser for the OpenAI / Anthropic markdown documentation format.
 
 Both providers use identical markdown structure:
@@ -10,10 +10,11 @@ Both providers use identical markdown structure:
   - Union types: `type1 or type2`
   - Kind fields: `type: "literal"` (fixed discriminator)
 
-Produces the intermediate JSON format described in docs/api_parity_pipeline.md.
+Produces a nested intermediate JSON tree as described in docs/codegen_design.md.
 """
 
 import re
+import sys
 from typing import Any
 
 
@@ -22,24 +23,16 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 # Match a field definition: `name: optional type_expression`
-#   Group 1: indentation
-#   Group 2: field name
-#   Group 3: everything after the colon (optional + type)
 _FIELD_RE = re.compile(
     r'^(\s*)- `(\w+):\s+(.*?)`\s*$'
 )
 
 # Match a named type definition: `TypeName = type_expression`
-#   Group 1: indentation
-#   Group 2: type name
-#   Group 3: type expression (e.g., "object { ... }", "string", "array of Foo")
 _NAMED_TYPE_RE = re.compile(
     r'^(\s*)- `(\w+)\s*=\s*(.*?)`\s*$'
 )
 
 # Match an enum literal value: `"value"`
-#   Group 1: indentation
-#   Group 2: the literal string value
 _ENUM_VALUE_RE = re.compile(
     r'^(\s*)- `"([^"]+)"`\s*$'
 )
@@ -59,13 +52,9 @@ def _strip_markdown_links(text: str) -> str:
 
 
 def _clean_description(lines: list[str]) -> str:
-    """
-    Join description lines into a single string.
-    Strip markdown links but preserve full text content.
-    """
+    """Join description lines into a single string."""
     text = ' '.join(line.strip() for line in lines if line.strip())
     text = _strip_markdown_links(text)
-    # Collapse multiple spaces
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
@@ -77,20 +66,13 @@ def _parse_type_expr(raw: str) -> tuple[str, bool]:
     Examples:
         "optional boolean"        -> ("boolean", True)
         "string or array of Foo"  -> ("string | array<Foo>", False)
-        "optional string or Foo"  -> ("string | Foo", True)
-        '"literal_value"'         -> ('"literal_value"', False)
     """
     s = raw.strip()
-
-    # Check for optional prefix
     optional = False
     if s.startswith('optional '):
         optional = True
         s = s[len('optional '):]
-
-    # Normalize the type expression
     s = _normalize_type(s)
-
     return s, optional
 
 
@@ -101,50 +83,93 @@ def _normalize_type(s: str) -> str:
     "array of Foo"       -> "array<Foo>"
     "string or number"   -> "string | number"
     "map[unknown]"       -> "map<string, unknown>"
-    "object { a, b }"    -> "object"  (sub-fields parsed separately)
+    "object { a, b }"    -> "object"
     """
-    # Handle "or" unions — split, normalize each part, rejoin
     if ' or ' in s:
         parts = s.split(' or ')
-        # Filter out "N more" truncation markers (not real types)
         parts = [p for p in parts if not re.match(r'^\d+\s+more$', p.strip())]
         normalized = [_normalize_type(p.strip()) for p in parts]
         return ' | '.join(normalized)
 
-    # Handle "array of X"
     m = re.match(r'^array\s+of\s+(.+)$', s)
     if m:
         inner = _normalize_type(m.group(1).strip())
         return f"array<{inner}>"
 
-    # Handle "object { ... }" — the fields are parsed from child lines
     if s.startswith('object'):
         return "object"
 
-    # Handle "map[X]"
     m = re.match(r'^map\[(.+)\]$', s)
     if m:
         return f"map<string, {m.group(1)}>"
 
-    # Literal string type (kind discriminator)
     if s.startswith('"') and s.endswith('"'):
-        return s  # preserved as-is
+        return s
 
     return s
 
 
 # ---------------------------------------------------------------------------
-# Structural extraction
+# Struct node builder
+# ---------------------------------------------------------------------------
+
+def _make_struct_node(name: str) -> dict[str, Any]:
+    """Create a new struct node for the output tree."""
+    return {
+        "name": name,
+        "kind": None,         # Set if the struct has a Kind type field
+        "fields": [],         # Array of field descriptors
+        "children": [],       # Nested struct definitions
+    }
+
+
+def _make_field(name: str, field_type: str, required: bool) -> dict[str, Any]:
+    """Create a new field descriptor."""
+    return {
+        "name": name,
+        "type": field_type,
+        "required": required,
+    }
+
+
+def _find_child(node: dict, name: str) -> dict | None:
+    """Find a child struct by name in a node's children list."""
+    for child in node["children"]:
+        if child["name"] == name:
+            return child
+    return None
+
+
+def _attach_child_if_new(parent_node: dict, child_node: dict,
+                         ancestry: list[str], line_num: int) -> bool:
+    """Attach *child_node* to *parent_node* unless a same-named child exists.
+
+    The caller has already fully parsed the child (consuming all its input
+    lines).  This function simply decides whether to keep or discard the
+    result.  Returns True if the child was attached.
+    """
+    name = child_node["name"]
+    existing = _find_child(parent_node, name)
+    if existing is not None:
+        path = "::".join(ancestry + [name])
+        print(f"  [skip] duplicate '{name}' at scope '{path}' "
+              f"(source line {line_num})", file=sys.stderr)
+        return False
+    parent_node["children"].append(child_node)
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Parse context
 # ---------------------------------------------------------------------------
 
 class _ParseContext:
     """Holds state during parsing."""
 
-    def __init__(self, lines: list[str]):
+    def __init__(self, lines: list[str], line_offset: int = 0):
         self.lines = lines
         self.pos = 0
-        self.objects: dict[str, dict] = {}
-        self.enums: dict[str, dict] = {}
+        self.line_offset = line_offset  # for error reporting
 
     def at_end(self) -> bool:
         return self.pos >= len(self.lines)
@@ -159,21 +184,23 @@ class _ParseContext:
         self.pos += 1
         return line
 
+    def source_line(self) -> int:
+        """Current line number in the original document."""
+        return self.pos + self.line_offset
+
+
+# ---------------------------------------------------------------------------
+# Description collector
+# ---------------------------------------------------------------------------
 
 def _collect_description(ctx: _ParseContext, base_indent: int) -> str:
-    """
-    Collect description lines that follow a field definition.
-    Description lines are non-empty, non-field lines at indent > base_indent,
-    or blank lines between description paragraphs.
-    """
+    """Collect description lines that follow a field definition."""
     desc_lines: list[str] = []
     while not ctx.at_end():
         line = ctx.peek()
 
-        # Blank line — might be between description paragraphs, peek ahead
         if not line.strip():
             ctx.advance()
-            # If next line is still description-level text, include blank
             if not ctx.at_end():
                 next_line = ctx.peek()
                 if (next_line.strip()
@@ -181,28 +208,24 @@ def _collect_description(ctx: _ParseContext, base_indent: int) -> str:
                         and not _NAMED_TYPE_RE.match(next_line)
                         and not _ENUM_VALUE_RE.match(next_line)
                         and not _SECTION_RE.match(next_line)):
-                    # Check indent
                     stripped = next_line.lstrip()
                     line_indent = len(next_line) - len(stripped)
-                    field_char_indent = base_indent * 2 + 2  # field content starts here
+                    field_char_indent = base_indent * 2 + 2
                     if line_indent >= field_char_indent:
                         desc_lines.append('')
                         continue
-                # Not a continuation — backtrack
                 ctx.pos -= 1
                 break
             else:
                 ctx.pos -= 1
                 break
 
-        # Check if this is a new field/type/enum/section
         if (_FIELD_RE.match(line)
                 or _NAMED_TYPE_RE.match(line)
                 or _ENUM_VALUE_RE.match(line)
                 or _SECTION_RE.match(line)):
             break
 
-        # Must be indented description text
         stripped = line.lstrip()
         line_indent = len(line) - len(stripped)
         field_char_indent = base_indent * 2 + 2
@@ -215,13 +238,35 @@ def _collect_description(ctx: _ParseContext, base_indent: int) -> str:
     return _clean_description(desc_lines)
 
 
-def _parse_fields(ctx: _ParseContext, parent_indent: int, object_name: str) -> dict[str, Any]:
-    """
-    Parse fields at a given indentation level, returning a fields dict.
-    Also registers sub-objects and enums in ctx.
-    """
-    fields: dict[str, Any] = {}
+# ---------------------------------------------------------------------------
+# Core parsing
+# ---------------------------------------------------------------------------
 
+def _collect_enum_values(ctx: _ParseContext, child_indent: int) -> list[str]:
+    """Collect enum literal values at a given indentation level."""
+    values: list[str] = []
+    while not ctx.at_end():
+        line = ctx.peek()
+        if not line.strip():
+            ctx.advance()
+            continue
+        m = _ENUM_VALUE_RE.match(line)
+        if m and _indent_level(m.group(1)) >= child_indent:
+            values.append(m.group(2))
+            ctx.advance()
+            continue
+        break
+    return values
+
+
+def _parse_fields(ctx: _ParseContext, parent_indent: int,
+                  parent_node: dict, ancestry: list[str]) -> None:
+    """
+    Parse fields at a given indentation level, populating parent_node.
+
+    Fields are appended to parent_node["fields"].
+    Child type definitions are appended to parent_node["children"].
+    """
     while not ctx.at_end():
         line = ctx.peek()
 
@@ -239,49 +284,64 @@ def _parse_fields(ctx: _ParseContext, parent_indent: int, object_name: str) -> d
         if m_field:
             indent = _indent_level(m_field.group(1))
             if indent < parent_indent:
-                break  # outdented — belongs to parent
+                break
             if indent > parent_indent:
-                # Deeper than expected — skip (part of a sub-object we already parsed)
                 ctx.advance()
                 continue
-            # This field is at our level
             ctx.advance()
-            name = m_field.group(2)
+            field_name = m_field.group(2)
             type_raw = m_field.group(3)
             type_str, optional = _parse_type_expr(type_raw)
 
-            # Collect description
             desc = _collect_description(ctx, indent)
 
-            field_entry: dict[str, Any] = {
-                "type": type_str,
-                "required": not optional,
-            }
+            # Request fields: default to required (docs explicitly mark
+            # optional ones with "optional" in the type).
+            # Response fields: default to optional (docs don't specify
+            # requiredness at all).
+            is_response = ancestry[0] == "Response" if ancestry else False
+            required = False if is_response else not optional
+            field = _make_field(field_name, type_str, required)
             if desc:
-                field_entry["description"] = desc
+                field["description"] = desc
 
-            # Normalize type representations
+            # Classify the field type
             if (type_str.startswith('"') and type_str.endswith('"')
                     and ' | ' not in type_str):
-                # Single literal → kind/discriminator field
-                field_entry["type"] = "kind"
-                field_entry["value"] = type_str.strip('"')
+                # Kind field: single literal string value
+                field["type"] = "kind"
+                field["value"] = type_str.strip('"')
+                # Set the kind on the parent struct
+                parent_node["kind"] = type_str.strip('"')
+                # Consume any child enum values that just confirm the kind
+                _collect_enum_values(ctx, indent + 1)
+
             elif ' | ' in type_str:
                 parts = [p.strip() for p in type_str.split(' | ')]
                 if all(p.startswith('"') and p.endswith('"') for p in parts):
-                    # All quoted literals → string enum
-                    field_entry["type"] = "string"
-                    field_entry["values"] = [p.strip('"') for p in parts]
+                    # All quoted literals → enum
+                    field["type"] = "enum"
+                    field["values"] = [p.strip('"') for p in parts]
                 else:
-                    # Mixed union → union with values list
-                    # Preserve quotes on literals to distinguish type refs from strings
-                    field_entry["type"] = "union"
-                    field_entry["values"] = parts
+                    # Union type
+                    field["type"] = "union"
+                    field["members"] = []
+                    for p in parts:
+                        member = _classify_union_member(p)
+                        field["members"].append(member)
+                    # Parse children (UnionMember definitions, inline objects)
+                    _parse_union_children(ctx, indent, field, parent_node, ancestry)
+            else:
+                # Check for child enum values
+                child_enums = _collect_enum_values(ctx, indent + 1)
+                if child_enums and field["type"] not in ("kind",):
+                    field["type"] = "enum"
+                    field["values"] = child_enums
+                else:
+                    # Parse inline child definitions (sub-fields or named types)
+                    _parse_field_children(ctx, indent, field, parent_node, ancestry)
 
-            fields[name] = field_entry
-
-            # Parse children (enum values or sub-fields)
-            _parse_children(ctx, indent, name, object_name, field_entry)
+            parent_node["fields"].append(field)
             continue
 
         # Try matching a named type definition
@@ -296,21 +356,20 @@ def _parse_fields(ctx: _ParseContext, parent_indent: int, object_name: str) -> d
             ctx.advance()
             type_name = m_named.group(2)
             type_expr = m_named.group(3)
-
-            # Collect description
             desc = _collect_description(ctx, indent)
 
-            # If it's an object definition, parse its fields
             if type_expr.startswith('object'):
-                obj_fields = _parse_fields(ctx, indent + 1, type_name)
-                obj_entry: dict[str, Any] = {"fields": obj_fields}
+                child_node = _make_struct_node(type_name)
                 if desc:
-                    obj_entry["description"] = desc
-                ctx.objects[type_name] = obj_entry
-            # Otherwise it's a type alias (string, array of X, etc.)
-            # These are union member annotations — but may contain named objects
+                    child_node["description"] = desc
+                _parse_fields(ctx, indent + 1, child_node, ancestry + [type_name])
+                _attach_child_if_new(parent_node, child_node, ancestry, ctx.source_line())
             else:
-                _scan_children_for_objects(ctx, indent)
+                # Type alias or UnionMember — check for array element struct first
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, type_expr, parent_node, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, parent_node, ancestry)
             continue
 
         # Try matching an enum value
@@ -319,283 +378,424 @@ def _parse_fields(ctx: _ParseContext, parent_indent: int, object_name: str) -> d
             indent = _indent_level(m_enum.group(1))
             if indent < parent_indent:
                 break
-            # Enum values at this level — skip them (handled by parent)
             ctx.advance()
             continue
 
-        # Unrecognized line — could be description text or continuation
-        # Check if indented beyond our level
+        # Unrecognized line — check indent
         stripped = line.lstrip()
         line_char_indent = len(line) - len(stripped)
         if line_char_indent >= parent_indent * 2 + 2:
-            ctx.advance()  # skip description/continuation text
+            ctx.advance()
             continue
         else:
-            break  # outdented, stop
-
-    return fields
+            break
 
 
-def _parse_children(ctx: _ParseContext, parent_indent: int, field_name: str,
-                    object_name: str, field_entry: dict) -> None:
+def _classify_union_member(type_str: str) -> dict[str, Any]:
+    """Classify a single union member type string into a member descriptor."""
+    # array<TypeName>
+    m = re.match(r'^array<(\w+)>$', type_str)
+    if m:
+        inner = m.group(1)
+        if inner.lower() in ('string', 'number', 'boolean', 'unknown'):
+            return {"type": "array", "element_type": inner}
+        return {"type": "array", "element_type": inner}
+
+    # Quoted literal → just a string value (part of enum-like union)
+    if type_str.startswith('"') and type_str.endswith('"'):
+        return {"type": "literal", "value": type_str.strip('"')}
+
+    # Primitive
+    if type_str.lower() in ('string', 'number', 'boolean', 'integer'):
+        return {"type": type_str.lower()}
+
+    # Named struct reference
+    if re.match(r'^[A-Z]\w*$', type_str):
+        return {"type": "struct", "ref": type_str}
+
+    # Fallback
+    return {"type": type_str}
+
+
+def _parse_union_children(ctx: _ParseContext, parent_indent: int,
+                          field: dict, parent_node: dict,
+                          ancestry: list[str]) -> None:
     """
-    After parsing a field, handle its children:
-    - Enum literal values
-    - Named sub-type definitions (objects, union members)
-    - Sub-fields (for inline objects)
-
-    Rebuilds the field type from children when they provide more complete
-    information than the (potentially truncated) inline type expression.
+    Parse children of a union-typed field. These may be:
+    - UnionMember definitions (type aliases expanding the union)
+    - Named object definitions (inline struct definitions for union arms)
+    - Enum values (refining string arms)
     """
     child_indent = parent_indent + 1
+    rebuilt_members: list[dict] = []
     collected_enum_values: list[str] = []
-    collected_union_members: list[tuple] = []  # ('type', str) or ('enum', list[str])
 
     while not ctx.at_end():
         line = ctx.peek()
         if not line.strip():
             ctx.advance()
             continue
-
         if _SECTION_RE.match(line):
             break
 
-        # Check indentation
-        m_field = _FIELD_RE.match(line)
         m_named = _NAMED_TYPE_RE.match(line)
-        m_enum = _ENUM_VALUE_RE.match(line)
+        if m_named:
+            indent = _indent_level(m_named.group(1))
+            if indent < child_indent:
+                break
+            ctx.advance()
+            type_name = m_named.group(2)
+            type_expr = m_named.group(3)
+            desc = _collect_description(ctx, indent)
 
+            if type_name.startswith('UnionMember'):
+                # UnionMember — normalize and track
+                normalized = _normalize_type(type_expr)
+                elem_name = _extract_array_element_name(type_expr)
+                if elem_name:
+                    # Array type — children define the element type, not the
+                    # parent union.  Create the element struct (from inline
+                    # fields) or consume object children that form the element
+                    # variant.  Either way keep the result as array<X>.
+                    created = _maybe_create_array_element_struct(
+                        ctx, indent, type_expr, parent_node, ancestry)
+                    if not created:
+                        # Children are named object types forming X's variant.
+                        # Consume them (they become children of parent_node)
+                        # but do NOT add them as flat union members.
+                        _scan_for_nested_objects(ctx, indent, parent_node,
+                                                 ancestry)
+                    member = _classify_union_member(normalized)
+                    rebuilt_members.append(member)
+                else:
+                    # Non-array UnionMember — children may define it further
+                    child_result = _scan_union_member_children(
+                        ctx, indent, parent_node, ancestry)
+                    if child_result.get("members"):
+                        rebuilt_members.extend(child_result["members"])
+                    elif child_result.get("enum_values"):
+                        collected_enum_values.extend(child_result["enum_values"])
+                    else:
+                        member = _classify_union_member(normalized)
+                        rebuilt_members.append(member)
+            elif type_expr.startswith('object'):
+                # Inline object definition for a union arm
+                child_node = _make_struct_node(type_name)
+                if desc:
+                    child_node["description"] = desc
+                _parse_fields(ctx, indent + 1, child_node,
+                              ancestry + [type_name])
+                _attach_child_if_new(parent_node, child_node, ancestry,
+                                     ctx.source_line())
+                rebuilt_members.append({"type": "struct", "ref": type_name})
+            else:
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, type_expr, parent_node, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, parent_node, ancestry)
+                member = _classify_union_member(_normalize_type(type_expr))
+                rebuilt_members.append(member)
+            continue
+
+        m_enum = _ENUM_VALUE_RE.match(line)
         if m_enum:
             indent = _indent_level(m_enum.group(1))
             if indent >= child_indent:
                 collected_enum_values.append(m_enum.group(2))
                 ctx.advance()
                 continue
-            else:
-                break
+            break
 
-        if m_named:
-            indent = _indent_level(m_named.group(1))
-            if indent >= child_indent:
-                ctx.advance()
-                type_name = m_named.group(2)
-                type_expr = m_named.group(3)
-                desc = _collect_description(ctx, indent)
-
-                scan_result = _ScanResult()
-                if type_expr.startswith('object'):
-                    obj_fields = _parse_fields(ctx, indent + 1, type_name)
-                    obj_entry: dict[str, Any] = {"fields": obj_fields}
-                    if desc:
-                        obj_entry["description"] = desc
-                    ctx.objects[type_name] = obj_entry
-                else:
-                    scan_result = _scan_children_for_objects(ctx, indent)
-
-                # Track UnionMember type expressions for rebuilding unions
-                if type_name.startswith('UnionMember'):
-                    if scan_result.union_member_types:
-                        # Nested UnionMember children rebuilt the type
-                        normalized = _normalize_type(type_expr)
-                        inner = ' | '.join(scan_result.union_member_types)
-                        if normalized.startswith('array<'):
-                            collected_union_members.append(
-                                ('type', f"array<{inner}>"))
-                        else:
-                            collected_union_members.append(('type', inner))
-                    elif scan_result.enum_values:
-                        # Children provided the full enum values
-                        collected_union_members.append(
-                            ('enum', scan_result.enum_values))
-                    else:
-                        normalized = _normalize_type(type_expr)
-                        collected_union_members.append(('type', normalized))
-                continue
-            else:
-                break
-
+        m_field = _FIELD_RE.match(line)
         if m_field:
             indent = _indent_level(m_field.group(1))
             if indent >= child_indent:
-                # Sub-fields — these form an inline object.
-                # Try to extract the type name from the field's type expression.
-                # e.g., "array of MessageParam" -> "MessageParam"
-                #        "Metadata" -> "Metadata"
-                #        "object" -> fallback to "ObjectName_fieldName"
-                ft = field_entry.get("type", "")
-                sub_obj_name = _extract_type_name(ft)
-                if not sub_obj_name and ft == "union":
-                    # For union-typed fields, try extracting from the values
-                    for v in field_entry.get("values", []):
-                        extracted = _extract_type_name(v)
-                        if extracted:
-                            sub_obj_name = extracted
-                            break
-                if not sub_obj_name:
-                    sub_obj_name = f"{object_name}_{field_name}"
-                sub_fields = _parse_fields(ctx, child_indent, sub_obj_name)
-                if sub_fields:
-                    ctx.objects[sub_obj_name] = {"fields": sub_fields}
+                # Sub-fields indicate inline object — extract the type name
+                ft = field.get("type", "")
+                sub_name = _extract_type_name_from_field(field)
+                if not sub_name:
+                    sub_name = f"{ancestry[-1]}_{field['name']}" if ancestry else field['name']
+                child_node = _make_struct_node(sub_name)
+                _parse_fields(ctx, child_indent, child_node,
+                              ancestry + [sub_name])
+                _attach_child_if_new(parent_node, child_node, ancestry,
+                                     ctx.source_line())
                 break
-            else:
-                break
+            break
 
-        # Unrecognized line — check indent
+        # Unrecognized — check indent
         stripped = line.lstrip()
         line_char_indent = len(line) - len(stripped)
         if line_char_indent >= child_indent * 2:
             ctx.advance()
             continue
+        break
+
+    # Rebuild field members from what we found
+    if rebuilt_members:
+        field["members"] = rebuilt_members
+    if collected_enum_values:
+        # If we only found enum values and no type members, convert to enum
+        non_string = [m for m in field.get("members", [])
+                      if m.get("type") != "string" and m.get("type") != "literal"]
+        if not non_string:
+            field["type"] = "enum"
+            field["values"] = collected_enum_values
+            if "members" in field:
+                del field["members"]
         else:
+            # Mixed — keep as union, note the enum values
+            field["enum_values"] = collected_enum_values
+
+
+def _scan_union_member_children(ctx: _ParseContext, parent_indent: int,
+                                parent_node: dict,
+                                ancestry: list[str]) -> dict:
+    """
+    Scan children of a UnionMember definition.
+    Returns dict with "members" and/or "enum_values".
+    """
+    child_indent = parent_indent + 1
+    result: dict[str, Any] = {"members": [], "enum_values": []}
+
+    while not ctx.at_end():
+        line = ctx.peek()
+        if not line.strip():
+            ctx.advance()
+            continue
+
+        stripped = line.lstrip()
+        line_char_indent = len(line) - len(stripped)
+        if line_char_indent < child_indent * 2:
             break
 
-    # Rebuild field type from children when available.
-    # Don't override kind fields — a single-value child list just confirms
-    # the discriminator value already set by inline detection.
-    if collected_enum_values and field_entry.get("type") != "kind":
-        # Children provide the full list of string enum values
-        field_entry["type"] = "string"
-        field_entry["values"] = collected_enum_values
-        # Also register as a named enum
-        enum_name = _infer_enum_name(field_name, object_name)
-        ctx.enums[enum_name] = {
-            "values": collected_enum_values,
-            "source_field": f"{object_name}.{field_name}",
-        }
-    elif collected_union_members:
-        # UnionMember children define the full union type.
-        # Each member is either ('type', normalized_str) or ('enum', [values]).
-        #
-        # Collect all enum values and all type parts, then decide representation:
-        # - If only enums (no other types, or only "string") → string enum
-        # - Otherwise → union with enum members collapsed to "string"
-        all_enum_values: list[str] = []
-        type_parts: list[str] = []
-        for kind, data in collected_union_members:
-            if kind == 'enum':
-                all_enum_values.extend(data)
+        m_named = _NAMED_TYPE_RE.match(line)
+        if m_named:
+            indent = _indent_level(m_named.group(1))
+            if indent < child_indent:
+                break
+            ctx.advance()
+            type_name = m_named.group(2)
+            type_expr = m_named.group(3)
+            desc = _collect_description(ctx, indent)
+
+            if type_expr.startswith('object'):
+                child_node = _make_struct_node(type_name)
+                if desc:
+                    child_node["description"] = desc
+                _parse_fields(ctx, indent + 1, child_node,
+                              ancestry + [type_name])
+                _attach_child_if_new(parent_node, child_node, ancestry,
+                                     ctx.source_line())
+                result["members"].append({"type": "struct", "ref": type_name})
+            elif type_name.startswith('UnionMember'):
+                normalized = _normalize_type(type_expr)
+                child_result = _scan_union_member_children(
+                    ctx, indent, parent_node, ancestry)
+                if child_result["members"]:
+                    result["members"].extend(child_result["members"])
+                elif child_result["enum_values"]:
+                    result["enum_values"].extend(child_result["enum_values"])
+                else:
+                    member = _classify_union_member(normalized)
+                    result["members"].append(member)
             else:
-                type_parts.append(data)
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, type_expr, parent_node, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, parent_node, ancestry)
+                member = _classify_union_member(_normalize_type(type_expr))
+                result["members"].append(member)
+            continue
 
-        # Check if enum values + "string" can collapse to a string enum
-        non_string_parts = [p for p in type_parts if p != "string"]
-        if all_enum_values and not non_string_parts:
-            # All members are either enums or "string" → string enum
-            field_entry["type"] = "string"
-            field_entry["values"] = all_enum_values
-        elif not all_enum_values:
-            # Pure type union, no enums
-            unique_parts = list(dict.fromkeys(type_parts))  # dedup, preserve order
-            field_entry["type"] = "union"
-            field_entry["values"] = unique_parts
-        else:
-            # Mixed: enums + non-string types → union with enums as "string"
-            parts = list(dict.fromkeys(type_parts + ["string"]))
-            field_entry["type"] = "union"
-            field_entry["values"] = parts
+        m_enum = _ENUM_VALUE_RE.match(line)
+        if m_enum:
+            indent = _indent_level(m_enum.group(1))
+            if indent >= child_indent:
+                result["enum_values"].append(m_enum.group(2))
+                ctx.advance()
+                continue
+            break
+
+        ctx.advance()
+
+    return result
 
 
-def _extract_type_name(type_str: str) -> str | None:
+def _parse_field_children(ctx: _ParseContext, parent_indent: int,
+                          field: dict, parent_node: dict,
+                          ancestry: list[str]) -> None:
     """
-    Extract a named type from a type expression to use as the sub-object name.
+    Parse children of a non-union, non-enum field.
+    Handles inline object definitions and named type definitions.
 
-    "array<MessageParam>"     -> "MessageParam"
-    "array<ToolUnion>"        -> "ToolUnion"
-    "Metadata"                -> "Metadata"
-    "string | Foo"            -> None (ambiguous union)
-    "object"                  -> None (anonymous)
-    "string"                  -> None (primitive)
+    When the field references a named type (e.g. ``TextCitationParam``) and the
+    children are ``Name = object { ... }`` definitions, those children form a
+    **union** for the referenced type.  In that case we attach an explicit
+    ``union_def`` to the field so the codegen never has to guess.
     """
-    if not type_str:
-        return None
+    child_indent = parent_indent + 1
 
-    # array<TypeName> -> TypeName
-    m = re.match(r'^array<(\w+)>$', type_str)
+    # Determine if this field references a named type that could be a union.
+    # Pattern: field type is "FooBar" or "array<FooBar>" where FooBar starts
+    # with an uppercase letter and is NOT a primitive.
+    union_type_name = _extract_type_name_from_field(field)
+    # Track named-object children discovered under this field.
+    # If we find ≥ 2 we know the referenced type is a union.
+    union_members: list[dict] = []
+
+    while not ctx.at_end():
+        line = ctx.peek()
+        if not line.strip():
+            ctx.advance()
+            continue
+        if _SECTION_RE.match(line):
+            break
+
+        m_named = _NAMED_TYPE_RE.match(line)
+        if m_named:
+            indent = _indent_level(m_named.group(1))
+            if indent < child_indent:
+                break
+            ctx.advance()
+            type_name = m_named.group(2)
+            type_expr = m_named.group(3)
+            desc = _collect_description(ctx, indent)
+
+            if type_expr.startswith('object'):
+                child_node = _make_struct_node(type_name)
+                if desc:
+                    child_node["description"] = desc
+                _parse_fields(ctx, indent + 1, child_node,
+                              ancestry + [type_name])
+                _attach_child_if_new(parent_node, child_node, ancestry,
+                                     ctx.source_line())
+                # Record as a potential union member
+                if union_type_name:
+                    union_members.append({"type": "struct", "ref": type_name})
+            else:
+                # Check if this is an array type with inline field children
+                # that define the element struct (e.g. "array of WebSearchResultBlock"
+                # followed by field definitions for WebSearchResultBlock).
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, type_expr, parent_node, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, parent_node, ancestry)
+                # Non-object named types under a union-candidate field
+                if union_type_name:
+                    normalized = _normalize_type(type_expr)
+                    member = _classify_union_member(normalized)
+                    union_members.append(member)
+            continue
+
+        m_field = _FIELD_RE.match(line)
+        if m_field:
+            indent = _indent_level(m_field.group(1))
+            if indent >= child_indent:
+                # Sub-fields — inline object
+                sub_name = _extract_type_name_from_field(field)
+                if not sub_name:
+                    sub_name = f"{ancestry[-1]}_{field['name']}" if ancestry else field['name']
+                child_node = _make_struct_node(sub_name)
+                _parse_fields(ctx, child_indent, child_node,
+                              ancestry + [sub_name])
+                _attach_child_if_new(parent_node, child_node, ancestry,
+                                     ctx.source_line())
+                break
+            break
+
+        m_enum = _ENUM_VALUE_RE.match(line)
+        if m_enum:
+            indent = _indent_level(m_enum.group(1))
+            if indent >= child_indent:
+                # Enum values under a regular field — collect them
+                values = [m_enum.group(2)]
+                ctx.advance()
+                values.extend(_collect_enum_values(ctx, child_indent))
+                field["type"] = "enum"
+                field["values"] = values
+                break
+            break
+
+        stripped = line.lstrip()
+        line_char_indent = len(line) - len(stripped)
+        if line_char_indent >= child_indent * 2:
+            ctx.advance()
+            continue
+        break
+
+    # If we found multiple named-object children under a named-type field,
+    # record them as an explicit union definition on the field.
+    if union_type_name and len(union_members) >= 2:
+        field["union_def"] = {
+            "name": union_type_name,
+            "members": union_members,
+        }
+
+
+def _extract_array_element_name(type_expr: str) -> str | None:
+    """Extract element type name from 'array of Foo' or 'array<Foo>'."""
+    m = re.match(r'^array\s+of\s+(\w+)$', type_expr)
     if m:
         name = m.group(1)
-        # Skip primitives
-        if name.lower() in ('string', 'number', 'boolean', 'unknown', 'object'):
-            return None
-        return name
-
-    # Single named type (capitalized, no angle brackets, no pipes, no quotes)
-    if (re.match(r'^[A-Z]\w+$', type_str)
-            and '|' not in type_str
-            and '<' not in type_str
-            and '"' not in type_str):
-        return type_str
-
+        if name[0].isupper() and name.lower() not in (
+                'string', 'number', 'boolean', 'unknown', 'object'):
+            return name
+    m = re.match(r'^array<(\w+)>$', type_expr)
+    if m:
+        name = m.group(1)
+        if name[0].isupper() and name.lower() not in (
+                'string', 'number', 'boolean', 'unknown', 'object'):
+            return name
     return None
 
 
-def _infer_enum_name(field_name: str, object_name: str) -> str:
-    """Generate a qualified enum name: ObjectName::CamelCaseFieldName.
-
-    Uses '::' as the ownership separator during parsing/extraction to avoid
-    ambiguity with underscores in field names.  Downstream tools (checklist,
-    C++ code generation) convert '::' to '_' per the C++ naming convention.
-
-    Examples:
-        Request.service_tier  → Request::ServiceTier
-        Base64ImageSource.media_type → Base64ImageSource::MediaType
-        WebSearchTool20250305.name → WebSearchTool20250305::Name
+def _maybe_create_array_element_struct(
+    ctx: _ParseContext, indent: int, type_expr: str,
+    parent_node: dict, ancestry: list[str],
+) -> str | None:
+    """If *type_expr* is ``array of ElementType`` and the next lines are
+    field definitions, create a child struct for the element type and parse
+    the fields into it.  Returns the element-type name on success, else None.
     """
-    parts = field_name.split('_')
-    camel = ''.join(p.capitalize() for p in parts)
-    return f"{object_name}::{camel}"
+    elem_name = _extract_array_element_name(type_expr)
+    if not elem_name:
+        return None
+
+    # Peek: are the next non-blank lines field definitions?
+    child_indent = indent + 1
+    saved = ctx.pos  # save position in case we need to roll back
+    while not ctx.at_end() and not ctx.peek().strip():
+        ctx.advance()
+    if ctx.at_end():
+        ctx.pos = saved
+        return None
+    if not _FIELD_RE.match(ctx.peek()):
+        ctx.pos = saved
+        return None
+    # Yes — create a struct and parse those fields into it
+    child_node = _make_struct_node(elem_name)
+    _parse_fields(ctx, child_indent, child_node, ancestry + [elem_name])
+    _attach_child_if_new(parent_node, child_node, ancestry, ctx.source_line())
+    return elem_name
 
 
-def _skip_children(ctx: _ParseContext, parent_indent: int) -> None:
-    """Skip all lines that are children (more indented) of the given level."""
+def _scan_for_nested_objects(ctx: _ParseContext, parent_indent: int,
+                             parent_node: dict, ancestry: list[str]) -> None:
+    """Scan children for object definitions without consuming non-object lines."""
     child_char_indent = (parent_indent + 1) * 2
+
     while not ctx.at_end():
         line = ctx.peek()
         if not line.strip():
             ctx.advance()
             continue
-        stripped = line.lstrip()
-        line_char_indent = len(line) - len(stripped)
-        if line_char_indent >= child_char_indent:
-            ctx.advance()
-        else:
-            break
 
-
-class _ScanResult:
-    """Results from scanning children of a non-object named type."""
-    __slots__ = ('enum_values', 'union_member_types')
-
-    def __init__(self) -> None:
-        self.enum_values: list[str] = []
-        self.union_member_types: list[str] = []  # normalized types from UnionMember children
-
-
-def _scan_children_for_objects(ctx: _ParseContext, parent_indent: int) -> _ScanResult:
-    """
-    Scan through children of a non-object named type (e.g., UnionMember1 = array of X)
-    looking for named object definitions to extract, while also collecting any
-    enum literal values and UnionMember type expressions found at this level.
-
-    Returns a _ScanResult with enum values and union member types.
-    """
-    child_char_indent = (parent_indent + 1) * 2
-    result = _ScanResult()
-
-    while not ctx.at_end():
-        line = ctx.peek()
-
-        # Blank line — skip
-        if not line.strip():
-            ctx.advance()
-            continue
-
-        # Check indentation — stop if outdented
         stripped = line.lstrip()
         line_char_indent = len(line) - len(stripped)
         if line_char_indent < child_char_indent:
             break
 
-        # Check for named type definition (the objects we want to extract)
         m_named = _NAMED_TYPE_RE.match(line)
         if m_named:
             ctx.advance()
@@ -605,49 +805,135 @@ def _scan_children_for_objects(ctx: _ParseContext, parent_indent: int) -> _ScanR
             desc = _collect_description(ctx, indent)
 
             if type_expr.startswith('object'):
-                # Found an object — extract its fields
-                obj_fields = _parse_fields(ctx, indent + 1, type_name)
-                obj_entry: dict[str, Any] = {"fields": obj_fields}
+                child_node = _make_struct_node(type_name)
                 if desc:
-                    obj_entry["description"] = desc
-                ctx.objects[type_name] = obj_entry
+                    child_node["description"] = desc
+                _parse_fields(ctx, indent + 1, child_node,
+                              ancestry + [type_name])
+                _attach_child_if_new(parent_node, child_node, ancestry,
+                                     ctx.source_line())
             else:
-                # Non-object alias (another UnionMember, etc.) — recurse
-                child_result = _scan_children_for_objects(ctx, indent)
-                # If this is a UnionMember, rebuild its type from children if possible
-                if type_name.startswith('UnionMember'):
-                    if child_result.union_member_types:
-                        # Nested union members define the inner type
-                        inner = ' | '.join(child_result.union_member_types)
-                        # Check if this was an array wrapper
-                        normalized = _normalize_type(type_expr)
-                        if normalized.startswith('array<'):
-                            result.union_member_types.append(f"array<{inner}>")
-                        else:
-                            result.union_member_types.append(inner)
-                    elif child_result.enum_values:
-                        # Enum values define a string type
-                        result.union_member_types.append('string')
-                    else:
-                        normalized = _normalize_type(type_expr)
-                        result.union_member_types.append(normalized)
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, type_expr, parent_node, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, parent_node, ancestry)
             continue
 
-        # Check for enum literal values
-        m_enum = _ENUM_VALUE_RE.match(line)
-        if m_enum:
-            val_indent = _indent_level(m_enum.group(1))
-            if val_indent >= parent_indent + 1:
-                result.enum_values.append(m_enum.group(2))
-                ctx.advance()
-                continue
-            else:
-                break
-
-        # Everything else (fields, description text) — skip
         ctx.advance()
 
-    return result
+
+def _extract_type_name_from_field(field: dict) -> str | None:
+    """
+    Extract a named type from a field's type to use as sub-object name.
+    "array<MessageParam>" -> "MessageParam"
+    "Metadata" -> "Metadata"
+    """
+    ft = field.get("type", "")
+
+    m = re.match(r'^array<(\w+)>$', ft)
+    if m:
+        name = m.group(1)
+        if name.lower() in ('string', 'number', 'boolean', 'unknown', 'object'):
+            return None
+        return name
+
+    if (re.match(r'^[A-Z]\w+$', ft)
+            and '|' not in ft
+            and '<' not in ft
+            and '"' not in ft):
+        return ft
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Post-processing: enrich union fields with discriminator info
+# ---------------------------------------------------------------------------
+
+def _enrich_unions(node: dict) -> None:
+    """
+    Walk the tree and add discriminator information to union fields.
+
+    For each union field (explicit ``"type": "union"`` or ``union_def``),
+    look at the member structs (in children) and check if they have a Kind
+    field.  If so, record the discriminator field name and per-member
+    discriminator values.
+    """
+    children_by_name = {c["name"]: c for c in node.get("children", [])}
+
+    for field in node.get("fields", []):
+        # Enrich explicit union fields
+        if field.get("type") == "union" and "members" in field:
+            _enrich_member_list(field["members"], field, children_by_name)
+
+        # Enrich union_def (synthesised from _parse_field_children)
+        udef = field.get("union_def")
+        if udef and "members" in udef:
+            _enrich_member_list(udef["members"], udef, children_by_name)
+
+    # Recurse into children
+    for child in node.get("children", []):
+        _enrich_unions(child)
+
+
+def _enrich_member_list(members: list[dict], target: dict,
+                        children_by_name: dict) -> None:
+    """Add discriminator values to *members* list, set ``target["discriminator"]``.
+
+    Discriminator selection policy (no heuristics):
+      1. One kind field   → use it.
+      2. Multiple kind fields, one is ``type`` → use ``type``.
+      3. Multiple kind fields, none is ``type`` → halt with error.
+    """
+    discriminator_field = None
+    for member in members:
+        ref = member.get("ref")
+        if ref and ref in children_by_name:
+            child = children_by_name[ref]
+            if child.get("kind") is not None:
+                kind_fields = [cf for cf in child.get("fields", [])
+                               if cf.get("type") == "kind"]
+                if not kind_fields:
+                    continue
+
+                if len(kind_fields) == 1:
+                    best = kind_fields[0]
+                else:
+                    # Multiple kind fields — require "type" to be among them.
+                    type_fields = [kf for kf in kind_fields
+                                   if kf["name"] == "type"]
+                    if type_fields:
+                        best = type_fields[0]
+                    else:
+                        names = [kf["name"] for kf in kind_fields]
+                        raise ValueError(
+                            f"Multiple kind fields {names} on '{ref}' but "
+                            f"none is 'type'. Cannot auto-select discriminator."
+                        )
+
+                discriminator_field = best["name"]
+                member["discriminator_value"] = best["value"]
+    if discriminator_field:
+        target["discriminator"] = discriminator_field
+
+
+# ---------------------------------------------------------------------------
+# Stats collection
+# ---------------------------------------------------------------------------
+
+def _count_tree(node: dict) -> tuple[int, int, int]:
+    """Count structs, fields, and enums in a tree node (recursive)."""
+    structs = 1  # this node itself
+    fields = len(node.get("fields", []))
+    enums = sum(1 for f in node.get("fields", []) if f.get("type") == "enum")
+
+    for child in node.get("children", []):
+        cs, cf, ce = _count_tree(child)
+        structs += cs
+        fields += cf
+        enums += ce
+
+    return structs, fields, enums
 
 
 # ---------------------------------------------------------------------------
@@ -657,17 +943,7 @@ def _scan_children_for_objects(ctx: _ParseContext, parent_indent: int) -> _ScanR
 def extract(markdown_text: str, provider: str, endpoint: str,
             source_url: str, raw_file: str) -> dict[str, Any]:
     """
-    Parse provider markdown documentation and return the intermediate JSON structure.
-
-    Args:
-        markdown_text: Full markdown text of the API documentation
-        provider: Provider name (e.g., "openai")
-        endpoint: Endpoint name (e.g., "responses")
-        source_url: URL the markdown was fetched from
-        raw_file: Relative path to the raw markdown file
-
-    Returns:
-        Intermediate JSON dict with meta, request, and response sections.
+    Parse provider markdown documentation and return the intermediate JSON tree.
     """
     from datetime import datetime, timezone
 
@@ -676,6 +952,7 @@ def extract(markdown_text: str, provider: str, endpoint: str,
     # Find section boundaries
     request_start = None
     response_start = None
+    example_start = None
     for i, line in enumerate(lines):
         m = _SECTION_RE.match(line)
         if m:
@@ -684,6 +961,8 @@ def extract(markdown_text: str, provider: str, endpoint: str,
                 request_start = i + 1
             elif section_name == 'Returns':
                 response_start = i + 1
+            elif section_name == 'Example':
+                example_start = i
 
     result: dict[str, Any] = {
         "meta": {
@@ -693,36 +972,32 @@ def extract(markdown_text: str, provider: str, endpoint: str,
             "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "raw_file": raw_file,
         },
-        "request": {"objects": {}, "enums": {}},
-        "response": {"objects": {}, "enums": {}},
+        "request": {"root": None},
+        "response": {"root": None},
     }
 
     # Parse request section
     if request_start is not None:
-        end = response_start if response_start is not None else len(lines)
+        end = response_start if response_start is not None else (
+            example_start if example_start is not None else len(lines))
         section_lines = lines[request_start:end]
-        ctx = _ParseContext(section_lines)
-        request_fields = _parse_fields(ctx, 0, "Request")
-
-        # The top-level fields form the Request object
-        req_objects = dict(ctx.objects)
-        req_objects["Request"] = {"fields": request_fields}
-        result["request"]["objects"] = req_objects
-        result["request"]["enums"] = dict(ctx.enums)
+        ctx = _ParseContext(section_lines, line_offset=request_start)
+        root = _make_struct_node("Request")
+        _parse_fields(ctx, 0, root, ["Request"])
+        _enrich_unions(root)
+        result["request"]["root"] = root
 
     # Parse response section
     if response_start is not None:
-        section_lines = lines[response_start:]
-        ctx = _ParseContext(section_lines)
-        response_fields = _parse_fields(ctx, 0, "Response")
+        end = example_start if example_start is not None else len(lines)
+        section_lines = lines[response_start:end]
+        ctx = _ParseContext(section_lines, line_offset=response_start)
 
-        resp_objects = dict(ctx.objects)
-        # For the response, the top-level is often a named type like "Response = object { ... }"
-        # which will be captured by _parse_fields via _NAMED_TYPE_RE.
-        # If there are also bare fields at level 0, add them as "Response"
-        if response_fields:
-            resp_objects["Response"] = {"fields": response_fields}
-        result["response"]["objects"] = resp_objects
-        result["response"]["enums"] = dict(ctx.enums)
+        # The response often starts with "Message = object { ... }"
+        # which _parse_fields handles via _NAMED_TYPE_RE
+        root = _make_struct_node("Response")
+        _parse_fields(ctx, 0, root, ["Response"])
+        _enrich_unions(root)
+        result["response"]["root"] = root
 
     return result

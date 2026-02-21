@@ -40,9 +40,15 @@
 # debug information files
 *.dwo
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyd
+
 # Project Specific
 deps/
 build/
+scratch/
 third_party_workspace/
 temp_download/
 .vscode/

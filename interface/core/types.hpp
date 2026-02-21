@@ -370,9 +370,10 @@ public:
     requires (!std::is_same_v<std::decay_t<U>, value_type>) && std::is_constructible_v<value_type, U>
     constexpr Required(U&& val) : val(std::forward<U>(val)) {}
 
-    constexpr operator const value_type&() const { return val; }
-    constexpr value_type& Value() { return val; }
-    constexpr const value_type& Value() const { return val; }
+    constexpr operator const value_type&()           const { return val; }
+    constexpr                value_type& value()           { return val; }
+    constexpr          const value_type& value()     const { return val; }
+    constexpr          const value_type& operator*() const { return val; }
 };
 
 

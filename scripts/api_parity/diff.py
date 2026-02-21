@@ -139,11 +139,23 @@ def _diff_section(baseline: dict, current: dict) -> dict[str, Any]:
     return result
 
 
-def diff(provider: str) -> Path:
+def _has_structural_changes(result: dict) -> bool:
+    """Return True if the diff result contains any structural changes."""
+    for section in ("request", "response"):
+        s = result[section]
+        if (s["added_objects"] or s["removed_objects"]
+                or s["added_fields"] or s["removed_fields"]
+                or s["changed_fields"]
+                or s["added_enum_values"] or s["removed_enum_values"]):
+            return True
+    return False
+
+
+def diff(provider: str) -> bool:
     """
     Compare current extraction against baseline for a provider.
 
-    Returns the path to the diff JSON file.
+    Returns True if there are structural changes (or no baseline exists).
     """
     json_path = config.extracted_json_path(provider)
     baseline_path = config.baseline_json_path(provider)
@@ -154,11 +166,10 @@ def diff(provider: str) -> Path:
             f"Current extraction not found: {json_path}\n"
             f"Run 'extract --provider {provider}' first."
         )
+
     if not baseline_path.exists():
-        raise FileNotFoundError(
-            f"Baseline not found: {baseline_path}\n"
-            f"Run 'promote --provider {provider}' to establish a baseline first."
-        )
+        print(f"No baseline found for {provider} — treating as new.")
+        return True
 
     current = json.loads(json_path.read_text(encoding="utf-8"))
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
@@ -190,6 +201,7 @@ def diff(provider: str) -> Path:
     )
 
     # Summary
+    changed = _has_structural_changes(result)
     for section in ("request", "response"):
         s = result[section]
         total = (len(s["added_objects"]) + len(s["removed_objects"])
@@ -200,4 +212,6 @@ def diff(provider: str) -> Path:
         print(f"  {section}: {total} structural changes, {desc_changes} description changes")
 
     print(f"  -> {diff_path}")
-    return diff_path
+    if not changed:
+        print(f"  No structural changes for {provider}.")
+    return changed

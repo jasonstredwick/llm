@@ -3,7 +3,7 @@
 
 Reads the full extracted JSON for a provider and trims it to only include
 objects/enums/fields that exist in the C++ header.  The result is saved as
-the .baseline.json so that subsequent `audit` runs report the unimplemented
+the baseline JSON so that subsequent `audit` runs report the unimplemented
 additions as the delta.
 
 Usage:
@@ -22,11 +22,11 @@ from pathlib import Path
 from typing import Any
 
 # ── Resolve repo root and add to path ────────────────────────────────────────
-SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent.parent
-sys.path.insert(0, str(SCRIPT_DIR))
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
-import config
+from scripts.api_parity import config
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -215,7 +215,7 @@ def seed_baseline(
         full_json = json.load(f)
 
     # Load C++ header
-    header_path = REPO_ROOT / HEADER_PATHS[provider]
+    header_path = _REPO_ROOT / HEADER_PATHS[provider]
     if not header_path.exists():
         print(f"ERROR: No C++ header at {header_path}")
         sys.exit(1)

@@ -11,9 +11,9 @@
 #include <simdjson.h>
 
 #include "../../interface/core/types.hpp"
-#include "../../../interface/protocols/anthropic/strings.hpp"
-#include "../../../interface/protocols/gemini/strings.hpp"
-#include "../../../interface/protocols/openai/strings.hpp"
+#include "../../../interface/protocols/anthropic/messages_strings.hpp"
+#include "../../../interface/protocols/gemini/generate_content_strings.hpp"
+#include "../../../interface/protocols/openai/responses_strings.hpp"
 
 
 /***

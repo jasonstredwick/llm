@@ -1,50 +1,69 @@
 # API Parity Pipeline
 
-Design document for the automated workflow that detects API specification changes and helps
-propagate them into the C++ protocol layer.
-
-Supersedes `docs/specs/api-parity.md` (which can be removed once this is in place).
+Design document for the automated workflow that detects API specification changes
+and regenerates C++ protocol code.
 
 ## Problem
 
 Provider APIs change over time: new fields appear, types change, enum values are added. The
-library's C++ protocol structs must stay in sync. Currently this is a manual audit process.
-We need a repeatable, scriptable workflow that detects structural changes and produces
-actionable reports.
+library's C++ protocol structs must stay in sync. This pipeline automates detection of
+structural changes and regenerates the C++ artifacts when changes are found.
 
 ## Non-Goals
 
 - Running as part of the library build. This is a developer/maintainer tool only.
 - Handling streaming or event-based API specs (future work).
+- Patching or incremental updates. Changes trigger a full regeneration.
 
 ## Pipeline Stages
 
 ```
-Stage 1: Fetch          Download raw markdown from provider doc URLs
+Stage 1: Fetch          Download raw spec from provider doc URLs
             ↓
-Stage 2: Extract        Parse markdown → structured JSON (intermediate format)
+Stage 2: Extract        Parse spec → structured JSON (intermediate format)
             ↓
 Stage 3: Diff           Compare current extraction against previous baseline
+            ↓                (no baseline = everything is new)
+Stage 4: Generate       Emit C++ artifacts from intermediate JSON
             ↓
-Stage 4: Report         Generate human-readable change report
+Stage 5: Deploy         Copy generated files into the source tree
             ↓
-Stage 5: Checklist      Generate integration checklist from diff (see below)
+Stage 6: Build          cmake configure + build to verify generated code compiles
             ↓
-Stage 6: Agent          Work through checklist to update C++ structures
+Stage 7: Promote        Save current extraction as the new baseline
+            ↓
+Stage 8: Clean          Remove scratch directory
 ```
 
-Stages 1–4 are standalone Python scripts that read files and write files. No stage depends
-on network access except Fetch. Stages can be run independently.
+Stages 1–2 run for every provider. Stage 3 returns a boolean: `True` if there are
+structural changes (or no baseline exists). Stages 4–7 only run when the diff is `True`.
+Stage 8 runs on success unless `--no-clean` is set.
 
-Stage 5 (Checklist) is also a standalone Python script. It reads the diff JSON and current
-extraction, then generates a markdown checklist in scratch. Each diff item becomes one or
-more checklist entries with the specific C++ files that need updating. Nothing from the diff
-is deferred or skipped. See `docs/api_parity_integration.md` for the full integration process.
+When running with `--all`, stages 1–5 run per-provider first, then stages 6–8 run once
+after all providers are deployed. This ensures the build sees all generated code before
+any baselines are promoted. If any provider fails during stages 1–5, the pipeline aborts
+before build/promote.
 
-Stage 6 (Agent) is a separate concern — an agent (human or AI) works through the checklist
-to propagate changes into the C++ protocol layer. This step involves judgment calls (e.g.,
-choosing `Name64` over `std::string`, or `Int64Bounded<1,10>` over `int64_t`) and is not
-automated by the pipeline itself.
+The `audit` command runs the full pipeline end-to-end:
+
+```bash
+python scripts/api_parity/run.py audit --provider openai
+python scripts/api_parity/run.py audit --all
+python scripts/api_parity/run.py audit --all --no-clean    # keep scratch for inspection
+```
+
+Individual stages can also be run independently:
+
+```bash
+python scripts/api_parity/run.py fetch     --provider openai
+python scripts/api_parity/run.py extract   --provider openai
+python scripts/api_parity/run.py diff      --provider openai
+python scripts/api_parity/run.py generate  --provider openai
+python scripts/api_parity/run.py deploy    --provider openai
+python scripts/api_parity/run.py build
+python scripts/api_parity/run.py clean
+python scripts/api_parity/run.py promote   --provider openai
+```
 
 ## Provider Doc Sources
 
@@ -53,243 +72,111 @@ automated by the pipeline itself.
 **URL:** `https://developers.openai.com/api/reference/resources/responses/methods/create/index.md`
 
 **Format:** Markdown with indentation-based field hierarchy. Sections: `### Body Parameters`
-(request), `### Returns` (response), `### Example`.
+(request), `### Returns` (response). Field pattern: `- \`name: optional type_or_union\``
+with 2-space indentation per nesting level.
 
-**Field pattern:** `- \`name: optional type_or_union\`` with 2-space indentation per nesting
-level. Union types use `or`. Enum values listed as quoted string bullets. Named sub-types use
-`TypeName = object { field1, field2, ... }`.
+**Parser:** `parsers/openai_anthropic.py`
 
 ### Anthropic (Messages API)
 
 **URL:** `https://platform.claude.com/docs/en/api/messages/create.md`
 
 **Format:** Identical structure to OpenAI. Same section names, same field definition syntax,
-same indentation conventions. Likely the same doc tooling.
+same indentation conventions.
+
+**Parser:** `parsers/openai_anthropic.py`
 
 ### Gemini (GenerateContent)
 
-**Top-level URL:** `https://ai.google.dev/api/generate-content`
-**Shared types URL:** `https://ai.google.dev/api/caching.md.txt#Content` (and similar)
+**URL:** `https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta`
 
-**Format:** Different from OpenAI/Anthropic. Documentation is spread across multiple pages.
-Shared types (like `Content`, `Part`) appear in multiple API pages. Has its own dedicated
-parser (`parsers/gemini.py`) that produces the same intermediate JSON format.
+**Format:** Google API Discovery Document (JSON). Flat schema definitions with `$ref` pointers
+between them. The parser performs reachability analysis from the request/response types to
+include only schemas relevant to the target endpoint.
+
+**Parser:** `parsers/gemini.py`
 
 ## Intermediate Format (Extracted JSON)
 
 Each extraction produces a JSON file representing the structural content of one API endpoint.
 This is the unit of comparison for diffs.
 
-### Schema
+### Tree Format (OpenAI, Anthropic)
 
 ```json
 {
   "meta": {
-    "provider": "openai",
-    "endpoint": "responses",
-    "source_url": "https://...",
-    "fetched_at": "2026-02-17T12:00:00Z",
-    "raw_file": "docs/specs/protocols/openai/responses.md"
+    "provider": "anthropic",
+    "endpoint": "messages",
+    "source_url": "...",
+    "fetched_at": "..."
   },
   "request": {
-    "objects": { ... },
-    "enums": { ... }
+    "root": { "name": "Request", "fields": [...], "children": [...] }
   },
   "response": {
-    "objects": { ... },
-    "enums": { ... }
+    "root": { "name": "Message", "fields": [...], "children": [...] }
   }
 }
 ```
 
-### Object Definition
+Types are nested within the tree through `children` arrays, mirroring the spec's inline
+type definitions.
+
+### Flat Format (Gemini)
 
 ```json
 {
-  "Request": {
-    "fields": {
-      "model": {
-        "type": "string",
-        "required": true,
-        "description": "Model ID used for this response."
-      },
-      "temperature": {
-        "type": "number",
-        "required": false,
-        "description": "Sampling temperature between 0 and 2."
-      },
-      "input": {
-        "type": "string | array<ResponseInputItem>",
-        "required": false,
-        "description": "Text, image, or file inputs to the model."
-      },
-      "tools": {
-        "type": "array<Tool>",
-        "required": false,
-        "description": "Tools available to the model."
-      }
-    }
-  }
+  "meta": { ... },
+  "schemas": {
+    "GenerateContentRequest": { "name": "...", "side": "request", "fields": [...] },
+    "Content": { "name": "...", "side": "shared", "fields": [...] },
+    ...
+  },
+  "request_type": "GenerateContentRequest",
+  "response_type": "GenerateContentResponse"
 }
 ```
+
+Schemas are flat siblings with `side` indicating request/response/shared.
 
 ### Field Type System
 
-Each field has a `type` and `required` flag, plus optional extra keys depending on the type:
+Each field has a `type` and `required` flag:
 
-**Fundamental types:** `"string"`, `"number"`, `"boolean"`, `"object"`, `"unknown"`.
+- **Fundamental types:** `"string"`, `"number"`, `"boolean"`, `"object"`, `"unknown"`.
+- **Compound types:** `"array<Foo>"`, `"map<string, unknown>"`.
+- **Named type references:** `"CacheControlEphemeral"` — refers to another type definition.
+- **Kind (discriminator):** `{ "type": "kind", "required": true, "value": "text" }`
+- **String enum:** `{ "type": "string", "required": false, "values": ["5m", "1h"] }`
+- **Union:** `{ "type": "union", "required": true, "members": [...] }`
 
-**Compound types:** `"array<Foo>"`, `"map<string, unknown>"`.
+## Generated Artifacts
 
-**Named type references:** `"CacheControlEphemeral"`, `"ContentBlockParam"` — refers to another
-object definition in the same extraction.
+For each provider/endpoint, the codegen produces four files:
 
-**Kind (discriminator):** A field whose value is always a fixed string literal.
-```json
-{ "type": "kind", "required": true, "value": "text" }
-```
+| Generated File | Deployed Location |
+|---------------|-------------------|
+| `<endpoint>.hpp` | `interface/protocols/<provider>/<endpoint>.hpp` |
+| `<endpoint>_strings.hpp` | `interface/protocols/<provider>/<endpoint>_strings.hpp` |
+| `<endpoint>_serialize.cpp` | `src/protocols/serialize/<provider>_<endpoint>.cpp` |
+| `<endpoint>_deserialize.cpp` | `src/protocols/deserialize/<provider>_<endpoint>.cpp` |
 
-**String enum:** A field whose value is one of a known set of string literals.
-```json
-{ "type": "string", "required": false, "values": ["5m", "1h"] }
-```
-
-**Union:** A field whose value can be one of several distinct types. Type references are
-unquoted; string literals are quoted to distinguish them from type names.
-```json
-{ "type": "union", "required": true, "values": ["string", "array<ContentBlockParam>"] }
-{ "type": "union", "required": false, "values": ["object", "\"always\"", "\"never\""] }
-```
-
-**Derivation rule:** The inline type expression in the docs is treated as a summary. When
-children are present (enum value bullets, `UnionMember` definitions), the children are
-the authoritative source for the field's type. This handles truncated inline expressions
-(e.g., `"foo" or "bar" or 3 more`) and ambiguous `array of X or Y` constructs.
-
-### Enum Definition
-
-```json
-{
-  "StopReason": {
-    "values": ["end_turn", "max_tokens", "stop_sequence", "tool_use"],
-    "source_field": "Response.stop_reason"
-  }
-}
-```
-
-Enum values are the literal strings from the spec. The `source_field` records where the enum
-was first encountered (for traceability).
-
-### Kind / Discriminator Capture
-
-When a field has a fixed literal value (e.g., `type: "text"`), it is captured as:
-
-```json
-{
-  "type": {
-    "type": "kind",
-    "required": true,
-    "description": "Always text.",
-    "value": "text"
-  }
-}
-```
-
-The `type: "kind"` distinguishes discriminator constants from regular string fields.
-
-### Description Capture
-
-The `description` field contains the **full verbatim text** of the field's documentation from
-the spec. Markdown links are stripped, but all substantive prose is preserved including
-constraint details (e.g., "maximum 64 characters", "must be a valid URL", "Unix timestamp in
-seconds"), default values, and behavioral notes.
-
-Descriptions are stored in the intermediate JSON and are available to the agent for making
-type mapping decisions, but they are **not compared during structural diffs**. Only type,
-required status, enum values, and object/field presence are diffed. This avoids noisy diffs
-from editorial prose changes while preserving all information the agent needs.
+For example, OpenAI produces `responses.hpp`, `responses_strings.hpp`,
+`openai_responses.cpp` (serialize), and `openai_responses.cpp` (deserialize).
 
 ## Diff Output
 
-The diff stage compares two extracted JSON files (previous baseline vs current) and produces
-a structured diff:
+The diff stage compares two extracted JSON files (baseline vs current) and produces a
+structured diff JSON in `scratch/api_parity/diffs/`. The diff tracks:
 
-```json
-{
-  "added_objects": ["NewObjectType"],
-  "removed_objects": ["DeprecatedType"],
-  "added_fields": [
-    { "object": "Request", "field": "new_param", "type": "string", "required": false },
-    { "object": "Request", "field": "speed", "type": "string", "required": false,
-      "values": ["standard", "fast"] },
-    { "object": "Tool", "field": "type", "type": "kind", "required": true,
-      "value": "custom" }
-  ],
-  "removed_fields": [
-    { "object": "Request", "field": "old_param" }
-  ],
-  "changed_fields": [
-    {
-      "object": "Request",
-      "field": "temperature",
-      "changes": {
-        "type": { "old": "number", "new": "number | null" },
-        "required": { "old": true, "new": false }
-      }
-    },
-    {
-      "object": "Request",
-      "field": "speed",
-      "changes": {
-        "values": { "old": ["standard"], "new": ["standard", "fast"] }
-      }
-    }
-  ],
-  "added_enum_values": [
-    { "enum": "StopReason", "value": "new_reason" }
-  ],
-  "removed_enum_values": [],
-  "description_changes": [
-    {
-      "object": "Request",
-      "field": "user",
-      "old_desc": "...",
-      "new_desc": "..."
-    }
-  ]
-}
-```
+- Added/removed objects (structs)
+- Added/removed/changed fields (type, required status, enum values)
+- Added/removed enum values
+- Description changes (tracked separately, non-structural)
 
-## Report Output
-
-A human-readable markdown report generated from the diff:
-
-```markdown
-# API Parity Report: OpenAI Responses
-Generated: 2026-02-17
-Baseline: 2026-01-15  |  Current: 2026-02-17
-
-## New Fields (3)
-- Request.new_param: string (optional)
-- Response.new_field: number (required)
-- OutputMessage.metadata: object (optional)
-
-## Removed Fields (1)
-- Request.deprecated_field
-
-## Changed Fields (1)
-- Request.temperature: required → optional
-
-## New Enum Values (2)
-- StopReason: "new_reason"
-- ServiceTier: "premium"
-
-## Description Changes (1)
-- Request.user: description changed (see diff JSON for details)
-
-## No Changes
-(listed if nothing changed — confirms the audit ran successfully)
-```
+If no baseline exists, the diff returns `True` (everything is new) without writing a
+diff file.
 
 ## File Layout
 
@@ -298,127 +185,46 @@ scripts/
   api_parity/
     __init__.py
     config.py              Provider URLs, endpoint definitions, path helpers
-    fetch.py               Stage 1: download raw markdown
-    extract.py             Stage 2: markdown → intermediate JSON
-    diff.py                Stage 3: compare two extractions
-    report.py              Stage 4: diff → human-readable report
-    checklist.py           Stage 5: diff → integration checklist
-    run.py                 CLI entry point: run full pipeline or individual stages
+    fetch.py               Stage 1: download raw spec
+    extract.py             Stage 2: spec → intermediate JSON
+    diff.py                Stage 3: compare against baseline (returns bool)
+    report.py              Generate human-readable report from diff
+    checklist.py           Generate integration checklist from diff
+    codegen.py             Stage 4 (tree): generate C++ from tree JSON
+    codegen_flat.py        Stage 4 (flat): generate C++ from flat JSON
+    run.py                 CLI entry point
+    seed_baseline.py       Seed baseline from existing C++ headers
     parsers/
       __init__.py
       openai_anthropic.py  Shared parser for OpenAI/Anthropic markdown format
-      gemini.py            Gemini-specific parser
+      gemini.py            Parser for Google Discovery JSON format
 
-docs/specs/
-  protocols/
-    openai/
-      responses.baseline.json   Approved baseline extraction
-      responses.baseline.md     Markdown snapshot paired with baseline
-    anthropic/
-      messages.baseline.json
-      messages.baseline.md
-    gemini/
-      generate_content.baseline.json
-      generate_content.baseline.md
+specs/
+  openai/
+    responses.json         Approved baseline extraction
+    responses.raw.md       Raw spec snapshot paired with baseline
+  anthropic/
+    messages.json
+    messages.raw.md
+  gemini/
+    generate_content.json
+    generate_content.raw.json   Raw Discovery Document snapshot
 
 scratch/
-  api_parity/               Working files during pipeline runs (all transient)
-    openai/                 Fetched markdown + extracted JSON
-    anthropic/              Fetched markdown + extracted JSON
-    gemini/                 Fetched markdown + extracted JSON
-    diffs/                  Diff output JSONs
-    reports/                Generated markdown reports
-    checklists/             Generated integration checklists
+  api_parity/              Working files during pipeline runs (cleaned on success)
+    openai/                Fetched spec + extracted JSON
+    anthropic/
+    gemini/
+    generated/             Codegen output (before deploy)
+    diffs/                 Diff output JSONs
+    build/                 cmake build directory for verification
+    reports/               Generated markdown reports
+    checklists/            Generated integration checklists
 ```
-
-## Workflow (Manual)
-
-### Initial Setup (One Time)
-
-```bash
-# Fetch current specs and extract (writes to scratch/)
-python scripts/api_parity/run.py fetch --provider openai
-python scripts/api_parity/run.py extract --provider openai
-
-# Promote scratch extraction + markdown to docs/specs/ as approved baseline
-python scripts/api_parity/run.py promote --provider openai
-```
-
-Promote copies the extracted JSON as `<endpoint>.baseline.json` and the fetched markdown
-as `<endpoint>.baseline.md` into `docs/specs/protocols/<provider>/`. The markdown snapshot
-ensures the baseline can be traced back to the exact documentation version it was derived from.
-
-### Regular Audit
-
-```bash
-# Fetch latest, extract, diff against baseline, generate report
-# All working files land in scratch/api_parity/
-python scripts/api_parity/run.py audit --provider openai
-
-# Review the report
-cat scratch/api_parity/reports/openai_responses_report.md
-
-# Generate integration checklist from the diff
-python scripts/api_parity/run.py checklist --provider openai
-
-# Review the checklist — this is the agent's work plan
-cat scratch/api_parity/checklists/openai_responses_checklist.md
-
-# After incorporating changes into C++, promote as new baseline
-python scripts/api_parity/run.py promote --provider openai
-```
-
-### Full Pipeline (All Providers)
-
-```bash
-python scripts/api_parity/run.py audit --all
-```
-
-## Checklist Step (Stage 5)
-
-The checklist is generated mechanically from the diff JSON. Each item in the diff becomes
-one or more checklist entries with the specific C++ files that need updating. Nothing from
-the diff is deferred or skipped.
-
-```bash
-python scripts/api_parity/run.py checklist --provider openai
-```
-
-Output: `scratch/api_parity/checklists/<provider>_<endpoint>_checklist.md`
-
-The checklist groups items by change type (new objects, new fields, new enum values, etc.)
-and lists the affected files for each. It also includes variant membership analysis — when
-a new type needs to be added to an existing `std::variant`, the checklist flags it.
-
-See `docs/api_parity_integration.md` for the full integration process, file mapping, type
-mapping conventions, and recommended ordering.
-
-## Agent Step (Stage 6)
-
-The agent works through the checklist item by item, marking each done as it goes. The
-checklist is the single source of truth — the agent does not make decisions about what to
-implement and what to skip.
-
-**Inputs:** The checklist (markdown), the current extracted JSON (for field descriptions
-and type details), and the existing C++ source files.
-
-**Agent responsibilities:**
-- Work through every checklist item in order
-- Add new structs/fields to protocol headers
-- Remove deprecated fields
-- Update type mappings (using description hints like "max 64 characters" → `Name64`)
-- Update enum/kind definitions and string conversions
-- Add/update ser/de macros for new fields
-- Update unit tests
-- Mark items done and save the checklist periodically
-
-**Verification:** After all items are done, the agent builds, runs tests, and re-audits
-to confirm the diff is now empty.
 
 ## Future Extensions
 
-- **GitHub Actions**: Scheduled weekly audit that opens an issue or PR when changes are detected.
-- **LLM agent integration**: Feed report + JSON + C++ headers to an LLM to generate patches.
+- **GitHub Actions**: Scheduled audit that opens a PR when changes are detected.
 - **Streaming/event specs**: Extend the intermediate format to capture SSE event types.
 - **Deprecated field filtering**: Detect and flag deprecated fields in extractions.
 - **Nullable field tracking**: Distinguish nullable from optional in the intermediate format.

@@ -19,7 +19,7 @@ def fetch(provider: str) -> Path:
     Returns the path to the downloaded file.
     """
     cfg = config.ENDPOINTS[provider]
-    output_path = config.raw_md_path(provider)
+    output_path = config.raw_spec_path(provider)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"Fetching {cfg.provider}/{cfg.endpoint} from {cfg.url}")

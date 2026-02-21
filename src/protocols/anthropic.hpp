@@ -18,7 +18,7 @@ namespace jai::llm::anthropic {
 http::Method GenMethod(const Request&);
 http::RequestHeaders GenRequestHeaders(const Request&);
 std::string GenUrl(const Request&);
-Response Deserialize(const curl::Response& response);
+Message Deserialize(const curl::Response& response);
 std::vector<std::byte> Serialize(const Request&);
 
 

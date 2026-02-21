@@ -2284,7 +2284,7 @@ as input for the model's response.
 - `safety_identifier: optional string`
 
   A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies.
-  The IDs should be a string that uniquely identifies each user. We recommend hashing their username or email address, in order to avoid sending us any identifying information. [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
+  The IDs should be a string that uniquely identifies each user, with a maximum length of 64 characters. We recommend hashing their username or email address, in order to avoid sending us any identifying information. [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
 - `service_tier: optional "auto" or "default" or "flex" or 2 more`
 
@@ -8239,7 +8239,7 @@ as input for the model's response.
   - `safety_identifier: optional string`
 
     A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies.
-    The IDs should be a string that uniquely identifies each user. We recommend hashing their username or email address, in order to avoid sending us any identifying information. [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
+    The IDs should be a string that uniquely identifies each user, with a maximum length of 64 characters. We recommend hashing their username or email address, in order to avoid sending us any identifying information. [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
   - `service_tier: optional "auto" or "default" or "flex" or 2 more`
 
