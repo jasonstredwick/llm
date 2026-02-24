@@ -289,3 +289,37 @@ already uses for similar patterns.
 `_build_usings` emits the variant alias from `union_def`, and `_resolve_type` resolves the array
 element via `_resolve_element` which checks `union_def`. Reusing this mechanism required no codegen
 changes.
+
+---
+
+### 2026-02-24 — Known concerns for future revisit
+
+**Context:** After stabilizing the codegen pipeline through several rounds of fixes, identified
+three structural concerns that don't need immediate action but should be addressed before the
+pipeline is considered mature.
+
+**Concern 1: Parser classification complexity.**
+The parser's field classification logic has grown into a set of interleaved branches — `has_or`,
+`is_map_with_inner_or`, `_parse_field_children`, `_collect_enum_values` — where each branch handles
+both type expression decomposition (is it array? map? union?) and child classification (enum vs
+struct vs scalar) simultaneously. The bug where `has_or` lost the `array<>` wrapper happened because
+a new branch didn't account for a condition an older branch handled. A future refactor should
+consider a two-phase approach: first decompose the raw type expression into a normalized structural
+descriptor (wrapper, inner type, alternatives), then classify the children independently. This
+separates the two concerns and reduces the interaction surface between branches.
+
+**Concern 2: Parser-level test coverage.**
+The pipeline's correctness model is "if the generator runs clean, the output is correct by
+construction." This is true for the codegen, but the codegen's correctness depends on the parser's
+correctness, which is where most bugs have appeared. A small suite of synthetic spec fragments —
+one per classification branch — with expected intermediate JSON output would catch parser
+regressions without needing to fetch real specs. These could run as fast unit tests.
+
+**Concern 3: End-to-end validation gap.**
+The pipeline can verify that generated code compiles, but cannot currently verify that the generated
+structs correctly round-trip real API payloads. Building succeeds even if a field is mistyped in a
+way that's structurally valid C++ but semantically wrong (e.g., a string where the API sends a
+number). True validation requires hooking the generated code up to real provider APIs or, at minimum,
+capturing sample request/response payloads and running round-trip serialize/deserialize tests against
+them. This is blocked on completing the library's transport and client layers, but should be
+revisited once those are functional.
