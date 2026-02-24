@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <variant>
@@ -61,9 +62,9 @@ struct Request {
 
         enum class Role { USER, ASSISTANT, SYSTEM, DEVELOPER };
 
-        enum class ResponseInputContentKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using ResponseInputContent = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
-        using Content = std::variant<std::string, std::vector<ResponseInputContent>>;
+        enum class ContentItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
+        using ContentItem = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
+        using Content = std::variant<std::string, std::vector<ContentItem>>;
 
         Required<Content> content;
         Required<Role> role;
@@ -163,7 +164,7 @@ struct Request {
                 Required<std::string> token;
                 Required<std::vector<double>> bytes;
                 Required<double> logprob;
-                Required<std::vector<jai::llm::json::Object>> top_logprobs;
+                Required<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs;
             };
 
             struct TypeKind : Kind { static constexpr std::string_view value = "output_text"; };
@@ -171,8 +172,8 @@ struct Request {
             enum class AnnotationsKind { FILE_CITATION, URL_CITATION, CONTAINER_FILE_CITATION, FILE_PATH };
             using Annotations = std::variant<FileCitation, URLCitation, ContainerFileCitation, FilePath>;
 
-            Required<Annotations> annotations;
-            Required<std::vector<jai::llm::json::Object>> logprobs;
+            Required<std::vector<Annotations>> annotations;
+            Required<std::vector<ResponseOutputText_logprobs>> logprobs;
             Required<std::string> text;
             Required<TypeKind> type{{}};
         };
@@ -193,7 +194,7 @@ struct Request {
         using Content = std::variant<ResponseOutputText, ResponseOutputRefusal>;
 
         Required<std::string> id;
-        Required<Content> content;
+        Required<std::vector<Content>> content;
         Required<RoleKind> role{{}};
         Required<Status> status;
         Required<TypeKind> type{{}};
@@ -201,9 +202,9 @@ struct Request {
 
     struct ResponseFileSearchToolCall {
         struct ResponseFileSearchToolCall_results {
-            using Attributes = std::variant<std::string, double, bool>;
+            using AttributesValue = std::variant<std::string, double, bool>;
 
-            std::optional<Attributes> attributes{};
+            std::optional<std::map<std::string, AttributesValue>> attributes{};
             std::optional<std::string> file_id{};
             std::optional<std::string> filename{};
             std::optional<double> score{};
@@ -212,20 +213,20 @@ struct Request {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "file_search_call"; };
 
-        enum class Status { IN_PROGRESS, SEARCHING, COMPLETED };
+        enum class Status { IN_PROGRESS, SEARCHING, COMPLETED, INCOMPLETE, FAILED };
 
         Required<std::string> id;
         Required<std::vector<std::string>> queries;
         Required<Status> status;
         Required<TypeKind> type{{}};
-        std::optional<std::vector<jai::llm::json::Object>> results{};
+        std::optional<std::vector<ResponseFileSearchToolCall_results>> results{};
     };
 
     struct ResponseComputerToolCall {
         struct Click {
             struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
 
-            enum class Button { LEFT, RIGHT, WHEEL };
+            enum class Button { LEFT, RIGHT, WHEEL, BACK, FORWARD };
 
             Required<Button> button;
             Required<TypeKind> type{{}};
@@ -249,7 +250,7 @@ struct Request {
 
             struct TypeKind : Kind { static constexpr std::string_view value = "drag"; };
 
-            Required<std::vector<jai::llm::json::Object>> path;
+            Required<std::vector<Drag_path>> path;
             Required<TypeKind> type{{}};
         };
 
@@ -313,7 +314,7 @@ struct Request {
         Required<std::string> id;
         Required<Action> action;
         Required<std::string> call_id;
-        Required<std::vector<jai::llm::json::Object>> pending_safety_checks;
+        Required<std::vector<ResponseComputerToolCall_pending_safety_checks>> pending_safety_checks;
         Required<Status> status;
         Required<TypeKind> type{{}};
     };
@@ -341,7 +342,7 @@ struct Request {
         Required<ResponseComputerToolCallOutputScreenshot> output;
         Required<TypeKind> type{{}};
         std::optional<std::string> id{};
-        std::optional<std::vector<jai::llm::json::Object>> acknowledged_safety_checks{};
+        std::optional<std::vector<ComputerCallOutput_acknowledged_safety_checks>> acknowledged_safety_checks{};
         std::optional<Status> status{};
     };
 
@@ -359,7 +360,7 @@ struct Request {
             Required<std::string> query;
             Required<TypeKind> type{{}};
             std::optional<std::vector<std::string>> queries{};
-            std::optional<std::vector<jai::llm::json::Object>> sources{};
+            std::optional<std::vector<Search_sources>> sources{};
         };
 
         struct OpenPage {
@@ -436,8 +437,9 @@ struct Request {
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
-        enum class OutputKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using Output = std::variant<std::string, ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
+        enum class OutputItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
+        using OutputItem = std::variant<ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
+        using Output = std::variant<std::string, std::vector<OutputItem>>;
 
         Required<std::string> call_id;
         Required<Output> output;
@@ -468,7 +470,7 @@ struct Request {
         Required<std::string> id;
         Required<std::vector<SummaryTextContent>> summary;
         Required<TypeKind> type{{}};
-        std::optional<std::vector<jai::llm::json::Object>> content{};
+        std::optional<std::vector<ResponseReasoningItem_content>> content{};
         std::optional<std::string> encrypted_content{};
         std::optional<Status> status{};
     };
@@ -509,7 +511,7 @@ struct Request {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "code_interpreter_call"; };
 
-        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE, INTERPRETING, FAILED };
 
         enum class OutputsKind { LOGS, IMAGE };
         using Outputs = std::variant<Logs, Image>;
@@ -517,7 +519,7 @@ struct Request {
         Required<std::string> id;
         Required<std::string> code;
         Required<std::string> container_id;
-        Required<Outputs> outputs;
+        Required<std::vector<Outputs>> outputs;
         Required<Status> status;
         Required<TypeKind> type{{}};
     };
@@ -527,7 +529,7 @@ struct Request {
             struct TypeKind : Kind { static constexpr std::string_view value = "exec"; };
 
             Required<std::vector<std::string>> command;
-            Required<std::string /* UNRESOLVED: map<string, string> */> env;
+            Required<std::map<std::string, std::string>> env;
             Required<TypeKind> type{{}};
             std::optional<double> timeout_ms{};
             std::optional<std::string> user{};
@@ -539,7 +541,7 @@ struct Request {
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
         Required<std::string> id;
-        Required<jai::llm::json::Object> action;
+        Required<LocalShellCall_action> action;
         Required<std::string> call_id;
         Required<Status> status;
         Required<TypeKind> type{{}};
@@ -590,7 +592,7 @@ struct Request {
         enum class EnvironmentKind { LOCAL, CONTAINER_REFERENCE };
         using Environment = std::variant<LocalEnvironment, ContainerReference>;
 
-        Required<jai::llm::json::Object> action;
+        Required<ShellCall_action> action;
         Required<std::string> call_id;
         Required<TypeKind> type{{}};
         std::optional<std::string> id{};
@@ -685,9 +687,9 @@ struct Request {
 
     struct McpListTools {
         struct McpListTools_tools {
-            Required<std::string /* UNRESOLVED: unknown */> input_schema;
+            Required<jai::llm::json::Object> input_schema;
             Required<std::string> name;
-            std::optional<std::string /* UNRESOLVED: unknown */> annotations{};
+            std::optional<jai::llm::json::Object> annotations{};
             std::optional<std::string> description{};
         };
 
@@ -695,7 +697,7 @@ struct Request {
 
         Required<std::string> id;
         Required<std::string> server_label;
-        Required<std::vector<jai::llm::json::Object>> tools;
+        Required<std::vector<McpListTools_tools>> tools;
         Required<TypeKind> type{{}};
         std::optional<std::string> error{};
     };
@@ -723,7 +725,7 @@ struct Request {
     struct McpCall {
         struct TypeKind : Kind { static constexpr std::string_view value = "mcp_call"; };
 
-        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE, CALLING, FAILED };
 
         Required<std::string> id;
         Required<std::string> arguments;
@@ -767,7 +769,9 @@ struct Request {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "custom_tool_call_output"; };
 
-        using Output = std::variant<std::string>;
+        enum class OutputItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
+        using OutputItem = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
+        using Output = std::variant<std::string, std::vector<OutputItem>>;
 
         Required<std::string> call_id;
         Required<Output> output;
@@ -821,11 +825,10 @@ struct Request {
             std::optional<std::string> filename{};
         };
 
-        enum class VariablesKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using Variables = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
+        using VariablesValue = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
 
         Required<std::string> id;
-        std::optional<Variables> variables{};
+        std::optional<std::map<std::string, VariablesValue>> variables{};
         std::optional<std::string> version{};
     };
 
@@ -854,7 +857,7 @@ struct Request {
             struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
 
             Required<std::string> name;
-            Required<jai::llm::json::Object> schema;
+            Required<std::map<std::string, jai::llm::json::Object>> schema;
             Required<TypeKind> type{{}};
             std::optional<std::string> description{};
             std::optional<bool> strict{};
@@ -881,12 +884,12 @@ struct Request {
         enum class Mode { AUTO, REQUIRED };
 
         Required<Mode> mode;
-        Required<std::vector<jai::llm::json::Object>> tools;
+        Required<std::vector<std::map<std::string, jai::llm::json::Object>>> tools;
         Required<TypeKind> type{{}};
     };
 
     struct ToolChoiceTypes {
-        enum class Type { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER_USE_PREVIEW };
+        enum class Type { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER_USE_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11, IMAGE_GENERATION, CODE_INTERPRETER };
 
         Required<Type> type;
     };
@@ -929,7 +932,7 @@ struct Request {
         struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
 
         Required<std::string> name;
-        Required<jai::llm::json::Object> parameters;
+        Required<std::map<std::string, jai::llm::json::Object>> parameters;
         Required<bool> strict;
         Required<TypeKind> type{{}};
         std::optional<std::string> description{};
@@ -937,9 +940,10 @@ struct Request {
 
     struct FileSearchTool {
         struct ComparisonFilter {
-            enum class Type { EQ, NE, GT };
+            enum class Type { EQ, NE, GT, GTE, LT, LTE };
 
-            using Value = std::variant<std::string, double, bool>;
+            using ValueElement = std::variant<std::string, double>;
+            using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
 
             Required<std::string> key;
             Required<Type> type;
@@ -948,9 +952,10 @@ struct Request {
 
         struct CompoundFilter {
             struct ComparisonFilter {
-                enum class Type { EQ, NE, GT };
+                enum class Type { EQ, NE, GT, GTE, LT, LTE };
 
-                using Value = std::variant<std::string, double, bool>;
+                using ValueElement = std::variant<std::string, double>;
+                using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
 
                 Required<std::string> key;
                 Required<Type> type;
@@ -959,9 +964,9 @@ struct Request {
 
             enum class Type { AND, OR };
 
-            using Filters = std::variant<ComparisonFilter>;
+            using Filters = std::variant<ComparisonFilter, jai::llm::json::Object>;
 
-            Required<Filters> filters;
+            Required<std::vector<Filters>> filters;
             Required<Type> type;
         };
 
@@ -973,7 +978,7 @@ struct Request {
 
             enum class Ranker { AUTO, DEFAULT_2024_11_15 };
 
-            std::optional<jai::llm::json::Object> hybrid_search{};
+            std::optional<FileSearchTool_ranking_options_hybrid_search> hybrid_search{};
             std::optional<Ranker> ranker{};
             std::optional<double> score_threshold{};
         };
@@ -986,13 +991,13 @@ struct Request {
         Required<std::vector<std::string>> vector_store_ids;
         std::optional<Filters> filters{};
         std::optional<double> max_num_results{};
-        std::optional<jai::llm::json::Object> ranking_options{};
+        std::optional<FileSearchTool_ranking_options> ranking_options{};
     };
 
     struct ComputerTool {
         struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
 
-        enum class Environment { WINDOWS, MAC, LINUX };
+        enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
 
         Required<double> display_height;
         Required<double> display_width;
@@ -1019,9 +1024,9 @@ struct Request {
         enum class SearchContextSize { LOW, MEDIUM, HIGH };
 
         Required<Type> type;
-        std::optional<jai::llm::json::Object> filters{};
+        std::optional<WebSearchTool_filters> filters{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<jai::llm::json::Object> user_location{};
+        std::optional<WebSearchTool_user_location> user_location{};
     };
 
     struct Mcp {
@@ -1041,23 +1046,24 @@ struct Request {
                 std::optional<std::vector<std::string>> tool_names{};
             };
 
-            std::optional<jai::llm::json::Object> always{};
-            std::optional<jai::llm::json::Object> never{};
+            std::optional<McpToolApprovalFilter_always> always{};
+            std::optional<McpToolApprovalFilter_never> never{};
         };
 
         struct TypeKind : Kind { static constexpr std::string_view value = "mcp"; };
 
-        enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR };
+        enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR, CONNECTOR_GOOGLEDRIVE, CONNECTOR_MICROSOFTTEAMS, CONNECTOR_OUTLOOKCALENDAR, CONNECTOR_OUTLOOKEMAIL, CONNECTOR_SHAREPOINT };
 
         using AllowedTools = std::variant<std::vector<std::string>, McpToolFilter>;
-        using RequireApproval = std::variant<McpToolApprovalFilter>;
+        enum class RequireApprovalValues { ALWAYS, NEVER };
+        using RequireApproval = std::variant<RequireApprovalValues, McpToolApprovalFilter>;
 
         Required<std::string> server_label;
         Required<TypeKind> type{{}};
-        std::optional<AllowedTools> allowed_tools{};
+        std::optional<std::vector<AllowedTools>> allowed_tools{};
         std::optional<std::string> authorization{};
         std::optional<ConnectorId> connector_id{};
-        std::optional<std::string /* UNRESOLVED: map<string, string> */> headers{};
+        std::optional<std::map<std::string, std::string>> headers{};
         std::optional<RequireApproval> require_approval{};
         std::optional<std::string> server_description{};
         std::optional<std::string> server_url{};
@@ -1118,17 +1124,19 @@ struct Request {
         enum class Action { GENERATE, EDIT, AUTO };
         enum class Background { TRANSPARENT, OPAQUE, AUTO };
         enum class InputFidelity { HIGH, LOW };
-        enum class Model { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
         enum class Moderation { AUTO, LOW };
         enum class OutputFormat { PNG, WEBP, JPEG };
         enum class Quality { LOW, MEDIUM, HIGH, AUTO };
         enum class Size { V_1024X1024, V_1024X1536, V_1536X1024, AUTO };
 
+        enum class ModelValues { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
+        using Model = std::variant<ModelValues, std::string>;
+
         Required<TypeKind> type{{}};
         std::optional<Action> action{};
         std::optional<Background> background{};
         std::optional<InputFidelity> input_fidelity{};
-        std::optional<jai::llm::json::Object> input_image_mask{};
+        std::optional<ImageGeneration_input_image_mask> input_image_mask{};
         std::optional<Model> model{};
         std::optional<Moderation> moderation{};
         std::optional<double> output_compression{};
@@ -1205,7 +1213,7 @@ struct Request {
             std::optional<std::vector<std::string>> file_ids{};
             std::optional<MemoryLimit> memory_limit{};
             std::optional<NetworkPolicy> network_policy{};
-            std::optional<Skills> skills{};
+            std::optional<std::vector<Skills>> skills{};
         };
 
         struct LocalEnvironment {
@@ -1281,7 +1289,7 @@ struct Request {
 
         Required<Type> type;
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<jai::llm::json::Object> user_location{};
+        std::optional<WebSearchPreviewTool_user_location> user_location{};
     };
 
     struct ApplyPatchTool {
@@ -1292,28 +1300,31 @@ struct Request {
 
     enum class Include { FILE_SEARCH_CALL_RESULTS, WEB_SEARCH_CALL_RESULTS, WEB_SEARCH_CALL_ACTION_SOURCES, MESSAGE_INPUT_IMAGE_IMAGE_URL, COMPUTER_CALL_OUTPUT_OUTPUT_IMAGE_URL, CODE_INTERPRETER_CALL_OUTPUTS, REASONING_ENCRYPTED_CONTENT, MESSAGE_OUTPUT_TEXT_LOGPROBS };
     enum class PromptCacheRetention { IN_MEMORY, V_24H };
-    enum class ServiceTier { AUTO, DEFAULT, FLEX };
+    enum class ServiceTier { AUTO, DEFAULT, FLEX, SCALE, PRIORITY };
     enum class Truncation { AUTO, DISABLED };
 
-    enum class ResponseInputItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE, ALLOWED_TOOLS, TOOL_CHOICE_FUNCTION, TOOL_CHOICE_MCP, TOOL_CHOICE_CUSTOM, TOOL_CHOICE_APPLY_PATCH, TOOL_CHOICE_SHELL, FUNCTION_TOOL, FILE_SEARCH, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, FUNCTION_SHELL_TOOL, CUSTOM_TOOL, APPLY_PATCH_TOOL };
-    using ResponseInputItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, ResponseFileSearchToolCall, ResponseComputerToolCall, ComputerCallOutput, ResponseFunctionWebSearch, ResponseFunctionToolCall, FunctionCallOutput, ResponseReasoningItem, ResponseCompactionItemParam, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, ResponseCustomToolCallOutput, ResponseCustomToolCall, ItemReference, ToolChoiceAllowed, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell, FunctionTool, FileSearchTool, ComputerTool, Mcp, CodeInterpreter, ImageGeneration, LocalShell, FunctionShellTool, CustomTool, ApplyPatchTool>;
+    enum class InputItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE };
+    using InputItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, ResponseFileSearchToolCall, ResponseComputerToolCall, ComputerCallOutput, ResponseFunctionWebSearch, ResponseFunctionToolCall, FunctionCallOutput, ResponseReasoningItem, ResponseCompactionItemParam, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, ResponseCustomToolCallOutput, ResponseCustomToolCall, ItemReference>;
     using Conversation = std::variant<std::string, ResponseConversationParam>;
-    using Input = std::variant<std::string, std::vector<ResponseInputItem>>;
+    using Input = std::variant<std::string, std::vector<InputItem>>;
+    enum class ResponsesModelValues { GPT_5_2, GPT_5_2_2025_12_11, GPT_5_2_CHAT_LATEST, GPT_5_2_PRO, GPT_5_2_PRO_2025_12_11, GPT_5_1, GPT_5_1_2025_11_13, GPT_5_1_CODEX, GPT_5_1_MINI, GPT_5_1_CHAT_LATEST, GPT_5, GPT_5_MINI, GPT_5_NANO, GPT_5_2025_08_07, GPT_5_MINI_2025_08_07, GPT_5_NANO_2025_08_07, GPT_5_CHAT_LATEST, GPT_4_1, GPT_4_1_MINI, GPT_4_1_NANO, GPT_4_1_2025_04_14, GPT_4_1_MINI_2025_04_14, GPT_4_1_NANO_2025_04_14, O4_MINI, O4_MINI_2025_04_16, O3, O3_2025_04_16, O3_MINI, O3_MINI_2025_01_31, O1, O1_2024_12_17, O1_PREVIEW, O1_PREVIEW_2024_09_12, O1_MINI, O1_MINI_2024_09_12, GPT_4O, GPT_4O_2024_11_20, GPT_4O_2024_08_06, GPT_4O_2024_05_13, GPT_4O_AUDIO_PREVIEW, GPT_4O_AUDIO_PREVIEW_2024_10_01, GPT_4O_AUDIO_PREVIEW_2024_12_17, GPT_4O_AUDIO_PREVIEW_2025_06_03, GPT_4O_MINI_AUDIO_PREVIEW, GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17, GPT_4O_SEARCH_PREVIEW, GPT_4O_MINI_SEARCH_PREVIEW, GPT_4O_SEARCH_PREVIEW_2025_03_11, GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11, CHATGPT_4O_LATEST, CODEX_MINI_LATEST, GPT_4O_MINI, GPT_4O_MINI_2024_07_18, GPT_4_TURBO, GPT_4_TURBO_2024_04_09, GPT_4_0125_PREVIEW, GPT_4_TURBO_PREVIEW, GPT_4_1106_PREVIEW, GPT_4_VISION_PREVIEW, GPT_4, GPT_4_0314, GPT_4_0613, GPT_4_32K, GPT_4_32K_0314, GPT_4_32K_0613, GPT_3_5_TURBO, GPT_3_5_TURBO_16K, GPT_3_5_TURBO_0301, GPT_3_5_TURBO_0613, GPT_3_5_TURBO_1106, GPT_3_5_TURBO_0125, GPT_3_5_TURBO_16K_0613, O1_PRO, O1_PRO_2025_03_19, O3_PRO, O3_PRO_2025_06_10, O3_DEEP_RESEARCH, O3_DEEP_RESEARCH_2025_06_26, O4_MINI_DEEP_RESEARCH, O4_MINI_DEEP_RESEARCH_2025_06_26, COMPUTER_USE_PREVIEW, COMPUTER_USE_PREVIEW_2025_03_11, GPT_5_CODEX, GPT_5_PRO, GPT_5_PRO_2025_10_06, GPT_5_1_CODEX_MAX };
+    using ResponsesModel = std::variant<std::string, ResponsesModelValues>;
+    enum class ToolChoiceValues { NONE, AUTO, REQUIRED };
     enum class ToolChoiceKind { ALLOWED_TOOLS, FUNCTION, MCP, CUSTOM, APPLY_PATCH, SHELL };
-    using ToolChoice = std::variant<ToolChoiceAllowed, ToolChoiceTypes, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell>;
+    using ToolChoice = std::variant<ToolChoiceValues, ToolChoiceAllowed, ToolChoiceTypes, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell>;
     enum class ToolKind { FUNCTION, FILE_SEARCH, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, APPLY_PATCH };
     using Tool = std::variant<FunctionTool, FileSearchTool, ComputerTool, WebSearchTool, Mcp, CodeInterpreter, ImageGeneration, LocalShell, FunctionShellTool, CustomTool, WebSearchPreviewTool, ApplyPatchTool>;
 
     std::optional<bool> background{};
-    std::optional<std::vector<jai::llm::json::Object>> context_management{};
+    std::optional<std::vector<Request_context_management>> context_management{};
     std::optional<Conversation> conversation{};
     std::optional<Include> include{};
     std::optional<Input> input{};
     std::optional<std::string> instructions{};
     std::optional<double> max_output_tokens{};
     std::optional<double> max_tool_calls{};
-    std::optional<std::string /* UNRESOLVED: Metadata */> metadata{};
-    std::optional<std::string /* UNRESOLVED: ResponsesModel */> model{};
+    std::optional<std::map<std::string, std::string>> metadata{};
+    std::optional<ResponsesModel> model{};
     std::optional<bool> parallel_tool_calls{};
     std::optional<std::string> previous_response_id{};
     std::optional<ResponsePrompt> prompt{};
@@ -1324,7 +1335,7 @@ struct Request {
     std::optional<ServiceTier> service_tier{};
     std::optional<bool> store{};
     std::optional<bool> stream{};
-    std::optional<jai::llm::json::Object> stream_options{};
+    std::optional<Request_stream_options> stream_options{};
     std::optional<double> temperature{};
     std::optional<ResponseTextConfig> text{};
     std::optional<ToolChoice> tool_choice{};
@@ -1338,7 +1349,7 @@ struct Request {
 // ── Response ───────────────────────────────────────────
 struct Response {
     struct ResponseError {
-        enum class Code { SERVER_ERROR, RATE_LIMIT_EXCEEDED, INVALID_PROMPT };
+        enum class Code { SERVER_ERROR, RATE_LIMIT_EXCEEDED, INVALID_PROMPT, VECTOR_STORE_TIMEOUT, INVALID_IMAGE, INVALID_IMAGE_FORMAT, INVALID_BASE64_IMAGE, INVALID_IMAGE_URL, IMAGE_TOO_LARGE, IMAGE_TOO_SMALL, IMAGE_PARSE_ERROR, IMAGE_CONTENT_POLICY_VIOLATION, INVALID_IMAGE_MODE, IMAGE_FILE_TOO_LARGE, UNSUPPORTED_IMAGE_MEDIA_TYPE, EMPTY_IMAGE_FILE, FAILED_TO_DOWNLOAD_IMAGE, IMAGE_FILE_NOT_FOUND };
 
         std::optional<Code> code{};
         std::optional<std::string> message{};
@@ -1383,9 +1394,9 @@ struct Response {
 
         enum class Role { USER, ASSISTANT, SYSTEM, DEVELOPER };
 
-        enum class ResponseInputContentKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using ResponseInputContent = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
-        using Content = std::variant<std::string, std::vector<ResponseInputContent>>;
+        enum class ContentItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
+        using ContentItem = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
+        using Content = std::variant<std::string, std::vector<ContentItem>>;
 
         std::optional<Content> content{};
         std::optional<Role> role{};
@@ -1485,7 +1496,7 @@ struct Response {
                 std::optional<std::string> token{};
                 std::optional<std::vector<double>> bytes{};
                 std::optional<double> logprob{};
-                std::optional<std::vector<jai::llm::json::Object>> top_logprobs{};
+                std::optional<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs{};
             };
 
             struct TypeKind : Kind { static constexpr std::string_view value = "output_text"; };
@@ -1493,8 +1504,8 @@ struct Response {
             enum class AnnotationsKind { FILE_CITATION, URL_CITATION, CONTAINER_FILE_CITATION, FILE_PATH };
             using Annotations = std::variant<FileCitation, URLCitation, ContainerFileCitation, FilePath>;
 
-            std::optional<Annotations> annotations{};
-            std::optional<std::vector<jai::llm::json::Object>> logprobs{};
+            std::optional<std::vector<Annotations>> annotations{};
+            std::optional<std::vector<ResponseOutputText_logprobs>> logprobs{};
             std::optional<std::string> text{};
             std::optional<TypeKind> type{};
         };
@@ -1515,7 +1526,7 @@ struct Response {
         using Content = std::variant<ResponseOutputText, ResponseOutputRefusal>;
 
         std::optional<std::string> id{};
-        std::optional<Content> content{};
+        std::optional<std::vector<Content>> content{};
         std::optional<RoleKind> role{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
@@ -1523,9 +1534,9 @@ struct Response {
 
     struct ResponseFileSearchToolCall {
         struct ResponseFileSearchToolCall_results {
-            using Attributes = std::variant<std::string, double, bool>;
+            using AttributesValue = std::variant<std::string, double, bool>;
 
-            std::optional<Attributes> attributes{};
+            std::optional<std::map<std::string, AttributesValue>> attributes{};
             std::optional<std::string> file_id{};
             std::optional<std::string> filename{};
             std::optional<double> score{};
@@ -1534,20 +1545,20 @@ struct Response {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "file_search_call"; };
 
-        enum class Status { IN_PROGRESS, SEARCHING, COMPLETED };
+        enum class Status { IN_PROGRESS, SEARCHING, COMPLETED, INCOMPLETE, FAILED };
 
         std::optional<std::string> id{};
         std::optional<std::vector<std::string>> queries{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
-        std::optional<std::vector<jai::llm::json::Object>> results{};
+        std::optional<std::vector<ResponseFileSearchToolCall_results>> results{};
     };
 
     struct ResponseComputerToolCall {
         struct Click {
             struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
 
-            enum class Button { LEFT, RIGHT, WHEEL };
+            enum class Button { LEFT, RIGHT, WHEEL, BACK, FORWARD };
 
             std::optional<Button> button{};
             std::optional<TypeKind> type{};
@@ -1571,7 +1582,7 @@ struct Response {
 
             struct TypeKind : Kind { static constexpr std::string_view value = "drag"; };
 
-            std::optional<std::vector<jai::llm::json::Object>> path{};
+            std::optional<std::vector<Drag_path>> path{};
             std::optional<TypeKind> type{};
         };
 
@@ -1635,7 +1646,7 @@ struct Response {
         std::optional<std::string> id{};
         std::optional<Action> action{};
         std::optional<std::string> call_id{};
-        std::optional<std::vector<jai::llm::json::Object>> pending_safety_checks{};
+        std::optional<std::vector<ResponseComputerToolCall_pending_safety_checks>> pending_safety_checks{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
     };
@@ -1663,7 +1674,7 @@ struct Response {
         std::optional<ResponseComputerToolCallOutputScreenshot> output{};
         std::optional<TypeKind> type{};
         std::optional<std::string> id{};
-        std::optional<std::vector<jai::llm::json::Object>> acknowledged_safety_checks{};
+        std::optional<std::vector<ComputerCallOutput_acknowledged_safety_checks>> acknowledged_safety_checks{};
         std::optional<Status> status{};
     };
 
@@ -1681,7 +1692,7 @@ struct Response {
             std::optional<std::string> query{};
             std::optional<TypeKind> type{};
             std::optional<std::vector<std::string>> queries{};
-            std::optional<std::vector<jai::llm::json::Object>> sources{};
+            std::optional<std::vector<Search_sources>> sources{};
         };
 
         struct OpenPage {
@@ -1758,8 +1769,9 @@ struct Response {
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
-        enum class OutputKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using Output = std::variant<std::string, ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
+        enum class OutputItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
+        using OutputItem = std::variant<ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
+        using Output = std::variant<std::string, std::vector<OutputItem>>;
 
         std::optional<std::string> call_id{};
         std::optional<Output> output{};
@@ -1790,7 +1802,7 @@ struct Response {
         std::optional<std::string> id{};
         std::optional<std::vector<SummaryTextContent>> summary{};
         std::optional<TypeKind> type{};
-        std::optional<std::vector<jai::llm::json::Object>> content{};
+        std::optional<std::vector<ResponseReasoningItem_content>> content{};
         std::optional<std::string> encrypted_content{};
         std::optional<Status> status{};
     };
@@ -1831,7 +1843,7 @@ struct Response {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "code_interpreter_call"; };
 
-        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE, INTERPRETING, FAILED };
 
         enum class OutputsKind { LOGS, IMAGE };
         using Outputs = std::variant<Logs, Image>;
@@ -1839,7 +1851,7 @@ struct Response {
         std::optional<std::string> id{};
         std::optional<std::string> code{};
         std::optional<std::string> container_id{};
-        std::optional<Outputs> outputs{};
+        std::optional<std::vector<Outputs>> outputs{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
     };
@@ -1849,7 +1861,7 @@ struct Response {
             struct TypeKind : Kind { static constexpr std::string_view value = "exec"; };
 
             std::optional<std::vector<std::string>> command{};
-            std::optional<std::string /* UNRESOLVED: map<string, string> */> env{};
+            std::optional<std::map<std::string, std::string>> env{};
             std::optional<TypeKind> type{};
             std::optional<double> timeout_ms{};
             std::optional<std::string> user{};
@@ -1861,7 +1873,7 @@ struct Response {
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
         std::optional<std::string> id{};
-        std::optional<jai::llm::json::Object> action{};
+        std::optional<LocalShellCall_action> action{};
         std::optional<std::string> call_id{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
@@ -1912,7 +1924,7 @@ struct Response {
         enum class EnvironmentKind { LOCAL, CONTAINER_REFERENCE };
         using Environment = std::variant<LocalEnvironment, ContainerReference>;
 
-        std::optional<jai::llm::json::Object> action{};
+        std::optional<ShellCall_action> action{};
         std::optional<std::string> call_id{};
         std::optional<TypeKind> type{};
         std::optional<std::string> id{};
@@ -2007,9 +2019,9 @@ struct Response {
 
     struct McpListTools {
         struct McpListTools_tools {
-            std::optional<std::string /* UNRESOLVED: unknown */> input_schema{};
+            std::optional<jai::llm::json::Object> input_schema{};
             std::optional<std::string> name{};
-            std::optional<std::string /* UNRESOLVED: unknown */> annotations{};
+            std::optional<jai::llm::json::Object> annotations{};
             std::optional<std::string> description{};
         };
 
@@ -2017,7 +2029,7 @@ struct Response {
 
         std::optional<std::string> id{};
         std::optional<std::string> server_label{};
-        std::optional<std::vector<jai::llm::json::Object>> tools{};
+        std::optional<std::vector<McpListTools_tools>> tools{};
         std::optional<TypeKind> type{};
         std::optional<std::string> error{};
     };
@@ -2045,7 +2057,7 @@ struct Response {
     struct McpCall {
         struct TypeKind : Kind { static constexpr std::string_view value = "mcp_call"; };
 
-        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE, CALLING, FAILED };
 
         std::optional<std::string> id{};
         std::optional<std::string> arguments{};
@@ -2089,7 +2101,9 @@ struct Response {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "custom_tool_call_output"; };
 
-        using Output = std::variant<std::string>;
+        enum class OutputItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
+        using OutputItem = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
+        using Output = std::variant<std::string, std::vector<OutputItem>>;
 
         std::optional<std::string> call_id{};
         std::optional<Output> output{};
@@ -2151,7 +2165,7 @@ struct Response {
         using Environment = std::variant<ResponseLocalEnvironment, ResponseContainerReference>;
 
         std::optional<std::string> id{};
-        std::optional<jai::llm::json::Object> action{};
+        std::optional<ResponseFunctionShellToolCall_action> action{};
         std::optional<std::string> call_id{};
         std::optional<Environment> environment{};
         std::optional<Status> status{};
@@ -2190,7 +2204,7 @@ struct Response {
         std::optional<std::string> id{};
         std::optional<std::string> call_id{};
         std::optional<double> max_output_length{};
-        std::optional<std::vector<jai::llm::json::Object>> output{};
+        std::optional<std::vector<ResponseFunctionShellToolCallOutput_output>> output{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
         std::optional<std::string> created_by{};
@@ -2254,12 +2268,12 @@ struct Response {
         enum class Mode { AUTO, REQUIRED };
 
         std::optional<Mode> mode{};
-        std::optional<std::vector<jai::llm::json::Object>> tools{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> tools{};
         std::optional<TypeKind> type{};
     };
 
     struct ToolChoiceTypes {
-        enum class Type { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER_USE_PREVIEW };
+        enum class Type { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER_USE_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11, IMAGE_GENERATION, CODE_INTERPRETER };
 
         std::optional<Type> type{};
     };
@@ -2302,7 +2316,7 @@ struct Response {
         struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
 
         std::optional<std::string> name{};
-        std::optional<jai::llm::json::Object> parameters{};
+        std::optional<std::map<std::string, jai::llm::json::Object>> parameters{};
         std::optional<bool> strict{};
         std::optional<TypeKind> type{};
         std::optional<std::string> description{};
@@ -2310,9 +2324,10 @@ struct Response {
 
     struct FileSearchTool {
         struct ComparisonFilter {
-            enum class Type { EQ, NE, GT };
+            enum class Type { EQ, NE, GT, GTE, LT, LTE };
 
-            using Value = std::variant<std::string, double, bool>;
+            using ValueElement = std::variant<std::string, double>;
+            using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
 
             std::optional<std::string> key{};
             std::optional<Type> type{};
@@ -2321,9 +2336,10 @@ struct Response {
 
         struct CompoundFilter {
             struct ComparisonFilter {
-                enum class Type { EQ, NE, GT };
+                enum class Type { EQ, NE, GT, GTE, LT, LTE };
 
-                using Value = std::variant<std::string, double, bool>;
+                using ValueElement = std::variant<std::string, double>;
+                using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
 
                 std::optional<std::string> key{};
                 std::optional<Type> type{};
@@ -2332,9 +2348,9 @@ struct Response {
 
             enum class Type { AND, OR };
 
-            using Filters = std::variant<ComparisonFilter>;
+            using Filters = std::variant<ComparisonFilter, jai::llm::json::Object>;
 
-            std::optional<Filters> filters{};
+            std::optional<std::vector<Filters>> filters{};
             std::optional<Type> type{};
         };
 
@@ -2346,7 +2362,7 @@ struct Response {
 
             enum class Ranker { AUTO, DEFAULT_2024_11_15 };
 
-            std::optional<jai::llm::json::Object> hybrid_search{};
+            std::optional<FileSearchTool_ranking_options_hybrid_search> hybrid_search{};
             std::optional<Ranker> ranker{};
             std::optional<double> score_threshold{};
         };
@@ -2359,13 +2375,13 @@ struct Response {
         std::optional<std::vector<std::string>> vector_store_ids{};
         std::optional<Filters> filters{};
         std::optional<double> max_num_results{};
-        std::optional<jai::llm::json::Object> ranking_options{};
+        std::optional<FileSearchTool_ranking_options> ranking_options{};
     };
 
     struct ComputerTool {
         struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
 
-        enum class Environment { WINDOWS, MAC, LINUX };
+        enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
 
         std::optional<double> display_height{};
         std::optional<double> display_width{};
@@ -2392,9 +2408,9 @@ struct Response {
         enum class SearchContextSize { LOW, MEDIUM, HIGH };
 
         std::optional<Type> type{};
-        std::optional<jai::llm::json::Object> filters{};
+        std::optional<WebSearchTool_filters> filters{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<jai::llm::json::Object> user_location{};
+        std::optional<WebSearchTool_user_location> user_location{};
     };
 
     struct Mcp {
@@ -2414,23 +2430,24 @@ struct Response {
                 std::optional<std::vector<std::string>> tool_names{};
             };
 
-            std::optional<jai::llm::json::Object> always{};
-            std::optional<jai::llm::json::Object> never{};
+            std::optional<McpToolApprovalFilter_always> always{};
+            std::optional<McpToolApprovalFilter_never> never{};
         };
 
         struct TypeKind : Kind { static constexpr std::string_view value = "mcp"; };
 
-        enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR };
+        enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR, CONNECTOR_GOOGLEDRIVE, CONNECTOR_MICROSOFTTEAMS, CONNECTOR_OUTLOOKCALENDAR, CONNECTOR_OUTLOOKEMAIL, CONNECTOR_SHAREPOINT };
 
         using AllowedTools = std::variant<std::vector<std::string>, McpToolFilter>;
-        using RequireApproval = std::variant<McpToolApprovalFilter>;
+        enum class RequireApprovalValues { ALWAYS, NEVER };
+        using RequireApproval = std::variant<RequireApprovalValues, McpToolApprovalFilter>;
 
         std::optional<std::string> server_label{};
         std::optional<TypeKind> type{};
-        std::optional<AllowedTools> allowed_tools{};
+        std::optional<std::vector<AllowedTools>> allowed_tools{};
         std::optional<std::string> authorization{};
         std::optional<ConnectorId> connector_id{};
-        std::optional<std::string /* UNRESOLVED: map<string, string> */> headers{};
+        std::optional<std::map<std::string, std::string>> headers{};
         std::optional<RequireApproval> require_approval{};
         std::optional<std::string> server_description{};
         std::optional<std::string> server_url{};
@@ -2491,17 +2508,19 @@ struct Response {
         enum class Action { GENERATE, EDIT, AUTO };
         enum class Background { TRANSPARENT, OPAQUE, AUTO };
         enum class InputFidelity { HIGH, LOW };
-        enum class Model { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
         enum class Moderation { AUTO, LOW };
         enum class OutputFormat { PNG, WEBP, JPEG };
         enum class Quality { LOW, MEDIUM, HIGH, AUTO };
         enum class Size { V_1024X1024, V_1024X1536, V_1536X1024, AUTO };
 
+        enum class ModelValues { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
+        using Model = std::variant<ModelValues, std::string>;
+
         std::optional<TypeKind> type{};
         std::optional<Action> action{};
         std::optional<Background> background{};
         std::optional<InputFidelity> input_fidelity{};
-        std::optional<jai::llm::json::Object> input_image_mask{};
+        std::optional<ImageGeneration_input_image_mask> input_image_mask{};
         std::optional<Model> model{};
         std::optional<Moderation> moderation{};
         std::optional<double> output_compression{};
@@ -2578,7 +2597,7 @@ struct Response {
             std::optional<std::vector<std::string>> file_ids{};
             std::optional<MemoryLimit> memory_limit{};
             std::optional<NetworkPolicy> network_policy{};
-            std::optional<Skills> skills{};
+            std::optional<std::vector<Skills>> skills{};
         };
 
         struct LocalEnvironment {
@@ -2654,7 +2673,7 @@ struct Response {
 
         std::optional<Type> type{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<jai::llm::json::Object> user_location{};
+        std::optional<WebSearchPreviewTool_user_location> user_location{};
     };
 
     struct ApplyPatchTool {
@@ -2696,11 +2715,10 @@ struct Response {
             std::optional<std::string> filename{};
         };
 
-        enum class VariablesKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using Variables = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
+        using VariablesValue = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
 
         std::optional<std::string> id{};
-        std::optional<Variables> variables{};
+        std::optional<std::map<std::string, VariablesValue>> variables{};
         std::optional<std::string> version{};
     };
 
@@ -2725,7 +2743,7 @@ struct Response {
             struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
 
             std::optional<std::string> name{};
-            std::optional<jai::llm::json::Object> schema{};
+            std::optional<std::map<std::string, jai::llm::json::Object>> schema{};
             std::optional<TypeKind> type{};
             std::optional<std::string> description{};
             std::optional<bool> strict{};
@@ -2756,36 +2774,39 @@ struct Response {
         };
 
         std::optional<double> input_tokens{};
-        std::optional<jai::llm::json::Object> input_tokens_details{};
+        std::optional<ResponseUsage_input_tokens_details> input_tokens_details{};
         std::optional<double> output_tokens{};
-        std::optional<jai::llm::json::Object> output_tokens_details{};
+        std::optional<ResponseUsage_output_tokens_details> output_tokens_details{};
         std::optional<double> total_tokens{};
     };
 
     struct ObjectKind : Kind { static constexpr std::string_view value = "response"; };
 
     enum class PromptCacheRetention { IN_MEMORY, V_24H };
-    enum class ServiceTier { AUTO, DEFAULT, FLEX };
+    enum class ServiceTier { AUTO, DEFAULT, FLEX, SCALE, PRIORITY };
     enum class Status { COMPLETED, FAILED, IN_PROGRESS, CANCELLED, QUEUED, INCOMPLETE };
     enum class Truncation { AUTO, DISABLED };
 
-    enum class ResponseInputItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, REASONING, RESPONSE_COMPACTION_ITEM_PARAM, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE, RESPONSE_COMPACTION_ITEM, RESPONSE_FUNCTION_SHELL_TOOL_CALL, RESPONSE_FUNCTION_SHELL_TOOL_CALL_OUTPUT, RESPONSE_APPLY_PATCH_TOOL_CALL, RESPONSE_APPLY_PATCH_TOOL_CALL_OUTPUT, ALLOWED_TOOLS, TOOL_CHOICE_FUNCTION, TOOL_CHOICE_MCP, TOOL_CHOICE_CUSTOM, TOOL_CHOICE_APPLY_PATCH, TOOL_CHOICE_SHELL, FUNCTION_TOOL, FILE_SEARCH, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, FUNCTION_SHELL_TOOL, CUSTOM_TOOL, APPLY_PATCH_TOOL };
-    using ResponseInputItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, ResponseFileSearchToolCall, ResponseComputerToolCall, ComputerCallOutput, ResponseFunctionWebSearch, ResponseFunctionToolCall, FunctionCallOutput, ResponseReasoningItem, ResponseCompactionItemParam, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, ResponseCustomToolCallOutput, ResponseCustomToolCall, ItemReference, ResponseCompactionItem, ResponseFunctionShellToolCall, ResponseFunctionShellToolCallOutput, ResponseApplyPatchToolCall, ResponseApplyPatchToolCallOutput, ToolChoiceAllowed, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell, FunctionTool, FileSearchTool, ComputerTool, Mcp, CodeInterpreter, ImageGeneration, LocalShell, FunctionShellTool, CustomTool, ApplyPatchTool>;
-    using Instructions = std::variant<std::string, std::vector<ResponseInputItem>>;
+    enum class InstructionsItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE };
+    using InstructionsItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, ResponseFileSearchToolCall, ResponseComputerToolCall, ComputerCallOutput, ResponseFunctionWebSearch, ResponseFunctionToolCall, FunctionCallOutput, ResponseReasoningItem, ResponseCompactionItemParam, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, ResponseCustomToolCallOutput, ResponseCustomToolCall, ItemReference>;
+    using Instructions = std::variant<std::string, std::vector<InstructionsItem>>;
+    enum class ResponsesModelValues { GPT_5_2, GPT_5_2_2025_12_11, GPT_5_2_CHAT_LATEST, GPT_5_2_PRO, GPT_5_2_PRO_2025_12_11, GPT_5_1, GPT_5_1_2025_11_13, GPT_5_1_CODEX, GPT_5_1_MINI, GPT_5_1_CHAT_LATEST, GPT_5, GPT_5_MINI, GPT_5_NANO, GPT_5_2025_08_07, GPT_5_MINI_2025_08_07, GPT_5_NANO_2025_08_07, GPT_5_CHAT_LATEST, GPT_4_1, GPT_4_1_MINI, GPT_4_1_NANO, GPT_4_1_2025_04_14, GPT_4_1_MINI_2025_04_14, GPT_4_1_NANO_2025_04_14, O4_MINI, O4_MINI_2025_04_16, O3, O3_2025_04_16, O3_MINI, O3_MINI_2025_01_31, O1, O1_2024_12_17, O1_PREVIEW, O1_PREVIEW_2024_09_12, O1_MINI, O1_MINI_2024_09_12, GPT_4O, GPT_4O_2024_11_20, GPT_4O_2024_08_06, GPT_4O_2024_05_13, GPT_4O_AUDIO_PREVIEW, GPT_4O_AUDIO_PREVIEW_2024_10_01, GPT_4O_AUDIO_PREVIEW_2024_12_17, GPT_4O_AUDIO_PREVIEW_2025_06_03, GPT_4O_MINI_AUDIO_PREVIEW, GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17, GPT_4O_SEARCH_PREVIEW, GPT_4O_MINI_SEARCH_PREVIEW, GPT_4O_SEARCH_PREVIEW_2025_03_11, GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11, CHATGPT_4O_LATEST, CODEX_MINI_LATEST, GPT_4O_MINI, GPT_4O_MINI_2024_07_18, GPT_4_TURBO, GPT_4_TURBO_2024_04_09, GPT_4_0125_PREVIEW, GPT_4_TURBO_PREVIEW, GPT_4_1106_PREVIEW, GPT_4_VISION_PREVIEW, GPT_4, GPT_4_0314, GPT_4_0613, GPT_4_32K, GPT_4_32K_0314, GPT_4_32K_0613, GPT_3_5_TURBO, GPT_3_5_TURBO_16K, GPT_3_5_TURBO_0301, GPT_3_5_TURBO_0613, GPT_3_5_TURBO_1106, GPT_3_5_TURBO_0125, GPT_3_5_TURBO_16K_0613, O1_PRO, O1_PRO_2025_03_19, O3_PRO, O3_PRO_2025_06_10, O3_DEEP_RESEARCH, O3_DEEP_RESEARCH_2025_06_26, O4_MINI_DEEP_RESEARCH, O4_MINI_DEEP_RESEARCH_2025_06_26, COMPUTER_USE_PREVIEW, COMPUTER_USE_PREVIEW_2025_03_11, GPT_5_CODEX, GPT_5_PRO, GPT_5_PRO_2025_10_06, GPT_5_1_CODEX_MAX };
+    using ResponsesModel = std::variant<std::string, ResponsesModelValues>;
     enum class ResponseOutputItemKind { MESSAGE, FILE_SEARCH_CALL, FUNCTION_CALL, WEB_SEARCH_CALL, COMPUTER_CALL, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_CALL, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, CUSTOM_TOOL_CALL };
     using ResponseOutputItem = std::variant<ResponseOutputMessage, ResponseFileSearchToolCall, ResponseFunctionToolCall, ResponseFunctionWebSearch, ResponseComputerToolCall, ResponseReasoningItem, ResponseCompactionItem, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, ResponseFunctionShellToolCall, ResponseFunctionShellToolCallOutput, ResponseApplyPatchToolCall, ResponseApplyPatchToolCallOutput, McpCall, McpListTools, McpApprovalRequest, ResponseCustomToolCall>;
+    enum class ToolChoiceValues { NONE, AUTO, REQUIRED };
     enum class ToolChoiceKind { ALLOWED_TOOLS, FUNCTION, MCP, CUSTOM, APPLY_PATCH, SHELL };
-    using ToolChoice = std::variant<ToolChoiceAllowed, ToolChoiceTypes, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell>;
+    using ToolChoice = std::variant<ToolChoiceValues, ToolChoiceAllowed, ToolChoiceTypes, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell>;
     enum class ToolKind { FUNCTION, FILE_SEARCH, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, APPLY_PATCH };
     using Tool = std::variant<FunctionTool, FileSearchTool, ComputerTool, WebSearchTool, Mcp, CodeInterpreter, ImageGeneration, LocalShell, FunctionShellTool, CustomTool, WebSearchPreviewTool, ApplyPatchTool>;
 
     std::optional<std::string> id{};
     std::optional<double> created_at{};
     std::optional<ResponseError> error{};
-    std::optional<jai::llm::json::Object> incomplete_details{};
+    std::optional<Response_incomplete_details> incomplete_details{};
     std::optional<Instructions> instructions{};
-    std::optional<std::string /* UNRESOLVED: Metadata */> metadata{};
-    std::optional<std::string /* UNRESOLVED: ResponsesModel */> model{};
+    std::optional<std::map<std::string, std::string>> metadata{};
+    std::optional<ResponsesModel> model{};
     std::optional<ObjectKind> object{};
     std::optional<std::vector<ResponseOutputItem>> output{};
     std::optional<bool> parallel_tool_calls{};
@@ -2795,7 +2816,7 @@ struct Response {
     std::optional<double> top_p{};
     std::optional<bool> background{};
     std::optional<double> completed_at{};
-    std::optional<jai::llm::json::Object> conversation{};
+    std::optional<Response_conversation> conversation{};
     std::optional<double> max_output_tokens{};
     std::optional<double> max_tool_calls{};
     std::optional<std::string> output_text{};

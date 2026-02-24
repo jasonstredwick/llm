@@ -222,6 +222,153 @@ try {
 The `to_string()` overloads format exception chains with file/line/function information, using
 path normalization to show only project-relative paths.
 
+## Initialization
+
+Every variable must be initialized at the point of declaration. No exceptions.
+
+For types with a natural default, always initialize explicitly with `{}` or `= value`:
+```cpp
+std::optional<double> temperature{};
+std::vector<Part> parts{};
+int64_t count = 0;
+```
+
+This applies even to types where the compiler would zero-initialize or call a default
+constructor. Write `std::vector<T> v{};` not `std::vector<T> v;`. The `{}` makes the
+intent unambiguous and prevents accidental omission on types where it matters.
+
+For types that do not support default construction, or where the value depends on branching
+logic, use one of these patterns:
+
+**Ternary** — when the choice is binary and expressions are short:
+```cpp
+auto effort = condition ? Effort::HIGH : Effort::LOW;
+```
+
+**Immediately invoked lambda** — when the logic involves switches, multiple branches, or
+differentiation guards:
+```cpp
+auto effort = [&]() -> Effort {
+    switch (input) {
+        case A: return Effort::LOW;
+        case B: return Effort::HIGH;
+        default: throw AnnotatedException{"..."};
+    }
+}();
+```
+
+The IIFE pattern is preferred over declare-then-assign because it eliminates the window where
+a variable exists in an indeterminate state, and it pairs naturally with `auto` and `const`.
+
+## Language Standard
+
+Target C++26 where compiler support exists, C++23 as the primary fallback, C++20 as the floor.
+When a feature is not available on a target compiler, use feature-test macros (e.g.,
+`__cpp_lib_ranges`, `__cpp_lib_spanstream`) to select between implementations. Never
+`#ifdef` on compiler identity — test for the feature, not the vendor.
+
+## Loops and Algorithms
+
+Prefer `std::ranges` and `std::views` over raw loops. A `for` loop is acceptable only when
+ranges cannot express the operation (e.g., coroutine yields, complex stateful iteration with
+early exit and side effects).
+
+```cpp
+// Preferred
+auto parts = blocks | std::views::transform(f) | std::ranges::to<std::vector>();
+
+// Acceptable only when ranges cannot express the operation
+for (auto const& item : collection) { ... }
+```
+
+`std::ranges::to<Container>()` (C++23) is the standard way to materialize a view into a
+container.
+
+## Designated Initialization
+
+Prefer designated initializers when constructing protocol structs and any aggregate with more
+than two fields. Fields with default member initializers (e.g., `Required<TypeKind> type{{}}`,
+`std::optional<T> field{}`) may be omitted — the compiler applies the default. Designators
+must appear in declaration order.
+
+```cpp
+return Request{
+    .max_tokens=static_cast<double>(*tokens),
+    .messages=std::vector<MessageParam>{ msg },
+    .model=""
+    // temperature, top_k, top_p omitted — default to nullopt
+};
+```
+
+For `std::optional` fields, omission means "let the server decide." Never send an explicit
+default when omission achieves the same result.
+
+## Type Conversions
+
+Use `static_cast` when the projection's types differ from the protocol spec's literal types
+(e.g., projection uses `int64_t` for token counts, but a spec defines the field as `double`).
+Always cast at the point of construction, not earlier:
+
+```cpp
+.max_tokens=static_cast<double>(*options.max_output_tokens)
+```
+
+For `std::optional` fields that need a cast, use the ternary pattern:
+```cpp
+.max_output_tokens=options.max_output_tokens ?
+    std::optional{static_cast<double>(*options.max_output_tokens)} : std::nullopt
+```
+
+## Scoped `using` Aliases
+
+Prefer fully qualified type paths over `using` aliases. Aliases are permitted only when the
+fully qualified path is genuinely long (3+ nesting levels) **and** the alias name is specific
+enough to be unambiguous in context.
+
+At broad scope (function level, class level), aliases should use the original type name:
+```cpp
+// Good — long path, specific name, at function scope
+using EasyInputMessage = openai::Request::EasyInputMessage;
+
+// Bad — too generic at function scope, hides what the type actually is
+using Msg = openai::Request::EasyInputMessage;
+```
+
+At narrow scope (deep inside nested blocks, close to point of use), shorter or abbreviated
+names are acceptable because the limited visibility makes them unambiguous:
+```cpp
+if (options.thinking_effort) {
+    using Effort = openai::Request::Reasoning::Effort;
+    // Effort is fine here — small scope, immediately adjacent to use
+}
+```
+
+A `using` alias declared inside a scope is visible only within that scope and its descendants.
+Scope aliases as tightly as practical — if an alias is only needed inside a single block,
+declare it there.
+
+## Braces
+
+All control flow bodies must use curly braces, even single-statement bodies. No naked
+statements after `if`, `else`, `for`, `while`, `do`, `switch`, or `case`:
+
+```cpp
+// Correct
+if (condition) {
+    doSomething();
+}
+
+// Wrong — naked body
+if (condition)
+    doSomething();
+```
+
+The only exception is a `case` label followed by a single `return` on the same line inside
+an IIFE switch, where the pattern is visually unambiguous:
+```cpp
+case ThinkingEffort::LOW: return Effort::LOW;
+```
+
 ## Concepts
 
 The library defines several concepts in `interface/core/types.hpp` and `src/concepts.hpp`:

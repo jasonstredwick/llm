@@ -225,6 +225,7 @@ BEGIN_DESERIALIZE(gemini::GroundingMetadata)
     FIELD(src, groundingSupports),
     FIELD(src, retrievalMetadata),
     FIELD(src, webSearchQueries),
+    FIELD(src, imageSearchQueries),
     FIELD(src, googleMapsWidgetContextToken)
 END_DESERIALIZE
 

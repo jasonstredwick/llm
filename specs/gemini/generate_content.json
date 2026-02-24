@@ -3,10 +3,10 @@
     "provider": "gemini",
     "endpoint": "generate_content",
     "source_url": "https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta",
-    "fetched_at": "2026-02-21T18:38:19Z",
+    "fetched_at": "2026-02-24T00:05:23Z",
     "parser": "discovery",
     "discovery_version": "v1beta",
-    "discovery_revision": "20260218"
+    "discovery_revision": "20260223"
   },
   "schemas": {
     "AttributionSourceId": {
@@ -1014,6 +1014,12 @@
           "type": "array<string>",
           "required": false,
           "description": "Web search queries for the following-up web search."
+        },
+        {
+          "name": "imageSearchQueries",
+          "type": "array<string>",
+          "required": false,
+          "description": "Image search queries used for grounding."
         },
         {
           "name": "googleMapsWidgetContextToken",
@@ -2201,13 +2207,13 @@
           "name": "uri",
           "type": "string",
           "required": false,
-          "description": "URI reference of the chunk."
+          "description": "Output only. URI reference of the chunk."
         },
         {
           "name": "title",
           "type": "string",
           "required": false,
-          "description": "Title of the chunk."
+          "description": "Output only. Title of the chunk."
         }
       ],
       "description": "Chunk from the web."

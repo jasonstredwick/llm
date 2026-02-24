@@ -5,11 +5,23 @@ from pathlib import Path
 
 
 @dataclass(frozen=True)
+class UrlEntry:
+    """A single URL to fetch for a provider endpoint."""
+    name: str     # short name used for the downloaded file, e.g. "shared", "responses"
+    url: str
+
+
+@dataclass(frozen=True)
 class EndpointConfig:
-    """Configuration for a single API endpoint to track."""
+    """Configuration for a single API endpoint to track.
+
+    *urls* is an ordered list: dependencies first, main spec last.
+    The parser processes them in order, building a type registry from
+    earlier entries that the main spec can reference.
+    """
     provider: str
     endpoint: str
-    url: str
+    urls: tuple[UrlEntry, ...]
     parser: str   # parser module to use: "openai_anthropic" or "discovery"
     raw_ext: str  # file extension for the raw downloaded spec: "md" or "json"
 
@@ -28,21 +40,28 @@ ENDPOINTS = {
     "openai": EndpointConfig(
         provider="openai",
         endpoint="responses",
-        url="https://developers.openai.com/api/reference/resources/responses/methods/create/index.md",
+        urls=(
+            UrlEntry("shared", "https://developers.openai.com/api/reference/resources/$shared/index.md"),
+            UrlEntry("responses", "https://developers.openai.com/api/reference/resources/responses/methods/create/index.md"),
+        ),
         parser="openai_anthropic",
         raw_ext="md",
     ),
     "anthropic": EndpointConfig(
         provider="anthropic",
         endpoint="messages",
-        url="https://platform.claude.com/docs/en/api/messages/create.md",
+        urls=(
+            UrlEntry("messages", "https://platform.claude.com/docs/en/api/messages/create.md"),
+        ),
         parser="openai_anthropic",
         raw_ext="md",
     ),
     "gemini": EndpointConfig(
         provider="gemini",
         endpoint="generate_content",
-        url="https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta",
+        urls=(
+            UrlEntry("generate_content", "https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta"),
+        ),
         parser="discovery",
         raw_ext="json",
     ),
@@ -62,9 +81,15 @@ def scratch_dir(provider: str) -> Path:
     return d
 
 def raw_spec_path(provider: str) -> Path:
-    """Path to the raw downloaded spec (scratch working copy)."""
+    """Path to the raw downloaded main spec (the last URL entry)."""
     cfg = ENDPOINTS[provider]
-    return scratch_dir(provider) / f"{cfg.endpoint}.raw.{cfg.raw_ext}"
+    return raw_url_path(provider, cfg.urls[-1].name)
+
+
+def raw_url_path(provider: str, name: str) -> Path:
+    """Path to a specific raw downloaded file by URL entry name."""
+    cfg = ENDPOINTS[provider]
+    return scratch_dir(provider) / f"{name}.raw.{cfg.raw_ext}"
 
 def extracted_json_path(provider: str) -> Path:
     """Path to the extracted intermediate JSON (scratch working copy)."""
@@ -77,9 +102,18 @@ def baseline_json_path(provider: str) -> Path:
     return spec_dir(provider) / f"{cfg.endpoint}.json"
 
 def baseline_spec_path(provider: str) -> Path:
-    """Path to the approved baseline spec snapshot (specs/<provider>/<endpoint>.raw.<ext>)."""
+    """Path to the approved baseline spec snapshot (specs/<provider>/<endpoint>.raw.<ext>).
+
+    The baseline is always the main spec (last URL entry).
+    """
     cfg = ENDPOINTS[provider]
     return spec_dir(provider) / f"{cfg.endpoint}.raw.{cfg.raw_ext}"
+
+
+def baseline_url_path(provider: str, name: str) -> Path:
+    """Path to a specific approved baseline file by URL entry name."""
+    cfg = ENDPOINTS[provider]
+    return spec_dir(provider) / f"{name}.raw.{cfg.raw_ext}"
 
 def diff_json_path(provider: str) -> Path:
     """Path to the diff output JSON (scratch)."""

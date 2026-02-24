@@ -9,11 +9,11 @@
 #include "../core/error.hpp"
 #include "../core/types.hpp"
 #include "../protocols/anthropic/messages.hpp"
-#include "../protocols/anthropic/strings.hpp"
+#include "../protocols/anthropic/messages_strings.hpp"
 #include "../protocols/gemini/generate_content.hpp"
-#include "../protocols/gemini/strings.hpp"
+#include "../protocols/gemini/generate_content_strings.hpp"
 #include "../protocols/openai/responses.hpp"
-#include "../protocols/openai/strings.hpp"
+#include "../protocols/openai/responses_strings.hpp"
 
 
 namespace jai::llm::projection::text {

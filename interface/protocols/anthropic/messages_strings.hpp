@@ -2004,6 +2004,10 @@ from_string_view<anthropic::Request::MessageParam::ServerToolUseBlockParam::Name
     if (sv == "web_search") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::WEB_SEARCH;
     if (sv == "web_fetch") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::WEB_FETCH;
     if (sv == "code_execution") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::CODE_EXECUTION;
+    if (sv == "bash_code_execution") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::BASH_CODE_EXECUTION;
+    if (sv == "text_editor_code_execution") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::TEXT_EDITOR_CODE_EXECUTION;
+    if (sv == "tool_search_tool_regex") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::TOOL_SEARCH_TOOL_REGEX;
+    if (sv == "tool_search_tool_bm25") return anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::TOOL_SEARCH_TOOL_BM25;
     return std::nullopt;
 }
 
@@ -2012,6 +2016,10 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Serv
         case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::WEB_SEARCH: return "web_search";
         case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::WEB_FETCH: return "web_fetch";
         case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::CODE_EXECUTION: return "code_execution";
+        case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::BASH_CODE_EXECUTION: return "bash_code_execution";
+        case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::TEXT_EDITOR_CODE_EXECUTION: return "text_editor_code_execution";
+        case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::TOOL_SEARCH_TOOL_REGEX: return "tool_search_tool_regex";
+        case anthropic::Request::MessageParam::ServerToolUseBlockParam::Name::TOOL_SEARCH_TOOL_BM25: return "tool_search_tool_bm25";
         default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ServerToolUseBlockParam::Name"};
     }
 }
@@ -2451,6 +2459,24 @@ constexpr std::string_view to_string_view(anthropic::Request::Tool::CacheControl
 }
 
 template <>
+constexpr std::optional<anthropic::Request::Tool::AllowedCallersItem>
+from_string_view<anthropic::Request::Tool::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::Tool::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::Tool::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::Tool::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::Tool::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::Tool::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::Tool::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::Tool::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::Tool::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::ToolBash20250124::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::ToolBash20250124::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::ToolBash20250124::CacheControlEphemeral::Ttl::V_5M;
@@ -2463,6 +2489,24 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolBash20250124::
         case anthropic::Request::ToolBash20250124::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::ToolBash20250124::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::ToolBash20250124::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::ToolBash20250124::AllowedCallersItem>
+from_string_view<anthropic::Request::ToolBash20250124::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::ToolBash20250124::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::ToolBash20250124::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::ToolBash20250124::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ToolBash20250124::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::ToolBash20250124::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::ToolBash20250124::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::ToolBash20250124::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::ToolBash20250124::AllowedCallersItem"};
     }
 }
 
@@ -2483,6 +2527,24 @@ constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool2
 }
 
 template <>
+constexpr std::optional<anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem>
+from_string_view<anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20250522::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::CodeExecutionTool20250825::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::CodeExecutionTool20250825::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::CodeExecutionTool20250825::CacheControlEphemeral::Ttl::V_5M;
@@ -2495,6 +2557,24 @@ constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool2
         case anthropic::Request::CodeExecutionTool20250825::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::CodeExecutionTool20250825::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20250825::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem>
+from_string_view<anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20250825::AllowedCallersItem"};
     }
 }
 
@@ -2515,6 +2595,24 @@ constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool2
 }
 
 template <>
+constexpr std::optional<anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem>
+from_string_view<anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20260120::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::MemoryTool20250818::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::MemoryTool20250818::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::MemoryTool20250818::CacheControlEphemeral::Ttl::V_5M;
@@ -2527,6 +2625,24 @@ constexpr std::string_view to_string_view(anthropic::Request::MemoryTool20250818
         case anthropic::Request::MemoryTool20250818::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::MemoryTool20250818::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::MemoryTool20250818::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::MemoryTool20250818::AllowedCallersItem>
+from_string_view<anthropic::Request::MemoryTool20250818::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::MemoryTool20250818::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::MemoryTool20250818::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::MemoryTool20250818::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MemoryTool20250818::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::MemoryTool20250818::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::MemoryTool20250818::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::MemoryTool20250818::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::MemoryTool20250818::AllowedCallersItem"};
     }
 }
 
@@ -2547,6 +2663,24 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor2025
 }
 
 template <>
+constexpr std::optional<anthropic::Request::ToolTextEditor20250124::AllowedCallersItem>
+from_string_view<anthropic::Request::ToolTextEditor20250124::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::ToolTextEditor20250124::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::ToolTextEditor20250124::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::ToolTextEditor20250124::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor20250124::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::ToolTextEditor20250124::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::ToolTextEditor20250124::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::ToolTextEditor20250124::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250124::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::ToolTextEditor20250429::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::ToolTextEditor20250429::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::ToolTextEditor20250429::CacheControlEphemeral::Ttl::V_5M;
@@ -2559,6 +2693,24 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor2025
         case anthropic::Request::ToolTextEditor20250429::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::ToolTextEditor20250429::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250429::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::ToolTextEditor20250429::AllowedCallersItem>
+from_string_view<anthropic::Request::ToolTextEditor20250429::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::ToolTextEditor20250429::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::ToolTextEditor20250429::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::ToolTextEditor20250429::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor20250429::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::ToolTextEditor20250429::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::ToolTextEditor20250429::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::ToolTextEditor20250429::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250429::AllowedCallersItem"};
     }
 }
 
@@ -2579,6 +2731,24 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor2025
 }
 
 template <>
+constexpr std::optional<anthropic::Request::ToolTextEditor20250728::AllowedCallersItem>
+from_string_view<anthropic::Request::ToolTextEditor20250728::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::ToolTextEditor20250728::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::ToolTextEditor20250728::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::ToolTextEditor20250728::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor20250728::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::ToolTextEditor20250728::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::ToolTextEditor20250728::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::ToolTextEditor20250728::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250728::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::WebSearchTool20250305::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::WebSearchTool20250305::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::WebSearchTool20250305::CacheControlEphemeral::Ttl::V_5M;
@@ -2591,6 +2761,24 @@ constexpr std::string_view to_string_view(anthropic::Request::WebSearchTool20250
         case anthropic::Request::WebSearchTool20250305::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::WebSearchTool20250305::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::WebSearchTool20250305::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::WebSearchTool20250305::AllowedCallersItem>
+from_string_view<anthropic::Request::WebSearchTool20250305::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::WebSearchTool20250305::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::WebSearchTool20250305::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::WebSearchTool20250305::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::WebSearchTool20250305::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::WebSearchTool20250305::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::WebSearchTool20250305::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::WebSearchTool20250305::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::WebSearchTool20250305::AllowedCallersItem"};
     }
 }
 
@@ -2611,6 +2799,24 @@ constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool202509
 }
 
 template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20250910::AllowedCallersItem>
+from_string_view<anthropic::Request::WebFetchTool20250910::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::WebFetchTool20250910::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::WebFetchTool20250910::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::WebFetchTool20250910::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool20250910::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::WebFetchTool20250910::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::WebFetchTool20250910::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::WebFetchTool20250910::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20250910::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::WebSearchTool20260209::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::WebSearchTool20260209::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::WebSearchTool20260209::CacheControlEphemeral::Ttl::V_5M;
@@ -2627,6 +2833,24 @@ constexpr std::string_view to_string_view(anthropic::Request::WebSearchTool20260
 }
 
 template <>
+constexpr std::optional<anthropic::Request::WebSearchTool20260209::AllowedCallersItem>
+from_string_view<anthropic::Request::WebSearchTool20260209::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::WebSearchTool20260209::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::WebSearchTool20260209::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::WebSearchTool20260209::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::WebSearchTool20260209::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::WebSearchTool20260209::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::WebSearchTool20260209::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::WebSearchTool20260209::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::WebSearchTool20260209::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::WebFetchTool20260209::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::WebFetchTool20260209::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::WebFetchTool20260209::CacheControlEphemeral::Ttl::V_5M;
@@ -2639,6 +2863,24 @@ constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool202602
         case anthropic::Request::WebFetchTool20260209::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::WebFetchTool20260209::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20260209::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20260209::AllowedCallersItem>
+from_string_view<anthropic::Request::WebFetchTool20260209::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::WebFetchTool20260209::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::WebFetchTool20260209::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::WebFetchTool20260209::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool20260209::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::WebFetchTool20260209::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::WebFetchTool20260209::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::WebFetchTool20260209::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20260209::AllowedCallersItem"};
     }
 }
 
@@ -2675,6 +2917,24 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolSearchToolBm25
 }
 
 template <>
+constexpr std::optional<anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem>
+from_string_view<anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::ToolSearchToolRegex20251119::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::ToolSearchToolRegex20251119::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::ToolSearchToolRegex20251119::CacheControlEphemeral::Ttl::V_5M;
@@ -2707,6 +2967,24 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolSearchToolRege
 }
 
 template <>
+constexpr std::optional<anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem>
+from_string_view<anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::ToolSearchToolRegex20251119::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::ServiceTier>
 from_string_view<anthropic::Request::ServiceTier>(std::string_view sv) {
     if (sv == "auto") return anthropic::Request::ServiceTier::AUTO;
@@ -2723,11 +3001,71 @@ constexpr std::string_view to_string_view(anthropic::Request::ServiceTier val) {
 }
 
 template <>
+constexpr std::optional<anthropic::Request::ModelValues>
+from_string_view<anthropic::Request::ModelValues>(std::string_view sv) {
+    if (sv == "claude-opus-4-6") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_6;
+    if (sv == "claude-sonnet-4-6") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_6;
+    if (sv == "claude-opus-4-5-20251101") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_5_20251101;
+    if (sv == "claude-opus-4-5") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_5;
+    if (sv == "claude-3-7-sonnet-latest") return anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_LATEST;
+    if (sv == "claude-3-7-sonnet-20250219") return anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_20250219;
+    if (sv == "claude-3-5-haiku-latest") return anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_LATEST;
+    if (sv == "claude-3-5-haiku-20241022") return anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_20241022;
+    if (sv == "claude-haiku-4-5") return anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5;
+    if (sv == "claude-haiku-4-5-20251001") return anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5_20251001;
+    if (sv == "claude-sonnet-4-20250514") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_20250514;
+    if (sv == "claude-sonnet-4-0") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_0;
+    if (sv == "claude-4-sonnet-20250514") return anthropic::Request::ModelValues::CLAUDE_4_SONNET_20250514;
+    if (sv == "claude-sonnet-4-5") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_5;
+    if (sv == "claude-sonnet-4-5-20250929") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_5_20250929;
+    if (sv == "claude-opus-4-0") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_0;
+    if (sv == "claude-opus-4-20250514") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_20250514;
+    if (sv == "claude-4-opus-20250514") return anthropic::Request::ModelValues::CLAUDE_4_OPUS_20250514;
+    if (sv == "claude-opus-4-1-20250805") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_1_20250805;
+    if (sv == "claude-3-opus-latest") return anthropic::Request::ModelValues::CLAUDE_3_OPUS_LATEST;
+    if (sv == "claude-3-opus-20240229") return anthropic::Request::ModelValues::CLAUDE_3_OPUS_20240229;
+    if (sv == "claude-3-haiku-20240307") return anthropic::Request::ModelValues::CLAUDE_3_HAIKU_20240307;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ModelValues val) {
+    switch (val) {
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_6: return "claude-opus-4-6";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_6: return "claude-sonnet-4-6";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_5_20251101: return "claude-opus-4-5-20251101";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_5: return "claude-opus-4-5";
+        case anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_LATEST: return "claude-3-7-sonnet-latest";
+        case anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_20250219: return "claude-3-7-sonnet-20250219";
+        case anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_LATEST: return "claude-3-5-haiku-latest";
+        case anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_20241022: return "claude-3-5-haiku-20241022";
+        case anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5: return "claude-haiku-4-5";
+        case anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5_20251001: return "claude-haiku-4-5-20251001";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_20250514: return "claude-sonnet-4-20250514";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_0: return "claude-sonnet-4-0";
+        case anthropic::Request::ModelValues::CLAUDE_4_SONNET_20250514: return "claude-4-sonnet-20250514";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_5: return "claude-sonnet-4-5";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_5_20250929: return "claude-sonnet-4-5-20250929";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_0: return "claude-opus-4-0";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_20250514: return "claude-opus-4-20250514";
+        case anthropic::Request::ModelValues::CLAUDE_4_OPUS_20250514: return "claude-4-opus-20250514";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_1_20250805: return "claude-opus-4-1-20250805";
+        case anthropic::Request::ModelValues::CLAUDE_3_OPUS_LATEST: return "claude-3-opus-latest";
+        case anthropic::Request::ModelValues::CLAUDE_3_OPUS_20240229: return "claude-3-opus-20240229";
+        case anthropic::Request::ModelValues::CLAUDE_3_HAIKU_20240307: return "claude-3-haiku-20240307";
+        default: throw AnnotatedException{"invalid anthropic::Request::ModelValues"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Message::ServerToolUseBlock::Name>
 from_string_view<anthropic::Message::ServerToolUseBlock::Name>(std::string_view sv) {
     if (sv == "web_search") return anthropic::Message::ServerToolUseBlock::Name::WEB_SEARCH;
     if (sv == "web_fetch") return anthropic::Message::ServerToolUseBlock::Name::WEB_FETCH;
     if (sv == "code_execution") return anthropic::Message::ServerToolUseBlock::Name::CODE_EXECUTION;
+    if (sv == "bash_code_execution") return anthropic::Message::ServerToolUseBlock::Name::BASH_CODE_EXECUTION;
+    if (sv == "text_editor_code_execution") return anthropic::Message::ServerToolUseBlock::Name::TEXT_EDITOR_CODE_EXECUTION;
+    if (sv == "tool_search_tool_regex") return anthropic::Message::ServerToolUseBlock::Name::TOOL_SEARCH_TOOL_REGEX;
+    if (sv == "tool_search_tool_bm25") return anthropic::Message::ServerToolUseBlock::Name::TOOL_SEARCH_TOOL_BM25;
     return std::nullopt;
 }
 
@@ -2736,6 +3074,10 @@ constexpr std::string_view to_string_view(anthropic::Message::ServerToolUseBlock
         case anthropic::Message::ServerToolUseBlock::Name::WEB_SEARCH: return "web_search";
         case anthropic::Message::ServerToolUseBlock::Name::WEB_FETCH: return "web_fetch";
         case anthropic::Message::ServerToolUseBlock::Name::CODE_EXECUTION: return "code_execution";
+        case anthropic::Message::ServerToolUseBlock::Name::BASH_CODE_EXECUTION: return "bash_code_execution";
+        case anthropic::Message::ServerToolUseBlock::Name::TEXT_EDITOR_CODE_EXECUTION: return "text_editor_code_execution";
+        case anthropic::Message::ServerToolUseBlock::Name::TOOL_SEARCH_TOOL_REGEX: return "tool_search_tool_regex";
+        case anthropic::Message::ServerToolUseBlock::Name::TOOL_SEARCH_TOOL_BM25: return "tool_search_tool_bm25";
         default: throw AnnotatedException{"invalid anthropic::Message::ServerToolUseBlock::Name"};
     }
 }
@@ -2936,6 +3278,62 @@ constexpr std::string_view to_string_view(anthropic::Message::StopReason val) {
     }
 }
 
+template <>
+constexpr std::optional<anthropic::Message::ModelValues>
+from_string_view<anthropic::Message::ModelValues>(std::string_view sv) {
+    if (sv == "claude-opus-4-6") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_6;
+    if (sv == "claude-sonnet-4-6") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_6;
+    if (sv == "claude-opus-4-5-20251101") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_5_20251101;
+    if (sv == "claude-opus-4-5") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_5;
+    if (sv == "claude-3-7-sonnet-latest") return anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_LATEST;
+    if (sv == "claude-3-7-sonnet-20250219") return anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_20250219;
+    if (sv == "claude-3-5-haiku-latest") return anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_LATEST;
+    if (sv == "claude-3-5-haiku-20241022") return anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_20241022;
+    if (sv == "claude-haiku-4-5") return anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5;
+    if (sv == "claude-haiku-4-5-20251001") return anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5_20251001;
+    if (sv == "claude-sonnet-4-20250514") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_20250514;
+    if (sv == "claude-sonnet-4-0") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_0;
+    if (sv == "claude-4-sonnet-20250514") return anthropic::Message::ModelValues::CLAUDE_4_SONNET_20250514;
+    if (sv == "claude-sonnet-4-5") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_5;
+    if (sv == "claude-sonnet-4-5-20250929") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_5_20250929;
+    if (sv == "claude-opus-4-0") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_0;
+    if (sv == "claude-opus-4-20250514") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_20250514;
+    if (sv == "claude-4-opus-20250514") return anthropic::Message::ModelValues::CLAUDE_4_OPUS_20250514;
+    if (sv == "claude-opus-4-1-20250805") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_1_20250805;
+    if (sv == "claude-3-opus-latest") return anthropic::Message::ModelValues::CLAUDE_3_OPUS_LATEST;
+    if (sv == "claude-3-opus-20240229") return anthropic::Message::ModelValues::CLAUDE_3_OPUS_20240229;
+    if (sv == "claude-3-haiku-20240307") return anthropic::Message::ModelValues::CLAUDE_3_HAIKU_20240307;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Message::ModelValues val) {
+    switch (val) {
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_6: return "claude-opus-4-6";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_6: return "claude-sonnet-4-6";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_5_20251101: return "claude-opus-4-5-20251101";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_5: return "claude-opus-4-5";
+        case anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_LATEST: return "claude-3-7-sonnet-latest";
+        case anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_20250219: return "claude-3-7-sonnet-20250219";
+        case anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_LATEST: return "claude-3-5-haiku-latest";
+        case anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_20241022: return "claude-3-5-haiku-20241022";
+        case anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5: return "claude-haiku-4-5";
+        case anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5_20251001: return "claude-haiku-4-5-20251001";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_20250514: return "claude-sonnet-4-20250514";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_0: return "claude-sonnet-4-0";
+        case anthropic::Message::ModelValues::CLAUDE_4_SONNET_20250514: return "claude-4-sonnet-20250514";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_5: return "claude-sonnet-4-5";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_5_20250929: return "claude-sonnet-4-5-20250929";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_0: return "claude-opus-4-0";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_20250514: return "claude-opus-4-20250514";
+        case anthropic::Message::ModelValues::CLAUDE_4_OPUS_20250514: return "claude-4-opus-20250514";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_1_20250805: return "claude-opus-4-1-20250805";
+        case anthropic::Message::ModelValues::CLAUDE_3_OPUS_LATEST: return "claude-3-opus-latest";
+        case anthropic::Message::ModelValues::CLAUDE_3_OPUS_20240229: return "claude-3-opus-20240229";
+        case anthropic::Message::ModelValues::CLAUDE_3_HAIKU_20240307: return "claude-3-haiku-20240307";
+        default: throw AnnotatedException{"invalid anthropic::Message::ModelValues"};
+    }
+}
+
 // ── from_string_view / to_string_view: Dispatch Enums ─
 template <>
 constexpr std::optional<anthropic::Request::MessageParam::TextBlockParam::TextCitationParamKind>
@@ -3014,18 +3412,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Docu
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind>
-from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind>(std::string_view sv) {
-    if (sv == "text") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::TEXT;
-    if (sv == "image") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::IMAGE;
+constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind>
+from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind>(std::string_view sv) {
+    if (sv == "text") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::TEXT;
+    if (sv == "image") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::IMAGE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind val) {
     switch (val) {
-        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::TEXT: return "text";
-        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::IMAGE: return "image";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind"};
+        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::TEXT: return "text";
+        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::IMAGE: return "image";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ContentItemKind"};
     }
 }
 
@@ -3188,18 +3586,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind>(std::string_view sv) {
-    if (sv == "text") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::TEXT;
-    if (sv == "image") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::IMAGE;
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind>(std::string_view sv) {
+    if (sv == "text") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::TEXT;
+    if (sv == "image") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::IMAGE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind val) {
     switch (val) {
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::TEXT: return "text";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::IMAGE: return "image";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind"};
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::TEXT: return "text";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::IMAGE: return "image";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind"};
     }
 }
 
@@ -3224,24 +3622,24 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind>(std::string_view sv) {
-    if (sv == "text") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::TEXT;
-    if (sv == "image") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::IMAGE;
-    if (sv == "search_result") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::SEARCH_RESULT;
-    if (sv == "document") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::DOCUMENT;
-    if (sv == "tool_reference") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::TOOL_REFERENCE;
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind>(std::string_view sv) {
+    if (sv == "text") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::TEXT;
+    if (sv == "image") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::IMAGE;
+    if (sv == "search_result") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::SEARCH_RESULT;
+    if (sv == "document") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::DOCUMENT;
+    if (sv == "tool_reference") return anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::TOOL_REFERENCE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind val) {
     switch (val) {
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::TEXT: return "text";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::IMAGE: return "image";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::SEARCH_RESULT: return "search_result";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::DOCUMENT: return "document";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind::TOOL_REFERENCE: return "tool_reference";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::ContentKind"};
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::TEXT: return "text";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::IMAGE: return "image";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::SEARCH_RESULT: return "search_result";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::DOCUMENT: return "document";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind::TOOL_REFERENCE: return "tool_reference";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::ContentItemKind"};
     }
 }
 
@@ -3334,18 +3732,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebF
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind>(std::string_view sv) {
-    if (sv == "text") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::TEXT;
-    if (sv == "image") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::IMAGE;
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind>(std::string_view sv) {
+    if (sv == "text") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::TEXT;
+    if (sv == "image") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::IMAGE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind val) {
     switch (val) {
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::TEXT: return "text";
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind::IMAGE: return "image";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentBlockSourceContentKind"};
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::TEXT: return "text";
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind::IMAGE: return "image";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ContentItemKind"};
     }
 }
 
@@ -3474,46 +3872,46 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::ContentBlockParamKind>
-from_string_view<anthropic::Request::MessageParam::ContentBlockParamKind>(std::string_view sv) {
-    if (sv == "text") return anthropic::Request::MessageParam::ContentBlockParamKind::TEXT;
-    if (sv == "image") return anthropic::Request::MessageParam::ContentBlockParamKind::IMAGE;
-    if (sv == "document") return anthropic::Request::MessageParam::ContentBlockParamKind::DOCUMENT;
-    if (sv == "search_result") return anthropic::Request::MessageParam::ContentBlockParamKind::SEARCH_RESULT;
-    if (sv == "thinking") return anthropic::Request::MessageParam::ContentBlockParamKind::THINKING;
-    if (sv == "redacted_thinking") return anthropic::Request::MessageParam::ContentBlockParamKind::REDACTED_THINKING;
-    if (sv == "tool_use") return anthropic::Request::MessageParam::ContentBlockParamKind::TOOL_USE;
-    if (sv == "tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::TOOL_RESULT;
-    if (sv == "server_tool_use") return anthropic::Request::MessageParam::ContentBlockParamKind::SERVER_TOOL_USE;
-    if (sv == "web_search_tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::WEB_SEARCH_TOOL_RESULT;
-    if (sv == "web_fetch_tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::WEB_FETCH_TOOL_RESULT;
-    if (sv == "code_execution_tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::CODE_EXECUTION_TOOL_RESULT;
-    if (sv == "bash_code_execution_tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::BASH_CODE_EXECUTION_TOOL_RESULT;
-    if (sv == "text_editor_code_execution_tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT;
-    if (sv == "tool_search_tool_result") return anthropic::Request::MessageParam::ContentBlockParamKind::TOOL_SEARCH_TOOL_RESULT;
-    if (sv == "container_upload") return anthropic::Request::MessageParam::ContentBlockParamKind::CONTAINER_UPLOAD;
+constexpr std::optional<anthropic::Request::MessageParam::ContentItemKind>
+from_string_view<anthropic::Request::MessageParam::ContentItemKind>(std::string_view sv) {
+    if (sv == "text") return anthropic::Request::MessageParam::ContentItemKind::TEXT;
+    if (sv == "image") return anthropic::Request::MessageParam::ContentItemKind::IMAGE;
+    if (sv == "document") return anthropic::Request::MessageParam::ContentItemKind::DOCUMENT;
+    if (sv == "search_result") return anthropic::Request::MessageParam::ContentItemKind::SEARCH_RESULT;
+    if (sv == "thinking") return anthropic::Request::MessageParam::ContentItemKind::THINKING;
+    if (sv == "redacted_thinking") return anthropic::Request::MessageParam::ContentItemKind::REDACTED_THINKING;
+    if (sv == "tool_use") return anthropic::Request::MessageParam::ContentItemKind::TOOL_USE;
+    if (sv == "tool_result") return anthropic::Request::MessageParam::ContentItemKind::TOOL_RESULT;
+    if (sv == "server_tool_use") return anthropic::Request::MessageParam::ContentItemKind::SERVER_TOOL_USE;
+    if (sv == "web_search_tool_result") return anthropic::Request::MessageParam::ContentItemKind::WEB_SEARCH_TOOL_RESULT;
+    if (sv == "web_fetch_tool_result") return anthropic::Request::MessageParam::ContentItemKind::WEB_FETCH_TOOL_RESULT;
+    if (sv == "code_execution_tool_result") return anthropic::Request::MessageParam::ContentItemKind::CODE_EXECUTION_TOOL_RESULT;
+    if (sv == "bash_code_execution_tool_result") return anthropic::Request::MessageParam::ContentItemKind::BASH_CODE_EXECUTION_TOOL_RESULT;
+    if (sv == "text_editor_code_execution_tool_result") return anthropic::Request::MessageParam::ContentItemKind::TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT;
+    if (sv == "tool_search_tool_result") return anthropic::Request::MessageParam::ContentItemKind::TOOL_SEARCH_TOOL_RESULT;
+    if (sv == "container_upload") return anthropic::Request::MessageParam::ContentItemKind::CONTAINER_UPLOAD;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ContentBlockParamKind val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ContentItemKind val) {
     switch (val) {
-        case anthropic::Request::MessageParam::ContentBlockParamKind::TEXT: return "text";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::IMAGE: return "image";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::DOCUMENT: return "document";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::SEARCH_RESULT: return "search_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::THINKING: return "thinking";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::REDACTED_THINKING: return "redacted_thinking";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::TOOL_USE: return "tool_use";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::TOOL_RESULT: return "tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::SERVER_TOOL_USE: return "server_tool_use";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::WEB_SEARCH_TOOL_RESULT: return "web_search_tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::WEB_FETCH_TOOL_RESULT: return "web_fetch_tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::CODE_EXECUTION_TOOL_RESULT: return "code_execution_tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::BASH_CODE_EXECUTION_TOOL_RESULT: return "bash_code_execution_tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT: return "text_editor_code_execution_tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::TOOL_SEARCH_TOOL_RESULT: return "tool_search_tool_result";
-        case anthropic::Request::MessageParam::ContentBlockParamKind::CONTAINER_UPLOAD: return "container_upload";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ContentBlockParamKind"};
+        case anthropic::Request::MessageParam::ContentItemKind::TEXT: return "text";
+        case anthropic::Request::MessageParam::ContentItemKind::IMAGE: return "image";
+        case anthropic::Request::MessageParam::ContentItemKind::DOCUMENT: return "document";
+        case anthropic::Request::MessageParam::ContentItemKind::SEARCH_RESULT: return "search_result";
+        case anthropic::Request::MessageParam::ContentItemKind::THINKING: return "thinking";
+        case anthropic::Request::MessageParam::ContentItemKind::REDACTED_THINKING: return "redacted_thinking";
+        case anthropic::Request::MessageParam::ContentItemKind::TOOL_USE: return "tool_use";
+        case anthropic::Request::MessageParam::ContentItemKind::TOOL_RESULT: return "tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::SERVER_TOOL_USE: return "server_tool_use";
+        case anthropic::Request::MessageParam::ContentItemKind::WEB_SEARCH_TOOL_RESULT: return "web_search_tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::WEB_FETCH_TOOL_RESULT: return "web_fetch_tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::CODE_EXECUTION_TOOL_RESULT: return "code_execution_tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::BASH_CODE_EXECUTION_TOOL_RESULT: return "bash_code_execution_tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT: return "text_editor_code_execution_tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::TOOL_SEARCH_TOOL_RESULT: return "tool_search_tool_result";
+        case anthropic::Request::MessageParam::ContentItemKind::CONTAINER_UPLOAD: return "container_upload";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ContentItemKind"};
     }
 }
 
@@ -3536,276 +3934,6 @@ constexpr std::string_view to_string_view(anthropic::Request::TextBlockParam::Te
         case anthropic::Request::TextBlockParam::TextCitationParamKind::WEB_SEARCH_RESULT_LOCATION: return "web_search_result_location";
         case anthropic::Request::TextBlockParam::TextCitationParamKind::SEARCH_RESULT_LOCATION: return "search_result_location";
         default: throw AnnotatedException{"invalid anthropic::Request::TextBlockParam::TextCitationParamKind"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::Tool::AllowedCallers>
-from_string_view<anthropic::Request::Tool::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::Tool::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::Tool::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::Tool::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::Tool::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::Tool::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::Tool::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::Tool::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::Tool::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::ToolBash20250124::AllowedCallers>
-from_string_view<anthropic::Request::ToolBash20250124::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::ToolBash20250124::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::ToolBash20250124::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::ToolBash20250124::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::ToolBash20250124::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::ToolBash20250124::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::ToolBash20250124::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::ToolBash20250124::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::ToolBash20250124::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::CodeExecutionTool20250522::AllowedCallers>
-from_string_view<anthropic::Request::CodeExecutionTool20250522::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::CodeExecutionTool20250522::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::CodeExecutionTool20250522::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::CodeExecutionTool20250522::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool20250522::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::CodeExecutionTool20250522::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::CodeExecutionTool20250522::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::CodeExecutionTool20250522::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20250522::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::CodeExecutionTool20250825::AllowedCallers>
-from_string_view<anthropic::Request::CodeExecutionTool20250825::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::CodeExecutionTool20250825::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::CodeExecutionTool20250825::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::CodeExecutionTool20250825::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool20250825::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::CodeExecutionTool20250825::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::CodeExecutionTool20250825::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::CodeExecutionTool20250825::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20250825::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::CodeExecutionTool20260120::AllowedCallers>
-from_string_view<anthropic::Request::CodeExecutionTool20260120::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::CodeExecutionTool20260120::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::CodeExecutionTool20260120::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::CodeExecutionTool20260120::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::CodeExecutionTool20260120::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::CodeExecutionTool20260120::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::CodeExecutionTool20260120::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::CodeExecutionTool20260120::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::CodeExecutionTool20260120::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::MemoryTool20250818::AllowedCallers>
-from_string_view<anthropic::Request::MemoryTool20250818::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::MemoryTool20250818::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::MemoryTool20250818::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::MemoryTool20250818::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MemoryTool20250818::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::MemoryTool20250818::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::MemoryTool20250818::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::MemoryTool20250818::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::MemoryTool20250818::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::ToolTextEditor20250124::AllowedCallers>
-from_string_view<anthropic::Request::ToolTextEditor20250124::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::ToolTextEditor20250124::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::ToolTextEditor20250124::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::ToolTextEditor20250124::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor20250124::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::ToolTextEditor20250124::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::ToolTextEditor20250124::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::ToolTextEditor20250124::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250124::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::ToolTextEditor20250429::AllowedCallers>
-from_string_view<anthropic::Request::ToolTextEditor20250429::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::ToolTextEditor20250429::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::ToolTextEditor20250429::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::ToolTextEditor20250429::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor20250429::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::ToolTextEditor20250429::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::ToolTextEditor20250429::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::ToolTextEditor20250429::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250429::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::ToolTextEditor20250728::AllowedCallers>
-from_string_view<anthropic::Request::ToolTextEditor20250728::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::ToolTextEditor20250728::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::ToolTextEditor20250728::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::ToolTextEditor20250728::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::ToolTextEditor20250728::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::ToolTextEditor20250728::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::ToolTextEditor20250728::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::ToolTextEditor20250728::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::ToolTextEditor20250728::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::WebSearchTool20250305::AllowedCallers>
-from_string_view<anthropic::Request::WebSearchTool20250305::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::WebSearchTool20250305::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::WebSearchTool20250305::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::WebSearchTool20250305::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::WebSearchTool20250305::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::WebSearchTool20250305::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::WebSearchTool20250305::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::WebSearchTool20250305::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::WebSearchTool20250305::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::WebFetchTool20250910::AllowedCallers>
-from_string_view<anthropic::Request::WebFetchTool20250910::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::WebFetchTool20250910::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::WebFetchTool20250910::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::WebFetchTool20250910::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool20250910::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::WebFetchTool20250910::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::WebFetchTool20250910::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::WebFetchTool20250910::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20250910::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::WebSearchTool20260209::AllowedCallers>
-from_string_view<anthropic::Request::WebSearchTool20260209::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::WebSearchTool20260209::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::WebSearchTool20260209::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::WebSearchTool20260209::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::WebSearchTool20260209::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::WebSearchTool20260209::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::WebSearchTool20260209::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::WebSearchTool20260209::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::WebSearchTool20260209::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::WebFetchTool20260209::AllowedCallers>
-from_string_view<anthropic::Request::WebFetchTool20260209::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::WebFetchTool20260209::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::WebFetchTool20260209::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::WebFetchTool20260209::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool20260209::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::WebFetchTool20260209::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::WebFetchTool20260209::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::WebFetchTool20260209::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20260209::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers>
-from_string_view<anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::ToolSearchToolBm25_20251119::AllowedCallers"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers>
-from_string_view<anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers>(std::string_view sv) {
-    if (sv == "direct") return anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers::DIRECT;
-    if (sv == "code_execution_20250825") return anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers::CODE_EXECUTION_20250825;
-    if (sv == "code_execution_20260120") return anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers::CODE_EXECUTION_20260120;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers val) {
-    switch (val) {
-        case anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers::DIRECT: return "direct";
-        case anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers::CODE_EXECUTION_20250825: return "code_execution_20250825";
-        case anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers::CODE_EXECUTION_20260120: return "code_execution_20260120";
-        default: throw AnnotatedException{"invalid anthropic::Request::ToolSearchToolRegex20251119::AllowedCallers"};
     }
 }
 

@@ -472,6 +472,15 @@ BEGIN_DESERIALIZE_VARIANT(anthropic::Message::ContentBlock)
     FIELD_KIND(src, kind, anthropic::Message::ContentBlockKind::CONTAINER_UPLOAD, anthropic::Message::ContainerUploadBlock)
 END_DESERIALIZE_VARIANT(anthropic::Message::ContentBlock)
 
+BEGIN_DESERIALIZE_VARIANT(anthropic::Message::Model)
+    if (src.is_string()) {
+        return T{DeserializeTo<anthropic::Message::ModelValues>(src)};
+    }
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+END_DESERIALIZE_VARIANT(anthropic::Message::Model)
+
 /***
  * Top-level Deserialize
  */

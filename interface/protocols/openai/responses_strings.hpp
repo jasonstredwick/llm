@@ -1518,6 +1518,8 @@ from_string_view<openai::Request::ResponseFileSearchToolCall::Status>(std::strin
     if (sv == "in_progress") return openai::Request::ResponseFileSearchToolCall::Status::IN_PROGRESS;
     if (sv == "searching") return openai::Request::ResponseFileSearchToolCall::Status::SEARCHING;
     if (sv == "completed") return openai::Request::ResponseFileSearchToolCall::Status::COMPLETED;
+    if (sv == "incomplete") return openai::Request::ResponseFileSearchToolCall::Status::INCOMPLETE;
+    if (sv == "failed") return openai::Request::ResponseFileSearchToolCall::Status::FAILED;
     return std::nullopt;
 }
 
@@ -1526,6 +1528,8 @@ constexpr std::string_view to_string_view(openai::Request::ResponseFileSearchToo
         case openai::Request::ResponseFileSearchToolCall::Status::IN_PROGRESS: return "in_progress";
         case openai::Request::ResponseFileSearchToolCall::Status::SEARCHING: return "searching";
         case openai::Request::ResponseFileSearchToolCall::Status::COMPLETED: return "completed";
+        case openai::Request::ResponseFileSearchToolCall::Status::INCOMPLETE: return "incomplete";
+        case openai::Request::ResponseFileSearchToolCall::Status::FAILED: return "failed";
         default: throw AnnotatedException{"invalid openai::Request::ResponseFileSearchToolCall::Status"};
     }
 }
@@ -1536,6 +1540,8 @@ from_string_view<openai::Request::ResponseComputerToolCall::Click::Button>(std::
     if (sv == "left") return openai::Request::ResponseComputerToolCall::Click::Button::LEFT;
     if (sv == "right") return openai::Request::ResponseComputerToolCall::Click::Button::RIGHT;
     if (sv == "wheel") return openai::Request::ResponseComputerToolCall::Click::Button::WHEEL;
+    if (sv == "back") return openai::Request::ResponseComputerToolCall::Click::Button::BACK;
+    if (sv == "forward") return openai::Request::ResponseComputerToolCall::Click::Button::FORWARD;
     return std::nullopt;
 }
 
@@ -1544,6 +1550,8 @@ constexpr std::string_view to_string_view(openai::Request::ResponseComputerToolC
         case openai::Request::ResponseComputerToolCall::Click::Button::LEFT: return "left";
         case openai::Request::ResponseComputerToolCall::Click::Button::RIGHT: return "right";
         case openai::Request::ResponseComputerToolCall::Click::Button::WHEEL: return "wheel";
+        case openai::Request::ResponseComputerToolCall::Click::Button::BACK: return "back";
+        case openai::Request::ResponseComputerToolCall::Click::Button::FORWARD: return "forward";
         default: throw AnnotatedException{"invalid openai::Request::ResponseComputerToolCall::Click::Button"};
     }
 }
@@ -1702,6 +1710,8 @@ from_string_view<openai::Request::ResponseCodeInterpreterToolCall::Status>(std::
     if (sv == "in_progress") return openai::Request::ResponseCodeInterpreterToolCall::Status::IN_PROGRESS;
     if (sv == "completed") return openai::Request::ResponseCodeInterpreterToolCall::Status::COMPLETED;
     if (sv == "incomplete") return openai::Request::ResponseCodeInterpreterToolCall::Status::INCOMPLETE;
+    if (sv == "interpreting") return openai::Request::ResponseCodeInterpreterToolCall::Status::INTERPRETING;
+    if (sv == "failed") return openai::Request::ResponseCodeInterpreterToolCall::Status::FAILED;
     return std::nullopt;
 }
 
@@ -1710,6 +1720,8 @@ constexpr std::string_view to_string_view(openai::Request::ResponseCodeInterpret
         case openai::Request::ResponseCodeInterpreterToolCall::Status::IN_PROGRESS: return "in_progress";
         case openai::Request::ResponseCodeInterpreterToolCall::Status::COMPLETED: return "completed";
         case openai::Request::ResponseCodeInterpreterToolCall::Status::INCOMPLETE: return "incomplete";
+        case openai::Request::ResponseCodeInterpreterToolCall::Status::INTERPRETING: return "interpreting";
+        case openai::Request::ResponseCodeInterpreterToolCall::Status::FAILED: return "failed";
         default: throw AnnotatedException{"invalid openai::Request::ResponseCodeInterpreterToolCall::Status"};
     }
 }
@@ -1824,6 +1836,8 @@ from_string_view<openai::Request::McpCall::Status>(std::string_view sv) {
     if (sv == "in_progress") return openai::Request::McpCall::Status::IN_PROGRESS;
     if (sv == "completed") return openai::Request::McpCall::Status::COMPLETED;
     if (sv == "incomplete") return openai::Request::McpCall::Status::INCOMPLETE;
+    if (sv == "calling") return openai::Request::McpCall::Status::CALLING;
+    if (sv == "failed") return openai::Request::McpCall::Status::FAILED;
     return std::nullopt;
 }
 
@@ -1832,6 +1846,8 @@ constexpr std::string_view to_string_view(openai::Request::McpCall::Status val) 
         case openai::Request::McpCall::Status::IN_PROGRESS: return "in_progress";
         case openai::Request::McpCall::Status::COMPLETED: return "completed";
         case openai::Request::McpCall::Status::INCOMPLETE: return "incomplete";
+        case openai::Request::McpCall::Status::CALLING: return "calling";
+        case openai::Request::McpCall::Status::FAILED: return "failed";
         default: throw AnnotatedException{"invalid openai::Request::McpCall::Status"};
     }
 }
@@ -1972,6 +1988,9 @@ from_string_view<openai::Request::ToolChoiceTypes::Type>(std::string_view sv) {
     if (sv == "file_search") return openai::Request::ToolChoiceTypes::Type::FILE_SEARCH;
     if (sv == "web_search_preview") return openai::Request::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW;
     if (sv == "computer_use_preview") return openai::Request::ToolChoiceTypes::Type::COMPUTER_USE_PREVIEW;
+    if (sv == "web_search_preview_2025_03_11") return openai::Request::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW_2025_03_11;
+    if (sv == "image_generation") return openai::Request::ToolChoiceTypes::Type::IMAGE_GENERATION;
+    if (sv == "code_interpreter") return openai::Request::ToolChoiceTypes::Type::CODE_INTERPRETER;
     return std::nullopt;
 }
 
@@ -1980,6 +1999,9 @@ constexpr std::string_view to_string_view(openai::Request::ToolChoiceTypes::Type
         case openai::Request::ToolChoiceTypes::Type::FILE_SEARCH: return "file_search";
         case openai::Request::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW: return "web_search_preview";
         case openai::Request::ToolChoiceTypes::Type::COMPUTER_USE_PREVIEW: return "computer_use_preview";
+        case openai::Request::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW_2025_03_11: return "web_search_preview_2025_03_11";
+        case openai::Request::ToolChoiceTypes::Type::IMAGE_GENERATION: return "image_generation";
+        case openai::Request::ToolChoiceTypes::Type::CODE_INTERPRETER: return "code_interpreter";
         default: throw AnnotatedException{"invalid openai::Request::ToolChoiceTypes::Type"};
     }
 }
@@ -1990,6 +2012,9 @@ from_string_view<openai::Request::FileSearchTool::ComparisonFilter::Type>(std::s
     if (sv == "eq") return openai::Request::FileSearchTool::ComparisonFilter::Type::EQ;
     if (sv == "ne") return openai::Request::FileSearchTool::ComparisonFilter::Type::NE;
     if (sv == "gt") return openai::Request::FileSearchTool::ComparisonFilter::Type::GT;
+    if (sv == "gte") return openai::Request::FileSearchTool::ComparisonFilter::Type::GTE;
+    if (sv == "lt") return openai::Request::FileSearchTool::ComparisonFilter::Type::LT;
+    if (sv == "lte") return openai::Request::FileSearchTool::ComparisonFilter::Type::LTE;
     return std::nullopt;
 }
 
@@ -1998,6 +2023,9 @@ constexpr std::string_view to_string_view(openai::Request::FileSearchTool::Compa
         case openai::Request::FileSearchTool::ComparisonFilter::Type::EQ: return "eq";
         case openai::Request::FileSearchTool::ComparisonFilter::Type::NE: return "ne";
         case openai::Request::FileSearchTool::ComparisonFilter::Type::GT: return "gt";
+        case openai::Request::FileSearchTool::ComparisonFilter::Type::GTE: return "gte";
+        case openai::Request::FileSearchTool::ComparisonFilter::Type::LT: return "lt";
+        case openai::Request::FileSearchTool::ComparisonFilter::Type::LTE: return "lte";
         default: throw AnnotatedException{"invalid openai::Request::FileSearchTool::ComparisonFilter::Type"};
     }
 }
@@ -2008,6 +2036,9 @@ from_string_view<openai::Request::FileSearchTool::CompoundFilter::ComparisonFilt
     if (sv == "eq") return openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::EQ;
     if (sv == "ne") return openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::NE;
     if (sv == "gt") return openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GT;
+    if (sv == "gte") return openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GTE;
+    if (sv == "lt") return openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LT;
+    if (sv == "lte") return openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LTE;
     return std::nullopt;
 }
 
@@ -2016,6 +2047,9 @@ constexpr std::string_view to_string_view(openai::Request::FileSearchTool::Compo
         case openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::EQ: return "eq";
         case openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::NE: return "ne";
         case openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GT: return "gt";
+        case openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GTE: return "gte";
+        case openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LT: return "lt";
+        case openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LTE: return "lte";
         default: throw AnnotatedException{"invalid openai::Request::FileSearchTool::CompoundFilter::ComparisonFilter::Type"};
     }
 }
@@ -2058,6 +2092,8 @@ from_string_view<openai::Request::ComputerTool::Environment>(std::string_view sv
     if (sv == "windows") return openai::Request::ComputerTool::Environment::WINDOWS;
     if (sv == "mac") return openai::Request::ComputerTool::Environment::MAC;
     if (sv == "linux") return openai::Request::ComputerTool::Environment::LINUX;
+    if (sv == "ubuntu") return openai::Request::ComputerTool::Environment::UBUNTU;
+    if (sv == "browser") return openai::Request::ComputerTool::Environment::BROWSER;
     return std::nullopt;
 }
 
@@ -2066,6 +2102,8 @@ constexpr std::string_view to_string_view(openai::Request::ComputerTool::Environ
         case openai::Request::ComputerTool::Environment::WINDOWS: return "windows";
         case openai::Request::ComputerTool::Environment::MAC: return "mac";
         case openai::Request::ComputerTool::Environment::LINUX: return "linux";
+        case openai::Request::ComputerTool::Environment::UBUNTU: return "ubuntu";
+        case openai::Request::ComputerTool::Environment::BROWSER: return "browser";
         default: throw AnnotatedException{"invalid openai::Request::ComputerTool::Environment"};
     }
 }
@@ -2110,6 +2148,11 @@ from_string_view<openai::Request::Mcp::ConnectorId>(std::string_view sv) {
     if (sv == "connector_dropbox") return openai::Request::Mcp::ConnectorId::CONNECTOR_DROPBOX;
     if (sv == "connector_gmail") return openai::Request::Mcp::ConnectorId::CONNECTOR_GMAIL;
     if (sv == "connector_googlecalendar") return openai::Request::Mcp::ConnectorId::CONNECTOR_GOOGLECALENDAR;
+    if (sv == "connector_googledrive") return openai::Request::Mcp::ConnectorId::CONNECTOR_GOOGLEDRIVE;
+    if (sv == "connector_microsoftteams") return openai::Request::Mcp::ConnectorId::CONNECTOR_MICROSOFTTEAMS;
+    if (sv == "connector_outlookcalendar") return openai::Request::Mcp::ConnectorId::CONNECTOR_OUTLOOKCALENDAR;
+    if (sv == "connector_outlookemail") return openai::Request::Mcp::ConnectorId::CONNECTOR_OUTLOOKEMAIL;
+    if (sv == "connector_sharepoint") return openai::Request::Mcp::ConnectorId::CONNECTOR_SHAREPOINT;
     return std::nullopt;
 }
 
@@ -2118,7 +2161,28 @@ constexpr std::string_view to_string_view(openai::Request::Mcp::ConnectorId val)
         case openai::Request::Mcp::ConnectorId::CONNECTOR_DROPBOX: return "connector_dropbox";
         case openai::Request::Mcp::ConnectorId::CONNECTOR_GMAIL: return "connector_gmail";
         case openai::Request::Mcp::ConnectorId::CONNECTOR_GOOGLECALENDAR: return "connector_googlecalendar";
+        case openai::Request::Mcp::ConnectorId::CONNECTOR_GOOGLEDRIVE: return "connector_googledrive";
+        case openai::Request::Mcp::ConnectorId::CONNECTOR_MICROSOFTTEAMS: return "connector_microsoftteams";
+        case openai::Request::Mcp::ConnectorId::CONNECTOR_OUTLOOKCALENDAR: return "connector_outlookcalendar";
+        case openai::Request::Mcp::ConnectorId::CONNECTOR_OUTLOOKEMAIL: return "connector_outlookemail";
+        case openai::Request::Mcp::ConnectorId::CONNECTOR_SHAREPOINT: return "connector_sharepoint";
         default: throw AnnotatedException{"invalid openai::Request::Mcp::ConnectorId"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Request::Mcp::RequireApprovalValues>
+from_string_view<openai::Request::Mcp::RequireApprovalValues>(std::string_view sv) {
+    if (sv == "always") return openai::Request::Mcp::RequireApprovalValues::ALWAYS;
+    if (sv == "never") return openai::Request::Mcp::RequireApprovalValues::NEVER;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::Mcp::RequireApprovalValues val) {
+    switch (val) {
+        case openai::Request::Mcp::RequireApprovalValues::ALWAYS: return "always";
+        case openai::Request::Mcp::RequireApprovalValues::NEVER: return "never";
+        default: throw AnnotatedException{"invalid openai::Request::Mcp::RequireApprovalValues"};
     }
 }
 
@@ -2195,24 +2259,6 @@ constexpr std::string_view to_string_view(openai::Request::ImageGeneration::Inpu
 }
 
 template <>
-constexpr std::optional<openai::Request::ImageGeneration::Model>
-from_string_view<openai::Request::ImageGeneration::Model>(std::string_view sv) {
-    if (sv == "gpt-image-1") return openai::Request::ImageGeneration::Model::GPT_IMAGE_1;
-    if (sv == "gpt-image-1-mini") return openai::Request::ImageGeneration::Model::GPT_IMAGE_1_MINI;
-    if (sv == "gpt-image-1.5") return openai::Request::ImageGeneration::Model::GPT_IMAGE_1_5;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(openai::Request::ImageGeneration::Model val) {
-    switch (val) {
-        case openai::Request::ImageGeneration::Model::GPT_IMAGE_1: return "gpt-image-1";
-        case openai::Request::ImageGeneration::Model::GPT_IMAGE_1_MINI: return "gpt-image-1-mini";
-        case openai::Request::ImageGeneration::Model::GPT_IMAGE_1_5: return "gpt-image-1.5";
-        default: throw AnnotatedException{"invalid openai::Request::ImageGeneration::Model"};
-    }
-}
-
-template <>
 constexpr std::optional<openai::Request::ImageGeneration::Moderation>
 from_string_view<openai::Request::ImageGeneration::Moderation>(std::string_view sv) {
     if (sv == "auto") return openai::Request::ImageGeneration::Moderation::AUTO;
@@ -2283,6 +2329,24 @@ constexpr std::string_view to_string_view(openai::Request::ImageGeneration::Size
         case openai::Request::ImageGeneration::Size::V_1536X1024: return "1536x1024";
         case openai::Request::ImageGeneration::Size::AUTO: return "auto";
         default: throw AnnotatedException{"invalid openai::Request::ImageGeneration::Size"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Request::ImageGeneration::ModelValues>
+from_string_view<openai::Request::ImageGeneration::ModelValues>(std::string_view sv) {
+    if (sv == "gpt-image-1") return openai::Request::ImageGeneration::ModelValues::GPT_IMAGE_1;
+    if (sv == "gpt-image-1-mini") return openai::Request::ImageGeneration::ModelValues::GPT_IMAGE_1_MINI;
+    if (sv == "gpt-image-1.5") return openai::Request::ImageGeneration::ModelValues::GPT_IMAGE_1_5;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::ImageGeneration::ModelValues val) {
+    switch (val) {
+        case openai::Request::ImageGeneration::ModelValues::GPT_IMAGE_1: return "gpt-image-1";
+        case openai::Request::ImageGeneration::ModelValues::GPT_IMAGE_1_MINI: return "gpt-image-1-mini";
+        case openai::Request::ImageGeneration::ModelValues::GPT_IMAGE_1_5: return "gpt-image-1.5";
+        default: throw AnnotatedException{"invalid openai::Request::ImageGeneration::ModelValues"};
     }
 }
 
@@ -2406,6 +2470,8 @@ from_string_view<openai::Request::ServiceTier>(std::string_view sv) {
     if (sv == "auto") return openai::Request::ServiceTier::AUTO;
     if (sv == "default") return openai::Request::ServiceTier::DEFAULT;
     if (sv == "flex") return openai::Request::ServiceTier::FLEX;
+    if (sv == "scale") return openai::Request::ServiceTier::SCALE;
+    if (sv == "priority") return openai::Request::ServiceTier::PRIORITY;
     return std::nullopt;
 }
 
@@ -2414,6 +2480,8 @@ constexpr std::string_view to_string_view(openai::Request::ServiceTier val) {
         case openai::Request::ServiceTier::AUTO: return "auto";
         case openai::Request::ServiceTier::DEFAULT: return "default";
         case openai::Request::ServiceTier::FLEX: return "flex";
+        case openai::Request::ServiceTier::SCALE: return "scale";
+        case openai::Request::ServiceTier::PRIORITY: return "priority";
         default: throw AnnotatedException{"invalid openai::Request::ServiceTier"};
     }
 }
@@ -2435,11 +2503,228 @@ constexpr std::string_view to_string_view(openai::Request::Truncation val) {
 }
 
 template <>
+constexpr std::optional<openai::Request::ResponsesModelValues>
+from_string_view<openai::Request::ResponsesModelValues>(std::string_view sv) {
+    if (sv == "gpt-5.2") return openai::Request::ResponsesModelValues::GPT_5_2;
+    if (sv == "gpt-5.2-2025-12-11") return openai::Request::ResponsesModelValues::GPT_5_2_2025_12_11;
+    if (sv == "gpt-5.2-chat-latest") return openai::Request::ResponsesModelValues::GPT_5_2_CHAT_LATEST;
+    if (sv == "gpt-5.2-pro") return openai::Request::ResponsesModelValues::GPT_5_2_PRO;
+    if (sv == "gpt-5.2-pro-2025-12-11") return openai::Request::ResponsesModelValues::GPT_5_2_PRO_2025_12_11;
+    if (sv == "gpt-5.1") return openai::Request::ResponsesModelValues::GPT_5_1;
+    if (sv == "gpt-5.1-2025-11-13") return openai::Request::ResponsesModelValues::GPT_5_1_2025_11_13;
+    if (sv == "gpt-5.1-codex") return openai::Request::ResponsesModelValues::GPT_5_1_CODEX;
+    if (sv == "gpt-5.1-mini") return openai::Request::ResponsesModelValues::GPT_5_1_MINI;
+    if (sv == "gpt-5.1-chat-latest") return openai::Request::ResponsesModelValues::GPT_5_1_CHAT_LATEST;
+    if (sv == "gpt-5") return openai::Request::ResponsesModelValues::GPT_5;
+    if (sv == "gpt-5-mini") return openai::Request::ResponsesModelValues::GPT_5_MINI;
+    if (sv == "gpt-5-nano") return openai::Request::ResponsesModelValues::GPT_5_NANO;
+    if (sv == "gpt-5-2025-08-07") return openai::Request::ResponsesModelValues::GPT_5_2025_08_07;
+    if (sv == "gpt-5-mini-2025-08-07") return openai::Request::ResponsesModelValues::GPT_5_MINI_2025_08_07;
+    if (sv == "gpt-5-nano-2025-08-07") return openai::Request::ResponsesModelValues::GPT_5_NANO_2025_08_07;
+    if (sv == "gpt-5-chat-latest") return openai::Request::ResponsesModelValues::GPT_5_CHAT_LATEST;
+    if (sv == "gpt-4.1") return openai::Request::ResponsesModelValues::GPT_4_1;
+    if (sv == "gpt-4.1-mini") return openai::Request::ResponsesModelValues::GPT_4_1_MINI;
+    if (sv == "gpt-4.1-nano") return openai::Request::ResponsesModelValues::GPT_4_1_NANO;
+    if (sv == "gpt-4.1-2025-04-14") return openai::Request::ResponsesModelValues::GPT_4_1_2025_04_14;
+    if (sv == "gpt-4.1-mini-2025-04-14") return openai::Request::ResponsesModelValues::GPT_4_1_MINI_2025_04_14;
+    if (sv == "gpt-4.1-nano-2025-04-14") return openai::Request::ResponsesModelValues::GPT_4_1_NANO_2025_04_14;
+    if (sv == "o4-mini") return openai::Request::ResponsesModelValues::O4_MINI;
+    if (sv == "o4-mini-2025-04-16") return openai::Request::ResponsesModelValues::O4_MINI_2025_04_16;
+    if (sv == "o3") return openai::Request::ResponsesModelValues::O3;
+    if (sv == "o3-2025-04-16") return openai::Request::ResponsesModelValues::O3_2025_04_16;
+    if (sv == "o3-mini") return openai::Request::ResponsesModelValues::O3_MINI;
+    if (sv == "o3-mini-2025-01-31") return openai::Request::ResponsesModelValues::O3_MINI_2025_01_31;
+    if (sv == "o1") return openai::Request::ResponsesModelValues::O1;
+    if (sv == "o1-2024-12-17") return openai::Request::ResponsesModelValues::O1_2024_12_17;
+    if (sv == "o1-preview") return openai::Request::ResponsesModelValues::O1_PREVIEW;
+    if (sv == "o1-preview-2024-09-12") return openai::Request::ResponsesModelValues::O1_PREVIEW_2024_09_12;
+    if (sv == "o1-mini") return openai::Request::ResponsesModelValues::O1_MINI;
+    if (sv == "o1-mini-2024-09-12") return openai::Request::ResponsesModelValues::O1_MINI_2024_09_12;
+    if (sv == "gpt-4o") return openai::Request::ResponsesModelValues::GPT_4O;
+    if (sv == "gpt-4o-2024-11-20") return openai::Request::ResponsesModelValues::GPT_4O_2024_11_20;
+    if (sv == "gpt-4o-2024-08-06") return openai::Request::ResponsesModelValues::GPT_4O_2024_08_06;
+    if (sv == "gpt-4o-2024-05-13") return openai::Request::ResponsesModelValues::GPT_4O_2024_05_13;
+    if (sv == "gpt-4o-audio-preview") return openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW;
+    if (sv == "gpt-4o-audio-preview-2024-10-01") return openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_10_01;
+    if (sv == "gpt-4o-audio-preview-2024-12-17") return openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_12_17;
+    if (sv == "gpt-4o-audio-preview-2025-06-03") return openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2025_06_03;
+    if (sv == "gpt-4o-mini-audio-preview") return openai::Request::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW;
+    if (sv == "gpt-4o-mini-audio-preview-2024-12-17") return openai::Request::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17;
+    if (sv == "gpt-4o-search-preview") return openai::Request::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW;
+    if (sv == "gpt-4o-mini-search-preview") return openai::Request::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW;
+    if (sv == "gpt-4o-search-preview-2025-03-11") return openai::Request::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW_2025_03_11;
+    if (sv == "gpt-4o-mini-search-preview-2025-03-11") return openai::Request::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11;
+    if (sv == "chatgpt-4o-latest") return openai::Request::ResponsesModelValues::CHATGPT_4O_LATEST;
+    if (sv == "codex-mini-latest") return openai::Request::ResponsesModelValues::CODEX_MINI_LATEST;
+    if (sv == "gpt-4o-mini") return openai::Request::ResponsesModelValues::GPT_4O_MINI;
+    if (sv == "gpt-4o-mini-2024-07-18") return openai::Request::ResponsesModelValues::GPT_4O_MINI_2024_07_18;
+    if (sv == "gpt-4-turbo") return openai::Request::ResponsesModelValues::GPT_4_TURBO;
+    if (sv == "gpt-4-turbo-2024-04-09") return openai::Request::ResponsesModelValues::GPT_4_TURBO_2024_04_09;
+    if (sv == "gpt-4-0125-preview") return openai::Request::ResponsesModelValues::GPT_4_0125_PREVIEW;
+    if (sv == "gpt-4-turbo-preview") return openai::Request::ResponsesModelValues::GPT_4_TURBO_PREVIEW;
+    if (sv == "gpt-4-1106-preview") return openai::Request::ResponsesModelValues::GPT_4_1106_PREVIEW;
+    if (sv == "gpt-4-vision-preview") return openai::Request::ResponsesModelValues::GPT_4_VISION_PREVIEW;
+    if (sv == "gpt-4") return openai::Request::ResponsesModelValues::GPT_4;
+    if (sv == "gpt-4-0314") return openai::Request::ResponsesModelValues::GPT_4_0314;
+    if (sv == "gpt-4-0613") return openai::Request::ResponsesModelValues::GPT_4_0613;
+    if (sv == "gpt-4-32k") return openai::Request::ResponsesModelValues::GPT_4_32K;
+    if (sv == "gpt-4-32k-0314") return openai::Request::ResponsesModelValues::GPT_4_32K_0314;
+    if (sv == "gpt-4-32k-0613") return openai::Request::ResponsesModelValues::GPT_4_32K_0613;
+    if (sv == "gpt-3.5-turbo") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO;
+    if (sv == "gpt-3.5-turbo-16k") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO_16K;
+    if (sv == "gpt-3.5-turbo-0301") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO_0301;
+    if (sv == "gpt-3.5-turbo-0613") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO_0613;
+    if (sv == "gpt-3.5-turbo-1106") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO_1106;
+    if (sv == "gpt-3.5-turbo-0125") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO_0125;
+    if (sv == "gpt-3.5-turbo-16k-0613") return openai::Request::ResponsesModelValues::GPT_3_5_TURBO_16K_0613;
+    if (sv == "o1-pro") return openai::Request::ResponsesModelValues::O1_PRO;
+    if (sv == "o1-pro-2025-03-19") return openai::Request::ResponsesModelValues::O1_PRO_2025_03_19;
+    if (sv == "o3-pro") return openai::Request::ResponsesModelValues::O3_PRO;
+    if (sv == "o3-pro-2025-06-10") return openai::Request::ResponsesModelValues::O3_PRO_2025_06_10;
+    if (sv == "o3-deep-research") return openai::Request::ResponsesModelValues::O3_DEEP_RESEARCH;
+    if (sv == "o3-deep-research-2025-06-26") return openai::Request::ResponsesModelValues::O3_DEEP_RESEARCH_2025_06_26;
+    if (sv == "o4-mini-deep-research") return openai::Request::ResponsesModelValues::O4_MINI_DEEP_RESEARCH;
+    if (sv == "o4-mini-deep-research-2025-06-26") return openai::Request::ResponsesModelValues::O4_MINI_DEEP_RESEARCH_2025_06_26;
+    if (sv == "computer-use-preview") return openai::Request::ResponsesModelValues::COMPUTER_USE_PREVIEW;
+    if (sv == "computer-use-preview-2025-03-11") return openai::Request::ResponsesModelValues::COMPUTER_USE_PREVIEW_2025_03_11;
+    if (sv == "gpt-5-codex") return openai::Request::ResponsesModelValues::GPT_5_CODEX;
+    if (sv == "gpt-5-pro") return openai::Request::ResponsesModelValues::GPT_5_PRO;
+    if (sv == "gpt-5-pro-2025-10-06") return openai::Request::ResponsesModelValues::GPT_5_PRO_2025_10_06;
+    if (sv == "gpt-5.1-codex-max") return openai::Request::ResponsesModelValues::GPT_5_1_CODEX_MAX;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::ResponsesModelValues val) {
+    switch (val) {
+        case openai::Request::ResponsesModelValues::GPT_5_2: return "gpt-5.2";
+        case openai::Request::ResponsesModelValues::GPT_5_2_2025_12_11: return "gpt-5.2-2025-12-11";
+        case openai::Request::ResponsesModelValues::GPT_5_2_CHAT_LATEST: return "gpt-5.2-chat-latest";
+        case openai::Request::ResponsesModelValues::GPT_5_2_PRO: return "gpt-5.2-pro";
+        case openai::Request::ResponsesModelValues::GPT_5_2_PRO_2025_12_11: return "gpt-5.2-pro-2025-12-11";
+        case openai::Request::ResponsesModelValues::GPT_5_1: return "gpt-5.1";
+        case openai::Request::ResponsesModelValues::GPT_5_1_2025_11_13: return "gpt-5.1-2025-11-13";
+        case openai::Request::ResponsesModelValues::GPT_5_1_CODEX: return "gpt-5.1-codex";
+        case openai::Request::ResponsesModelValues::GPT_5_1_MINI: return "gpt-5.1-mini";
+        case openai::Request::ResponsesModelValues::GPT_5_1_CHAT_LATEST: return "gpt-5.1-chat-latest";
+        case openai::Request::ResponsesModelValues::GPT_5: return "gpt-5";
+        case openai::Request::ResponsesModelValues::GPT_5_MINI: return "gpt-5-mini";
+        case openai::Request::ResponsesModelValues::GPT_5_NANO: return "gpt-5-nano";
+        case openai::Request::ResponsesModelValues::GPT_5_2025_08_07: return "gpt-5-2025-08-07";
+        case openai::Request::ResponsesModelValues::GPT_5_MINI_2025_08_07: return "gpt-5-mini-2025-08-07";
+        case openai::Request::ResponsesModelValues::GPT_5_NANO_2025_08_07: return "gpt-5-nano-2025-08-07";
+        case openai::Request::ResponsesModelValues::GPT_5_CHAT_LATEST: return "gpt-5-chat-latest";
+        case openai::Request::ResponsesModelValues::GPT_4_1: return "gpt-4.1";
+        case openai::Request::ResponsesModelValues::GPT_4_1_MINI: return "gpt-4.1-mini";
+        case openai::Request::ResponsesModelValues::GPT_4_1_NANO: return "gpt-4.1-nano";
+        case openai::Request::ResponsesModelValues::GPT_4_1_2025_04_14: return "gpt-4.1-2025-04-14";
+        case openai::Request::ResponsesModelValues::GPT_4_1_MINI_2025_04_14: return "gpt-4.1-mini-2025-04-14";
+        case openai::Request::ResponsesModelValues::GPT_4_1_NANO_2025_04_14: return "gpt-4.1-nano-2025-04-14";
+        case openai::Request::ResponsesModelValues::O4_MINI: return "o4-mini";
+        case openai::Request::ResponsesModelValues::O4_MINI_2025_04_16: return "o4-mini-2025-04-16";
+        case openai::Request::ResponsesModelValues::O3: return "o3";
+        case openai::Request::ResponsesModelValues::O3_2025_04_16: return "o3-2025-04-16";
+        case openai::Request::ResponsesModelValues::O3_MINI: return "o3-mini";
+        case openai::Request::ResponsesModelValues::O3_MINI_2025_01_31: return "o3-mini-2025-01-31";
+        case openai::Request::ResponsesModelValues::O1: return "o1";
+        case openai::Request::ResponsesModelValues::O1_2024_12_17: return "o1-2024-12-17";
+        case openai::Request::ResponsesModelValues::O1_PREVIEW: return "o1-preview";
+        case openai::Request::ResponsesModelValues::O1_PREVIEW_2024_09_12: return "o1-preview-2024-09-12";
+        case openai::Request::ResponsesModelValues::O1_MINI: return "o1-mini";
+        case openai::Request::ResponsesModelValues::O1_MINI_2024_09_12: return "o1-mini-2024-09-12";
+        case openai::Request::ResponsesModelValues::GPT_4O: return "gpt-4o";
+        case openai::Request::ResponsesModelValues::GPT_4O_2024_11_20: return "gpt-4o-2024-11-20";
+        case openai::Request::ResponsesModelValues::GPT_4O_2024_08_06: return "gpt-4o-2024-08-06";
+        case openai::Request::ResponsesModelValues::GPT_4O_2024_05_13: return "gpt-4o-2024-05-13";
+        case openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW: return "gpt-4o-audio-preview";
+        case openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_10_01: return "gpt-4o-audio-preview-2024-10-01";
+        case openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_12_17: return "gpt-4o-audio-preview-2024-12-17";
+        case openai::Request::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2025_06_03: return "gpt-4o-audio-preview-2025-06-03";
+        case openai::Request::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW: return "gpt-4o-mini-audio-preview";
+        case openai::Request::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17: return "gpt-4o-mini-audio-preview-2024-12-17";
+        case openai::Request::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW: return "gpt-4o-search-preview";
+        case openai::Request::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW: return "gpt-4o-mini-search-preview";
+        case openai::Request::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW_2025_03_11: return "gpt-4o-search-preview-2025-03-11";
+        case openai::Request::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11: return "gpt-4o-mini-search-preview-2025-03-11";
+        case openai::Request::ResponsesModelValues::CHATGPT_4O_LATEST: return "chatgpt-4o-latest";
+        case openai::Request::ResponsesModelValues::CODEX_MINI_LATEST: return "codex-mini-latest";
+        case openai::Request::ResponsesModelValues::GPT_4O_MINI: return "gpt-4o-mini";
+        case openai::Request::ResponsesModelValues::GPT_4O_MINI_2024_07_18: return "gpt-4o-mini-2024-07-18";
+        case openai::Request::ResponsesModelValues::GPT_4_TURBO: return "gpt-4-turbo";
+        case openai::Request::ResponsesModelValues::GPT_4_TURBO_2024_04_09: return "gpt-4-turbo-2024-04-09";
+        case openai::Request::ResponsesModelValues::GPT_4_0125_PREVIEW: return "gpt-4-0125-preview";
+        case openai::Request::ResponsesModelValues::GPT_4_TURBO_PREVIEW: return "gpt-4-turbo-preview";
+        case openai::Request::ResponsesModelValues::GPT_4_1106_PREVIEW: return "gpt-4-1106-preview";
+        case openai::Request::ResponsesModelValues::GPT_4_VISION_PREVIEW: return "gpt-4-vision-preview";
+        case openai::Request::ResponsesModelValues::GPT_4: return "gpt-4";
+        case openai::Request::ResponsesModelValues::GPT_4_0314: return "gpt-4-0314";
+        case openai::Request::ResponsesModelValues::GPT_4_0613: return "gpt-4-0613";
+        case openai::Request::ResponsesModelValues::GPT_4_32K: return "gpt-4-32k";
+        case openai::Request::ResponsesModelValues::GPT_4_32K_0314: return "gpt-4-32k-0314";
+        case openai::Request::ResponsesModelValues::GPT_4_32K_0613: return "gpt-4-32k-0613";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO: return "gpt-3.5-turbo";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO_16K: return "gpt-3.5-turbo-16k";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO_0301: return "gpt-3.5-turbo-0301";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO_0613: return "gpt-3.5-turbo-0613";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO_1106: return "gpt-3.5-turbo-1106";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO_0125: return "gpt-3.5-turbo-0125";
+        case openai::Request::ResponsesModelValues::GPT_3_5_TURBO_16K_0613: return "gpt-3.5-turbo-16k-0613";
+        case openai::Request::ResponsesModelValues::O1_PRO: return "o1-pro";
+        case openai::Request::ResponsesModelValues::O1_PRO_2025_03_19: return "o1-pro-2025-03-19";
+        case openai::Request::ResponsesModelValues::O3_PRO: return "o3-pro";
+        case openai::Request::ResponsesModelValues::O3_PRO_2025_06_10: return "o3-pro-2025-06-10";
+        case openai::Request::ResponsesModelValues::O3_DEEP_RESEARCH: return "o3-deep-research";
+        case openai::Request::ResponsesModelValues::O3_DEEP_RESEARCH_2025_06_26: return "o3-deep-research-2025-06-26";
+        case openai::Request::ResponsesModelValues::O4_MINI_DEEP_RESEARCH: return "o4-mini-deep-research";
+        case openai::Request::ResponsesModelValues::O4_MINI_DEEP_RESEARCH_2025_06_26: return "o4-mini-deep-research-2025-06-26";
+        case openai::Request::ResponsesModelValues::COMPUTER_USE_PREVIEW: return "computer-use-preview";
+        case openai::Request::ResponsesModelValues::COMPUTER_USE_PREVIEW_2025_03_11: return "computer-use-preview-2025-03-11";
+        case openai::Request::ResponsesModelValues::GPT_5_CODEX: return "gpt-5-codex";
+        case openai::Request::ResponsesModelValues::GPT_5_PRO: return "gpt-5-pro";
+        case openai::Request::ResponsesModelValues::GPT_5_PRO_2025_10_06: return "gpt-5-pro-2025-10-06";
+        case openai::Request::ResponsesModelValues::GPT_5_1_CODEX_MAX: return "gpt-5.1-codex-max";
+        default: throw AnnotatedException{"invalid openai::Request::ResponsesModelValues"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Request::ToolChoiceValues>
+from_string_view<openai::Request::ToolChoiceValues>(std::string_view sv) {
+    if (sv == "none") return openai::Request::ToolChoiceValues::NONE;
+    if (sv == "auto") return openai::Request::ToolChoiceValues::AUTO;
+    if (sv == "required") return openai::Request::ToolChoiceValues::REQUIRED;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::ToolChoiceValues val) {
+    switch (val) {
+        case openai::Request::ToolChoiceValues::NONE: return "none";
+        case openai::Request::ToolChoiceValues::AUTO: return "auto";
+        case openai::Request::ToolChoiceValues::REQUIRED: return "required";
+        default: throw AnnotatedException{"invalid openai::Request::ToolChoiceValues"};
+    }
+}
+
+template <>
 constexpr std::optional<openai::Response::ResponseError::Code>
 from_string_view<openai::Response::ResponseError::Code>(std::string_view sv) {
     if (sv == "server_error") return openai::Response::ResponseError::Code::SERVER_ERROR;
     if (sv == "rate_limit_exceeded") return openai::Response::ResponseError::Code::RATE_LIMIT_EXCEEDED;
     if (sv == "invalid_prompt") return openai::Response::ResponseError::Code::INVALID_PROMPT;
+    if (sv == "vector_store_timeout") return openai::Response::ResponseError::Code::VECTOR_STORE_TIMEOUT;
+    if (sv == "invalid_image") return openai::Response::ResponseError::Code::INVALID_IMAGE;
+    if (sv == "invalid_image_format") return openai::Response::ResponseError::Code::INVALID_IMAGE_FORMAT;
+    if (sv == "invalid_base64_image") return openai::Response::ResponseError::Code::INVALID_BASE64_IMAGE;
+    if (sv == "invalid_image_url") return openai::Response::ResponseError::Code::INVALID_IMAGE_URL;
+    if (sv == "image_too_large") return openai::Response::ResponseError::Code::IMAGE_TOO_LARGE;
+    if (sv == "image_too_small") return openai::Response::ResponseError::Code::IMAGE_TOO_SMALL;
+    if (sv == "image_parse_error") return openai::Response::ResponseError::Code::IMAGE_PARSE_ERROR;
+    if (sv == "image_content_policy_violation") return openai::Response::ResponseError::Code::IMAGE_CONTENT_POLICY_VIOLATION;
+    if (sv == "invalid_image_mode") return openai::Response::ResponseError::Code::INVALID_IMAGE_MODE;
+    if (sv == "image_file_too_large") return openai::Response::ResponseError::Code::IMAGE_FILE_TOO_LARGE;
+    if (sv == "unsupported_image_media_type") return openai::Response::ResponseError::Code::UNSUPPORTED_IMAGE_MEDIA_TYPE;
+    if (sv == "empty_image_file") return openai::Response::ResponseError::Code::EMPTY_IMAGE_FILE;
+    if (sv == "failed_to_download_image") return openai::Response::ResponseError::Code::FAILED_TO_DOWNLOAD_IMAGE;
+    if (sv == "image_file_not_found") return openai::Response::ResponseError::Code::IMAGE_FILE_NOT_FOUND;
     return std::nullopt;
 }
 
@@ -2448,6 +2733,21 @@ constexpr std::string_view to_string_view(openai::Response::ResponseError::Code 
         case openai::Response::ResponseError::Code::SERVER_ERROR: return "server_error";
         case openai::Response::ResponseError::Code::RATE_LIMIT_EXCEEDED: return "rate_limit_exceeded";
         case openai::Response::ResponseError::Code::INVALID_PROMPT: return "invalid_prompt";
+        case openai::Response::ResponseError::Code::VECTOR_STORE_TIMEOUT: return "vector_store_timeout";
+        case openai::Response::ResponseError::Code::INVALID_IMAGE: return "invalid_image";
+        case openai::Response::ResponseError::Code::INVALID_IMAGE_FORMAT: return "invalid_image_format";
+        case openai::Response::ResponseError::Code::INVALID_BASE64_IMAGE: return "invalid_base64_image";
+        case openai::Response::ResponseError::Code::INVALID_IMAGE_URL: return "invalid_image_url";
+        case openai::Response::ResponseError::Code::IMAGE_TOO_LARGE: return "image_too_large";
+        case openai::Response::ResponseError::Code::IMAGE_TOO_SMALL: return "image_too_small";
+        case openai::Response::ResponseError::Code::IMAGE_PARSE_ERROR: return "image_parse_error";
+        case openai::Response::ResponseError::Code::IMAGE_CONTENT_POLICY_VIOLATION: return "image_content_policy_violation";
+        case openai::Response::ResponseError::Code::INVALID_IMAGE_MODE: return "invalid_image_mode";
+        case openai::Response::ResponseError::Code::IMAGE_FILE_TOO_LARGE: return "image_file_too_large";
+        case openai::Response::ResponseError::Code::UNSUPPORTED_IMAGE_MEDIA_TYPE: return "unsupported_image_media_type";
+        case openai::Response::ResponseError::Code::EMPTY_IMAGE_FILE: return "empty_image_file";
+        case openai::Response::ResponseError::Code::FAILED_TO_DOWNLOAD_IMAGE: return "failed_to_download_image";
+        case openai::Response::ResponseError::Code::IMAGE_FILE_NOT_FOUND: return "image_file_not_found";
         default: throw AnnotatedException{"invalid openai::Response::ResponseError::Code"};
     }
 }
@@ -2584,6 +2884,8 @@ from_string_view<openai::Response::ResponseFileSearchToolCall::Status>(std::stri
     if (sv == "in_progress") return openai::Response::ResponseFileSearchToolCall::Status::IN_PROGRESS;
     if (sv == "searching") return openai::Response::ResponseFileSearchToolCall::Status::SEARCHING;
     if (sv == "completed") return openai::Response::ResponseFileSearchToolCall::Status::COMPLETED;
+    if (sv == "incomplete") return openai::Response::ResponseFileSearchToolCall::Status::INCOMPLETE;
+    if (sv == "failed") return openai::Response::ResponseFileSearchToolCall::Status::FAILED;
     return std::nullopt;
 }
 
@@ -2592,6 +2894,8 @@ constexpr std::string_view to_string_view(openai::Response::ResponseFileSearchTo
         case openai::Response::ResponseFileSearchToolCall::Status::IN_PROGRESS: return "in_progress";
         case openai::Response::ResponseFileSearchToolCall::Status::SEARCHING: return "searching";
         case openai::Response::ResponseFileSearchToolCall::Status::COMPLETED: return "completed";
+        case openai::Response::ResponseFileSearchToolCall::Status::INCOMPLETE: return "incomplete";
+        case openai::Response::ResponseFileSearchToolCall::Status::FAILED: return "failed";
         default: throw AnnotatedException{"invalid openai::Response::ResponseFileSearchToolCall::Status"};
     }
 }
@@ -2602,6 +2906,8 @@ from_string_view<openai::Response::ResponseComputerToolCall::Click::Button>(std:
     if (sv == "left") return openai::Response::ResponseComputerToolCall::Click::Button::LEFT;
     if (sv == "right") return openai::Response::ResponseComputerToolCall::Click::Button::RIGHT;
     if (sv == "wheel") return openai::Response::ResponseComputerToolCall::Click::Button::WHEEL;
+    if (sv == "back") return openai::Response::ResponseComputerToolCall::Click::Button::BACK;
+    if (sv == "forward") return openai::Response::ResponseComputerToolCall::Click::Button::FORWARD;
     return std::nullopt;
 }
 
@@ -2610,6 +2916,8 @@ constexpr std::string_view to_string_view(openai::Response::ResponseComputerTool
         case openai::Response::ResponseComputerToolCall::Click::Button::LEFT: return "left";
         case openai::Response::ResponseComputerToolCall::Click::Button::RIGHT: return "right";
         case openai::Response::ResponseComputerToolCall::Click::Button::WHEEL: return "wheel";
+        case openai::Response::ResponseComputerToolCall::Click::Button::BACK: return "back";
+        case openai::Response::ResponseComputerToolCall::Click::Button::FORWARD: return "forward";
         default: throw AnnotatedException{"invalid openai::Response::ResponseComputerToolCall::Click::Button"};
     }
 }
@@ -2768,6 +3076,8 @@ from_string_view<openai::Response::ResponseCodeInterpreterToolCall::Status>(std:
     if (sv == "in_progress") return openai::Response::ResponseCodeInterpreterToolCall::Status::IN_PROGRESS;
     if (sv == "completed") return openai::Response::ResponseCodeInterpreterToolCall::Status::COMPLETED;
     if (sv == "incomplete") return openai::Response::ResponseCodeInterpreterToolCall::Status::INCOMPLETE;
+    if (sv == "interpreting") return openai::Response::ResponseCodeInterpreterToolCall::Status::INTERPRETING;
+    if (sv == "failed") return openai::Response::ResponseCodeInterpreterToolCall::Status::FAILED;
     return std::nullopt;
 }
 
@@ -2776,6 +3086,8 @@ constexpr std::string_view to_string_view(openai::Response::ResponseCodeInterpre
         case openai::Response::ResponseCodeInterpreterToolCall::Status::IN_PROGRESS: return "in_progress";
         case openai::Response::ResponseCodeInterpreterToolCall::Status::COMPLETED: return "completed";
         case openai::Response::ResponseCodeInterpreterToolCall::Status::INCOMPLETE: return "incomplete";
+        case openai::Response::ResponseCodeInterpreterToolCall::Status::INTERPRETING: return "interpreting";
+        case openai::Response::ResponseCodeInterpreterToolCall::Status::FAILED: return "failed";
         default: throw AnnotatedException{"invalid openai::Response::ResponseCodeInterpreterToolCall::Status"};
     }
 }
@@ -2890,6 +3202,8 @@ from_string_view<openai::Response::McpCall::Status>(std::string_view sv) {
     if (sv == "in_progress") return openai::Response::McpCall::Status::IN_PROGRESS;
     if (sv == "completed") return openai::Response::McpCall::Status::COMPLETED;
     if (sv == "incomplete") return openai::Response::McpCall::Status::INCOMPLETE;
+    if (sv == "calling") return openai::Response::McpCall::Status::CALLING;
+    if (sv == "failed") return openai::Response::McpCall::Status::FAILED;
     return std::nullopt;
 }
 
@@ -2898,6 +3212,8 @@ constexpr std::string_view to_string_view(openai::Response::McpCall::Status val)
         case openai::Response::McpCall::Status::IN_PROGRESS: return "in_progress";
         case openai::Response::McpCall::Status::COMPLETED: return "completed";
         case openai::Response::McpCall::Status::INCOMPLETE: return "incomplete";
+        case openai::Response::McpCall::Status::CALLING: return "calling";
+        case openai::Response::McpCall::Status::FAILED: return "failed";
         default: throw AnnotatedException{"invalid openai::Response::McpCall::Status"};
     }
 }
@@ -3010,6 +3326,9 @@ from_string_view<openai::Response::ToolChoiceTypes::Type>(std::string_view sv) {
     if (sv == "file_search") return openai::Response::ToolChoiceTypes::Type::FILE_SEARCH;
     if (sv == "web_search_preview") return openai::Response::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW;
     if (sv == "computer_use_preview") return openai::Response::ToolChoiceTypes::Type::COMPUTER_USE_PREVIEW;
+    if (sv == "web_search_preview_2025_03_11") return openai::Response::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW_2025_03_11;
+    if (sv == "image_generation") return openai::Response::ToolChoiceTypes::Type::IMAGE_GENERATION;
+    if (sv == "code_interpreter") return openai::Response::ToolChoiceTypes::Type::CODE_INTERPRETER;
     return std::nullopt;
 }
 
@@ -3018,6 +3337,9 @@ constexpr std::string_view to_string_view(openai::Response::ToolChoiceTypes::Typ
         case openai::Response::ToolChoiceTypes::Type::FILE_SEARCH: return "file_search";
         case openai::Response::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW: return "web_search_preview";
         case openai::Response::ToolChoiceTypes::Type::COMPUTER_USE_PREVIEW: return "computer_use_preview";
+        case openai::Response::ToolChoiceTypes::Type::WEB_SEARCH_PREVIEW_2025_03_11: return "web_search_preview_2025_03_11";
+        case openai::Response::ToolChoiceTypes::Type::IMAGE_GENERATION: return "image_generation";
+        case openai::Response::ToolChoiceTypes::Type::CODE_INTERPRETER: return "code_interpreter";
         default: throw AnnotatedException{"invalid openai::Response::ToolChoiceTypes::Type"};
     }
 }
@@ -3028,6 +3350,9 @@ from_string_view<openai::Response::FileSearchTool::ComparisonFilter::Type>(std::
     if (sv == "eq") return openai::Response::FileSearchTool::ComparisonFilter::Type::EQ;
     if (sv == "ne") return openai::Response::FileSearchTool::ComparisonFilter::Type::NE;
     if (sv == "gt") return openai::Response::FileSearchTool::ComparisonFilter::Type::GT;
+    if (sv == "gte") return openai::Response::FileSearchTool::ComparisonFilter::Type::GTE;
+    if (sv == "lt") return openai::Response::FileSearchTool::ComparisonFilter::Type::LT;
+    if (sv == "lte") return openai::Response::FileSearchTool::ComparisonFilter::Type::LTE;
     return std::nullopt;
 }
 
@@ -3036,6 +3361,9 @@ constexpr std::string_view to_string_view(openai::Response::FileSearchTool::Comp
         case openai::Response::FileSearchTool::ComparisonFilter::Type::EQ: return "eq";
         case openai::Response::FileSearchTool::ComparisonFilter::Type::NE: return "ne";
         case openai::Response::FileSearchTool::ComparisonFilter::Type::GT: return "gt";
+        case openai::Response::FileSearchTool::ComparisonFilter::Type::GTE: return "gte";
+        case openai::Response::FileSearchTool::ComparisonFilter::Type::LT: return "lt";
+        case openai::Response::FileSearchTool::ComparisonFilter::Type::LTE: return "lte";
         default: throw AnnotatedException{"invalid openai::Response::FileSearchTool::ComparisonFilter::Type"};
     }
 }
@@ -3046,6 +3374,9 @@ from_string_view<openai::Response::FileSearchTool::CompoundFilter::ComparisonFil
     if (sv == "eq") return openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::EQ;
     if (sv == "ne") return openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::NE;
     if (sv == "gt") return openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GT;
+    if (sv == "gte") return openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GTE;
+    if (sv == "lt") return openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LT;
+    if (sv == "lte") return openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LTE;
     return std::nullopt;
 }
 
@@ -3054,6 +3385,9 @@ constexpr std::string_view to_string_view(openai::Response::FileSearchTool::Comp
         case openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::EQ: return "eq";
         case openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::NE: return "ne";
         case openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GT: return "gt";
+        case openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::GTE: return "gte";
+        case openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LT: return "lt";
+        case openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type::LTE: return "lte";
         default: throw AnnotatedException{"invalid openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter::Type"};
     }
 }
@@ -3096,6 +3430,8 @@ from_string_view<openai::Response::ComputerTool::Environment>(std::string_view s
     if (sv == "windows") return openai::Response::ComputerTool::Environment::WINDOWS;
     if (sv == "mac") return openai::Response::ComputerTool::Environment::MAC;
     if (sv == "linux") return openai::Response::ComputerTool::Environment::LINUX;
+    if (sv == "ubuntu") return openai::Response::ComputerTool::Environment::UBUNTU;
+    if (sv == "browser") return openai::Response::ComputerTool::Environment::BROWSER;
     return std::nullopt;
 }
 
@@ -3104,6 +3440,8 @@ constexpr std::string_view to_string_view(openai::Response::ComputerTool::Enviro
         case openai::Response::ComputerTool::Environment::WINDOWS: return "windows";
         case openai::Response::ComputerTool::Environment::MAC: return "mac";
         case openai::Response::ComputerTool::Environment::LINUX: return "linux";
+        case openai::Response::ComputerTool::Environment::UBUNTU: return "ubuntu";
+        case openai::Response::ComputerTool::Environment::BROWSER: return "browser";
         default: throw AnnotatedException{"invalid openai::Response::ComputerTool::Environment"};
     }
 }
@@ -3148,6 +3486,11 @@ from_string_view<openai::Response::Mcp::ConnectorId>(std::string_view sv) {
     if (sv == "connector_dropbox") return openai::Response::Mcp::ConnectorId::CONNECTOR_DROPBOX;
     if (sv == "connector_gmail") return openai::Response::Mcp::ConnectorId::CONNECTOR_GMAIL;
     if (sv == "connector_googlecalendar") return openai::Response::Mcp::ConnectorId::CONNECTOR_GOOGLECALENDAR;
+    if (sv == "connector_googledrive") return openai::Response::Mcp::ConnectorId::CONNECTOR_GOOGLEDRIVE;
+    if (sv == "connector_microsoftteams") return openai::Response::Mcp::ConnectorId::CONNECTOR_MICROSOFTTEAMS;
+    if (sv == "connector_outlookcalendar") return openai::Response::Mcp::ConnectorId::CONNECTOR_OUTLOOKCALENDAR;
+    if (sv == "connector_outlookemail") return openai::Response::Mcp::ConnectorId::CONNECTOR_OUTLOOKEMAIL;
+    if (sv == "connector_sharepoint") return openai::Response::Mcp::ConnectorId::CONNECTOR_SHAREPOINT;
     return std::nullopt;
 }
 
@@ -3156,7 +3499,28 @@ constexpr std::string_view to_string_view(openai::Response::Mcp::ConnectorId val
         case openai::Response::Mcp::ConnectorId::CONNECTOR_DROPBOX: return "connector_dropbox";
         case openai::Response::Mcp::ConnectorId::CONNECTOR_GMAIL: return "connector_gmail";
         case openai::Response::Mcp::ConnectorId::CONNECTOR_GOOGLECALENDAR: return "connector_googlecalendar";
+        case openai::Response::Mcp::ConnectorId::CONNECTOR_GOOGLEDRIVE: return "connector_googledrive";
+        case openai::Response::Mcp::ConnectorId::CONNECTOR_MICROSOFTTEAMS: return "connector_microsoftteams";
+        case openai::Response::Mcp::ConnectorId::CONNECTOR_OUTLOOKCALENDAR: return "connector_outlookcalendar";
+        case openai::Response::Mcp::ConnectorId::CONNECTOR_OUTLOOKEMAIL: return "connector_outlookemail";
+        case openai::Response::Mcp::ConnectorId::CONNECTOR_SHAREPOINT: return "connector_sharepoint";
         default: throw AnnotatedException{"invalid openai::Response::Mcp::ConnectorId"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Response::Mcp::RequireApprovalValues>
+from_string_view<openai::Response::Mcp::RequireApprovalValues>(std::string_view sv) {
+    if (sv == "always") return openai::Response::Mcp::RequireApprovalValues::ALWAYS;
+    if (sv == "never") return openai::Response::Mcp::RequireApprovalValues::NEVER;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Response::Mcp::RequireApprovalValues val) {
+    switch (val) {
+        case openai::Response::Mcp::RequireApprovalValues::ALWAYS: return "always";
+        case openai::Response::Mcp::RequireApprovalValues::NEVER: return "never";
+        default: throw AnnotatedException{"invalid openai::Response::Mcp::RequireApprovalValues"};
     }
 }
 
@@ -3233,24 +3597,6 @@ constexpr std::string_view to_string_view(openai::Response::ImageGeneration::Inp
 }
 
 template <>
-constexpr std::optional<openai::Response::ImageGeneration::Model>
-from_string_view<openai::Response::ImageGeneration::Model>(std::string_view sv) {
-    if (sv == "gpt-image-1") return openai::Response::ImageGeneration::Model::GPT_IMAGE_1;
-    if (sv == "gpt-image-1-mini") return openai::Response::ImageGeneration::Model::GPT_IMAGE_1_MINI;
-    if (sv == "gpt-image-1.5") return openai::Response::ImageGeneration::Model::GPT_IMAGE_1_5;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(openai::Response::ImageGeneration::Model val) {
-    switch (val) {
-        case openai::Response::ImageGeneration::Model::GPT_IMAGE_1: return "gpt-image-1";
-        case openai::Response::ImageGeneration::Model::GPT_IMAGE_1_MINI: return "gpt-image-1-mini";
-        case openai::Response::ImageGeneration::Model::GPT_IMAGE_1_5: return "gpt-image-1.5";
-        default: throw AnnotatedException{"invalid openai::Response::ImageGeneration::Model"};
-    }
-}
-
-template <>
 constexpr std::optional<openai::Response::ImageGeneration::Moderation>
 from_string_view<openai::Response::ImageGeneration::Moderation>(std::string_view sv) {
     if (sv == "auto") return openai::Response::ImageGeneration::Moderation::AUTO;
@@ -3321,6 +3667,24 @@ constexpr std::string_view to_string_view(openai::Response::ImageGeneration::Siz
         case openai::Response::ImageGeneration::Size::V_1536X1024: return "1536x1024";
         case openai::Response::ImageGeneration::Size::AUTO: return "auto";
         default: throw AnnotatedException{"invalid openai::Response::ImageGeneration::Size"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Response::ImageGeneration::ModelValues>
+from_string_view<openai::Response::ImageGeneration::ModelValues>(std::string_view sv) {
+    if (sv == "gpt-image-1") return openai::Response::ImageGeneration::ModelValues::GPT_IMAGE_1;
+    if (sv == "gpt-image-1-mini") return openai::Response::ImageGeneration::ModelValues::GPT_IMAGE_1_MINI;
+    if (sv == "gpt-image-1.5") return openai::Response::ImageGeneration::ModelValues::GPT_IMAGE_1_5;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Response::ImageGeneration::ModelValues val) {
+    switch (val) {
+        case openai::Response::ImageGeneration::ModelValues::GPT_IMAGE_1: return "gpt-image-1";
+        case openai::Response::ImageGeneration::ModelValues::GPT_IMAGE_1_MINI: return "gpt-image-1-mini";
+        case openai::Response::ImageGeneration::ModelValues::GPT_IMAGE_1_5: return "gpt-image-1.5";
+        default: throw AnnotatedException{"invalid openai::Response::ImageGeneration::ModelValues"};
     }
 }
 
@@ -3512,6 +3876,8 @@ from_string_view<openai::Response::ServiceTier>(std::string_view sv) {
     if (sv == "auto") return openai::Response::ServiceTier::AUTO;
     if (sv == "default") return openai::Response::ServiceTier::DEFAULT;
     if (sv == "flex") return openai::Response::ServiceTier::FLEX;
+    if (sv == "scale") return openai::Response::ServiceTier::SCALE;
+    if (sv == "priority") return openai::Response::ServiceTier::PRIORITY;
     return std::nullopt;
 }
 
@@ -3520,6 +3886,8 @@ constexpr std::string_view to_string_view(openai::Response::ServiceTier val) {
         case openai::Response::ServiceTier::AUTO: return "auto";
         case openai::Response::ServiceTier::DEFAULT: return "default";
         case openai::Response::ServiceTier::FLEX: return "flex";
+        case openai::Response::ServiceTier::SCALE: return "scale";
+        case openai::Response::ServiceTier::PRIORITY: return "priority";
         default: throw AnnotatedException{"invalid openai::Response::ServiceTier"};
     }
 }
@@ -3564,22 +3932,224 @@ constexpr std::string_view to_string_view(openai::Response::Truncation val) {
     }
 }
 
-// ── from_string_view / to_string_view: Dispatch Enums ─
 template <>
-constexpr std::optional<openai::Request::EasyInputMessage::ResponseInputContentKind>
-from_string_view<openai::Request::EasyInputMessage::ResponseInputContentKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::Request::EasyInputMessage::ResponseInputContentKind::INPUT_TEXT;
-    if (sv == "input_image") return openai::Request::EasyInputMessage::ResponseInputContentKind::INPUT_IMAGE;
-    if (sv == "input_file") return openai::Request::EasyInputMessage::ResponseInputContentKind::INPUT_FILE;
+constexpr std::optional<openai::Response::ResponsesModelValues>
+from_string_view<openai::Response::ResponsesModelValues>(std::string_view sv) {
+    if (sv == "gpt-5.2") return openai::Response::ResponsesModelValues::GPT_5_2;
+    if (sv == "gpt-5.2-2025-12-11") return openai::Response::ResponsesModelValues::GPT_5_2_2025_12_11;
+    if (sv == "gpt-5.2-chat-latest") return openai::Response::ResponsesModelValues::GPT_5_2_CHAT_LATEST;
+    if (sv == "gpt-5.2-pro") return openai::Response::ResponsesModelValues::GPT_5_2_PRO;
+    if (sv == "gpt-5.2-pro-2025-12-11") return openai::Response::ResponsesModelValues::GPT_5_2_PRO_2025_12_11;
+    if (sv == "gpt-5.1") return openai::Response::ResponsesModelValues::GPT_5_1;
+    if (sv == "gpt-5.1-2025-11-13") return openai::Response::ResponsesModelValues::GPT_5_1_2025_11_13;
+    if (sv == "gpt-5.1-codex") return openai::Response::ResponsesModelValues::GPT_5_1_CODEX;
+    if (sv == "gpt-5.1-mini") return openai::Response::ResponsesModelValues::GPT_5_1_MINI;
+    if (sv == "gpt-5.1-chat-latest") return openai::Response::ResponsesModelValues::GPT_5_1_CHAT_LATEST;
+    if (sv == "gpt-5") return openai::Response::ResponsesModelValues::GPT_5;
+    if (sv == "gpt-5-mini") return openai::Response::ResponsesModelValues::GPT_5_MINI;
+    if (sv == "gpt-5-nano") return openai::Response::ResponsesModelValues::GPT_5_NANO;
+    if (sv == "gpt-5-2025-08-07") return openai::Response::ResponsesModelValues::GPT_5_2025_08_07;
+    if (sv == "gpt-5-mini-2025-08-07") return openai::Response::ResponsesModelValues::GPT_5_MINI_2025_08_07;
+    if (sv == "gpt-5-nano-2025-08-07") return openai::Response::ResponsesModelValues::GPT_5_NANO_2025_08_07;
+    if (sv == "gpt-5-chat-latest") return openai::Response::ResponsesModelValues::GPT_5_CHAT_LATEST;
+    if (sv == "gpt-4.1") return openai::Response::ResponsesModelValues::GPT_4_1;
+    if (sv == "gpt-4.1-mini") return openai::Response::ResponsesModelValues::GPT_4_1_MINI;
+    if (sv == "gpt-4.1-nano") return openai::Response::ResponsesModelValues::GPT_4_1_NANO;
+    if (sv == "gpt-4.1-2025-04-14") return openai::Response::ResponsesModelValues::GPT_4_1_2025_04_14;
+    if (sv == "gpt-4.1-mini-2025-04-14") return openai::Response::ResponsesModelValues::GPT_4_1_MINI_2025_04_14;
+    if (sv == "gpt-4.1-nano-2025-04-14") return openai::Response::ResponsesModelValues::GPT_4_1_NANO_2025_04_14;
+    if (sv == "o4-mini") return openai::Response::ResponsesModelValues::O4_MINI;
+    if (sv == "o4-mini-2025-04-16") return openai::Response::ResponsesModelValues::O4_MINI_2025_04_16;
+    if (sv == "o3") return openai::Response::ResponsesModelValues::O3;
+    if (sv == "o3-2025-04-16") return openai::Response::ResponsesModelValues::O3_2025_04_16;
+    if (sv == "o3-mini") return openai::Response::ResponsesModelValues::O3_MINI;
+    if (sv == "o3-mini-2025-01-31") return openai::Response::ResponsesModelValues::O3_MINI_2025_01_31;
+    if (sv == "o1") return openai::Response::ResponsesModelValues::O1;
+    if (sv == "o1-2024-12-17") return openai::Response::ResponsesModelValues::O1_2024_12_17;
+    if (sv == "o1-preview") return openai::Response::ResponsesModelValues::O1_PREVIEW;
+    if (sv == "o1-preview-2024-09-12") return openai::Response::ResponsesModelValues::O1_PREVIEW_2024_09_12;
+    if (sv == "o1-mini") return openai::Response::ResponsesModelValues::O1_MINI;
+    if (sv == "o1-mini-2024-09-12") return openai::Response::ResponsesModelValues::O1_MINI_2024_09_12;
+    if (sv == "gpt-4o") return openai::Response::ResponsesModelValues::GPT_4O;
+    if (sv == "gpt-4o-2024-11-20") return openai::Response::ResponsesModelValues::GPT_4O_2024_11_20;
+    if (sv == "gpt-4o-2024-08-06") return openai::Response::ResponsesModelValues::GPT_4O_2024_08_06;
+    if (sv == "gpt-4o-2024-05-13") return openai::Response::ResponsesModelValues::GPT_4O_2024_05_13;
+    if (sv == "gpt-4o-audio-preview") return openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW;
+    if (sv == "gpt-4o-audio-preview-2024-10-01") return openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_10_01;
+    if (sv == "gpt-4o-audio-preview-2024-12-17") return openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_12_17;
+    if (sv == "gpt-4o-audio-preview-2025-06-03") return openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2025_06_03;
+    if (sv == "gpt-4o-mini-audio-preview") return openai::Response::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW;
+    if (sv == "gpt-4o-mini-audio-preview-2024-12-17") return openai::Response::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17;
+    if (sv == "gpt-4o-search-preview") return openai::Response::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW;
+    if (sv == "gpt-4o-mini-search-preview") return openai::Response::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW;
+    if (sv == "gpt-4o-search-preview-2025-03-11") return openai::Response::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW_2025_03_11;
+    if (sv == "gpt-4o-mini-search-preview-2025-03-11") return openai::Response::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11;
+    if (sv == "chatgpt-4o-latest") return openai::Response::ResponsesModelValues::CHATGPT_4O_LATEST;
+    if (sv == "codex-mini-latest") return openai::Response::ResponsesModelValues::CODEX_MINI_LATEST;
+    if (sv == "gpt-4o-mini") return openai::Response::ResponsesModelValues::GPT_4O_MINI;
+    if (sv == "gpt-4o-mini-2024-07-18") return openai::Response::ResponsesModelValues::GPT_4O_MINI_2024_07_18;
+    if (sv == "gpt-4-turbo") return openai::Response::ResponsesModelValues::GPT_4_TURBO;
+    if (sv == "gpt-4-turbo-2024-04-09") return openai::Response::ResponsesModelValues::GPT_4_TURBO_2024_04_09;
+    if (sv == "gpt-4-0125-preview") return openai::Response::ResponsesModelValues::GPT_4_0125_PREVIEW;
+    if (sv == "gpt-4-turbo-preview") return openai::Response::ResponsesModelValues::GPT_4_TURBO_PREVIEW;
+    if (sv == "gpt-4-1106-preview") return openai::Response::ResponsesModelValues::GPT_4_1106_PREVIEW;
+    if (sv == "gpt-4-vision-preview") return openai::Response::ResponsesModelValues::GPT_4_VISION_PREVIEW;
+    if (sv == "gpt-4") return openai::Response::ResponsesModelValues::GPT_4;
+    if (sv == "gpt-4-0314") return openai::Response::ResponsesModelValues::GPT_4_0314;
+    if (sv == "gpt-4-0613") return openai::Response::ResponsesModelValues::GPT_4_0613;
+    if (sv == "gpt-4-32k") return openai::Response::ResponsesModelValues::GPT_4_32K;
+    if (sv == "gpt-4-32k-0314") return openai::Response::ResponsesModelValues::GPT_4_32K_0314;
+    if (sv == "gpt-4-32k-0613") return openai::Response::ResponsesModelValues::GPT_4_32K_0613;
+    if (sv == "gpt-3.5-turbo") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO;
+    if (sv == "gpt-3.5-turbo-16k") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO_16K;
+    if (sv == "gpt-3.5-turbo-0301") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO_0301;
+    if (sv == "gpt-3.5-turbo-0613") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO_0613;
+    if (sv == "gpt-3.5-turbo-1106") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO_1106;
+    if (sv == "gpt-3.5-turbo-0125") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO_0125;
+    if (sv == "gpt-3.5-turbo-16k-0613") return openai::Response::ResponsesModelValues::GPT_3_5_TURBO_16K_0613;
+    if (sv == "o1-pro") return openai::Response::ResponsesModelValues::O1_PRO;
+    if (sv == "o1-pro-2025-03-19") return openai::Response::ResponsesModelValues::O1_PRO_2025_03_19;
+    if (sv == "o3-pro") return openai::Response::ResponsesModelValues::O3_PRO;
+    if (sv == "o3-pro-2025-06-10") return openai::Response::ResponsesModelValues::O3_PRO_2025_06_10;
+    if (sv == "o3-deep-research") return openai::Response::ResponsesModelValues::O3_DEEP_RESEARCH;
+    if (sv == "o3-deep-research-2025-06-26") return openai::Response::ResponsesModelValues::O3_DEEP_RESEARCH_2025_06_26;
+    if (sv == "o4-mini-deep-research") return openai::Response::ResponsesModelValues::O4_MINI_DEEP_RESEARCH;
+    if (sv == "o4-mini-deep-research-2025-06-26") return openai::Response::ResponsesModelValues::O4_MINI_DEEP_RESEARCH_2025_06_26;
+    if (sv == "computer-use-preview") return openai::Response::ResponsesModelValues::COMPUTER_USE_PREVIEW;
+    if (sv == "computer-use-preview-2025-03-11") return openai::Response::ResponsesModelValues::COMPUTER_USE_PREVIEW_2025_03_11;
+    if (sv == "gpt-5-codex") return openai::Response::ResponsesModelValues::GPT_5_CODEX;
+    if (sv == "gpt-5-pro") return openai::Response::ResponsesModelValues::GPT_5_PRO;
+    if (sv == "gpt-5-pro-2025-10-06") return openai::Response::ResponsesModelValues::GPT_5_PRO_2025_10_06;
+    if (sv == "gpt-5.1-codex-max") return openai::Response::ResponsesModelValues::GPT_5_1_CODEX_MAX;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Request::EasyInputMessage::ResponseInputContentKind val) {
+constexpr std::string_view to_string_view(openai::Response::ResponsesModelValues val) {
     switch (val) {
-        case openai::Request::EasyInputMessage::ResponseInputContentKind::INPUT_TEXT: return "input_text";
-        case openai::Request::EasyInputMessage::ResponseInputContentKind::INPUT_IMAGE: return "input_image";
-        case openai::Request::EasyInputMessage::ResponseInputContentKind::INPUT_FILE: return "input_file";
-        default: throw AnnotatedException{"invalid openai::Request::EasyInputMessage::ResponseInputContentKind"};
+        case openai::Response::ResponsesModelValues::GPT_5_2: return "gpt-5.2";
+        case openai::Response::ResponsesModelValues::GPT_5_2_2025_12_11: return "gpt-5.2-2025-12-11";
+        case openai::Response::ResponsesModelValues::GPT_5_2_CHAT_LATEST: return "gpt-5.2-chat-latest";
+        case openai::Response::ResponsesModelValues::GPT_5_2_PRO: return "gpt-5.2-pro";
+        case openai::Response::ResponsesModelValues::GPT_5_2_PRO_2025_12_11: return "gpt-5.2-pro-2025-12-11";
+        case openai::Response::ResponsesModelValues::GPT_5_1: return "gpt-5.1";
+        case openai::Response::ResponsesModelValues::GPT_5_1_2025_11_13: return "gpt-5.1-2025-11-13";
+        case openai::Response::ResponsesModelValues::GPT_5_1_CODEX: return "gpt-5.1-codex";
+        case openai::Response::ResponsesModelValues::GPT_5_1_MINI: return "gpt-5.1-mini";
+        case openai::Response::ResponsesModelValues::GPT_5_1_CHAT_LATEST: return "gpt-5.1-chat-latest";
+        case openai::Response::ResponsesModelValues::GPT_5: return "gpt-5";
+        case openai::Response::ResponsesModelValues::GPT_5_MINI: return "gpt-5-mini";
+        case openai::Response::ResponsesModelValues::GPT_5_NANO: return "gpt-5-nano";
+        case openai::Response::ResponsesModelValues::GPT_5_2025_08_07: return "gpt-5-2025-08-07";
+        case openai::Response::ResponsesModelValues::GPT_5_MINI_2025_08_07: return "gpt-5-mini-2025-08-07";
+        case openai::Response::ResponsesModelValues::GPT_5_NANO_2025_08_07: return "gpt-5-nano-2025-08-07";
+        case openai::Response::ResponsesModelValues::GPT_5_CHAT_LATEST: return "gpt-5-chat-latest";
+        case openai::Response::ResponsesModelValues::GPT_4_1: return "gpt-4.1";
+        case openai::Response::ResponsesModelValues::GPT_4_1_MINI: return "gpt-4.1-mini";
+        case openai::Response::ResponsesModelValues::GPT_4_1_NANO: return "gpt-4.1-nano";
+        case openai::Response::ResponsesModelValues::GPT_4_1_2025_04_14: return "gpt-4.1-2025-04-14";
+        case openai::Response::ResponsesModelValues::GPT_4_1_MINI_2025_04_14: return "gpt-4.1-mini-2025-04-14";
+        case openai::Response::ResponsesModelValues::GPT_4_1_NANO_2025_04_14: return "gpt-4.1-nano-2025-04-14";
+        case openai::Response::ResponsesModelValues::O4_MINI: return "o4-mini";
+        case openai::Response::ResponsesModelValues::O4_MINI_2025_04_16: return "o4-mini-2025-04-16";
+        case openai::Response::ResponsesModelValues::O3: return "o3";
+        case openai::Response::ResponsesModelValues::O3_2025_04_16: return "o3-2025-04-16";
+        case openai::Response::ResponsesModelValues::O3_MINI: return "o3-mini";
+        case openai::Response::ResponsesModelValues::O3_MINI_2025_01_31: return "o3-mini-2025-01-31";
+        case openai::Response::ResponsesModelValues::O1: return "o1";
+        case openai::Response::ResponsesModelValues::O1_2024_12_17: return "o1-2024-12-17";
+        case openai::Response::ResponsesModelValues::O1_PREVIEW: return "o1-preview";
+        case openai::Response::ResponsesModelValues::O1_PREVIEW_2024_09_12: return "o1-preview-2024-09-12";
+        case openai::Response::ResponsesModelValues::O1_MINI: return "o1-mini";
+        case openai::Response::ResponsesModelValues::O1_MINI_2024_09_12: return "o1-mini-2024-09-12";
+        case openai::Response::ResponsesModelValues::GPT_4O: return "gpt-4o";
+        case openai::Response::ResponsesModelValues::GPT_4O_2024_11_20: return "gpt-4o-2024-11-20";
+        case openai::Response::ResponsesModelValues::GPT_4O_2024_08_06: return "gpt-4o-2024-08-06";
+        case openai::Response::ResponsesModelValues::GPT_4O_2024_05_13: return "gpt-4o-2024-05-13";
+        case openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW: return "gpt-4o-audio-preview";
+        case openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_10_01: return "gpt-4o-audio-preview-2024-10-01";
+        case openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2024_12_17: return "gpt-4o-audio-preview-2024-12-17";
+        case openai::Response::ResponsesModelValues::GPT_4O_AUDIO_PREVIEW_2025_06_03: return "gpt-4o-audio-preview-2025-06-03";
+        case openai::Response::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW: return "gpt-4o-mini-audio-preview";
+        case openai::Response::ResponsesModelValues::GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17: return "gpt-4o-mini-audio-preview-2024-12-17";
+        case openai::Response::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW: return "gpt-4o-search-preview";
+        case openai::Response::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW: return "gpt-4o-mini-search-preview";
+        case openai::Response::ResponsesModelValues::GPT_4O_SEARCH_PREVIEW_2025_03_11: return "gpt-4o-search-preview-2025-03-11";
+        case openai::Response::ResponsesModelValues::GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11: return "gpt-4o-mini-search-preview-2025-03-11";
+        case openai::Response::ResponsesModelValues::CHATGPT_4O_LATEST: return "chatgpt-4o-latest";
+        case openai::Response::ResponsesModelValues::CODEX_MINI_LATEST: return "codex-mini-latest";
+        case openai::Response::ResponsesModelValues::GPT_4O_MINI: return "gpt-4o-mini";
+        case openai::Response::ResponsesModelValues::GPT_4O_MINI_2024_07_18: return "gpt-4o-mini-2024-07-18";
+        case openai::Response::ResponsesModelValues::GPT_4_TURBO: return "gpt-4-turbo";
+        case openai::Response::ResponsesModelValues::GPT_4_TURBO_2024_04_09: return "gpt-4-turbo-2024-04-09";
+        case openai::Response::ResponsesModelValues::GPT_4_0125_PREVIEW: return "gpt-4-0125-preview";
+        case openai::Response::ResponsesModelValues::GPT_4_TURBO_PREVIEW: return "gpt-4-turbo-preview";
+        case openai::Response::ResponsesModelValues::GPT_4_1106_PREVIEW: return "gpt-4-1106-preview";
+        case openai::Response::ResponsesModelValues::GPT_4_VISION_PREVIEW: return "gpt-4-vision-preview";
+        case openai::Response::ResponsesModelValues::GPT_4: return "gpt-4";
+        case openai::Response::ResponsesModelValues::GPT_4_0314: return "gpt-4-0314";
+        case openai::Response::ResponsesModelValues::GPT_4_0613: return "gpt-4-0613";
+        case openai::Response::ResponsesModelValues::GPT_4_32K: return "gpt-4-32k";
+        case openai::Response::ResponsesModelValues::GPT_4_32K_0314: return "gpt-4-32k-0314";
+        case openai::Response::ResponsesModelValues::GPT_4_32K_0613: return "gpt-4-32k-0613";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO: return "gpt-3.5-turbo";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO_16K: return "gpt-3.5-turbo-16k";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO_0301: return "gpt-3.5-turbo-0301";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO_0613: return "gpt-3.5-turbo-0613";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO_1106: return "gpt-3.5-turbo-1106";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO_0125: return "gpt-3.5-turbo-0125";
+        case openai::Response::ResponsesModelValues::GPT_3_5_TURBO_16K_0613: return "gpt-3.5-turbo-16k-0613";
+        case openai::Response::ResponsesModelValues::O1_PRO: return "o1-pro";
+        case openai::Response::ResponsesModelValues::O1_PRO_2025_03_19: return "o1-pro-2025-03-19";
+        case openai::Response::ResponsesModelValues::O3_PRO: return "o3-pro";
+        case openai::Response::ResponsesModelValues::O3_PRO_2025_06_10: return "o3-pro-2025-06-10";
+        case openai::Response::ResponsesModelValues::O3_DEEP_RESEARCH: return "o3-deep-research";
+        case openai::Response::ResponsesModelValues::O3_DEEP_RESEARCH_2025_06_26: return "o3-deep-research-2025-06-26";
+        case openai::Response::ResponsesModelValues::O4_MINI_DEEP_RESEARCH: return "o4-mini-deep-research";
+        case openai::Response::ResponsesModelValues::O4_MINI_DEEP_RESEARCH_2025_06_26: return "o4-mini-deep-research-2025-06-26";
+        case openai::Response::ResponsesModelValues::COMPUTER_USE_PREVIEW: return "computer-use-preview";
+        case openai::Response::ResponsesModelValues::COMPUTER_USE_PREVIEW_2025_03_11: return "computer-use-preview-2025-03-11";
+        case openai::Response::ResponsesModelValues::GPT_5_CODEX: return "gpt-5-codex";
+        case openai::Response::ResponsesModelValues::GPT_5_PRO: return "gpt-5-pro";
+        case openai::Response::ResponsesModelValues::GPT_5_PRO_2025_10_06: return "gpt-5-pro-2025-10-06";
+        case openai::Response::ResponsesModelValues::GPT_5_1_CODEX_MAX: return "gpt-5.1-codex-max";
+        default: throw AnnotatedException{"invalid openai::Response::ResponsesModelValues"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Response::ToolChoiceValues>
+from_string_view<openai::Response::ToolChoiceValues>(std::string_view sv) {
+    if (sv == "none") return openai::Response::ToolChoiceValues::NONE;
+    if (sv == "auto") return openai::Response::ToolChoiceValues::AUTO;
+    if (sv == "required") return openai::Response::ToolChoiceValues::REQUIRED;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Response::ToolChoiceValues val) {
+    switch (val) {
+        case openai::Response::ToolChoiceValues::NONE: return "none";
+        case openai::Response::ToolChoiceValues::AUTO: return "auto";
+        case openai::Response::ToolChoiceValues::REQUIRED: return "required";
+        default: throw AnnotatedException{"invalid openai::Response::ToolChoiceValues"};
+    }
+}
+
+// ── from_string_view / to_string_view: Dispatch Enums ─
+template <>
+constexpr std::optional<openai::Request::EasyInputMessage::ContentItemKind>
+from_string_view<openai::Request::EasyInputMessage::ContentItemKind>(std::string_view sv) {
+    if (sv == "input_text") return openai::Request::EasyInputMessage::ContentItemKind::INPUT_TEXT;
+    if (sv == "input_image") return openai::Request::EasyInputMessage::ContentItemKind::INPUT_IMAGE;
+    if (sv == "input_file") return openai::Request::EasyInputMessage::ContentItemKind::INPUT_FILE;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::EasyInputMessage::ContentItemKind val) {
+    switch (val) {
+        case openai::Request::EasyInputMessage::ContentItemKind::INPUT_TEXT: return "input_text";
+        case openai::Request::EasyInputMessage::ContentItemKind::INPUT_IMAGE: return "input_image";
+        case openai::Request::EasyInputMessage::ContentItemKind::INPUT_FILE: return "input_file";
+        default: throw AnnotatedException{"invalid openai::Request::EasyInputMessage::ContentItemKind"};
     }
 }
 
@@ -3686,20 +4256,20 @@ constexpr std::string_view to_string_view(openai::Request::ResponseFunctionWebSe
 }
 
 template <>
-constexpr std::optional<openai::Request::FunctionCallOutput::OutputKind>
-from_string_view<openai::Request::FunctionCallOutput::OutputKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::Request::FunctionCallOutput::OutputKind::INPUT_TEXT;
-    if (sv == "input_image") return openai::Request::FunctionCallOutput::OutputKind::INPUT_IMAGE;
-    if (sv == "input_file") return openai::Request::FunctionCallOutput::OutputKind::INPUT_FILE;
+constexpr std::optional<openai::Request::FunctionCallOutput::OutputItemKind>
+from_string_view<openai::Request::FunctionCallOutput::OutputItemKind>(std::string_view sv) {
+    if (sv == "input_text") return openai::Request::FunctionCallOutput::OutputItemKind::INPUT_TEXT;
+    if (sv == "input_image") return openai::Request::FunctionCallOutput::OutputItemKind::INPUT_IMAGE;
+    if (sv == "input_file") return openai::Request::FunctionCallOutput::OutputItemKind::INPUT_FILE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Request::FunctionCallOutput::OutputKind val) {
+constexpr std::string_view to_string_view(openai::Request::FunctionCallOutput::OutputItemKind val) {
     switch (val) {
-        case openai::Request::FunctionCallOutput::OutputKind::INPUT_TEXT: return "input_text";
-        case openai::Request::FunctionCallOutput::OutputKind::INPUT_IMAGE: return "input_image";
-        case openai::Request::FunctionCallOutput::OutputKind::INPUT_FILE: return "input_file";
-        default: throw AnnotatedException{"invalid openai::Request::FunctionCallOutput::OutputKind"};
+        case openai::Request::FunctionCallOutput::OutputItemKind::INPUT_TEXT: return "input_text";
+        case openai::Request::FunctionCallOutput::OutputItemKind::INPUT_IMAGE: return "input_image";
+        case openai::Request::FunctionCallOutput::OutputItemKind::INPUT_FILE: return "input_file";
+        default: throw AnnotatedException{"invalid openai::Request::FunctionCallOutput::OutputItemKind"};
     }
 }
 
@@ -3770,20 +4340,20 @@ constexpr std::string_view to_string_view(openai::Request::ApplyPatchCall::Opera
 }
 
 template <>
-constexpr std::optional<openai::Request::ResponsePrompt::VariablesKind>
-from_string_view<openai::Request::ResponsePrompt::VariablesKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::Request::ResponsePrompt::VariablesKind::INPUT_TEXT;
-    if (sv == "input_image") return openai::Request::ResponsePrompt::VariablesKind::INPUT_IMAGE;
-    if (sv == "input_file") return openai::Request::ResponsePrompt::VariablesKind::INPUT_FILE;
+constexpr std::optional<openai::Request::ResponseCustomToolCallOutput::OutputItemKind>
+from_string_view<openai::Request::ResponseCustomToolCallOutput::OutputItemKind>(std::string_view sv) {
+    if (sv == "input_text") return openai::Request::ResponseCustomToolCallOutput::OutputItemKind::INPUT_TEXT;
+    if (sv == "input_image") return openai::Request::ResponseCustomToolCallOutput::OutputItemKind::INPUT_IMAGE;
+    if (sv == "input_file") return openai::Request::ResponseCustomToolCallOutput::OutputItemKind::INPUT_FILE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Request::ResponsePrompt::VariablesKind val) {
+constexpr std::string_view to_string_view(openai::Request::ResponseCustomToolCallOutput::OutputItemKind val) {
     switch (val) {
-        case openai::Request::ResponsePrompt::VariablesKind::INPUT_TEXT: return "input_text";
-        case openai::Request::ResponsePrompt::VariablesKind::INPUT_IMAGE: return "input_image";
-        case openai::Request::ResponsePrompt::VariablesKind::INPUT_FILE: return "input_file";
-        default: throw AnnotatedException{"invalid openai::Request::ResponsePrompt::VariablesKind"};
+        case openai::Request::ResponseCustomToolCallOutput::OutputItemKind::INPUT_TEXT: return "input_text";
+        case openai::Request::ResponseCustomToolCallOutput::OutputItemKind::INPUT_IMAGE: return "input_image";
+        case openai::Request::ResponseCustomToolCallOutput::OutputItemKind::INPUT_FILE: return "input_file";
+        default: throw AnnotatedException{"invalid openai::Request::ResponseCustomToolCallOutput::OutputItemKind"};
     }
 }
 
@@ -3902,92 +4472,65 @@ constexpr std::string_view to_string_view(openai::Request::CustomTool::CustomToo
 }
 
 template <>
-constexpr std::optional<openai::Request::ResponseInputItemKind>
-from_string_view<openai::Request::ResponseInputItemKind>(std::string_view sv) {
-    if (sv == "message") return openai::Request::ResponseInputItemKind::EASY_INPUT_MESSAGE;
-    if (sv == "assistant") return openai::Request::ResponseInputItemKind::ASSISTANT;
-    if (sv == "file_search_call") return openai::Request::ResponseInputItemKind::FILE_SEARCH_CALL;
-    if (sv == "computer_call") return openai::Request::ResponseInputItemKind::COMPUTER_CALL;
-    if (sv == "computer_call_output") return openai::Request::ResponseInputItemKind::COMPUTER_CALL_OUTPUT;
-    if (sv == "web_search_call") return openai::Request::ResponseInputItemKind::WEB_SEARCH_CALL;
-    if (sv == "function_call") return openai::Request::ResponseInputItemKind::FUNCTION_CALL;
-    if (sv == "function_call_output") return openai::Request::ResponseInputItemKind::FUNCTION_CALL_OUTPUT;
-    if (sv == "reasoning") return openai::Request::ResponseInputItemKind::REASONING;
-    if (sv == "compaction") return openai::Request::ResponseInputItemKind::COMPACTION;
-    if (sv == "image_generation_call") return openai::Request::ResponseInputItemKind::IMAGE_GENERATION_CALL;
-    if (sv == "code_interpreter_call") return openai::Request::ResponseInputItemKind::CODE_INTERPRETER_CALL;
-    if (sv == "local_shell_call") return openai::Request::ResponseInputItemKind::LOCAL_SHELL_CALL;
-    if (sv == "local_shell_call_output") return openai::Request::ResponseInputItemKind::LOCAL_SHELL_CALL_OUTPUT;
-    if (sv == "shell_call") return openai::Request::ResponseInputItemKind::SHELL_CALL;
-    if (sv == "shell_call_output") return openai::Request::ResponseInputItemKind::SHELL_CALL_OUTPUT;
-    if (sv == "apply_patch_call") return openai::Request::ResponseInputItemKind::APPLY_PATCH_CALL;
-    if (sv == "apply_patch_call_output") return openai::Request::ResponseInputItemKind::APPLY_PATCH_CALL_OUTPUT;
-    if (sv == "mcp_list_tools") return openai::Request::ResponseInputItemKind::MCP_LIST_TOOLS;
-    if (sv == "mcp_approval_request") return openai::Request::ResponseInputItemKind::MCP_APPROVAL_REQUEST;
-    if (sv == "mcp_approval_response") return openai::Request::ResponseInputItemKind::MCP_APPROVAL_RESPONSE;
-    if (sv == "mcp_call") return openai::Request::ResponseInputItemKind::MCP_CALL;
-    if (sv == "custom_tool_call_output") return openai::Request::ResponseInputItemKind::CUSTOM_TOOL_CALL_OUTPUT;
-    if (sv == "custom_tool_call") return openai::Request::ResponseInputItemKind::CUSTOM_TOOL_CALL;
-    if (sv == "item_reference") return openai::Request::ResponseInputItemKind::ITEM_REFERENCE;
-    if (sv == "allowed_tools") return openai::Request::ResponseInputItemKind::ALLOWED_TOOLS;
-    if (sv == "function") return openai::Request::ResponseInputItemKind::TOOL_CHOICE_FUNCTION;
-    if (sv == "mcp") return openai::Request::ResponseInputItemKind::TOOL_CHOICE_MCP;
-    if (sv == "custom") return openai::Request::ResponseInputItemKind::TOOL_CHOICE_CUSTOM;
-    if (sv == "apply_patch") return openai::Request::ResponseInputItemKind::TOOL_CHOICE_APPLY_PATCH;
-    if (sv == "shell") return openai::Request::ResponseInputItemKind::TOOL_CHOICE_SHELL;
-    if (sv == "file_search") return openai::Request::ResponseInputItemKind::FILE_SEARCH;
-    if (sv == "computer_use_preview") return openai::Request::ResponseInputItemKind::COMPUTER_USE_PREVIEW;
-    if (sv == "code_interpreter") return openai::Request::ResponseInputItemKind::CODE_INTERPRETER;
-    if (sv == "image_generation") return openai::Request::ResponseInputItemKind::IMAGE_GENERATION;
-    if (sv == "local_shell") return openai::Request::ResponseInputItemKind::LOCAL_SHELL;
+constexpr std::optional<openai::Request::InputItemKind>
+from_string_view<openai::Request::InputItemKind>(std::string_view sv) {
+    if (sv == "message") return openai::Request::InputItemKind::EASY_INPUT_MESSAGE;
+    if (sv == "assistant") return openai::Request::InputItemKind::ASSISTANT;
+    if (sv == "file_search_call") return openai::Request::InputItemKind::FILE_SEARCH_CALL;
+    if (sv == "computer_call") return openai::Request::InputItemKind::COMPUTER_CALL;
+    if (sv == "computer_call_output") return openai::Request::InputItemKind::COMPUTER_CALL_OUTPUT;
+    if (sv == "web_search_call") return openai::Request::InputItemKind::WEB_SEARCH_CALL;
+    if (sv == "function_call") return openai::Request::InputItemKind::FUNCTION_CALL;
+    if (sv == "function_call_output") return openai::Request::InputItemKind::FUNCTION_CALL_OUTPUT;
+    if (sv == "reasoning") return openai::Request::InputItemKind::REASONING;
+    if (sv == "compaction") return openai::Request::InputItemKind::COMPACTION;
+    if (sv == "image_generation_call") return openai::Request::InputItemKind::IMAGE_GENERATION_CALL;
+    if (sv == "code_interpreter_call") return openai::Request::InputItemKind::CODE_INTERPRETER_CALL;
+    if (sv == "local_shell_call") return openai::Request::InputItemKind::LOCAL_SHELL_CALL;
+    if (sv == "local_shell_call_output") return openai::Request::InputItemKind::LOCAL_SHELL_CALL_OUTPUT;
+    if (sv == "shell_call") return openai::Request::InputItemKind::SHELL_CALL;
+    if (sv == "shell_call_output") return openai::Request::InputItemKind::SHELL_CALL_OUTPUT;
+    if (sv == "apply_patch_call") return openai::Request::InputItemKind::APPLY_PATCH_CALL;
+    if (sv == "apply_patch_call_output") return openai::Request::InputItemKind::APPLY_PATCH_CALL_OUTPUT;
+    if (sv == "mcp_list_tools") return openai::Request::InputItemKind::MCP_LIST_TOOLS;
+    if (sv == "mcp_approval_request") return openai::Request::InputItemKind::MCP_APPROVAL_REQUEST;
+    if (sv == "mcp_approval_response") return openai::Request::InputItemKind::MCP_APPROVAL_RESPONSE;
+    if (sv == "mcp_call") return openai::Request::InputItemKind::MCP_CALL;
+    if (sv == "custom_tool_call_output") return openai::Request::InputItemKind::CUSTOM_TOOL_CALL_OUTPUT;
+    if (sv == "custom_tool_call") return openai::Request::InputItemKind::CUSTOM_TOOL_CALL;
+    if (sv == "item_reference") return openai::Request::InputItemKind::ITEM_REFERENCE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Request::ResponseInputItemKind val) {
+constexpr std::string_view to_string_view(openai::Request::InputItemKind val) {
     switch (val) {
-        case openai::Request::ResponseInputItemKind::EASY_INPUT_MESSAGE: return "message";
-        case openai::Request::ResponseInputItemKind::MESSAGE: return "message";
-        case openai::Request::ResponseInputItemKind::ASSISTANT: return "assistant";
-        case openai::Request::ResponseInputItemKind::FILE_SEARCH_CALL: return "file_search_call";
-        case openai::Request::ResponseInputItemKind::COMPUTER_CALL: return "computer_call";
-        case openai::Request::ResponseInputItemKind::COMPUTER_CALL_OUTPUT: return "computer_call_output";
-        case openai::Request::ResponseInputItemKind::WEB_SEARCH_CALL: return "web_search_call";
-        case openai::Request::ResponseInputItemKind::FUNCTION_CALL: return "function_call";
-        case openai::Request::ResponseInputItemKind::FUNCTION_CALL_OUTPUT: return "function_call_output";
-        case openai::Request::ResponseInputItemKind::REASONING: return "reasoning";
-        case openai::Request::ResponseInputItemKind::COMPACTION: return "compaction";
-        case openai::Request::ResponseInputItemKind::IMAGE_GENERATION_CALL: return "image_generation_call";
-        case openai::Request::ResponseInputItemKind::CODE_INTERPRETER_CALL: return "code_interpreter_call";
-        case openai::Request::ResponseInputItemKind::LOCAL_SHELL_CALL: return "local_shell_call";
-        case openai::Request::ResponseInputItemKind::LOCAL_SHELL_CALL_OUTPUT: return "local_shell_call_output";
-        case openai::Request::ResponseInputItemKind::SHELL_CALL: return "shell_call";
-        case openai::Request::ResponseInputItemKind::SHELL_CALL_OUTPUT: return "shell_call_output";
-        case openai::Request::ResponseInputItemKind::APPLY_PATCH_CALL: return "apply_patch_call";
-        case openai::Request::ResponseInputItemKind::APPLY_PATCH_CALL_OUTPUT: return "apply_patch_call_output";
-        case openai::Request::ResponseInputItemKind::MCP_LIST_TOOLS: return "mcp_list_tools";
-        case openai::Request::ResponseInputItemKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
-        case openai::Request::ResponseInputItemKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
-        case openai::Request::ResponseInputItemKind::MCP_CALL: return "mcp_call";
-        case openai::Request::ResponseInputItemKind::CUSTOM_TOOL_CALL_OUTPUT: return "custom_tool_call_output";
-        case openai::Request::ResponseInputItemKind::CUSTOM_TOOL_CALL: return "custom_tool_call";
-        case openai::Request::ResponseInputItemKind::ITEM_REFERENCE: return "item_reference";
-        case openai::Request::ResponseInputItemKind::ALLOWED_TOOLS: return "allowed_tools";
-        case openai::Request::ResponseInputItemKind::TOOL_CHOICE_FUNCTION: return "function";
-        case openai::Request::ResponseInputItemKind::TOOL_CHOICE_MCP: return "mcp";
-        case openai::Request::ResponseInputItemKind::TOOL_CHOICE_CUSTOM: return "custom";
-        case openai::Request::ResponseInputItemKind::TOOL_CHOICE_APPLY_PATCH: return "apply_patch";
-        case openai::Request::ResponseInputItemKind::TOOL_CHOICE_SHELL: return "shell";
-        case openai::Request::ResponseInputItemKind::FUNCTION_TOOL: return "function";
-        case openai::Request::ResponseInputItemKind::FILE_SEARCH: return "file_search";
-        case openai::Request::ResponseInputItemKind::COMPUTER_USE_PREVIEW: return "computer_use_preview";
-        case openai::Request::ResponseInputItemKind::MCP: return "mcp";
-        case openai::Request::ResponseInputItemKind::CODE_INTERPRETER: return "code_interpreter";
-        case openai::Request::ResponseInputItemKind::IMAGE_GENERATION: return "image_generation";
-        case openai::Request::ResponseInputItemKind::LOCAL_SHELL: return "local_shell";
-        case openai::Request::ResponseInputItemKind::FUNCTION_SHELL_TOOL: return "shell";
-        case openai::Request::ResponseInputItemKind::CUSTOM_TOOL: return "custom";
-        case openai::Request::ResponseInputItemKind::APPLY_PATCH_TOOL: return "apply_patch";
-        default: throw AnnotatedException{"invalid openai::Request::ResponseInputItemKind"};
+        case openai::Request::InputItemKind::EASY_INPUT_MESSAGE: return "message";
+        case openai::Request::InputItemKind::MESSAGE: return "message";
+        case openai::Request::InputItemKind::ASSISTANT: return "assistant";
+        case openai::Request::InputItemKind::FILE_SEARCH_CALL: return "file_search_call";
+        case openai::Request::InputItemKind::COMPUTER_CALL: return "computer_call";
+        case openai::Request::InputItemKind::COMPUTER_CALL_OUTPUT: return "computer_call_output";
+        case openai::Request::InputItemKind::WEB_SEARCH_CALL: return "web_search_call";
+        case openai::Request::InputItemKind::FUNCTION_CALL: return "function_call";
+        case openai::Request::InputItemKind::FUNCTION_CALL_OUTPUT: return "function_call_output";
+        case openai::Request::InputItemKind::REASONING: return "reasoning";
+        case openai::Request::InputItemKind::COMPACTION: return "compaction";
+        case openai::Request::InputItemKind::IMAGE_GENERATION_CALL: return "image_generation_call";
+        case openai::Request::InputItemKind::CODE_INTERPRETER_CALL: return "code_interpreter_call";
+        case openai::Request::InputItemKind::LOCAL_SHELL_CALL: return "local_shell_call";
+        case openai::Request::InputItemKind::LOCAL_SHELL_CALL_OUTPUT: return "local_shell_call_output";
+        case openai::Request::InputItemKind::SHELL_CALL: return "shell_call";
+        case openai::Request::InputItemKind::SHELL_CALL_OUTPUT: return "shell_call_output";
+        case openai::Request::InputItemKind::APPLY_PATCH_CALL: return "apply_patch_call";
+        case openai::Request::InputItemKind::APPLY_PATCH_CALL_OUTPUT: return "apply_patch_call_output";
+        case openai::Request::InputItemKind::MCP_LIST_TOOLS: return "mcp_list_tools";
+        case openai::Request::InputItemKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
+        case openai::Request::InputItemKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
+        case openai::Request::InputItemKind::MCP_CALL: return "mcp_call";
+        case openai::Request::InputItemKind::CUSTOM_TOOL_CALL_OUTPUT: return "custom_tool_call_output";
+        case openai::Request::InputItemKind::CUSTOM_TOOL_CALL: return "custom_tool_call";
+        case openai::Request::InputItemKind::ITEM_REFERENCE: return "item_reference";
+        default: throw AnnotatedException{"invalid openai::Request::InputItemKind"};
     }
 }
 
@@ -4048,20 +4591,20 @@ constexpr std::string_view to_string_view(openai::Request::ToolKind val) {
 }
 
 template <>
-constexpr std::optional<openai::Response::EasyInputMessage::ResponseInputContentKind>
-from_string_view<openai::Response::EasyInputMessage::ResponseInputContentKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::Response::EasyInputMessage::ResponseInputContentKind::INPUT_TEXT;
-    if (sv == "input_image") return openai::Response::EasyInputMessage::ResponseInputContentKind::INPUT_IMAGE;
-    if (sv == "input_file") return openai::Response::EasyInputMessage::ResponseInputContentKind::INPUT_FILE;
+constexpr std::optional<openai::Response::EasyInputMessage::ContentItemKind>
+from_string_view<openai::Response::EasyInputMessage::ContentItemKind>(std::string_view sv) {
+    if (sv == "input_text") return openai::Response::EasyInputMessage::ContentItemKind::INPUT_TEXT;
+    if (sv == "input_image") return openai::Response::EasyInputMessage::ContentItemKind::INPUT_IMAGE;
+    if (sv == "input_file") return openai::Response::EasyInputMessage::ContentItemKind::INPUT_FILE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Response::EasyInputMessage::ResponseInputContentKind val) {
+constexpr std::string_view to_string_view(openai::Response::EasyInputMessage::ContentItemKind val) {
     switch (val) {
-        case openai::Response::EasyInputMessage::ResponseInputContentKind::INPUT_TEXT: return "input_text";
-        case openai::Response::EasyInputMessage::ResponseInputContentKind::INPUT_IMAGE: return "input_image";
-        case openai::Response::EasyInputMessage::ResponseInputContentKind::INPUT_FILE: return "input_file";
-        default: throw AnnotatedException{"invalid openai::Response::EasyInputMessage::ResponseInputContentKind"};
+        case openai::Response::EasyInputMessage::ContentItemKind::INPUT_TEXT: return "input_text";
+        case openai::Response::EasyInputMessage::ContentItemKind::INPUT_IMAGE: return "input_image";
+        case openai::Response::EasyInputMessage::ContentItemKind::INPUT_FILE: return "input_file";
+        default: throw AnnotatedException{"invalid openai::Response::EasyInputMessage::ContentItemKind"};
     }
 }
 
@@ -4168,20 +4711,20 @@ constexpr std::string_view to_string_view(openai::Response::ResponseFunctionWebS
 }
 
 template <>
-constexpr std::optional<openai::Response::FunctionCallOutput::OutputKind>
-from_string_view<openai::Response::FunctionCallOutput::OutputKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::Response::FunctionCallOutput::OutputKind::INPUT_TEXT;
-    if (sv == "input_image") return openai::Response::FunctionCallOutput::OutputKind::INPUT_IMAGE;
-    if (sv == "input_file") return openai::Response::FunctionCallOutput::OutputKind::INPUT_FILE;
+constexpr std::optional<openai::Response::FunctionCallOutput::OutputItemKind>
+from_string_view<openai::Response::FunctionCallOutput::OutputItemKind>(std::string_view sv) {
+    if (sv == "input_text") return openai::Response::FunctionCallOutput::OutputItemKind::INPUT_TEXT;
+    if (sv == "input_image") return openai::Response::FunctionCallOutput::OutputItemKind::INPUT_IMAGE;
+    if (sv == "input_file") return openai::Response::FunctionCallOutput::OutputItemKind::INPUT_FILE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Response::FunctionCallOutput::OutputKind val) {
+constexpr std::string_view to_string_view(openai::Response::FunctionCallOutput::OutputItemKind val) {
     switch (val) {
-        case openai::Response::FunctionCallOutput::OutputKind::INPUT_TEXT: return "input_text";
-        case openai::Response::FunctionCallOutput::OutputKind::INPUT_IMAGE: return "input_image";
-        case openai::Response::FunctionCallOutput::OutputKind::INPUT_FILE: return "input_file";
-        default: throw AnnotatedException{"invalid openai::Response::FunctionCallOutput::OutputKind"};
+        case openai::Response::FunctionCallOutput::OutputItemKind::INPUT_TEXT: return "input_text";
+        case openai::Response::FunctionCallOutput::OutputItemKind::INPUT_IMAGE: return "input_image";
+        case openai::Response::FunctionCallOutput::OutputItemKind::INPUT_FILE: return "input_file";
+        default: throw AnnotatedException{"invalid openai::Response::FunctionCallOutput::OutputItemKind"};
     }
 }
 
@@ -4248,6 +4791,24 @@ constexpr std::string_view to_string_view(openai::Response::ApplyPatchCall::Oper
         case openai::Response::ApplyPatchCall::OperationKind::DELETE_FILE: return "delete_file";
         case openai::Response::ApplyPatchCall::OperationKind::UPDATE_FILE: return "update_file";
         default: throw AnnotatedException{"invalid openai::Response::ApplyPatchCall::OperationKind"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Response::ResponseCustomToolCallOutput::OutputItemKind>
+from_string_view<openai::Response::ResponseCustomToolCallOutput::OutputItemKind>(std::string_view sv) {
+    if (sv == "input_text") return openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_TEXT;
+    if (sv == "input_image") return openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_IMAGE;
+    if (sv == "input_file") return openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_FILE;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Response::ResponseCustomToolCallOutput::OutputItemKind val) {
+    switch (val) {
+        case openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_TEXT: return "input_text";
+        case openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_IMAGE: return "input_image";
+        case openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_FILE: return "input_file";
+        default: throw AnnotatedException{"invalid openai::Response::ResponseCustomToolCallOutput::OutputItemKind"};
     }
 }
 
@@ -4398,24 +4959,6 @@ constexpr std::string_view to_string_view(openai::Response::CustomTool::CustomTo
 }
 
 template <>
-constexpr std::optional<openai::Response::ResponsePrompt::VariablesKind>
-from_string_view<openai::Response::ResponsePrompt::VariablesKind>(std::string_view sv) {
-    if (sv == "input_text") return openai::Response::ResponsePrompt::VariablesKind::INPUT_TEXT;
-    if (sv == "input_image") return openai::Response::ResponsePrompt::VariablesKind::INPUT_IMAGE;
-    if (sv == "input_file") return openai::Response::ResponsePrompt::VariablesKind::INPUT_FILE;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(openai::Response::ResponsePrompt::VariablesKind val) {
-    switch (val) {
-        case openai::Response::ResponsePrompt::VariablesKind::INPUT_TEXT: return "input_text";
-        case openai::Response::ResponsePrompt::VariablesKind::INPUT_IMAGE: return "input_image";
-        case openai::Response::ResponsePrompt::VariablesKind::INPUT_FILE: return "input_file";
-        default: throw AnnotatedException{"invalid openai::Response::ResponsePrompt::VariablesKind"};
-    }
-}
-
-template <>
 constexpr std::optional<openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind>
 from_string_view<openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind>(std::string_view sv) {
     if (sv == "text") return openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::TEXT;
@@ -4434,97 +4977,65 @@ constexpr std::string_view to_string_view(openai::Response::ResponseTextConfig::
 }
 
 template <>
-constexpr std::optional<openai::Response::ResponseInputItemKind>
-from_string_view<openai::Response::ResponseInputItemKind>(std::string_view sv) {
-    if (sv == "message") return openai::Response::ResponseInputItemKind::EASY_INPUT_MESSAGE;
-    if (sv == "assistant") return openai::Response::ResponseInputItemKind::ASSISTANT;
-    if (sv == "file_search_call") return openai::Response::ResponseInputItemKind::FILE_SEARCH_CALL;
-    if (sv == "computer_call") return openai::Response::ResponseInputItemKind::COMPUTER_CALL;
-    if (sv == "computer_call_output") return openai::Response::ResponseInputItemKind::COMPUTER_CALL_OUTPUT;
-    if (sv == "web_search_call") return openai::Response::ResponseInputItemKind::WEB_SEARCH_CALL;
-    if (sv == "function_call") return openai::Response::ResponseInputItemKind::FUNCTION_CALL;
-    if (sv == "function_call_output") return openai::Response::ResponseInputItemKind::FUNCTION_CALL_OUTPUT;
-    if (sv == "reasoning") return openai::Response::ResponseInputItemKind::REASONING;
-    if (sv == "compaction") return openai::Response::ResponseInputItemKind::RESPONSE_COMPACTION_ITEM_PARAM;
-    if (sv == "image_generation_call") return openai::Response::ResponseInputItemKind::IMAGE_GENERATION_CALL;
-    if (sv == "code_interpreter_call") return openai::Response::ResponseInputItemKind::CODE_INTERPRETER_CALL;
-    if (sv == "local_shell_call") return openai::Response::ResponseInputItemKind::LOCAL_SHELL_CALL;
-    if (sv == "local_shell_call_output") return openai::Response::ResponseInputItemKind::LOCAL_SHELL_CALL_OUTPUT;
-    if (sv == "shell_call") return openai::Response::ResponseInputItemKind::SHELL_CALL;
-    if (sv == "shell_call_output") return openai::Response::ResponseInputItemKind::SHELL_CALL_OUTPUT;
-    if (sv == "apply_patch_call") return openai::Response::ResponseInputItemKind::APPLY_PATCH_CALL;
-    if (sv == "apply_patch_call_output") return openai::Response::ResponseInputItemKind::APPLY_PATCH_CALL_OUTPUT;
-    if (sv == "mcp_list_tools") return openai::Response::ResponseInputItemKind::MCP_LIST_TOOLS;
-    if (sv == "mcp_approval_request") return openai::Response::ResponseInputItemKind::MCP_APPROVAL_REQUEST;
-    if (sv == "mcp_approval_response") return openai::Response::ResponseInputItemKind::MCP_APPROVAL_RESPONSE;
-    if (sv == "mcp_call") return openai::Response::ResponseInputItemKind::MCP_CALL;
-    if (sv == "custom_tool_call_output") return openai::Response::ResponseInputItemKind::CUSTOM_TOOL_CALL_OUTPUT;
-    if (sv == "custom_tool_call") return openai::Response::ResponseInputItemKind::CUSTOM_TOOL_CALL;
-    if (sv == "item_reference") return openai::Response::ResponseInputItemKind::ITEM_REFERENCE;
-    if (sv == "allowed_tools") return openai::Response::ResponseInputItemKind::ALLOWED_TOOLS;
-    if (sv == "function") return openai::Response::ResponseInputItemKind::TOOL_CHOICE_FUNCTION;
-    if (sv == "mcp") return openai::Response::ResponseInputItemKind::TOOL_CHOICE_MCP;
-    if (sv == "custom") return openai::Response::ResponseInputItemKind::TOOL_CHOICE_CUSTOM;
-    if (sv == "apply_patch") return openai::Response::ResponseInputItemKind::TOOL_CHOICE_APPLY_PATCH;
-    if (sv == "shell") return openai::Response::ResponseInputItemKind::TOOL_CHOICE_SHELL;
-    if (sv == "file_search") return openai::Response::ResponseInputItemKind::FILE_SEARCH;
-    if (sv == "computer_use_preview") return openai::Response::ResponseInputItemKind::COMPUTER_USE_PREVIEW;
-    if (sv == "code_interpreter") return openai::Response::ResponseInputItemKind::CODE_INTERPRETER;
-    if (sv == "image_generation") return openai::Response::ResponseInputItemKind::IMAGE_GENERATION;
-    if (sv == "local_shell") return openai::Response::ResponseInputItemKind::LOCAL_SHELL;
+constexpr std::optional<openai::Response::InstructionsItemKind>
+from_string_view<openai::Response::InstructionsItemKind>(std::string_view sv) {
+    if (sv == "message") return openai::Response::InstructionsItemKind::EASY_INPUT_MESSAGE;
+    if (sv == "assistant") return openai::Response::InstructionsItemKind::ASSISTANT;
+    if (sv == "file_search_call") return openai::Response::InstructionsItemKind::FILE_SEARCH_CALL;
+    if (sv == "computer_call") return openai::Response::InstructionsItemKind::COMPUTER_CALL;
+    if (sv == "computer_call_output") return openai::Response::InstructionsItemKind::COMPUTER_CALL_OUTPUT;
+    if (sv == "web_search_call") return openai::Response::InstructionsItemKind::WEB_SEARCH_CALL;
+    if (sv == "function_call") return openai::Response::InstructionsItemKind::FUNCTION_CALL;
+    if (sv == "function_call_output") return openai::Response::InstructionsItemKind::FUNCTION_CALL_OUTPUT;
+    if (sv == "reasoning") return openai::Response::InstructionsItemKind::REASONING;
+    if (sv == "compaction") return openai::Response::InstructionsItemKind::COMPACTION;
+    if (sv == "image_generation_call") return openai::Response::InstructionsItemKind::IMAGE_GENERATION_CALL;
+    if (sv == "code_interpreter_call") return openai::Response::InstructionsItemKind::CODE_INTERPRETER_CALL;
+    if (sv == "local_shell_call") return openai::Response::InstructionsItemKind::LOCAL_SHELL_CALL;
+    if (sv == "local_shell_call_output") return openai::Response::InstructionsItemKind::LOCAL_SHELL_CALL_OUTPUT;
+    if (sv == "shell_call") return openai::Response::InstructionsItemKind::SHELL_CALL;
+    if (sv == "shell_call_output") return openai::Response::InstructionsItemKind::SHELL_CALL_OUTPUT;
+    if (sv == "apply_patch_call") return openai::Response::InstructionsItemKind::APPLY_PATCH_CALL;
+    if (sv == "apply_patch_call_output") return openai::Response::InstructionsItemKind::APPLY_PATCH_CALL_OUTPUT;
+    if (sv == "mcp_list_tools") return openai::Response::InstructionsItemKind::MCP_LIST_TOOLS;
+    if (sv == "mcp_approval_request") return openai::Response::InstructionsItemKind::MCP_APPROVAL_REQUEST;
+    if (sv == "mcp_approval_response") return openai::Response::InstructionsItemKind::MCP_APPROVAL_RESPONSE;
+    if (sv == "mcp_call") return openai::Response::InstructionsItemKind::MCP_CALL;
+    if (sv == "custom_tool_call_output") return openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL_OUTPUT;
+    if (sv == "custom_tool_call") return openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL;
+    if (sv == "item_reference") return openai::Response::InstructionsItemKind::ITEM_REFERENCE;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(openai::Response::ResponseInputItemKind val) {
+constexpr std::string_view to_string_view(openai::Response::InstructionsItemKind val) {
     switch (val) {
-        case openai::Response::ResponseInputItemKind::EASY_INPUT_MESSAGE: return "message";
-        case openai::Response::ResponseInputItemKind::MESSAGE: return "message";
-        case openai::Response::ResponseInputItemKind::ASSISTANT: return "assistant";
-        case openai::Response::ResponseInputItemKind::FILE_SEARCH_CALL: return "file_search_call";
-        case openai::Response::ResponseInputItemKind::COMPUTER_CALL: return "computer_call";
-        case openai::Response::ResponseInputItemKind::COMPUTER_CALL_OUTPUT: return "computer_call_output";
-        case openai::Response::ResponseInputItemKind::WEB_SEARCH_CALL: return "web_search_call";
-        case openai::Response::ResponseInputItemKind::FUNCTION_CALL: return "function_call";
-        case openai::Response::ResponseInputItemKind::FUNCTION_CALL_OUTPUT: return "function_call_output";
-        case openai::Response::ResponseInputItemKind::REASONING: return "reasoning";
-        case openai::Response::ResponseInputItemKind::RESPONSE_COMPACTION_ITEM_PARAM: return "compaction";
-        case openai::Response::ResponseInputItemKind::IMAGE_GENERATION_CALL: return "image_generation_call";
-        case openai::Response::ResponseInputItemKind::CODE_INTERPRETER_CALL: return "code_interpreter_call";
-        case openai::Response::ResponseInputItemKind::LOCAL_SHELL_CALL: return "local_shell_call";
-        case openai::Response::ResponseInputItemKind::LOCAL_SHELL_CALL_OUTPUT: return "local_shell_call_output";
-        case openai::Response::ResponseInputItemKind::SHELL_CALL: return "shell_call";
-        case openai::Response::ResponseInputItemKind::SHELL_CALL_OUTPUT: return "shell_call_output";
-        case openai::Response::ResponseInputItemKind::APPLY_PATCH_CALL: return "apply_patch_call";
-        case openai::Response::ResponseInputItemKind::APPLY_PATCH_CALL_OUTPUT: return "apply_patch_call_output";
-        case openai::Response::ResponseInputItemKind::MCP_LIST_TOOLS: return "mcp_list_tools";
-        case openai::Response::ResponseInputItemKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
-        case openai::Response::ResponseInputItemKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
-        case openai::Response::ResponseInputItemKind::MCP_CALL: return "mcp_call";
-        case openai::Response::ResponseInputItemKind::CUSTOM_TOOL_CALL_OUTPUT: return "custom_tool_call_output";
-        case openai::Response::ResponseInputItemKind::CUSTOM_TOOL_CALL: return "custom_tool_call";
-        case openai::Response::ResponseInputItemKind::ITEM_REFERENCE: return "item_reference";
-        case openai::Response::ResponseInputItemKind::RESPONSE_COMPACTION_ITEM: return "compaction";
-        case openai::Response::ResponseInputItemKind::RESPONSE_FUNCTION_SHELL_TOOL_CALL: return "shell_call";
-        case openai::Response::ResponseInputItemKind::RESPONSE_FUNCTION_SHELL_TOOL_CALL_OUTPUT: return "shell_call_output";
-        case openai::Response::ResponseInputItemKind::RESPONSE_APPLY_PATCH_TOOL_CALL: return "apply_patch_call";
-        case openai::Response::ResponseInputItemKind::RESPONSE_APPLY_PATCH_TOOL_CALL_OUTPUT: return "apply_patch_call_output";
-        case openai::Response::ResponseInputItemKind::ALLOWED_TOOLS: return "allowed_tools";
-        case openai::Response::ResponseInputItemKind::TOOL_CHOICE_FUNCTION: return "function";
-        case openai::Response::ResponseInputItemKind::TOOL_CHOICE_MCP: return "mcp";
-        case openai::Response::ResponseInputItemKind::TOOL_CHOICE_CUSTOM: return "custom";
-        case openai::Response::ResponseInputItemKind::TOOL_CHOICE_APPLY_PATCH: return "apply_patch";
-        case openai::Response::ResponseInputItemKind::TOOL_CHOICE_SHELL: return "shell";
-        case openai::Response::ResponseInputItemKind::FUNCTION_TOOL: return "function";
-        case openai::Response::ResponseInputItemKind::FILE_SEARCH: return "file_search";
-        case openai::Response::ResponseInputItemKind::COMPUTER_USE_PREVIEW: return "computer_use_preview";
-        case openai::Response::ResponseInputItemKind::MCP: return "mcp";
-        case openai::Response::ResponseInputItemKind::CODE_INTERPRETER: return "code_interpreter";
-        case openai::Response::ResponseInputItemKind::IMAGE_GENERATION: return "image_generation";
-        case openai::Response::ResponseInputItemKind::LOCAL_SHELL: return "local_shell";
-        case openai::Response::ResponseInputItemKind::FUNCTION_SHELL_TOOL: return "shell";
-        case openai::Response::ResponseInputItemKind::CUSTOM_TOOL: return "custom";
-        case openai::Response::ResponseInputItemKind::APPLY_PATCH_TOOL: return "apply_patch";
-        default: throw AnnotatedException{"invalid openai::Response::ResponseInputItemKind"};
+        case openai::Response::InstructionsItemKind::EASY_INPUT_MESSAGE: return "message";
+        case openai::Response::InstructionsItemKind::MESSAGE: return "message";
+        case openai::Response::InstructionsItemKind::ASSISTANT: return "assistant";
+        case openai::Response::InstructionsItemKind::FILE_SEARCH_CALL: return "file_search_call";
+        case openai::Response::InstructionsItemKind::COMPUTER_CALL: return "computer_call";
+        case openai::Response::InstructionsItemKind::COMPUTER_CALL_OUTPUT: return "computer_call_output";
+        case openai::Response::InstructionsItemKind::WEB_SEARCH_CALL: return "web_search_call";
+        case openai::Response::InstructionsItemKind::FUNCTION_CALL: return "function_call";
+        case openai::Response::InstructionsItemKind::FUNCTION_CALL_OUTPUT: return "function_call_output";
+        case openai::Response::InstructionsItemKind::REASONING: return "reasoning";
+        case openai::Response::InstructionsItemKind::COMPACTION: return "compaction";
+        case openai::Response::InstructionsItemKind::IMAGE_GENERATION_CALL: return "image_generation_call";
+        case openai::Response::InstructionsItemKind::CODE_INTERPRETER_CALL: return "code_interpreter_call";
+        case openai::Response::InstructionsItemKind::LOCAL_SHELL_CALL: return "local_shell_call";
+        case openai::Response::InstructionsItemKind::LOCAL_SHELL_CALL_OUTPUT: return "local_shell_call_output";
+        case openai::Response::InstructionsItemKind::SHELL_CALL: return "shell_call";
+        case openai::Response::InstructionsItemKind::SHELL_CALL_OUTPUT: return "shell_call_output";
+        case openai::Response::InstructionsItemKind::APPLY_PATCH_CALL: return "apply_patch_call";
+        case openai::Response::InstructionsItemKind::APPLY_PATCH_CALL_OUTPUT: return "apply_patch_call_output";
+        case openai::Response::InstructionsItemKind::MCP_LIST_TOOLS: return "mcp_list_tools";
+        case openai::Response::InstructionsItemKind::MCP_APPROVAL_REQUEST: return "mcp_approval_request";
+        case openai::Response::InstructionsItemKind::MCP_APPROVAL_RESPONSE: return "mcp_approval_response";
+        case openai::Response::InstructionsItemKind::MCP_CALL: return "mcp_call";
+        case openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL_OUTPUT: return "custom_tool_call_output";
+        case openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL: return "custom_tool_call";
+        case openai::Response::InstructionsItemKind::ITEM_REFERENCE: return "item_reference";
+        default: throw AnnotatedException{"invalid openai::Response::InstructionsItemKind"};
     }
 }
 

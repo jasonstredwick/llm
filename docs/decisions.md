@@ -216,3 +216,76 @@ Key design choices:
 
 **Files:** `docs/api_parity_pipeline.md` (design), `scripts/api_parity/` (implementation),
 `docs/specs/protocols/{openai,anthropic}/` (specs, extracted JSON, baselines).
+
+---
+
+### 2026-02-23 — Named variant aliases required for all variants
+
+**Context:** `BEGIN_DESERIALIZE_VARIANT` blocks were using anonymous `std::variant<A, B, C>` type
+expressions inline. This made the generated code harder to read and prevented proper deduplication
+of dispatch blocks.
+
+**Decision:** Every variant type must have a named `using` alias. Element variants get
+`<Parent>Element` aliases, map value variants get `<Field>Value` aliases, `union_def` variants use
+the name from the definition, and inline union fields use `_pascal(field_name)`.
+
+**Rationale:** Named aliases make the generated C++ readable and follow the project convention that
+types are always named. They also give a stable qualified path for dispatch registration
+(`parent_path::AliasName`). The `_alias_to_concrete` mapping handles dedup correctly despite the
+aliasing.
+
+---
+
+### 2026-02-23 — Variant type deduplication via fully-qualified concrete keys
+
+**Context:** Multiple parent scopes can contain structurally identical variants (e.g.,
+`ComparisonFilter::Value` and `CompoundFilter::ComparisonFilter::Value` are the same concrete
+variant). Emitting `BEGIN_DESERIALIZE_VARIANT` for both causes C++ redefinition errors.
+
+**Decision:** Dedup uses a fully-qualified key built from concrete (alias-expanded) types. An
+`_alias_to_concrete` mapping expands `using` aliases back to their underlying `std::variant<...>`
+before qualification, because C++ template specializations see through `using` aliases.
+
+**Rationale:** Using aliased types in the dedup key caused false negatives — the same concrete
+variant qualified differently under different parent paths appeared as distinct keys. Expanding
+aliases before qualification ensures identical concrete types always produce the same key.
+
+---
+
+### 2026-02-23 — Structured intermediate fields instead of encoded strings
+
+**Context:** The intermediate JSON initially used pipe-separated or `or`-separated strings for
+compound types (e.g., `"map<string, string|number|boolean>"`). The codegen had to re-parse these
+strings with fragile splitting logic.
+
+**Decision:** The parser decomposes all type alternatives into structured member lists attached to
+the field descriptor: `element_members` for array element unions, `map_value_members` for map value
+unions, `element_enum_values` for array-of-literal-enum fields, and `union_def` for array-of-struct
+unions. The codegen reads structured data; it never splits on separators.
+
+**Rationale:** Encoded strings in the intermediate create a hidden contract between parser and
+codegen — the codegen must know the encoding format, handle edge cases in splitting, and can break
+silently when the encoding changes. Structured fields make the contract explicit and
+machine-readable. Each member carries its own `type`, `ref`, and discriminator info.
+
+**Alternatives rejected:** Converting `or` to `|` in `_normalize_type` (just moved the encoded
+string problem from one separator to another).
+
+---
+
+### 2026-02-24 — Parser `has_or` branch preserves array wrappers via `union_def`
+
+**Context:** For spec expressions like `content: array of ResponseOutputText or ResponseOutputRefusal`,
+the parser's `has_or` branch was setting `field["type"] = "union"` without checking whether the
+original type started with `array<`. This produced a bare `std::variant<...>` instead of
+`std::vector<std::variant<...>>`.
+
+**Decision:** After `_parse_union_children` runs in the `has_or` branch, if `type_str` starts with
+`array<`, the parser wraps the members into a `union_def` and rewrites the field type to
+`array<VariantName>`. This reuses the existing `union_def` mechanism that `_parse_field_children`
+already uses for similar patterns.
+
+**Rationale:** The `union_def` + `array<Name>` pattern is already fully supported by codegen —
+`_build_usings` emits the variant alias from `union_def`, and `_resolve_type` resolves the array
+element via `_resolve_element` which checks `union_def`. Reusing this mechanism required no codegen
+changes.

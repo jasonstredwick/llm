@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <variant>
@@ -268,9 +269,9 @@ struct Request {
 
                 struct TypeKind : Kind { static constexpr std::string_view value = "content"; };
 
-                enum class ContentBlockSourceContentKind { TEXT, IMAGE };
-                using ContentBlockSourceContent = std::variant<TextBlockParam, ImageBlockParam>;
-                using Content = std::variant<std::string, std::vector<ContentBlockSourceContent>>;
+                enum class ContentItemKind { TEXT, IMAGE };
+                using ContentItem = std::variant<TextBlockParam, ImageBlockParam>;
+                using Content = std::variant<std::string, std::vector<ContentItem>>;
 
                 Required<Content> content;
                 Required<TypeKind> type{{}};
@@ -460,7 +461,7 @@ struct Request {
             using Caller = std::variant<DirectCaller, ServerToolCaller, ServerToolCaller20260120>;
 
             Required<std::string> id;
-            Required<jai::llm::json::Object> input;
+            Required<std::map<std::string, jai::llm::json::Object>> input;
             Required<std::string> name;
             Required<TypeKind> type{{}};
             std::optional<CacheControlEphemeral> cache_control{};
@@ -825,9 +826,9 @@ struct Request {
 
                     struct TypeKind : Kind { static constexpr std::string_view value = "content"; };
 
-                    enum class ContentBlockSourceContentKind { TEXT, IMAGE };
-                    using ContentBlockSourceContent = std::variant<TextBlockParam, ImageBlockParam>;
-                    using Content = std::variant<std::string, std::vector<ContentBlockSourceContent>>;
+                    enum class ContentItemKind { TEXT, IMAGE };
+                    using ContentItem = std::variant<TextBlockParam, ImageBlockParam>;
+                    using Content = std::variant<std::string, std::vector<ContentItem>>;
 
                     Required<Content> content;
                     Required<TypeKind> type{{}};
@@ -885,8 +886,9 @@ struct Request {
 
             struct TypeKind : Kind { static constexpr std::string_view value = "tool_result"; };
 
-            enum class ContentKind { TEXT, IMAGE, SEARCH_RESULT, DOCUMENT, TOOL_REFERENCE };
-            using Content = std::variant<std::string, TextBlockParam, ImageBlockParam, SearchResultBlockParam, DocumentBlockParam, ToolReferenceBlockParam>;
+            enum class ContentItemKind { TEXT, IMAGE, SEARCH_RESULT, DOCUMENT, TOOL_REFERENCE };
+            using ContentItem = std::variant<TextBlockParam, ImageBlockParam, SearchResultBlockParam, DocumentBlockParam, ToolReferenceBlockParam>;
+            using Content = std::variant<std::string, std::vector<ContentItem>>;
 
             Required<std::string> tool_use_id;
             Required<TypeKind> type{{}};
@@ -927,13 +929,13 @@ struct Request {
 
             struct TypeKind : Kind { static constexpr std::string_view value = "server_tool_use"; };
 
-            enum class Name { WEB_SEARCH, WEB_FETCH, CODE_EXECUTION };
+            enum class Name { WEB_SEARCH, WEB_FETCH, CODE_EXECUTION, BASH_CODE_EXECUTION, TEXT_EDITOR_CODE_EXECUTION, TOOL_SEARCH_TOOL_REGEX, TOOL_SEARCH_TOOL_BM25 };
 
             enum class CallerKind { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
             using Caller = std::variant<DirectCaller, ServerToolCaller, ServerToolCaller20260120>;
 
             Required<std::string> id;
-            Required<jai::llm::json::Object> input;
+            Required<std::map<std::string, jai::llm::json::Object>> input;
             Required<Name> name;
             Required<TypeKind> type{{}};
             std::optional<CacheControlEphemeral> cache_control{};
@@ -1149,9 +1151,9 @@ struct Request {
 
                         struct TypeKind : Kind { static constexpr std::string_view value = "content"; };
 
-                        enum class ContentBlockSourceContentKind { TEXT, IMAGE };
-                        using ContentBlockSourceContent = std::variant<TextBlockParam, ImageBlockParam>;
-                        using Content = std::variant<std::string, std::vector<ContentBlockSourceContent>>;
+                        enum class ContentItemKind { TEXT, IMAGE };
+                        using ContentItem = std::variant<TextBlockParam, ImageBlockParam>;
+                        using Content = std::variant<std::string, std::vector<ContentItem>>;
 
                         Required<Content> content;
                         Required<TypeKind> type{{}};
@@ -1487,9 +1489,9 @@ struct Request {
 
         enum class Role { USER, ASSISTANT };
 
-        enum class ContentBlockParamKind { TEXT, IMAGE, DOCUMENT, SEARCH_RESULT, THINKING, REDACTED_THINKING, TOOL_USE, TOOL_RESULT, SERVER_TOOL_USE, WEB_SEARCH_TOOL_RESULT, WEB_FETCH_TOOL_RESULT, CODE_EXECUTION_TOOL_RESULT, BASH_CODE_EXECUTION_TOOL_RESULT, TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT, TOOL_SEARCH_TOOL_RESULT, CONTAINER_UPLOAD };
-        using ContentBlockParam = std::variant<TextBlockParam, ImageBlockParam, DocumentBlockParam, SearchResultBlockParam, ThinkingBlockParam, RedactedThinkingBlockParam, ToolUseBlockParam, ToolResultBlockParam, ServerToolUseBlockParam, WebSearchToolResultBlockParam, WebFetchToolResultBlockParam, CodeExecutionToolResultBlockParam, BashCodeExecutionToolResultBlockParam, TextEditorCodeExecutionToolResultBlockParam, ToolSearchToolResultBlockParam, ContainerUploadBlockParam>;
-        using Content = std::variant<std::string, std::vector<ContentBlockParam>>;
+        enum class ContentItemKind { TEXT, IMAGE, DOCUMENT, SEARCH_RESULT, THINKING, REDACTED_THINKING, TOOL_USE, TOOL_RESULT, SERVER_TOOL_USE, WEB_SEARCH_TOOL_RESULT, WEB_FETCH_TOOL_RESULT, CODE_EXECUTION_TOOL_RESULT, BASH_CODE_EXECUTION_TOOL_RESULT, TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT, TOOL_SEARCH_TOOL_RESULT, CONTAINER_UPLOAD };
+        using ContentItem = std::variant<TextBlockParam, ImageBlockParam, DocumentBlockParam, SearchResultBlockParam, ThinkingBlockParam, RedactedThinkingBlockParam, ToolUseBlockParam, ToolResultBlockParam, ServerToolUseBlockParam, WebSearchToolResultBlockParam, WebFetchToolResultBlockParam, CodeExecutionToolResultBlockParam, BashCodeExecutionToolResultBlockParam, TextEditorCodeExecutionToolResultBlockParam, ToolSearchToolResultBlockParam, ContainerUploadBlockParam>;
+        using Content = std::variant<std::string, std::vector<ContentItem>>;
 
         Required<Content> content;
         Required<Role> role;
@@ -1512,7 +1514,7 @@ struct Request {
         struct JSONOutputFormat {
             struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
 
-            Required<jai::llm::json::Object> schema;
+            Required<std::map<std::string, jai::llm::json::Object>> schema;
             Required<TypeKind> type{{}};
         };
 
@@ -1650,7 +1652,7 @@ struct Request {
             struct TypeKind : Kind { static constexpr std::string_view value = "object"; };
 
             Required<TypeKind> type{{}};
-            std::optional<jai::llm::json::Object> properties{};
+            std::optional<std::map<std::string, jai::llm::json::Object>> properties{};
             std::optional<std::vector<std::string>> required{};
         };
 
@@ -1665,16 +1667,16 @@ struct Request {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
-        Required<jai::llm::json::Object> input_schema;
+        Required<Tool_input_schema> input_schema;
         Required<std::string> name;
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
         std::optional<std::string> description{};
         std::optional<bool> eager_input_streaming{};
-        std::optional<std::vector<jai::llm::json::Object>> input_examples{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> input_examples{};
         std::optional<bool> strict{};
         std::optional<TypeKind> type{};
     };
@@ -1692,14 +1694,14 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "bash"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "bash_20250124"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
-        std::optional<std::vector<jai::llm::json::Object>> input_examples{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> input_examples{};
         std::optional<bool> strict{};
     };
 
@@ -1716,11 +1718,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "code_execution"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "code_execution_20250522"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
         std::optional<bool> strict{};
@@ -1739,11 +1741,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "code_execution"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "code_execution_20250825"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
         std::optional<bool> strict{};
@@ -1762,11 +1764,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "code_execution"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "code_execution_20260120"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
         std::optional<bool> strict{};
@@ -1785,14 +1787,14 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "memory"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "memory_20250818"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
-        std::optional<std::vector<jai::llm::json::Object>> input_examples{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> input_examples{};
         std::optional<bool> strict{};
     };
 
@@ -1809,14 +1811,14 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "str_replace_editor"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "text_editor_20250124"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
-        std::optional<std::vector<jai::llm::json::Object>> input_examples{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> input_examples{};
         std::optional<bool> strict{};
     };
 
@@ -1833,14 +1835,14 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "str_replace_based_edit_tool"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "text_editor_20250429"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
-        std::optional<std::vector<jai::llm::json::Object>> input_examples{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> input_examples{};
         std::optional<bool> strict{};
     };
 
@@ -1857,14 +1859,14 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "str_replace_based_edit_tool"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "text_editor_20250728"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
-        std::optional<std::vector<jai::llm::json::Object>> input_examples{};
+        std::optional<std::vector<std::map<std::string, jai::llm::json::Object>>> input_examples{};
         std::optional<double> max_characters{};
         std::optional<bool> strict{};
     };
@@ -1892,11 +1894,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "web_search"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "web_search_20250305"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<std::vector<std::string>> allowed_domains{};
         std::optional<std::vector<std::string>> blocked_domains{};
         std::optional<CacheControlEphemeral> cache_control{};
@@ -1923,11 +1925,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "web_fetch"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "web_fetch_20250910"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<std::vector<std::string>> allowed_domains{};
         std::optional<std::vector<std::string>> blocked_domains{};
         std::optional<CacheControlEphemeral> cache_control{};
@@ -1961,11 +1963,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "web_search"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "web_search_20260209"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<std::vector<std::string>> allowed_domains{};
         std::optional<std::vector<std::string>> blocked_domains{};
         std::optional<CacheControlEphemeral> cache_control{};
@@ -1992,11 +1994,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "web_fetch"; };
         struct TypeKind : Kind { static constexpr std::string_view value = "web_fetch_20260209"; };
 
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<TypeKind> type{{}};
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<std::vector<std::string>> allowed_domains{};
         std::optional<std::vector<std::string>> blocked_domains{};
         std::optional<CacheControlEphemeral> cache_control{};
@@ -2020,12 +2022,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "tool_search_tool_bm25"; };
 
         enum class Type { TOOL_SEARCH_TOOL_BM25_20251119, TOOL_SEARCH_TOOL_BM25 };
-
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<Type> type;
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
         std::optional<bool> strict{};
@@ -2044,12 +2045,11 @@ struct Request {
         struct NameKind : Kind { static constexpr std::string_view value = "tool_search_tool_regex"; };
 
         enum class Type { TOOL_SEARCH_TOOL_REGEX_20251119, TOOL_SEARCH_TOOL_REGEX };
-
-        enum class AllowedCallers { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
 
         Required<NameKind> name{{}};
         Required<Type> type;
-        std::optional<AllowedCallers> allowed_callers{};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
         std::optional<CacheControlEphemeral> cache_control{};
         std::optional<bool> defer_loading{};
         std::optional<bool> strict{};
@@ -2057,6 +2057,8 @@ struct Request {
 
     enum class ServiceTier { AUTO, STANDARD_ONLY };
 
+    enum class ModelValues { CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_OPUS_4_5_20251101, CLAUDE_OPUS_4_5, CLAUDE_3_7_SONNET_LATEST, CLAUDE_3_7_SONNET_20250219, CLAUDE_3_5_HAIKU_LATEST, CLAUDE_3_5_HAIKU_20241022, CLAUDE_HAIKU_4_5, CLAUDE_HAIKU_4_5_20251001, CLAUDE_SONNET_4_20250514, CLAUDE_SONNET_4_0, CLAUDE_4_SONNET_20250514, CLAUDE_SONNET_4_5, CLAUDE_SONNET_4_5_20250929, CLAUDE_OPUS_4_0, CLAUDE_OPUS_4_20250514, CLAUDE_4_OPUS_20250514, CLAUDE_OPUS_4_1_20250805, CLAUDE_3_OPUS_LATEST, CLAUDE_3_OPUS_20240229, CLAUDE_3_HAIKU_20240307 };
+    using Model = std::variant<ModelValues, std::string>;
     using System = std::variant<std::string, std::vector<TextBlockParam>>;
     enum class ThinkingConfigParamKind { ENABLED, DISABLED, ADAPTIVE };
     using ThinkingConfigParam = std::variant<ThinkingConfigEnabled, ThinkingConfigDisabled, ThinkingConfigAdaptive>;
@@ -2067,7 +2069,7 @@ struct Request {
 
     Required<double> max_tokens;
     Required<std::vector<MessageParam>> messages;
-    Required<std::string> model;
+    Required<Model> model;
     std::optional<CacheControlEphemeral> cache_control{};
     std::optional<std::string> container{};
     std::optional<std::string> inference_geo{};
@@ -2204,7 +2206,7 @@ struct Message {
 
         std::optional<std::string> id{};
         std::optional<Caller> caller{};
-        std::optional<jai::llm::json::Object> input{};
+        std::optional<std::map<std::string, jai::llm::json::Object>> input{};
         std::optional<std::string> name{};
         std::optional<TypeKind> type{};
     };
@@ -2232,14 +2234,14 @@ struct Message {
 
         struct TypeKind : Kind { static constexpr std::string_view value = "server_tool_use"; };
 
-        enum class Name { WEB_SEARCH, WEB_FETCH, CODE_EXECUTION };
+        enum class Name { WEB_SEARCH, WEB_FETCH, CODE_EXECUTION, BASH_CODE_EXECUTION, TEXT_EDITOR_CODE_EXECUTION, TOOL_SEARCH_TOOL_REGEX, TOOL_SEARCH_TOOL_BM25 };
 
         enum class CallerKind { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
         using Caller = std::variant<DirectCaller, ServerToolCaller, ServerToolCaller20260120>;
 
         std::optional<std::string> id{};
         std::optional<Caller> caller{};
-        std::optional<jai::llm::json::Object> input{};
+        std::optional<std::map<std::string, jai::llm::json::Object>> input{};
         std::optional<Name> name{};
         std::optional<TypeKind> type{};
     };
@@ -2598,11 +2600,13 @@ struct Message {
 
     enum class ContentBlockKind { TEXT, THINKING, REDACTED_THINKING, TOOL_USE, SERVER_TOOL_USE, WEB_SEARCH_TOOL_RESULT, WEB_FETCH_TOOL_RESULT, CODE_EXECUTION_TOOL_RESULT, BASH_CODE_EXECUTION_TOOL_RESULT, TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT, TOOL_SEARCH_TOOL_RESULT, CONTAINER_UPLOAD };
     using ContentBlock = std::variant<TextBlock, ThinkingBlock, RedactedThinkingBlock, ToolUseBlock, ServerToolUseBlock, WebSearchToolResultBlock, WebFetchToolResultBlock, CodeExecutionToolResultBlock, BashCodeExecutionToolResultBlock, TextEditorCodeExecutionToolResultBlock, ToolSearchToolResultBlock, ContainerUploadBlock>;
+    enum class ModelValues { CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_OPUS_4_5_20251101, CLAUDE_OPUS_4_5, CLAUDE_3_7_SONNET_LATEST, CLAUDE_3_7_SONNET_20250219, CLAUDE_3_5_HAIKU_LATEST, CLAUDE_3_5_HAIKU_20241022, CLAUDE_HAIKU_4_5, CLAUDE_HAIKU_4_5_20251001, CLAUDE_SONNET_4_20250514, CLAUDE_SONNET_4_0, CLAUDE_4_SONNET_20250514, CLAUDE_SONNET_4_5, CLAUDE_SONNET_4_5_20250929, CLAUDE_OPUS_4_0, CLAUDE_OPUS_4_20250514, CLAUDE_4_OPUS_20250514, CLAUDE_OPUS_4_1_20250805, CLAUDE_3_OPUS_LATEST, CLAUDE_3_OPUS_20240229, CLAUDE_3_HAIKU_20240307 };
+    using Model = std::variant<ModelValues, std::string>;
 
     std::optional<std::string> id{};
     std::optional<Container> container{};
     std::optional<std::vector<ContentBlock>> content{};
-    std::optional<std::string> model{};
+    std::optional<Model> model{};
     std::optional<RoleKind> role{};
     std::optional<StopReason> stop_reason{};
     std::optional<std::string> stop_sequence{};

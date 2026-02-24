@@ -3,7 +3,7 @@
     "provider": "openai",
     "endpoint": "responses",
     "source_url": "https://developers.openai.com/api/reference/resources/responses/methods/create/index.md",
-    "fetched_at": "2026-02-21T18:38:19Z",
+    "fetched_at": "2026-02-24T00:05:23Z",
     "raw_file": "scratch/api_parity/openai/responses.raw.md"
   },
   "request": {
@@ -19,7 +19,7 @@
         },
         {
           "name": "context_management",
-          "type": "array<object>",
+          "type": "array<Request_context_management>",
           "required": false,
           "description": "Context management configuration for this request."
         },
@@ -65,7 +65,35 @@
             },
             {
               "type": "array",
-              "element_type": "ResponseInputItem"
+              "element_type": "InputItem",
+              "element_variant_refs": [
+                "EasyInputMessage",
+                "Message",
+                "ResponseOutputMessage",
+                "ResponseFileSearchToolCall",
+                "ResponseComputerToolCall",
+                "ComputerCallOutput",
+                "ResponseFunctionWebSearch",
+                "ResponseFunctionToolCall",
+                "FunctionCallOutput",
+                "ResponseReasoningItem",
+                "ResponseCompactionItemParam",
+                "ImageGenerationCall",
+                "ResponseCodeInterpreterToolCall",
+                "LocalShellCall",
+                "LocalShellCallOutput",
+                "ShellCall",
+                "ShellCallOutput",
+                "ApplyPatchCall",
+                "ApplyPatchCallOutput",
+                "McpListTools",
+                "McpApprovalRequest",
+                "McpApprovalResponse",
+                "McpCall",
+                "ResponseCustomToolCallOutput",
+                "ResponseCustomToolCall",
+                "ItemReference"
+              ]
             }
           ]
         },
@@ -89,7 +117,7 @@
         },
         {
           "name": "metadata",
-          "type": "Metadata",
+          "type": "map<string, string>",
           "required": false,
           "description": "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard. Keys are strings with a maximum length of 64 characters. Values are strings with a maximum length of 512 characters."
         },
@@ -105,12 +133,100 @@
                 "type": "string"
               },
               {
-                "type": "literal",
-                "value": "gpt-5.2\" | \"gpt-5.2-2025-12-11\" | \"gpt-5.2-chat-latest"
+                "type": "enum",
+                "values": [
+                  "gpt-5.2",
+                  "gpt-5.2-2025-12-11",
+                  "gpt-5.2-chat-latest",
+                  "gpt-5.2-pro",
+                  "gpt-5.2-pro-2025-12-11",
+                  "gpt-5.1",
+                  "gpt-5.1-2025-11-13",
+                  "gpt-5.1-codex",
+                  "gpt-5.1-mini",
+                  "gpt-5.1-chat-latest",
+                  "gpt-5",
+                  "gpt-5-mini",
+                  "gpt-5-nano",
+                  "gpt-5-2025-08-07",
+                  "gpt-5-mini-2025-08-07",
+                  "gpt-5-nano-2025-08-07",
+                  "gpt-5-chat-latest",
+                  "gpt-4.1",
+                  "gpt-4.1-mini",
+                  "gpt-4.1-nano",
+                  "gpt-4.1-2025-04-14",
+                  "gpt-4.1-mini-2025-04-14",
+                  "gpt-4.1-nano-2025-04-14",
+                  "o4-mini",
+                  "o4-mini-2025-04-16",
+                  "o3",
+                  "o3-2025-04-16",
+                  "o3-mini",
+                  "o3-mini-2025-01-31",
+                  "o1",
+                  "o1-2024-12-17",
+                  "o1-preview",
+                  "o1-preview-2024-09-12",
+                  "o1-mini",
+                  "o1-mini-2024-09-12",
+                  "gpt-4o",
+                  "gpt-4o-2024-11-20",
+                  "gpt-4o-2024-08-06",
+                  "gpt-4o-2024-05-13",
+                  "gpt-4o-audio-preview",
+                  "gpt-4o-audio-preview-2024-10-01",
+                  "gpt-4o-audio-preview-2024-12-17",
+                  "gpt-4o-audio-preview-2025-06-03",
+                  "gpt-4o-mini-audio-preview",
+                  "gpt-4o-mini-audio-preview-2024-12-17",
+                  "gpt-4o-search-preview",
+                  "gpt-4o-mini-search-preview",
+                  "gpt-4o-search-preview-2025-03-11",
+                  "gpt-4o-mini-search-preview-2025-03-11",
+                  "chatgpt-4o-latest",
+                  "codex-mini-latest",
+                  "gpt-4o-mini",
+                  "gpt-4o-mini-2024-07-18",
+                  "gpt-4-turbo",
+                  "gpt-4-turbo-2024-04-09",
+                  "gpt-4-0125-preview",
+                  "gpt-4-turbo-preview",
+                  "gpt-4-1106-preview",
+                  "gpt-4-vision-preview",
+                  "gpt-4",
+                  "gpt-4-0314",
+                  "gpt-4-0613",
+                  "gpt-4-32k",
+                  "gpt-4-32k-0314",
+                  "gpt-4-32k-0613",
+                  "gpt-3.5-turbo",
+                  "gpt-3.5-turbo-16k",
+                  "gpt-3.5-turbo-0301",
+                  "gpt-3.5-turbo-0613",
+                  "gpt-3.5-turbo-1106",
+                  "gpt-3.5-turbo-0125",
+                  "gpt-3.5-turbo-16k-0613"
+                ]
               },
               {
-                "type": "literal",
-                "value": "o1-pro\" | \"o1-pro-2025-03-19\" | \"o3-pro"
+                "type": "enum",
+                "values": [
+                  "o1-pro",
+                  "o1-pro-2025-03-19",
+                  "o3-pro",
+                  "o3-pro-2025-06-10",
+                  "o3-deep-research",
+                  "o3-deep-research-2025-06-26",
+                  "o4-mini-deep-research",
+                  "o4-mini-deep-research-2025-06-26",
+                  "computer-use-preview",
+                  "computer-use-preview-2025-03-11",
+                  "gpt-5-codex",
+                  "gpt-5-pro",
+                  "gpt-5-pro-2025-10-06",
+                  "gpt-5.1-codex-max"
+                ]
               }
             ]
           }
@@ -169,7 +285,9 @@
           "values": [
             "auto",
             "default",
-            "flex"
+            "flex",
+            "scale",
+            "priority"
           ]
         },
         {
@@ -186,7 +304,7 @@
         },
         {
           "name": "stream_options",
-          "type": "object",
+          "type": "Request_stream_options",
           "required": false,
           "description": "Options for streaming responses. Only set this when you set `stream: true`."
         },
@@ -209,8 +327,12 @@
           "description": "How the model should select which tool (or tools) to use when generating a response. See the `tools` parameter to see how to specify which tools the model can call.",
           "members": [
             {
-              "type": "literal",
-              "value": "none\" | \"auto\" | \"required"
+              "type": "enum",
+              "values": [
+                "none",
+                "auto",
+                "required"
+              ]
             },
             {
               "type": "struct",
@@ -397,7 +519,12 @@
                 },
                 {
                   "type": "array",
-                  "element_type": "ResponseInputContent"
+                  "element_type": "ContentItem",
+                  "element_variant_refs": [
+                    "ResponseInputText",
+                    "ResponseInputImage",
+                    "ResponseInputFile"
+                  ]
                 }
               ]
             },
@@ -698,22 +825,25 @@
             },
             {
               "name": "content",
-              "type": "union",
+              "type": "array<Content>",
               "required": true,
               "description": "The content of the output message.",
-              "members": [
-                {
-                  "type": "struct",
-                  "ref": "ResponseOutputText",
-                  "discriminator_value": "output_text"
-                },
-                {
-                  "type": "struct",
-                  "ref": "ResponseOutputRefusal",
-                  "discriminator_value": "refusal"
-                }
-              ],
-              "discriminator": "type"
+              "union_def": {
+                "name": "Content",
+                "members": [
+                  {
+                    "type": "struct",
+                    "ref": "ResponseOutputText",
+                    "discriminator_value": "output_text"
+                  },
+                  {
+                    "type": "struct",
+                    "ref": "ResponseOutputRefusal",
+                    "discriminator_value": "refusal"
+                  }
+                ],
+                "discriminator": "type"
+              }
             },
             {
               "name": "role",
@@ -748,36 +878,39 @@
               "fields": [
                 {
                   "name": "annotations",
-                  "type": "union",
+                  "type": "array<Annotations>",
                   "required": true,
                   "description": "The annotations of the text output.",
-                  "members": [
-                    {
-                      "type": "struct",
-                      "ref": "FileCitation",
-                      "discriminator_value": "file_citation"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "URLCitation",
-                      "discriminator_value": "url_citation"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "ContainerFileCitation",
-                      "discriminator_value": "container_file_citation"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "FilePath",
-                      "discriminator_value": "file_path"
-                    }
-                  ],
-                  "discriminator": "type"
+                  "union_def": {
+                    "name": "Annotations",
+                    "members": [
+                      {
+                        "type": "struct",
+                        "ref": "FileCitation",
+                        "discriminator_value": "file_citation"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "URLCitation",
+                        "discriminator_value": "url_citation"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "ContainerFileCitation",
+                        "discriminator_value": "container_file_citation"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "FilePath",
+                        "discriminator_value": "file_path"
+                      }
+                    ],
+                    "discriminator": "type"
+                  }
                 },
                 {
                   "name": "logprobs",
-                  "type": "array<object>",
+                  "type": "array<ResponseOutputText_logprobs>",
                   "required": true
                 },
                 {
@@ -960,7 +1093,7 @@
                     },
                     {
                       "name": "top_logprobs",
-                      "type": "array<object>",
+                      "type": "array<ResponseOutputText_logprobs_top_logprobs>",
                       "required": true
                     }
                   ],
@@ -1040,7 +1173,9 @@
               "values": [
                 "in_progress",
                 "searching",
-                "completed"
+                "completed",
+                "incomplete",
+                "failed"
               ]
             },
             {
@@ -1052,7 +1187,7 @@
             },
             {
               "name": "results",
-              "type": "array<object>",
+              "type": "array<ResponseFileSearchToolCall_results>",
               "required": false,
               "description": "The results of the file search tool call."
             }
@@ -1064,10 +1199,10 @@
               "fields": [
                 {
                   "name": "attributes",
-                  "type": "union",
+                  "type": "map<string, string>",
                   "required": false,
                   "description": "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard. Keys are strings with a maximum length of 64 characters. Values are strings with a maximum length of 512 characters, booleans, or numbers.",
-                  "members": [
+                  "map_value_members": [
                     {
                       "type": "string"
                     },
@@ -1181,7 +1316,7 @@
             },
             {
               "name": "pending_safety_checks",
-              "type": "array<object>",
+              "type": "array<ResponseComputerToolCall_pending_safety_checks>",
               "required": true,
               "description": "The pending safety checks for the computer call."
             },
@@ -1217,7 +1352,9 @@
                   "values": [
                     "left",
                     "right",
-                    "wheel"
+                    "wheel",
+                    "back",
+                    "forward"
                   ]
                 },
                 {
@@ -1276,7 +1413,7 @@
               "fields": [
                 {
                   "name": "path",
-                  "type": "array<object>",
+                  "type": "array<Drag_path>",
                   "required": true,
                   "description": "An array of coordinates representing the path of the drag action. Coordinates will appear as an array of objects, eg ``` [ { x: 100, y: 200 }, { x: 200, y: 300 } ] ```"
                 },
@@ -1508,7 +1645,7 @@
             },
             {
               "name": "acknowledged_safety_checks",
-              "type": "array<object>",
+              "type": "array<ComputerCallOutput_acknowledged_safety_checks>",
               "required": false,
               "description": "The safety checks reported by the API that have been acknowledged by the developer."
             },
@@ -1659,7 +1796,7 @@
                 },
                 {
                   "name": "sources",
-                  "type": "array<object>",
+                  "type": "array<Search_sources>",
                   "required": false,
                   "description": "The sources used in the search."
                 }
@@ -1809,22 +1946,15 @@
                   "type": "string"
                 },
                 {
-                  "type": "struct",
-                  "ref": "ResponseInputTextContent",
-                  "discriminator_value": "input_text"
-                },
-                {
-                  "type": "struct",
-                  "ref": "ResponseInputImageContent",
-                  "discriminator_value": "input_image"
-                },
-                {
-                  "type": "struct",
-                  "ref": "ResponseInputFileContent",
-                  "discriminator_value": "input_file"
+                  "type": "array",
+                  "element_type": "OutputItem",
+                  "element_variant_refs": [
+                    "ResponseInputTextContent",
+                    "ResponseInputImageContent",
+                    "ResponseInputFileContent"
+                  ]
                 }
-              ],
-              "discriminator": "type"
+              ]
             },
             {
               "name": "type",
@@ -1978,7 +2108,7 @@
             },
             {
               "name": "content",
-              "type": "array<object>",
+              "type": "array<ResponseReasoningItem_content>",
               "required": false,
               "description": "Reasoning text content."
             },
@@ -2134,22 +2264,25 @@
             },
             {
               "name": "outputs",
-              "type": "union",
+              "type": "array<Outputs>",
               "required": true,
               "description": "The outputs generated by the code interpreter, such as logs or images. Can be null if no outputs are available.",
-              "members": [
-                {
-                  "type": "struct",
-                  "ref": "Logs",
-                  "discriminator_value": "logs"
-                },
-                {
-                  "type": "struct",
-                  "ref": "Image",
-                  "discriminator_value": "image"
-                }
-              ],
-              "discriminator": "type"
+              "union_def": {
+                "name": "Outputs",
+                "members": [
+                  {
+                    "type": "struct",
+                    "ref": "Logs",
+                    "discriminator_value": "logs"
+                  },
+                  {
+                    "type": "struct",
+                    "ref": "Image",
+                    "discriminator_value": "image"
+                  }
+                ],
+                "discriminator": "type"
+              }
             },
             {
               "name": "status",
@@ -2159,7 +2292,9 @@
               "values": [
                 "in_progress",
                 "completed",
-                "incomplete"
+                "incomplete",
+                "interpreting",
+                "failed"
               ]
             },
             {
@@ -2228,7 +2363,7 @@
             },
             {
               "name": "action",
-              "type": "object",
+              "type": "LocalShellCall_action",
               "required": true,
               "description": "Execute a shell command on the server."
             },
@@ -2349,7 +2484,7 @@
           "fields": [
             {
               "name": "action",
-              "type": "object",
+              "type": "ShellCall_action",
               "required": true,
               "description": "The shell commands and limits that describe how to run the tool call."
             },
@@ -2822,7 +2957,7 @@
             },
             {
               "name": "tools",
-              "type": "array<object>",
+              "type": "array<McpListTools_tools>",
               "required": true,
               "description": "The tools available on the server."
             },
@@ -2847,7 +2982,7 @@
               "fields": [
                 {
                   "name": "input_schema",
-                  "type": "unknown",
+                  "type": "object",
                   "required": true,
                   "description": "The JSON schema describing the tool's input."
                 },
@@ -2859,7 +2994,7 @@
                 },
                 {
                   "name": "annotations",
-                  "type": "unknown",
+                  "type": "object",
                   "required": false,
                   "description": "Additional annotations about the tool."
                 },
@@ -3014,7 +3149,9 @@
               "values": [
                 "in_progress",
                 "completed",
-                "incomplete"
+                "incomplete",
+                "calling",
+                "failed"
               ]
             }
           ],
@@ -3041,7 +3178,13 @@
                   "type": "string"
                 },
                 {
-                  "type": "array<ResponseInputText> | ResponseInputImage | ResponseInputFile"
+                  "type": "array",
+                  "element_type": "OutputItem",
+                  "element_variant_refs": [
+                    "ResponseInputText",
+                    "ResponseInputImage",
+                    "ResponseInputFile"
+                  ]
                 }
               ]
             },
@@ -3233,30 +3376,26 @@
             },
             {
               "name": "variables",
-              "type": "union",
+              "type": "map<string, string>",
               "required": false,
               "description": "Optional map of values to substitute in for variables in your prompt. The substitution values can either be strings, or other Response input types like images or files.",
-              "members": [
+              "map_value_members": [
                 {
                   "type": "string"
                 },
                 {
                   "type": "struct",
-                  "ref": "ResponseInputText",
-                  "discriminator_value": "input_text"
+                  "ref": "ResponseInputText"
                 },
                 {
                   "type": "struct",
-                  "ref": "ResponseInputImage",
-                  "discriminator_value": "input_image"
+                  "ref": "ResponseInputImage"
                 },
                 {
                   "type": "struct",
-                  "ref": "ResponseInputFile",
-                  "discriminator_value": "input_file"
+                  "ref": "ResponseInputFile"
                 }
-              ],
-              "discriminator": "type"
+              ]
             },
             {
               "name": "version",
@@ -3493,7 +3632,7 @@
                 },
                 {
                   "name": "schema",
-                  "type": "map<string, unknown>",
+                  "type": "map<string, object>",
                   "required": true,
                   "description": "The schema for the response format, described as a JSON Schema object. Learn how to build JSON schemas here."
                 },
@@ -3553,7 +3692,7 @@
             },
             {
               "name": "tools",
-              "type": "array<map<string, unknown>>",
+              "type": "array<map<string, object>>",
               "required": true,
               "description": "A list of tool definitions that the model should be allowed to call. For the Responses API, the list of tool definitions might look like: ```json [ { \"type\": \"function\", \"name\": \"get_weather\" }, { \"type\": \"mcp\", \"server_label\": \"deepwiki\" }, { \"type\": \"image_generation\" } ] ```"
             },
@@ -3580,7 +3719,10 @@
               "values": [
                 "file_search",
                 "web_search_preview",
-                "computer_use_preview"
+                "computer_use_preview",
+                "web_search_preview_2025_03_11",
+                "image_generation",
+                "code_interpreter"
               ]
             }
           ],
@@ -3698,7 +3840,7 @@
             },
             {
               "name": "parameters",
-              "type": "map<string, unknown>",
+              "type": "map<string, object>",
               "required": true,
               "description": "A JSON schema object describing the parameters of the function."
             },
@@ -3766,7 +3908,7 @@
             },
             {
               "name": "ranking_options",
-              "type": "object",
+              "type": "FileSearchTool_ranking_options",
               "required": false,
               "description": "Ranking options for search."
             }
@@ -3790,7 +3932,10 @@
                   "values": [
                     "eq",
                     "ne",
-                    "gt"
+                    "gt",
+                    "gte",
+                    "lt",
+                    "lte"
                   ]
                 },
                 {
@@ -3809,10 +3954,15 @@
                       "type": "boolean"
                     },
                     {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
+                      "type": "array",
+                      "element_members": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -3826,18 +3976,21 @@
               "fields": [
                 {
                   "name": "filters",
-                  "type": "union",
+                  "type": "array<Filters>",
                   "required": true,
                   "description": "Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.",
-                  "members": [
-                    {
-                      "type": "struct",
-                      "ref": "ComparisonFilter"
-                    },
-                    {
-                      "type": "unknown"
-                    }
-                  ]
+                  "union_def": {
+                    "name": "Filters",
+                    "members": [
+                      {
+                        "type": "struct",
+                        "ref": "ComparisonFilter"
+                      },
+                      {
+                        "type": "object"
+                      }
+                    ]
+                  }
                 },
                 {
                   "name": "type",
@@ -3869,7 +4022,10 @@
                       "values": [
                         "eq",
                         "ne",
-                        "gt"
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte"
                       ]
                     },
                     {
@@ -3888,10 +4044,15 @@
                           "type": "boolean"
                         },
                         {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
+                          "type": "array",
+                          "element_members": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -3908,7 +4069,7 @@
               "fields": [
                 {
                   "name": "hybrid_search",
-                  "type": "object",
+                  "type": "FileSearchTool_ranking_options_hybrid_search",
                   "required": false,
                   "description": "Weights that control how reciprocal rank fusion balances semantic embedding matches versus sparse keyword matches when hybrid search is enabled."
                 },
@@ -3978,7 +4139,9 @@
               "values": [
                 "windows",
                 "mac",
-                "linux"
+                "linux",
+                "ubuntu",
+                "browser"
               ]
             },
             {
@@ -4008,7 +4171,7 @@
             },
             {
               "name": "filters",
-              "type": "object",
+              "type": "WebSearchTool_filters",
               "required": false,
               "description": "Filters for the search."
             },
@@ -4025,7 +4188,7 @@
             },
             {
               "name": "user_location",
-              "type": "object",
+              "type": "WebSearchTool_user_location",
               "required": false,
               "description": "The approximate location of the user."
             }
@@ -4104,19 +4267,22 @@
             },
             {
               "name": "allowed_tools",
-              "type": "union",
+              "type": "array<AllowedTools>",
               "required": false,
               "description": "List of allowed tool names or a filter object.",
-              "members": [
-                {
-                  "type": "array",
-                  "element_type": "string"
-                },
-                {
-                  "type": "struct",
-                  "ref": "McpToolFilter"
-                }
-              ]
+              "union_def": {
+                "name": "AllowedTools",
+                "members": [
+                  {
+                    "type": "array",
+                    "element_type": "string"
+                  },
+                  {
+                    "type": "struct",
+                    "ref": "McpToolFilter"
+                  }
+                ]
+              }
             },
             {
               "name": "authorization",
@@ -4132,7 +4298,12 @@
               "values": [
                 "connector_dropbox",
                 "connector_gmail",
-                "connector_googlecalendar"
+                "connector_googlecalendar",
+                "connector_googledrive",
+                "connector_microsoftteams",
+                "connector_outlookcalendar",
+                "connector_outlookemail",
+                "connector_sharepoint"
               ]
             },
             {
@@ -4148,12 +4319,15 @@
               "description": "Specify which of the MCP server's tools require approval.",
               "members": [
                 {
-                  "type": "struct",
-                  "ref": "McpToolApprovalFilter"
+                  "type": "enum",
+                  "values": [
+                    "always",
+                    "never"
+                  ]
                 },
                 {
-                  "type": "literal",
-                  "value": "always\" | \"never"
+                  "type": "struct",
+                  "ref": "McpToolApprovalFilter"
                 }
               ]
             },
@@ -4197,13 +4371,13 @@
               "fields": [
                 {
                   "name": "always",
-                  "type": "object",
+                  "type": "McpToolApprovalFilter_always",
                   "required": false,
                   "description": "A filter object to specify which tools are allowed."
                 },
                 {
                   "name": "never",
-                  "type": "object",
+                  "type": "McpToolApprovalFilter_never",
                   "required": false,
                   "description": "A filter object to specify which tools are allowed."
                 }
@@ -4450,19 +4624,27 @@
             },
             {
               "name": "input_image_mask",
-              "type": "object",
+              "type": "ImageGeneration_input_image_mask",
               "required": false,
               "description": "Optional mask for inpainting. Contains `image_url` (string, optional) and `file_id` (string, optional)."
             },
             {
               "name": "model",
-              "type": "enum",
+              "type": "union",
               "required": false,
               "description": "The image generation model to use. Default: `gpt-image-1`.",
-              "values": [
-                "gpt-image-1",
-                "gpt-image-1-mini",
-                "gpt-image-1.5"
+              "members": [
+                {
+                  "type": "enum",
+                  "values": [
+                    "gpt-image-1",
+                    "gpt-image-1-mini",
+                    "gpt-image-1.5"
+                  ]
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             {
@@ -4647,22 +4829,25 @@
                 },
                 {
                   "name": "skills",
-                  "type": "union",
+                  "type": "array<Skills>",
                   "required": false,
                   "description": "An optional list of skills referenced by id or inline data.",
-                  "members": [
-                    {
-                      "type": "struct",
-                      "ref": "SkillReference",
-                      "discriminator_value": "skill_reference"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "InlineSkill",
-                      "discriminator_value": "inline"
-                    }
-                  ],
-                  "discriminator": "type"
+                  "union_def": {
+                    "name": "Skills",
+                    "members": [
+                      {
+                        "type": "struct",
+                        "ref": "SkillReference",
+                        "discriminator_value": "skill_reference"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "InlineSkill",
+                        "discriminator_value": "inline"
+                      }
+                    ],
+                    "discriminator": "type"
+                  }
                 }
               ],
               "children": [
@@ -5012,7 +5197,7 @@
             },
             {
               "name": "user_location",
-              "type": "object",
+              "type": "WebSearchPreviewTool_user_location",
               "required": false,
               "description": "The user's location."
             }
@@ -5107,7 +5292,7 @@
             },
             {
               "name": "incomplete_details",
-              "type": "object",
+              "type": "Response_incomplete_details",
               "required": false,
               "description": "Details about why the response is incomplete."
             },
@@ -5122,13 +5307,41 @@
                 },
                 {
                   "type": "array",
-                  "element_type": "ResponseInputItem"
+                  "element_type": "InstructionsItem",
+                  "element_variant_refs": [
+                    "EasyInputMessage",
+                    "Message",
+                    "ResponseOutputMessage",
+                    "ResponseFileSearchToolCall",
+                    "ResponseComputerToolCall",
+                    "ComputerCallOutput",
+                    "ResponseFunctionWebSearch",
+                    "ResponseFunctionToolCall",
+                    "FunctionCallOutput",
+                    "ResponseReasoningItem",
+                    "ResponseCompactionItemParam",
+                    "ImageGenerationCall",
+                    "ResponseCodeInterpreterToolCall",
+                    "LocalShellCall",
+                    "LocalShellCallOutput",
+                    "ShellCall",
+                    "ShellCallOutput",
+                    "ApplyPatchCall",
+                    "ApplyPatchCallOutput",
+                    "McpListTools",
+                    "McpApprovalRequest",
+                    "McpApprovalResponse",
+                    "McpCall",
+                    "ResponseCustomToolCallOutput",
+                    "ResponseCustomToolCall",
+                    "ItemReference"
+                  ]
                 }
               ]
             },
             {
               "name": "metadata",
-              "type": "Metadata",
+              "type": "map<string, string>",
               "required": false,
               "description": "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard. Keys are strings with a maximum length of 64 characters. Values are strings with a maximum length of 512 characters."
             },
@@ -5144,12 +5357,100 @@
                     "type": "string"
                   },
                   {
-                    "type": "literal",
-                    "value": "gpt-5.2\" | \"gpt-5.2-2025-12-11\" | \"gpt-5.2-chat-latest"
+                    "type": "enum",
+                    "values": [
+                      "gpt-5.2",
+                      "gpt-5.2-2025-12-11",
+                      "gpt-5.2-chat-latest",
+                      "gpt-5.2-pro",
+                      "gpt-5.2-pro-2025-12-11",
+                      "gpt-5.1",
+                      "gpt-5.1-2025-11-13",
+                      "gpt-5.1-codex",
+                      "gpt-5.1-mini",
+                      "gpt-5.1-chat-latest",
+                      "gpt-5",
+                      "gpt-5-mini",
+                      "gpt-5-nano",
+                      "gpt-5-2025-08-07",
+                      "gpt-5-mini-2025-08-07",
+                      "gpt-5-nano-2025-08-07",
+                      "gpt-5-chat-latest",
+                      "gpt-4.1",
+                      "gpt-4.1-mini",
+                      "gpt-4.1-nano",
+                      "gpt-4.1-2025-04-14",
+                      "gpt-4.1-mini-2025-04-14",
+                      "gpt-4.1-nano-2025-04-14",
+                      "o4-mini",
+                      "o4-mini-2025-04-16",
+                      "o3",
+                      "o3-2025-04-16",
+                      "o3-mini",
+                      "o3-mini-2025-01-31",
+                      "o1",
+                      "o1-2024-12-17",
+                      "o1-preview",
+                      "o1-preview-2024-09-12",
+                      "o1-mini",
+                      "o1-mini-2024-09-12",
+                      "gpt-4o",
+                      "gpt-4o-2024-11-20",
+                      "gpt-4o-2024-08-06",
+                      "gpt-4o-2024-05-13",
+                      "gpt-4o-audio-preview",
+                      "gpt-4o-audio-preview-2024-10-01",
+                      "gpt-4o-audio-preview-2024-12-17",
+                      "gpt-4o-audio-preview-2025-06-03",
+                      "gpt-4o-mini-audio-preview",
+                      "gpt-4o-mini-audio-preview-2024-12-17",
+                      "gpt-4o-search-preview",
+                      "gpt-4o-mini-search-preview",
+                      "gpt-4o-search-preview-2025-03-11",
+                      "gpt-4o-mini-search-preview-2025-03-11",
+                      "chatgpt-4o-latest",
+                      "codex-mini-latest",
+                      "gpt-4o-mini",
+                      "gpt-4o-mini-2024-07-18",
+                      "gpt-4-turbo",
+                      "gpt-4-turbo-2024-04-09",
+                      "gpt-4-0125-preview",
+                      "gpt-4-turbo-preview",
+                      "gpt-4-1106-preview",
+                      "gpt-4-vision-preview",
+                      "gpt-4",
+                      "gpt-4-0314",
+                      "gpt-4-0613",
+                      "gpt-4-32k",
+                      "gpt-4-32k-0314",
+                      "gpt-4-32k-0613",
+                      "gpt-3.5-turbo",
+                      "gpt-3.5-turbo-16k",
+                      "gpt-3.5-turbo-0301",
+                      "gpt-3.5-turbo-0613",
+                      "gpt-3.5-turbo-1106",
+                      "gpt-3.5-turbo-0125",
+                      "gpt-3.5-turbo-16k-0613"
+                    ]
                   },
                   {
-                    "type": "literal",
-                    "value": "o1-pro\" | \"o1-pro-2025-03-19\" | \"o3-pro"
+                    "type": "enum",
+                    "values": [
+                      "o1-pro",
+                      "o1-pro-2025-03-19",
+                      "o3-pro",
+                      "o3-pro-2025-06-10",
+                      "o3-deep-research",
+                      "o3-deep-research-2025-06-26",
+                      "o4-mini-deep-research",
+                      "o4-mini-deep-research-2025-06-26",
+                      "computer-use-preview",
+                      "computer-use-preview-2025-03-11",
+                      "gpt-5-codex",
+                      "gpt-5-pro",
+                      "gpt-5-pro-2025-10-06",
+                      "gpt-5.1-codex-max"
+                    ]
                   }
                 ]
               }
@@ -5282,8 +5583,12 @@
               "description": "How the model should select which tool (or tools) to use when generating a response. See the `tools` parameter to see how to specify which tools the model can call.",
               "members": [
                 {
-                  "type": "literal",
-                  "value": "none\" | \"auto\" | \"required"
+                  "type": "enum",
+                  "values": [
+                    "none",
+                    "auto",
+                    "required"
+                  ]
                 },
                 {
                   "type": "struct",
@@ -5412,7 +5717,7 @@
             },
             {
               "name": "conversation",
-              "type": "object",
+              "type": "Response_conversation",
               "required": false,
               "description": "The conversation that this response belonged to. Input items and output items from this response were automatically added to this conversation."
             },
@@ -5482,7 +5787,9 @@
               "values": [
                 "auto",
                 "default",
-                "flex"
+                "flex",
+                "scale",
+                "priority"
               ]
             },
             {
@@ -5547,7 +5854,22 @@
                   "values": [
                     "server_error",
                     "rate_limit_exceeded",
-                    "invalid_prompt"
+                    "invalid_prompt",
+                    "vector_store_timeout",
+                    "invalid_image",
+                    "invalid_image_format",
+                    "invalid_base64_image",
+                    "invalid_image_url",
+                    "image_too_large",
+                    "image_too_small",
+                    "image_parse_error",
+                    "image_content_policy_violation",
+                    "invalid_image_mode",
+                    "image_file_too_large",
+                    "unsupported_image_media_type",
+                    "empty_image_file",
+                    "failed_to_download_image",
+                    "image_file_not_found"
                   ]
                 },
                 {
@@ -5591,7 +5913,12 @@
                     },
                     {
                       "type": "array",
-                      "element_type": "ResponseInputContent"
+                      "element_type": "ContentItem",
+                      "element_variant_refs": [
+                        "ResponseInputText",
+                        "ResponseInputImage",
+                        "ResponseInputFile"
+                      ]
                     }
                   ]
                 },
@@ -5892,22 +6219,25 @@
                 },
                 {
                   "name": "content",
-                  "type": "union",
+                  "type": "array<Content>",
                   "required": false,
                   "description": "The content of the output message.",
-                  "members": [
-                    {
-                      "type": "struct",
-                      "ref": "ResponseOutputText",
-                      "discriminator_value": "output_text"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "ResponseOutputRefusal",
-                      "discriminator_value": "refusal"
-                    }
-                  ],
-                  "discriminator": "type"
+                  "union_def": {
+                    "name": "Content",
+                    "members": [
+                      {
+                        "type": "struct",
+                        "ref": "ResponseOutputText",
+                        "discriminator_value": "output_text"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "ResponseOutputRefusal",
+                        "discriminator_value": "refusal"
+                      }
+                    ],
+                    "discriminator": "type"
+                  }
                 },
                 {
                   "name": "role",
@@ -5942,36 +6272,39 @@
                   "fields": [
                     {
                       "name": "annotations",
-                      "type": "union",
+                      "type": "array<Annotations>",
                       "required": false,
                       "description": "The annotations of the text output.",
-                      "members": [
-                        {
-                          "type": "struct",
-                          "ref": "FileCitation",
-                          "discriminator_value": "file_citation"
-                        },
-                        {
-                          "type": "struct",
-                          "ref": "URLCitation",
-                          "discriminator_value": "url_citation"
-                        },
-                        {
-                          "type": "struct",
-                          "ref": "ContainerFileCitation",
-                          "discriminator_value": "container_file_citation"
-                        },
-                        {
-                          "type": "struct",
-                          "ref": "FilePath",
-                          "discriminator_value": "file_path"
-                        }
-                      ],
-                      "discriminator": "type"
+                      "union_def": {
+                        "name": "Annotations",
+                        "members": [
+                          {
+                            "type": "struct",
+                            "ref": "FileCitation",
+                            "discriminator_value": "file_citation"
+                          },
+                          {
+                            "type": "struct",
+                            "ref": "URLCitation",
+                            "discriminator_value": "url_citation"
+                          },
+                          {
+                            "type": "struct",
+                            "ref": "ContainerFileCitation",
+                            "discriminator_value": "container_file_citation"
+                          },
+                          {
+                            "type": "struct",
+                            "ref": "FilePath",
+                            "discriminator_value": "file_path"
+                          }
+                        ],
+                        "discriminator": "type"
+                      }
                     },
                     {
                       "name": "logprobs",
-                      "type": "array<object>",
+                      "type": "array<ResponseOutputText_logprobs>",
                       "required": false
                     },
                     {
@@ -6154,7 +6487,7 @@
                         },
                         {
                           "name": "top_logprobs",
-                          "type": "array<object>",
+                          "type": "array<ResponseOutputText_logprobs_top_logprobs>",
                           "required": false
                         }
                       ],
@@ -6234,7 +6567,9 @@
                   "values": [
                     "in_progress",
                     "searching",
-                    "completed"
+                    "completed",
+                    "incomplete",
+                    "failed"
                   ]
                 },
                 {
@@ -6246,7 +6581,7 @@
                 },
                 {
                   "name": "results",
-                  "type": "array<object>",
+                  "type": "array<ResponseFileSearchToolCall_results>",
                   "required": false,
                   "description": "The results of the file search tool call."
                 }
@@ -6258,10 +6593,10 @@
                   "fields": [
                     {
                       "name": "attributes",
-                      "type": "union",
+                      "type": "map<string, string>",
                       "required": false,
                       "description": "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard. Keys are strings with a maximum length of 64 characters. Values are strings with a maximum length of 512 characters, booleans, or numbers.",
-                      "members": [
+                      "map_value_members": [
                         {
                           "type": "string"
                         },
@@ -6375,7 +6710,7 @@
                 },
                 {
                   "name": "pending_safety_checks",
-                  "type": "array<object>",
+                  "type": "array<ResponseComputerToolCall_pending_safety_checks>",
                   "required": false,
                   "description": "The pending safety checks for the computer call."
                 },
@@ -6411,7 +6746,9 @@
                       "values": [
                         "left",
                         "right",
-                        "wheel"
+                        "wheel",
+                        "back",
+                        "forward"
                       ]
                     },
                     {
@@ -6470,7 +6807,7 @@
                   "fields": [
                     {
                       "name": "path",
-                      "type": "array<object>",
+                      "type": "array<Drag_path>",
                       "required": false,
                       "description": "An array of coordinates representing the path of the drag action. Coordinates will appear as an array of objects, eg ``` [ { x: 100, y: 200 }, { x: 200, y: 300 } ] ```"
                     },
@@ -6702,7 +7039,7 @@
                 },
                 {
                   "name": "acknowledged_safety_checks",
-                  "type": "array<object>",
+                  "type": "array<ComputerCallOutput_acknowledged_safety_checks>",
                   "required": false,
                   "description": "The safety checks reported by the API that have been acknowledged by the developer."
                 },
@@ -6853,7 +7190,7 @@
                     },
                     {
                       "name": "sources",
-                      "type": "array<object>",
+                      "type": "array<Search_sources>",
                       "required": false,
                       "description": "The sources used in the search."
                     }
@@ -7003,22 +7340,15 @@
                       "type": "string"
                     },
                     {
-                      "type": "struct",
-                      "ref": "ResponseInputTextContent",
-                      "discriminator_value": "input_text"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "ResponseInputImageContent",
-                      "discriminator_value": "input_image"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "ResponseInputFileContent",
-                      "discriminator_value": "input_file"
+                      "type": "array",
+                      "element_type": "OutputItem",
+                      "element_variant_refs": [
+                        "ResponseInputTextContent",
+                        "ResponseInputImageContent",
+                        "ResponseInputFileContent"
+                      ]
                     }
-                  ],
-                  "discriminator": "type"
+                  ]
                 },
                 {
                   "name": "type",
@@ -7172,7 +7502,7 @@
                 },
                 {
                   "name": "content",
-                  "type": "array<object>",
+                  "type": "array<ResponseReasoningItem_content>",
                   "required": false,
                   "description": "Reasoning text content."
                 },
@@ -7328,22 +7658,25 @@
                 },
                 {
                   "name": "outputs",
-                  "type": "union",
+                  "type": "array<Outputs>",
                   "required": false,
                   "description": "The outputs generated by the code interpreter, such as logs or images. Can be null if no outputs are available.",
-                  "members": [
-                    {
-                      "type": "struct",
-                      "ref": "Logs",
-                      "discriminator_value": "logs"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "Image",
-                      "discriminator_value": "image"
-                    }
-                  ],
-                  "discriminator": "type"
+                  "union_def": {
+                    "name": "Outputs",
+                    "members": [
+                      {
+                        "type": "struct",
+                        "ref": "Logs",
+                        "discriminator_value": "logs"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "Image",
+                        "discriminator_value": "image"
+                      }
+                    ],
+                    "discriminator": "type"
+                  }
                 },
                 {
                   "name": "status",
@@ -7353,7 +7686,9 @@
                   "values": [
                     "in_progress",
                     "completed",
-                    "incomplete"
+                    "incomplete",
+                    "interpreting",
+                    "failed"
                   ]
                 },
                 {
@@ -7422,7 +7757,7 @@
                 },
                 {
                   "name": "action",
-                  "type": "object",
+                  "type": "LocalShellCall_action",
                   "required": false,
                   "description": "Execute a shell command on the server."
                 },
@@ -7543,7 +7878,7 @@
               "fields": [
                 {
                   "name": "action",
-                  "type": "object",
+                  "type": "ShellCall_action",
                   "required": false,
                   "description": "The shell commands and limits that describe how to run the tool call."
                 },
@@ -8016,7 +8351,7 @@
                 },
                 {
                   "name": "tools",
-                  "type": "array<object>",
+                  "type": "array<McpListTools_tools>",
                   "required": false,
                   "description": "The tools available on the server."
                 },
@@ -8041,7 +8376,7 @@
                   "fields": [
                     {
                       "name": "input_schema",
-                      "type": "unknown",
+                      "type": "object",
                       "required": false,
                       "description": "The JSON schema describing the tool's input."
                     },
@@ -8053,7 +8388,7 @@
                     },
                     {
                       "name": "annotations",
-                      "type": "unknown",
+                      "type": "object",
                       "required": false,
                       "description": "Additional annotations about the tool."
                     },
@@ -8208,7 +8543,9 @@
                   "values": [
                     "in_progress",
                     "completed",
-                    "incomplete"
+                    "incomplete",
+                    "calling",
+                    "failed"
                   ]
                 }
               ],
@@ -8235,7 +8572,13 @@
                       "type": "string"
                     },
                     {
-                      "type": "array<ResponseInputText> | ResponseInputImage | ResponseInputFile"
+                      "type": "array",
+                      "element_type": "OutputItem",
+                      "element_variant_refs": [
+                        "ResponseInputText",
+                        "ResponseInputImage",
+                        "ResponseInputFile"
+                      ]
                     }
                   ]
                 },
@@ -8460,7 +8803,7 @@
                 },
                 {
                   "name": "action",
-                  "type": "object",
+                  "type": "ResponseFunctionShellToolCall_action",
                   "required": false,
                   "description": "The shell commands and limits that describe how to run the tool call."
                 },
@@ -8601,7 +8944,7 @@
                 },
                 {
                   "name": "output",
-                  "type": "array<object>",
+                  "type": "array<ResponseFunctionShellToolCallOutput_output>",
                   "required": false,
                   "description": "An array of shell call output contents"
                 },
@@ -8923,7 +9266,7 @@
                 },
                 {
                   "name": "tools",
-                  "type": "array<map<string, unknown>>",
+                  "type": "array<map<string, object>>",
                   "required": false,
                   "description": "A list of tool definitions that the model should be allowed to call. For the Responses API, the list of tool definitions might look like: ```json [ { \"type\": \"function\", \"name\": \"get_weather\" }, { \"type\": \"mcp\", \"server_label\": \"deepwiki\" }, { \"type\": \"image_generation\" } ] ```"
                 },
@@ -8950,7 +9293,10 @@
                   "values": [
                     "file_search",
                     "web_search_preview",
-                    "computer_use_preview"
+                    "computer_use_preview",
+                    "web_search_preview_2025_03_11",
+                    "image_generation",
+                    "code_interpreter"
                   ]
                 }
               ],
@@ -9068,7 +9414,7 @@
                 },
                 {
                   "name": "parameters",
-                  "type": "map<string, unknown>",
+                  "type": "map<string, object>",
                   "required": false,
                   "description": "A JSON schema object describing the parameters of the function."
                 },
@@ -9136,7 +9482,7 @@
                 },
                 {
                   "name": "ranking_options",
-                  "type": "object",
+                  "type": "FileSearchTool_ranking_options",
                   "required": false,
                   "description": "Ranking options for search."
                 }
@@ -9160,7 +9506,10 @@
                       "values": [
                         "eq",
                         "ne",
-                        "gt"
+                        "gt",
+                        "gte",
+                        "lt",
+                        "lte"
                       ]
                     },
                     {
@@ -9179,10 +9528,15 @@
                           "type": "boolean"
                         },
                         {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
+                          "type": "array",
+                          "element_members": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -9196,18 +9550,21 @@
                   "fields": [
                     {
                       "name": "filters",
-                      "type": "union",
+                      "type": "array<Filters>",
                       "required": false,
                       "description": "Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.",
-                      "members": [
-                        {
-                          "type": "struct",
-                          "ref": "ComparisonFilter"
-                        },
-                        {
-                          "type": "unknown"
-                        }
-                      ]
+                      "union_def": {
+                        "name": "Filters",
+                        "members": [
+                          {
+                            "type": "struct",
+                            "ref": "ComparisonFilter"
+                          },
+                          {
+                            "type": "object"
+                          }
+                        ]
+                      }
                     },
                     {
                       "name": "type",
@@ -9239,7 +9596,10 @@
                           "values": [
                             "eq",
                             "ne",
-                            "gt"
+                            "gt",
+                            "gte",
+                            "lt",
+                            "lte"
                           ]
                         },
                         {
@@ -9258,10 +9618,15 @@
                               "type": "boolean"
                             },
                             {
-                              "type": "string"
-                            },
-                            {
-                              "type": "number"
+                              "type": "array",
+                              "element_members": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -9278,7 +9643,7 @@
                   "fields": [
                     {
                       "name": "hybrid_search",
-                      "type": "object",
+                      "type": "FileSearchTool_ranking_options_hybrid_search",
                       "required": false,
                       "description": "Weights that control how reciprocal rank fusion balances semantic embedding matches versus sparse keyword matches when hybrid search is enabled."
                     },
@@ -9348,7 +9713,9 @@
                   "values": [
                     "windows",
                     "mac",
-                    "linux"
+                    "linux",
+                    "ubuntu",
+                    "browser"
                   ]
                 },
                 {
@@ -9378,7 +9745,7 @@
                 },
                 {
                   "name": "filters",
-                  "type": "object",
+                  "type": "WebSearchTool_filters",
                   "required": false,
                   "description": "Filters for the search."
                 },
@@ -9395,7 +9762,7 @@
                 },
                 {
                   "name": "user_location",
-                  "type": "object",
+                  "type": "WebSearchTool_user_location",
                   "required": false,
                   "description": "The approximate location of the user."
                 }
@@ -9474,19 +9841,22 @@
                 },
                 {
                   "name": "allowed_tools",
-                  "type": "union",
+                  "type": "array<AllowedTools>",
                   "required": false,
                   "description": "List of allowed tool names or a filter object.",
-                  "members": [
-                    {
-                      "type": "array",
-                      "element_type": "string"
-                    },
-                    {
-                      "type": "struct",
-                      "ref": "McpToolFilter"
-                    }
-                  ]
+                  "union_def": {
+                    "name": "AllowedTools",
+                    "members": [
+                      {
+                        "type": "array",
+                        "element_type": "string"
+                      },
+                      {
+                        "type": "struct",
+                        "ref": "McpToolFilter"
+                      }
+                    ]
+                  }
                 },
                 {
                   "name": "authorization",
@@ -9502,7 +9872,12 @@
                   "values": [
                     "connector_dropbox",
                     "connector_gmail",
-                    "connector_googlecalendar"
+                    "connector_googlecalendar",
+                    "connector_googledrive",
+                    "connector_microsoftteams",
+                    "connector_outlookcalendar",
+                    "connector_outlookemail",
+                    "connector_sharepoint"
                   ]
                 },
                 {
@@ -9518,12 +9893,15 @@
                   "description": "Specify which of the MCP server's tools require approval.",
                   "members": [
                     {
-                      "type": "struct",
-                      "ref": "McpToolApprovalFilter"
+                      "type": "enum",
+                      "values": [
+                        "always",
+                        "never"
+                      ]
                     },
                     {
-                      "type": "literal",
-                      "value": "always\" | \"never"
+                      "type": "struct",
+                      "ref": "McpToolApprovalFilter"
                     }
                   ]
                 },
@@ -9567,13 +9945,13 @@
                   "fields": [
                     {
                       "name": "always",
-                      "type": "object",
+                      "type": "McpToolApprovalFilter_always",
                       "required": false,
                       "description": "A filter object to specify which tools are allowed."
                     },
                     {
                       "name": "never",
-                      "type": "object",
+                      "type": "McpToolApprovalFilter_never",
                       "required": false,
                       "description": "A filter object to specify which tools are allowed."
                     }
@@ -9820,19 +10198,27 @@
                 },
                 {
                   "name": "input_image_mask",
-                  "type": "object",
+                  "type": "ImageGeneration_input_image_mask",
                   "required": false,
                   "description": "Optional mask for inpainting. Contains `image_url` (string, optional) and `file_id` (string, optional)."
                 },
                 {
                   "name": "model",
-                  "type": "enum",
+                  "type": "union",
                   "required": false,
                   "description": "The image generation model to use. Default: `gpt-image-1`.",
-                  "values": [
-                    "gpt-image-1",
-                    "gpt-image-1-mini",
-                    "gpt-image-1.5"
+                  "members": [
+                    {
+                      "type": "enum",
+                      "values": [
+                        "gpt-image-1",
+                        "gpt-image-1-mini",
+                        "gpt-image-1.5"
+                      ]
+                    },
+                    {
+                      "type": "string"
+                    }
                   ]
                 },
                 {
@@ -10017,22 +10403,25 @@
                     },
                     {
                       "name": "skills",
-                      "type": "union",
+                      "type": "array<Skills>",
                       "required": false,
                       "description": "An optional list of skills referenced by id or inline data.",
-                      "members": [
-                        {
-                          "type": "struct",
-                          "ref": "SkillReference",
-                          "discriminator_value": "skill_reference"
-                        },
-                        {
-                          "type": "struct",
-                          "ref": "InlineSkill",
-                          "discriminator_value": "inline"
-                        }
-                      ],
-                      "discriminator": "type"
+                      "union_def": {
+                        "name": "Skills",
+                        "members": [
+                          {
+                            "type": "struct",
+                            "ref": "SkillReference",
+                            "discriminator_value": "skill_reference"
+                          },
+                          {
+                            "type": "struct",
+                            "ref": "InlineSkill",
+                            "discriminator_value": "inline"
+                          }
+                        ],
+                        "discriminator": "type"
+                      }
                     }
                   ],
                   "children": [
@@ -10382,7 +10771,7 @@
                 },
                 {
                   "name": "user_location",
-                  "type": "object",
+                  "type": "WebSearchPreviewTool_user_location",
                   "required": false,
                   "description": "The user's location."
                 }
@@ -10469,30 +10858,26 @@
                 },
                 {
                   "name": "variables",
-                  "type": "union",
+                  "type": "map<string, string>",
                   "required": false,
                   "description": "Optional map of values to substitute in for variables in your prompt. The substitution values can either be strings, or other Response input types like images or files.",
-                  "members": [
+                  "map_value_members": [
                     {
                       "type": "string"
                     },
                     {
                       "type": "struct",
-                      "ref": "ResponseInputText",
-                      "discriminator_value": "input_text"
+                      "ref": "ResponseInputText"
                     },
                     {
                       "type": "struct",
-                      "ref": "ResponseInputImage",
-                      "discriminator_value": "input_image"
+                      "ref": "ResponseInputImage"
                     },
                     {
                       "type": "struct",
-                      "ref": "ResponseInputFile",
-                      "discriminator_value": "input_file"
+                      "ref": "ResponseInputFile"
                     }
-                  ],
-                  "discriminator": "type"
+                  ]
                 },
                 {
                   "name": "version",
@@ -10716,7 +11101,7 @@
                     },
                     {
                       "name": "schema",
-                      "type": "map<string, unknown>",
+                      "type": "map<string, object>",
                       "required": false,
                       "description": "The schema for the response format, described as a JSON Schema object. Learn how to build JSON schemas here."
                     },
@@ -10772,7 +11157,7 @@
                 },
                 {
                   "name": "input_tokens_details",
-                  "type": "object",
+                  "type": "ResponseUsage_input_tokens_details",
                   "required": false,
                   "description": "A detailed breakdown of the input tokens."
                 },
@@ -10784,7 +11169,7 @@
                 },
                 {
                   "name": "output_tokens_details",
-                  "type": "object",
+                  "type": "ResponseUsage_output_tokens_details",
                   "required": false,
                   "description": "A detailed breakdown of the output tokens."
                 },

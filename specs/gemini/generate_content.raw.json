@@ -1,13 +1,33 @@
 {
-  "discoveryVersion": "v1",
-  "title": "Generative Language API",
-  "basePath": "",
-  "batchPath": "batch",
-  "description": "The Gemini API allows developers to build generative AI applications using Gemini models. Gemini is our most capable model, built from the ground up to be multimodal. It can generalize and seamlessly understand, operate across, and combine different types of information including language, images, audio, video, and code. You can use the Gemini API for use cases like reasoning across text and images, content generation, dialogue agents, summarization and classification systems, and more.",
-  "canonicalName": "Generative Language",
-  "kind": "discovery#restDescription",
-  "servicePath": "",
+  "revision": "20260223",
   "documentationLink": "https://developers.generativeai.google/api",
+  "ownerName": "Google",
+  "discoveryVersion": "v1",
+  "ownerDomain": "google.com",
+  "baseUrl": "https://generativelanguage.googleapis.com/",
+  "version_module": true,
+  "icons": {
+    "x16": "http://www.google.com/images/icons/product/search-16.gif",
+    "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  },
+  "id": "generativelanguage:v1beta",
+  "kind": "discovery#restDescription",
+  "canonicalName": "Generative Language",
+  "version": "v1beta",
+  "mtlsRootUrl": "https://generativelanguage.mtls.googleapis.com/",
+  "batchPath": "batch",
+  "rootUrl": "https://generativelanguage.googleapis.com/",
+  "auth": {
+    "oauth2": {
+      "scopes": {
+        "https://www.googleapis.com/auth/devstorage.read_only": {
+          "description": "View your data in Google Cloud Storage"
+        }
+      }
+    }
+  },
+  "protocol": "rest",
+  "title": "Generative Language API",
   "parameters": {
     "access_token": {
       "type": "string",
@@ -85,8 +105,8 @@
       "location": "query"
     }
   },
-  "name": "generativelanguage",
   "fullyEncodeReservedExpansion": true,
+  "description": "The Gemini API allows developers to build generative AI applications using Gemini models. Gemini is our most capable model, built from the ground up to be multimodal. It can generalize and seamlessly understand, operate across, and combine different types of information including language, images, audio, video, and code. You can use the Gemini API for use cases like reasoning across text and images, content generation, dialogue agents, summarization and classification systems, and more.",
   "schemas": {
     "ListOperationsResponse": {
       "id": "ListOperationsResponse",
@@ -1697,6 +1717,13 @@
             "type": "string"
           }
         },
+        "imageSearchQueries": {
+          "description": "Image search queries used for grounding.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "googleMapsWidgetContextToken": {
           "description": "Optional. Resource name of the Google Maps widget context token that can be used with the PlacesContextElement widget in order to render contextual data. Only populated in the case that grounding with Google Maps is enabled.",
           "type": "string"
@@ -1744,11 +1771,13 @@
       "type": "object",
       "properties": {
         "uri": {
-          "description": "URI reference of the chunk.",
+          "description": "Output only. URI reference of the chunk.",
+          "readOnly": true,
           "type": "string"
         },
         "title": {
-          "description": "Title of the chunk.",
+          "description": "Output only. Title of the chunk.",
+          "readOnly": true,
           "type": "string"
         }
       }
@@ -4587,24 +4616,6 @@
       }
     }
   },
-  "version_module": true,
-  "mtlsRootUrl": "https://generativelanguage.mtls.googleapis.com/",
-  "auth": {
-    "oauth2": {
-      "scopes": {
-        "https://www.googleapis.com/auth/devstorage.read_only": {
-          "description": "View your data in Google Cloud Storage"
-        }
-      }
-    }
-  },
-  "id": "generativelanguage:v1beta",
-  "icons": {
-    "x16": "http://www.google.com/images/icons/product/search-16.gif",
-    "x32": "http://www.google.com/images/icons/product/search-32.gif"
-  },
-  "revision": "20260218",
-  "protocol": "rest",
   "resources": {
     "batches": {
       "methods": {
@@ -6704,9 +6715,7 @@
       }
     }
   },
-  "ownerDomain": "google.com",
-  "version": "v1beta",
-  "ownerName": "Google",
-  "baseUrl": "https://generativelanguage.googleapis.com/",
-  "rootUrl": "https://generativelanguage.googleapis.com/"
+  "servicePath": "",
+  "name": "generativelanguage",
+  "basePath": ""
 }

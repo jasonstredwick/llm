@@ -479,6 +479,7 @@ struct GroundingMetadata {
     std::optional<std::vector<GoogleAiGenerativelanguageV1betaGroundingSupport>> groundingSupports{};
     std::optional<RetrievalMetadata> retrievalMetadata{};
     std::optional<std::vector<std::string>> webSearchQueries{};
+    std::optional<std::vector<std::string>> imageSearchQueries{};
     std::optional<std::string> googleMapsWidgetContextToken{};
 };
 

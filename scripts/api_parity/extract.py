@@ -1,5 +1,9 @@
 """
-Stage 2: Extract — Parse raw markdown into structured intermediate JSON.
+Stage 2: Extract — Parse raw specs into structured intermediate JSON.
+
+When a provider has multiple URLs (dependencies first, main spec last),
+each dependency is parsed into a type registry that the main spec can
+reference to resolve named types (e.g. Metadata, ResponsesModel).
 
 Usage:
     from scripts.api_parity.extract import extract
@@ -32,7 +36,7 @@ def _extract_discovery(provider: str, cfg: config.EndpointConfig) -> Path:
         discovery_path=str(discovery_path),
         provider=cfg.provider,
         endpoint=cfg.endpoint,
-        source_url=cfg.url,
+        source_url=cfg.urls[-1].url,
     )
 
     json_path.parent.mkdir(parents=True, exist_ok=True)
@@ -56,13 +60,46 @@ def _extract_discovery(provider: str, cfg: config.EndpointConfig) -> Path:
 
 def extract(provider: str) -> Path:
     """
-    Parse the raw markdown spec for a provider into intermediate JSON.
+    Parse the raw spec files for a provider into intermediate JSON.
+
+    Processes URLs in order: dependency specs build a type registry,
+    the main spec (last URL) produces the intermediate JSON tree.
 
     Returns the path to the extracted JSON file.
     """
     cfg = config.ENDPOINTS[provider]
-    md_path = config.raw_spec_path(provider)
     json_path = config.extracted_json_path(provider)
+
+    if cfg.parser == "discovery":
+        return _extract_discovery(provider, cfg)
+
+    if cfg.parser == "openai_anthropic":
+        from .parsers.openai_anthropic import (
+            extract as parse_extract,
+            parse_type_registry,
+        )
+    else:
+        raise ValueError(f"Unknown parser: {cfg.parser}")
+
+    # Build the type registry from dependency specs (all except the last).
+    type_registry: dict[str, str] = {}
+    for entry in cfg.urls[:-1]:
+        dep_path = config.raw_url_path(provider, entry.name)
+        if not dep_path.exists():
+            raise FileNotFoundError(
+                f"Dependency spec not found: {dep_path}\n"
+                f"Run 'fetch --provider {provider}' first."
+            )
+        print(f"Building type registry from {cfg.provider}/{entry.name}")
+        dep_text = dep_path.read_text(encoding="utf-8")
+        new_types = parse_type_registry(dep_text)
+        type_registry.update(new_types)
+        print(f"  -> {len(new_types)} types registered"
+              f" ({len(type_registry)} total)")
+
+    # Parse the main spec (last URL).
+    main_entry = cfg.urls[-1]
+    md_path = config.raw_url_path(provider, main_entry.name)
 
     if not md_path.exists():
         raise FileNotFoundError(
@@ -73,22 +110,13 @@ def extract(provider: str) -> Path:
     print(f"Extracting {cfg.provider}/{cfg.endpoint} from {md_path}")
     md_text = md_path.read_text(encoding="utf-8")
 
-    # Select parser
-    if cfg.parser == "openai_anthropic":
-        from .parsers.openai_anthropic import extract as parse_extract
-    elif cfg.parser == "gemini":
-        from .parsers.gemini import extract as parse_extract
-    elif cfg.parser == "discovery":
-        return _extract_discovery(provider, cfg)
-    else:
-        raise ValueError(f"Unknown parser: {cfg.parser}")
-
     result = parse_extract(
         markdown_text=md_text,
         provider=cfg.provider,
         endpoint=cfg.endpoint,
-        source_url=cfg.url,
+        source_url=main_entry.url,
         raw_file=str(md_path.relative_to(config.REPO_ROOT)),
+        type_registry=type_registry if type_registry else None,
     )
 
     json_path.parent.mkdir(parents=True, exist_ok=True)
@@ -102,12 +130,9 @@ def extract(provider: str) -> Path:
     for section in ("request", "response"):
         root = result.get(section, {}).get("root")
         if root:
-            if cfg.parser == "openai_anthropic":
-                from .parsers.openai_anthropic import _count_tree
-                structs, fields, enums = _count_tree(root)
-                print(f"     {section.capitalize()}: {structs} structs, "
-                      f"{fields} fields, {enums} enums")
-            else:
-                print(f"     {section.capitalize()}: (tree format)")
+            from .parsers.openai_anthropic import _count_tree
+            structs, fields, enums = _count_tree(root)
+            print(f"     {section.capitalize()}: {structs} structs, "
+                  f"{fields} fields, {enums} enums")
 
     return json_path

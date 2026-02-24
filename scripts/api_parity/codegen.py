@@ -96,6 +96,58 @@ _PRIMITIVE_TYPE_MAP: dict[str, str] = {
 }
 
 
+def _resolve_array_element_cpp(m: dict) -> str:
+    """Resolve the C++ type for an array union member's element.
+
+    If the member has ``element_members`` (a list of union member
+    descriptors), produce ``std::variant<T1, T2, ...>``.  Otherwise
+    fall back to ``element_type`` mapped through ``_PRIMITIVE_TYPE_MAP``.
+    """
+    elem_members = m.get("element_members")
+    if elem_members:
+        parts: list[str] = []
+        for em in elem_members:
+            emt = em.get("type", "")
+            cpp = _PRIMITIVE_TYPE_MAP.get(emt)
+            if cpp:
+                parts.append(cpp)
+            elif emt == "struct":
+                parts.append(em.get("ref", "UNKNOWN"))
+            elif emt in ("object", "unknown"):
+                parts.append("jai::llm::json::Object")
+            else:
+                parts.append(emt)
+        return f"std::variant<{', '.join(parts)}>"
+    elem = m.get("element", m.get("element_type", "UNKNOWN"))
+    return _PRIMITIVE_TYPE_MAP.get(elem, elem)
+
+
+_BUILTIN_CPP = {"std::string", "bool", "double", "int64_t"}
+
+
+def _qualify_cpp_type(m: str, parent_path: str) -> str:
+    """Fully qualify a C++ type name relative to *parent_path* for dedup.
+
+    Handles ``std::vector<X>`` and ``std::variant<X, Y>`` by recursively
+    qualifying the inner types.  Builtin types and already-qualified
+    names (``std::`` / ``jai::`` prefixed) are returned as-is.
+    """
+    if m in _BUILTIN_CPP:
+        return m
+    if m.startswith("std::vector<"):
+        inner = m[len("std::vector<"):-1]
+        q = _qualify_cpp_type(inner, parent_path)
+        return f"std::vector<{q}>"
+    if m.startswith("std::variant<"):
+        inner = m[len("std::variant<"):-1]
+        parts = [p.strip() for p in inner.split(", ")]
+        qparts = [_qualify_cpp_type(p, parent_path) for p in parts]
+        return f"std::variant<{', '.join(qparts)}>"
+    if m.startswith("std::") or m.startswith("jai::"):
+        return m
+    return f"{parent_path}::{m}"
+
+
 def _build_dispatch_entries(
     raw_entries: list[tuple[str, str]],
 ) -> list[tuple[str, str, str]]:
@@ -216,6 +268,10 @@ class CppCodegen:
         self._dispatches: list[_DispatchInfo] = []
         self._req_structs: list[_StructRecord] = []
         self._resp_structs: list[_StructRecord] = []
+        # Map value variant aliases:
+        #   (qualified_alias, member_info, concrete_variant_type)
+        # concrete_variant_type is the std::variant<...> string for dedup.
+        self._map_value_variants: list[tuple[str, list[tuple[str, str, str]], str]] = []
 
     # ── public API ────────────────────────────────────────────────────────
 
@@ -249,6 +305,7 @@ class CppCodegen:
             _GENERATED_BANNER +
             "#pragma once\n\n"
             "#include <cstdint>\n"
+            "#include <map>\n"
             "#include <optional>\n"
             "#include <string>\n"
             "#include <variant>\n"
@@ -318,19 +375,41 @@ class CppCodegen:
             members_str = ", ".join(p[0] for p in pairs)
             lines.append(f"    enum class {ename} {{ {members_str} }};")
             self._enums.append(_EnumInfo(f"{qpath}::{ename}", pairs))
+        # ③b enum class for array element enums
+        # When a field is ``array<string>`` with ``element_enum_values``,
+        # emit a named enum class for the element type.
+        for fld in fields_json:
+            eevals = fld.get("element_enum_values")
+            if not eevals:
+                continue
+            ename = _pascal(fld["name"]) + "Item"
+            pairs = [(_upper_snake(v), v) for v in eevals]
+            members_str = ", ".join(p[0] for p in pairs)
+            lines.append(f"    enum class {ename} {{ {members_str} }};")
+            self._enums.append(_EnumInfo(f"{qpath}::{ename}", pairs))
+
         # blank line after enums if any were emitted
-        if any(f.get("type") == "enum" for f in fields_json):
+        has_enums = any(
+            f.get("type") == "enum" or f.get("element_enum_values")
+            for f in fields_json
+        )
+        if has_enums:
             lines.append("")
 
         # ④ dispatch enums + using declarations for unions
-        usings = self._build_usings(fields_json, children, child_names, qpath)
+        usings, map_value_aliases = self._build_usings(
+            fields_json, children, child_names, qpath,
+        )
         for u in usings:
             lines.append(f"    {u}")
         if usings:
             lines.append("")
 
         # ⑤ field declarations
-        field_infos = self._resolve_fields(fields_json, child_names, qpath)
+        field_infos = self._resolve_fields(
+            fields_json, child_names, qpath,
+            map_value_aliases=map_value_aliases,
+        )
         for fi in field_infos:
             lines.append(f"    {self._field_decl(fi)}")
 
@@ -350,16 +429,22 @@ class CppCodegen:
         children: list[dict],
         child_names: set[str],
         parent_path: str,
-    ) -> list[str]:
-        """Return lines for dispatch-enum + using declarations.
+    ) -> tuple[list[str], dict[str, str]]:
+        """Return (lines, map_value_aliases) for dispatch-enum + using declarations.
+
+        *map_value_aliases* maps field names to the alias emitted for their
+        ``map<string, variant<…>>`` value type so that ``_resolve_type`` can
+        reference the alias instead of inlining the variant.
 
         Sources of union information (no heuristics):
           1. Explicit ``"type": "union"`` fields (from ``or`` in the spec).
           2. ``union_def`` on a field (from the parser detecting named-type
              children under a named-type-reference field).
           3. Array element_type references that resolve to children variants.
+          4. ``map<string, T | U | …>`` fields where the value is a union.
         """
         out: list[str] = []
+        map_value_aliases: dict[str, str] = {}
         # Track which union_def names we've already emitted, since the same
         # type name (e.g. TextCitationParam) may appear on multiple fields
         # inside the same parent struct but should only produce one using.
@@ -367,27 +452,38 @@ class CppCodegen:
 
         # ── Pre-pass: emit children variant usings for array element_types ──
         # When a union member has an array with element_type that isn't a
-        # direct child name, it may reference the variant of children (e.g.
-        # "ContentBlockSourceContent" → variant of TextBlockParam, ImageBlockParam).
-        # Collect kind-bearing children and emit a variant using if needed.
+        # direct child name, it may reference a variant of children.
+        # The parser may supply ``element_variant_refs`` listing the specific
+        # children, or we fall back to all kind-bearing children.
         kind_children = [c for c in children if c.get("kind") is not None]
         if kind_children:
-            needed_elem_types: set[str] = set()
+            # Collect (element_type_name, explicit_refs_or_None) pairs.
+            needed_elem_types: list[tuple[str, list[str] | None]] = []
+            seen_et: set[str] = set()
             for fld in fields_json:
                 if fld.get("type") == "union":
                     for m in fld.get("members", []):
                         if m.get("type") == "array":
                             et = m.get("element_type")
-                            if et and et not in child_names:
-                                needed_elem_types.add(et)
-            for et_name in needed_elem_types:
+                            if et and et not in child_names and et not in seen_et:
+                                seen_et.add(et)
+                                needed_elem_types.append(
+                                    (et, m.get("element_variant_refs")))
+            for et_name, explicit_refs in needed_elem_types:
                 if et_name in emitted_union_names:
                     continue
                 emitted_union_names.add(et_name)
-                refs = [c["name"] for c in kind_children]
+                # Use explicit refs from the parser if available,
+                # otherwise fall back to all kind-bearing children.
+                if explicit_refs:
+                    refs = explicit_refs
+                    ref_children = [c for c in children
+                                    if c["name"] in set(explicit_refs)]
+                else:
+                    refs = [c["name"] for c in kind_children]
+                    ref_children = kind_children
                 raw_entries: list[tuple[str, str]] = []
-                for c in kind_children:
-                    # Find the discriminator value from the kind field
+                for c in ref_children:
                     for f in c.get("fields", []):
                         if f.get("type") == "kind":
                             raw_entries.append((f["value"], c["name"]))
@@ -422,16 +518,123 @@ class CppCodegen:
                     continue
                 emitted_union_names.add(uname)
                 members = udef.get("members", [])
-                # Keep struct and array members; skip "literal", bare "string"
-                usable = [m for m in members
-                          if m.get("type") in ("struct", "array")]
-                if len(usable) >= 2:
+                # Every member type is a variant arm except "literal",
+                # which gets condensed into an enum class.
+                non_literal = [m for m in members
+                               if m.get("type") != "literal"]
+                literals = [m for m in members
+                            if m.get("type") == "literal"]
+                # Condense literals into a single synthetic "enum" member
+                # so they contribute as one variant arm.
+                effective = list(non_literal)
+                if literals:
+                    effective.append({
+                        "type": "enum",
+                        "values": [m.get("value", "") for m in literals],
+                    })
+                if len(effective) >= 2:
                     self._emit_union_using_from_def(
-                        uname, usable, udef.get("discriminator"),
+                        uname, effective, udef.get("discriminator"),
                         parent_path, out,
                     )
+                elif len(effective) == 1 and effective[0].get("type") == "enum":
+                    # All members are literals → emit a pure enum class
+                    vals = effective[0]["values"]
+                    pairs = [(_upper_snake(v), v) for v in vals]
+                    members_str = ", ".join(p[0] for p in pairs)
+                    out.append(f"enum class {uname} {{ {members_str} }};")
+                    self._enums.append(
+                        _EnumInfo(f"{parent_path}::{uname}", pairs))
 
-        return out
+        # ── map<string, union> fields → named using aliases ──
+        # Build a lookup from child name → kind value for discriminated dispatch.
+        _child_kind: dict[str, str] = {}
+        for c in children:
+            k = c.get("kind")
+            if k:
+                _child_kind[c["name"]] = k
+        _JSON_TYPE_CHECKS: dict[str, str] = {
+            "std::string": "is_string()",
+            "double": "is_double() || src.is_int64() || src.is_uint64()",
+            "bool": "is_bool()",
+            "int64_t": "is_int64()",
+            "jai::llm::json::Object": "is_object()",
+        }
+        for fld in fields_json:
+            mvms = fld.get("map_value_members")
+            if not mvms:
+                continue
+            cpp_parts: list[str] = []
+            # Each entry is either:
+            #   ("scalar", json_check, cpp_type) for scalars, or
+            #   ("struct", kind_value, child_name) for kind-bearing structs
+            member_info: list[tuple[str, str, str]] = []
+            for mvm in mvms:
+                mt = mvm.get("type", "")
+                resolved = self._resolve_scalar(mt)
+                if resolved:
+                    cpp_parts.append(resolved)
+                    check = _JSON_TYPE_CHECKS.get(resolved)
+                    if check:
+                        member_info.append(("scalar", check, resolved))
+                elif mt == "struct":
+                    ref = mvm.get("ref", "UNKNOWN")
+                    cpp_parts.append(ref)
+                    kv = _child_kind.get(ref, "")
+                    member_info.append(("struct", kv, ref))
+                elif mt in ("object", "unknown"):
+                    cpp_parts.append("jai::llm::json::Object")
+                    check = _JSON_TYPE_CHECKS.get("jai::llm::json::Object")
+                    if check:
+                        member_info.append(("scalar", check, "jai::llm::json::Object"))
+                else:
+                    cpp_parts.append(f"std::string /* UNRESOLVED: {mt} */")
+            alias = _pascal(fld["name"]) + "Value"
+            out.append(
+                f"using {alias} = std::variant<{', '.join(cpp_parts)}>;"
+            )
+            map_value_aliases[fld["name"]] = alias
+            # Record for deserializer generation.  Include the concrete
+            # variant type string for dedup (C++ template specializations
+            # see through using aliases).
+            concrete = f"std::variant<{', '.join(cpp_parts)}>"
+            self._map_value_variants.append(
+                (f"{parent_path}::{alias}", member_info, concrete)
+            )
+
+        return out, map_value_aliases
+
+    def _register_element_variant_dispatch(
+        self, element_members: list[dict], alias_name: str,
+        concrete_cpp: str, parent_path: str,
+    ) -> None:
+        """Register a dispatch for an array element variant type.
+
+        *alias_name* is the using-alias name (e.g. ``"ValueElement"``).
+        *concrete_cpp* is the raw ``std::variant<…>`` type string used
+        for dedup (since C++ template specializations see through aliases).
+        """
+        elem_type_checks: list[tuple[str, str]] = []
+        for em in element_members:
+            emt = em.get("type", "")
+            if emt in _TYPE_CHECK_MAP:
+                elem_type_checks.append(_TYPE_CHECK_MAP[emt])
+            elif emt == "struct":
+                elem_type_checks.append(
+                    ("is_object()", f"{parent_path}::{em.get('ref', 'UNKNOWN')}"))
+            elif emt in ("object", "unknown"):
+                elem_type_checks.append(
+                    ("is_object()", "jai::llm::json::Object"))
+        if elem_type_checks:
+            fq_key = _qualify_cpp_type(concrete_cpp, parent_path)
+            self._dispatches.append(
+                _DispatchInfo(
+                    f"{parent_path}::{alias_name}", [],
+                    "type",
+                    elem_type_checks,
+                    variant_type=fq_key,
+                )
+            )
 
     def _emit_union_using(
         self, field_name: str, members_json: list[dict],
@@ -443,6 +646,51 @@ class CppCodegen:
         """Emit dispatch-enum + using for an explicit union field."""
         alias = _pascal(field_name)
         cpp_members = self._resolve_union_members(members_json)
+
+        # Pre-pass: emit named using aliases for array element variants
+        # and replace the corresponding cpp_members entry (which
+        # _resolve_union_members populated as std::vector<std::variant<…>>)
+        # with std::vector<AliasElement>.
+        _elem_alias_map: dict[int, str] = {}
+        # Maps aliased cpp_members entries → concrete types for dedup.
+        # C++ template specializations see through using aliases, so the
+        # dedup key must use the expanded concrete type.
+        _alias_to_concrete: dict[str, str] = {}
+        for i, m_json in enumerate(members_json):
+            if m_json.get("type") == "array" and m_json.get("element_members"):
+                elem_alias = f"{alias}Element"
+                elem_cpp = _resolve_array_element_cpp(m_json)
+                out.append(f"using {elem_alias} = {elem_cpp};")
+                self._register_element_variant_dispatch(
+                    m_json["element_members"], elem_alias, elem_cpp,
+                    parent_path)
+                aliased = f"std::vector<{elem_alias}>"
+                _alias_to_concrete[aliased] = f"std::vector<{elem_cpp}>"
+                cpp_members[i] = aliased
+                _elem_alias_map[i] = elem_alias
+
+        # Handle enum members: merge all enum values into one enum class
+        # and replace the first __ENUM__ placeholder; remove subsequent ones.
+        all_enum_vals: list[str] = []
+        for m_json in members_json:
+            if m_json.get("type") == "enum":
+                all_enum_vals.extend(m_json.get("values", []))
+        enum_emitted = False
+        enum_name = f"{alias}Values"
+        for i, m_json in enumerate(members_json):
+            if m_json.get("type") == "enum" and i < len(cpp_members) \
+                    and cpp_members[i] == "__ENUM__":
+                if not enum_emitted:
+                    pairs = [(_upper_snake(v), v) for v in all_enum_vals]
+                    members_str = ", ".join(p[0] for p in pairs)
+                    out.append(f"enum class {enum_name} {{ {members_str} }};")
+                    self._enums.append(
+                        _EnumInfo(f"{parent_path}::{enum_name}", pairs))
+                    cpp_members[i] = enum_name
+                    enum_emitted = True
+                else:
+                    cpp_members[i] = "__REMOVE__"
+        cpp_members = [m for m in cpp_members if m != "__REMOVE__"]
 
         # If all members are unresolvable but we have enum_values from the
         # parser, this union is really a string enum (e.g. allowed_callers).
@@ -483,13 +731,25 @@ class CppCodegen:
                 # the correct fully-qualified type.
                 type_checks.append(("is_object()", f"{parent_path}::{m['ref']}"))
             elif mt == "array":
-                elem = m.get("element", m.get("element_type", "UNKNOWN"))
-                # Map primitive type names to C++ types before qualifying
-                elem = _PRIMITIVE_TYPE_MAP.get(elem, elem)
-                qualified_elem = f"{parent_path}::{elem}" if elem not in (
-                    "std::string", "bool", "double", "int64_t", "UNKNOWN",
-                ) and not elem.startswith("std::") else elem
+                elem_members = m.get("element_members")
+                if elem_members:
+                    # Named alias was emitted in the pre-pass above;
+                    # cpp_members entry was already replaced there.
+                    qualified_elem = f"{alias}Element"
+                else:
+                    elem = _resolve_array_element_cpp(m)
+                    qualified_elem = f"{parent_path}::{elem}" if elem not in (
+                        "std::string", "bool", "double", "int64_t", "UNKNOWN",
+                    ) and not elem.startswith("std::") else elem
                 type_checks.append(("is_array()", f"std::vector<{qualified_elem}>"))
+            elif mt in ("object", "unknown"):
+                type_checks.append(("is_object()", "jai::llm::json::Object"))
+            elif mt == "enum":
+                # Only add enum type_check once (multiple enum members
+                # are merged into a single enum class above).
+                enum_tc = ("is_string()", enum_name)
+                if enum_tc not in type_checks:
+                    type_checks.append(enum_tc)
             elif mt in _TYPE_CHECK_MAP:
                 type_checks.append(_TYPE_CHECK_MAP[mt])
 
@@ -503,15 +763,11 @@ class CppCodegen:
                 deduped.append(m)
         variant_args = ", ".join(deduped)
         concrete_variant = f"std::variant<{variant_args}>"
-        # Build a fully-qualified variant type key for dedup. Unqualified
-        # struct names like "Timeout" are scoped to parent_path, so qualify
-        # them to avoid false dedup matches across different parent structs.
-        _BUILTIN = {"std::string", "bool", "double", "int64_t"}
-        fq_members = [
-            m if m.startswith("std::") or m in _BUILTIN
-            else f"{parent_path}::{m}"
-            for m in deduped
-        ]
+        # Build a fully-qualified variant type key for dedup.  Expand
+        # any alias names back to concrete types so that different
+        # aliases of the same underlying type correctly dedup.
+        concrete_deduped = [_alias_to_concrete.get(m, m) for m in deduped]
+        fq_members = [_qualify_cpp_type(m, parent_path) for m in concrete_deduped]
         fq_variant_key = f"std::variant<{', '.join(fq_members)}>"
 
         if raw_entries:
@@ -542,25 +798,57 @@ class CppCodegen:
     def _emit_union_using_from_def(
         self, union_name: str, members: list[dict],
         discriminator: str | None, parent_path: str, out: list[str],
-    ) -> None:
+    ) -> str:
         """Emit dispatch-enum + using from a parser-generated union_def."""
+        # Merge all enum member values into a single enum class.
+        all_enum_values: list[str] = []
+        for m in members:
+            if m.get("type") == "enum":
+                all_enum_values.extend(m.get("values", []))
+        enum_emitted = False
+        enum_name = f"{union_name}Values"
+
         # Build C++ type list for the variant
         cpp_members: list[str] = []
+        _alias_to_concrete: dict[str, str] = {}
         type_checks: list[tuple[str, str]] = []
         for m in members:
             mt = m.get("type", "")
             if mt == "struct":
                 cpp_members.append(m["ref"])
             elif mt == "array":
-                elem = m.get("element_type", "UNKNOWN")
-                # Map primitive type names to C++ types before qualifying
-                elem = _PRIMITIVE_TYPE_MAP.get(elem, elem)
-                qualified_elem = f"{parent_path}::{elem}" if elem not in (
-                    "std::string", "bool", "double", "int64_t", "UNKNOWN",
-                ) and not elem.startswith("std::") else elem
-                vec_type = f"std::vector<{qualified_elem}>"
+                elem_members = m.get("element_members")
+                if elem_members:
+                    elem_alias = f"{union_name}Element"
+                    elem_cpp = _resolve_array_element_cpp(m)
+                    out.append(f"using {elem_alias} = {elem_cpp};")
+                    self._register_element_variant_dispatch(
+                        elem_members, elem_alias, elem_cpp, parent_path)
+                    vec_type = f"std::vector<{elem_alias}>"
+                    _alias_to_concrete[vec_type] = f"std::vector<{elem_cpp}>"
+                else:
+                    elem = _resolve_array_element_cpp(m)
+                    qualified_elem = f"{parent_path}::{elem}" if elem not in (
+                        "std::string", "bool", "double", "int64_t", "UNKNOWN",
+                    ) and not elem.startswith("std::") else elem
+                    vec_type = f"std::vector<{qualified_elem}>"
                 cpp_members.append(vec_type)
                 type_checks.append(("is_array()", vec_type))
+            elif mt in ("object", "unknown"):
+                cpp_members.append("jai::llm::json::Object")
+                type_checks.append(("is_object()", "jai::llm::json::Object"))
+            elif mt == "enum":
+                # Emit the merged enum class once for all enum members.
+                if not enum_emitted:
+                    pairs = [(_upper_snake(v), v) for v in all_enum_values]
+                    members_str = ", ".join(p[0] for p in pairs)
+                    out.append(f"enum class {enum_name} {{ {members_str} }};")
+                    self._enums.append(
+                        _EnumInfo(f"{parent_path}::{enum_name}", pairs))
+                    cpp_members.append(enum_name)
+                    type_checks.append(("is_string()", enum_name))
+                    enum_emitted = True
+                # Skip subsequent enum members — values already merged.
             elif mt in _TYPE_CHECK_MAP:
                 check, cpp_t = _TYPE_CHECK_MAP[mt]
                 cpp_members.append(cpp_t)
@@ -585,13 +873,11 @@ class CppCodegen:
                 deduped.append(m)
         variant_args = ", ".join(deduped)
         concrete_variant = f"std::variant<{variant_args}>"
-        # Build a fully-qualified variant type key for dedup.
-        _BUILTIN = {"std::string", "bool", "double", "int64_t"}
-        fq_members = [
-            m if m.startswith("std::") or m in _BUILTIN
-            else f"{parent_path}::{m}"
-            for m in deduped
-        ]
+        # Build a fully-qualified variant type key for dedup.  Expand
+        # alias names back to concrete types so different aliases of
+        # the same underlying type correctly dedup.
+        concrete_deduped = [_alias_to_concrete.get(m, m) for m in deduped]
+        fq_members = [_qualify_cpp_type(m, parent_path) for m in concrete_deduped]
         fq_variant_key = f"std::variant<{', '.join(fq_members)}>"
 
         if raw_entries:
@@ -615,6 +901,7 @@ class CppCodegen:
             )
 
         out.append(f"using {union_name} = {concrete_variant};")
+        return union_name
 
     @staticmethod
     def _resolve_union_members(members_json: list[dict]) -> list[str]:
@@ -627,20 +914,20 @@ class CppCodegen:
             elif mt == "struct":
                 out.append(m.get("ref", "UNKNOWN"))
             elif mt == "array":
-                elem = m.get("element", m.get("element_type", "UNKNOWN"))
-                if elem == "string":
-                    elem = "std::string"
-                elif elem == "boolean":
-                    elem = "bool"
-                elif elem == "integer":
-                    elem = "int64_t"
-                elif elem == "number":
-                    elem = "double"
+                elem = _resolve_array_element_cpp(m)
                 out.append(f"std::vector<{elem}>")
             elif mt == "boolean":
                 out.append("bool")
             elif mt == "number":
                 out.append("double")
+            elif mt == "integer":
+                out.append("int64_t")
+            elif mt in ("object", "unknown"):
+                out.append("jai::llm::json::Object")
+            elif mt == "enum":
+                # Enum member — the caller will emit the enum class
+                # and replace this with the actual enum type name.
+                out.append(f"__ENUM__")
             else:
                 out.append(f"/* unhandled union member: {mt} */")
         return out
@@ -652,6 +939,8 @@ class CppCodegen:
         fields_json: list[dict],
         child_names: set[str],
         parent_path: str,
+        *,
+        map_value_aliases: dict[str, str] | None = None,
     ) -> list[_FieldInfo]:
         out: list[_FieldInfo] = []
         for fld in fields_json:
@@ -661,7 +950,8 @@ class CppCodegen:
             ftype = fld.get("type", "")
 
             cpp_type, is_kind, is_enum, is_union = self._resolve_type(
-                fld, child_names
+                fld, child_names,
+                map_value_aliases=map_value_aliases,
             )
 
             out.append(_FieldInfo(
@@ -671,7 +961,8 @@ class CppCodegen:
         return out
 
     def _resolve_type(
-        self, fld: dict, child_names: set[str]
+        self, fld: dict, child_names: set[str],
+        *, map_value_aliases: dict[str, str] | None = None,
     ) -> tuple[str, bool, bool, bool]:
         """Return (cpp_type, is_kind, is_enum, is_union).
 
@@ -711,12 +1002,29 @@ class CppCodegen:
             return "int64_t", False, False, False
         if ftype == "number":
             return "double", False, False, False
-        if ftype in ("object", "map<string, unknown>"):
+        if ftype in ("object", "unknown", "map<string, unknown>"):
             return "jai::llm::json::Object", False, False, False
 
-        # ── array<T> ──
-        m = re.match(r"array<(.+)>", ftype)
+        # ── map<string, T> ──
+        m = re.match(r"^map<string,\s*(.+)>$", ftype)
         if m:
+            # If _build_usings already emitted a named alias for this map's
+            # value type, reference it instead of inlining the variant.
+            alias = (map_value_aliases or {}).get(fname)
+            if alias:
+                return f"std::map<std::string, {alias}>", False, False, False
+            inner = m.group(1).strip()
+            val_type = self._resolve_map_value(inner, child_names)
+            return f"std::map<std::string, {val_type}>", False, False, False
+
+        # ── array<T> ──
+        m = re.match(r"^array<(.+)>$", ftype)
+        if m:
+            # If the parser recorded element_enum_values, the element
+            # type is the enum class emitted in step ③b.
+            if fld.get("element_enum_values"):
+                ename = _pascal(fname) + "Item"
+                return f"std::vector<{ename}>", False, False, False
             inner = m.group(1).strip()
             elem = self._resolve_element(inner, child_names, fld)
             return f"std::vector<{elem}>", False, False, False
@@ -727,30 +1035,80 @@ class CppCodegen:
 
         # ── union_def present → the using alias was already emitted ──
         if udef:
-            usable = [mm for mm in udef.get("members", [])
-                       if mm.get("type") in ("struct", "array")]
-            if len(usable) >= 2:
+            members = udef.get("members", [])
+            non_literal = [mm for mm in members if mm.get("type") != "literal"]
+            has_literals = any(mm.get("type") == "literal" for mm in members)
+            # Count effective arms: non-literals + (1 if any literals → enum)
+            effective_count = len(non_literal) + (1 if has_literals else 0)
+            if effective_count >= 2:
+                # Variant was emitted by _build_usings
+                return udef["name"], False, False, True
+            if effective_count == 1 and has_literals and not non_literal:
+                # Pure enum class emitted by _build_usings
                 return udef["name"], False, False, False
-
-        # ── well-known aliases ──
-        if ftype == "Model":
-            return "std::string", False, False, False
+            if effective_count == 1 and non_literal:
+                # Single non-literal member — resolve directly
+                single = non_literal[0]
+                st = single.get("type", "")
+                if st == "struct":
+                    return single.get("ref", ftype), False, False, False
+                if st in self._SCALAR_MAP:
+                    return self._SCALAR_MAP[st], False, False, False
 
         # ── UNRESOLVED — flag clearly, never guess ──
         return f"std::string /* UNRESOLVED: {ftype} */", False, False, False
 
+    _SCALAR_MAP: dict[str, str] = {
+        "string": "std::string",
+        "boolean": "bool",
+        "integer": "int64_t",
+        "number": "double",
+        "object": "jai::llm::json::Object",
+        "unknown": "jai::llm::json::Object",
+    }
+
+    def _resolve_scalar(self, t: str) -> str | None:
+        """Resolve a scalar type name to its C++ type, or None."""
+        return self._SCALAR_MAP.get(t)
+
+    def _resolve_map_value(self, inner: str, child_names: set[str]) -> str:
+        """Resolve the value type of a map<string, V>.
+
+        Handles scalars, named types, unknown, and union value types
+        (e.g. ``string | number | boolean``).
+        """
+        # Simple scalar
+        s = self._resolve_scalar(inner)
+        if s:
+            return s
+
+        # Union value type: string | number | boolean
+        if ' | ' in inner:
+            parts = [p.strip() for p in inner.split(' | ')]
+            cpp_parts: list[str] = []
+            for p in parts:
+                resolved = self._resolve_scalar(p)
+                if resolved:
+                    cpp_parts.append(resolved)
+                elif p in child_names:
+                    cpp_parts.append(p)
+                else:
+                    cpp_parts.append(f"std::string /* UNRESOLVED: {p} */")
+            return f"std::variant<{', '.join(cpp_parts)}>"
+
+        # Named type reference
+        if inner in child_names:
+            return inner
+
+        return f"std::string /* UNRESOLVED: {inner} */"
+
     def _resolve_element(self, inner: str, child_names: set[str],
                          fld: dict | None = None) -> str:
         """Resolve the element type of an array."""
-        if inner == "string":
-            return "std::string"
-        if inner == "boolean":
-            return "bool"
-        if inner == "integer":
-            return "int64_t"
-        if inner == "number":
-            return "double"
-        if inner in ("object", "map<string, unknown>"):
+        s = self._resolve_scalar(inner)
+        if s:
+            return s
+        if inner == "map<string, unknown>":
             return "jai::llm::json::Object"
         if inner in child_names:
             return inner
@@ -758,6 +1116,11 @@ class CppCodegen:
         udef = fld.get("union_def") if fld else None
         if udef and udef.get("name") == inner:
             return inner
+        # map<string, T> inside array
+        m = re.match(r"^map<string,\s*(.+)>$", inner)
+        if m:
+            val_type = self._resolve_map_value(m.group(1).strip(), child_names)
+            return f"std::map<std::string, {val_type}>"
         return f"{inner} /* UNRESOLVED */"
 
     # ── field declaration ─────────────────────────────────────────────────
@@ -982,6 +1345,20 @@ class CppCodegen:
             parts.append(self._variant_block(di))
             parts.append("\n\n")
 
+        # Variant blocks for map value aliases (e.g. AttributesValue,
+        # VariablesValue).  These need DeserializeTo specializations so the
+        # generic map deserializer can call DeserializeTo<V> on each value.
+        # Dedup against the same emitted_variant_types set since C++
+        # template specializations see through using aliases.
+        for qalias, minfo, concrete in self._map_value_variants:
+            if not self._is_response_path(qalias):
+                continue
+            if concrete in emitted_variant_types:
+                continue
+            emitted_variant_types.add(concrete)
+            parts.append(self._map_value_variant_block(qalias, minfo))
+            parts.append("\n\n")
+
         # Top-level Deserialize function
         parts.append(
             f"/***\n"
@@ -1033,29 +1410,46 @@ class CppCodegen:
         """Emit BEGIN_DESERIALIZE_VARIANT block for a dispatch enum."""
         ns = self.provider
 
-        # For type-only dispatches (no entries), the qualified name IS the
-        # variant alias directly.  For discriminator dispatches, strip "Kind".
         if di.entries:
             variant_alias = di.qualified.rsplit("Kind", 1)[0]
+            fq_variant = f"{ns}::{variant_alias}"
+            fq_dispatch = f"{ns}::{di.qualified}"
         else:
             variant_alias = di.qualified
-        fq_variant = f"{ns}::{variant_alias}"
-        fq_dispatch = f"{ns}::{di.qualified}"
+            fq_variant = f"{ns}::{variant_alias}"
+            fq_dispatch = f"{ns}::{di.qualified}"
 
         lines = [f"BEGIN_DESERIALIZE_VARIANT({fq_variant})"]
 
         # Non-struct members are dispatched by JSON value type before
         # falling through to the discriminator-based struct dispatch.
+        # Parent path for qualifying sibling types at the same struct scope.
+        # e.g. for "Request::ImageGeneration::Model" → parent is
+        # "Request::ImageGeneration" so ModelValues → openai::Request::ImageGeneration::ModelValues
+        parent_path = "::".join(variant_alias.split("::")[:-1])
+
         for json_check, cpp_type in di.type_checks:
             # Qualify custom types with the provider namespace.
             # e.g. std::vector<Response::Foo> → std::vector<anthropic::Response::Foo>
             fq_cpp_type = cpp_type
             if "std::vector<" in cpp_type and not cpp_type.startswith("std::vector<std::"):
                 inner = cpp_type[len("std::vector<"):-1]
-                fq_cpp_type = f"std::vector<{ns}::{inner}>"
+                # Qualify the inner type using the same sibling logic:
+                # unqualified names are siblings at the parent scope.
+                if parent_path and "::" not in inner:
+                    fq_cpp_type = f"std::vector<{ns}::{parent_path}::{inner}>"
+                else:
+                    fq_cpp_type = f"std::vector<{ns}::{inner}>"
             elif cpp_type not in ("std::string", "bool", "double", "int64_t") \
-                    and not cpp_type.startswith("std::"):
-                fq_cpp_type = f"{ns}::{cpp_type}"
+                    and not cpp_type.startswith("std::") \
+                    and not cpp_type.startswith("jai::"):
+                # If the type is a sibling at the same struct scope (e.g.
+                # enum class ModelValues emitted alongside using Model),
+                # qualify relative to the parent struct path.
+                if parent_path and "::" not in cpp_type:
+                    fq_cpp_type = f"{ns}::{parent_path}::{cpp_type}"
+                else:
+                    fq_cpp_type = f"{ns}::{cpp_type}"
             lines.append(f"    if (src.{json_check}) {{")
             lines.append(f"        return T{{DeserializeTo<{fq_cpp_type}>(src)}};")
             lines.append(f"    }}")
@@ -1072,6 +1466,59 @@ class CppCodegen:
                     f"    FIELD_KIND(src, kind, {fq_dispatch}::{em}, {fq_member})"
                 )
         lines.append(f"END_DESERIALIZE_VARIANT({fq_variant})")
+        return "\n".join(lines)
+
+    def _map_value_variant_block(
+        self, qalias: str, member_info: list[tuple[str, str, str]],
+    ) -> str:
+        """Emit DeserializeTo for a map-value variant alias.
+
+        *member_info* entries are either:
+          ("scalar", json_check, cpp_type) — dispatch by JSON value type
+          ("struct", kind_value, child_name) — dispatch by kind discriminator
+        """
+        ns = self.provider
+        fq = f"{ns}::{qalias}"
+
+        # Separate scalar and struct members.
+        scalars = [(check, ctype) for tag, check, ctype in member_info
+                   if tag == "scalar"]
+        structs = [(kv, cname) for tag, kv, cname in member_info
+                   if tag == "struct"]
+
+        # Parent path for qualifying child struct names.
+        parent_path = "::".join(qalias.split("::")[:-1])
+
+        lines = [f"BEGIN_DESERIALIZE_VARIANT({fq})"]
+
+        # Emit scalar type checks first.
+        for json_check, cpp_type in scalars:
+            lines.append(f"    if (src.{json_check}) {{")
+            lines.append(f"        return T{{DeserializeTo<{cpp_type}>(src)}};")
+            lines.append(f"    }}")
+
+        # Emit struct dispatch via kind discriminator.
+        if structs:
+            kind_bearing = [(kv, cn) for kv, cn in structs if kv]
+            if kind_bearing:
+                # Use kind-based dispatch (same as FIELD_KIND pattern).
+                lines.append(f'    if (src.is_object()) {{')
+                lines.append(f'        auto type_sv = src.get_object()["type"].get_string().value();')
+                for kind_val, child_name in kind_bearing:
+                    fq_child = f"{ns}::{parent_path}::{child_name}"
+                    lines.append(f'        if (type_sv == "{kind_val}") {{')
+                    lines.append(f"            return T{{DeserializeTo<{fq_child}>(src)}};")
+                    lines.append(f"        }}")
+                lines.append(f"    }}")
+            else:
+                # No kind discriminator — fall back to positional.
+                for _, child_name in structs:
+                    fq_child = f"{ns}::{parent_path}::{child_name}"
+                    lines.append(f"    if (src.is_object()) {{")
+                    lines.append(f"        return T{{DeserializeTo<{fq_child}>(src)}};")
+                    lines.append(f"    }}")
+
+        lines.append(f"END_DESERIALIZE_VARIANT({fq})")
         return "\n".join(lines)
 
 

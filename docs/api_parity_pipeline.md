@@ -151,6 +151,15 @@ Each field has a `type` and `required` flag:
 - **String enum:** `{ "type": "string", "required": false, "values": ["5m", "1h"] }`
 - **Union:** `{ "type": "union", "required": true, "members": [...] }`
 
+Fields may carry additional structured metadata when the type expression
+contains alternatives. These are documented in detail in `docs/codegen_design.md`
+under "Structured Intermediate Fields":
+
+- **`element_members`** — array element union members (e.g., `array of string or number`)
+- **`element_enum_values`** — array of literal enums (e.g., `array of "a" or "b"`)
+- **`map_value_members`** — map value union members (e.g., `map[string or number]`)
+- **`union_def`** — named variant definition for array-of-struct unions (e.g., `array of X or Y`)
+
 ## Generated Artifacts
 
 For each provider/endpoint, the codegen produces four files:
