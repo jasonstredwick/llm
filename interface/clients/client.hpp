@@ -1,12 +1,25 @@
+/***
+ * Type-erased Client — optional convenience wrapper.
+ *
+ * Allows calling code to hold a single client value regardless of provider.
+ * The primary client types are the provider-specific ones (anthropic::Client,
+ * gemini::Client, openai::Client). This wrapper exists for cases where the
+ * provider is selected at runtime and the caller wants a uniform handle.
+ *
+ * If you know the provider at compile time, prefer the typed client directly.
+ *
+ * TODO: Revisit whether this is needed once the provider clients are fully
+ *       fleshed out. It may be that a simple std::variant<anthropic::Client,
+ *       gemini::Client, openai::Client> suffices.
+ *
+ * @author jason.stredwick@gmail.com
+ */
+
 #pragma once
 
 
-#include <array>
-#include <cstddef>
 #include <string>
 #include <variant>
-
-#include "../core/async.hpp"
 
 
 namespace jai::llm {
@@ -36,61 +49,9 @@ struct AuthGoogleCredentials {
 using Auth = std::variant<AuthAPIKey, AuthGoogleCredentials>;
 
 
-struct AnthropicMetadata {};
-struct GeminiMetadata {};
-struct OpenAIMetadata {};
-using Metadata = std::variant<AnthropicMetadata, GeminiMetadata, OpenAIMetadata>;
-
-
-struct Result {};
-struct Request {};
-struct Response {};
-struct Policy {};
-constexpr size_t Size = 64;
-constexpr size_t Align = 8;
-
-class Client {
-private:
-    struct VTable {
-        Result (*Call)(const void*, const Request&, const Policy&);
-        void   (*destroy)(void*);
-        void   (*move)(void* dst, void* src);
-    };
-    const VTable* vtable{nullptr};
-    alignas(Align) std::array<std::byte, Size> storage{};
-
-public:
-    explicit Client(ModelContract provider_family, Auth auth, Metadata metadata);
-
-    Client(const Client&) = delete;
-
-    Client(Client&& other) noexcept : vtable(other.vtable) {
-        if (vtable) {
-            vtable->move(std::addressof(storage), std::addressof(other.storage));
-            other.vtable = nullptr;
-        }
-    }
-
-    Client& operator=(const Client&) = delete;
-
-    Client& operator=(Client&& other) noexcept {
-        if (this != &other) {
-            if (vtable) { vtable->destroy(std::addressof(storage)); }
-            vtable = other.vtable;
-            if (vtable) {
-                vtable->move(std::addressof(storage), std::addressof(other.storage));
-                other.vtable = nullptr;
-            }
-        }
-        return *this;
-    }
-
-    ~Client() { if (vtable) { vtable->destroy(storage.data()); } }
-
-    //AsyncTask<Result> Call(const Request& r, const Policy& p) const { return vtable->Call(std::addressof(storage), r, p); }
-    AsyncTask<Response> CallAsync(const Request& r) const;
-    Response CallSync(const Request& r) const;
-};
+// Placeholder — the shape of the type-erased client is still being determined.
+// See the provider-specific clients (anthropic::Client, etc.) for the
+// current working interface.
 
 
 }

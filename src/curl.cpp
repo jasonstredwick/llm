@@ -120,7 +120,7 @@ Attempt::Attempt(Interface& interface,
         }
     };
 
-    // POLICY
+    // POLICY — optional fields: unset means defer to curl's internal default
     if (policy.connect_timeout)           { SetOpt(CURLOPT_CONNECTTIMEOUT_MS, static_cast<long>(policy.connect_timeout->count())); }
     if (policy.total_timeout)             { SetOpt(CURLOPT_TIMEOUT_MS,        static_cast<long>(policy.total_timeout->count())); }
     if (policy.low_speed_time)            { SetOpt(CURLOPT_LOW_SPEED_TIME,    static_cast<long>(policy.low_speed_time->count())); }

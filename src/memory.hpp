@@ -28,4 +28,5 @@ class SlotPool {
     using SlotList_t = std::deque<Slot_t>;
 };
 
-} // namespace jai::llm
+
+}

@@ -16,6 +16,8 @@ project(llm
     LANGUAGES C CXX
 )
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(CMAKE_CONFIGURATION_TYPES)
   # Multi-config generators (Visual Studio, Xcode)
   set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
@@ -90,8 +92,14 @@ endif()
 
 # Define the library
 add_library(llm STATIC
+    src/async.cpp
     src/curl.cpp
     src/http.cpp
+    src/orchestrator.cpp
+    src/policy.cpp
+    src/clients/anthropic.cpp
+    src/clients/openai.cpp
+    src/clients/gemini.cpp
     src/protocols/serialize/anthropic_messages.cpp
     src/protocols/serialize/gemini_generate_content.cpp
     src/protocols/serialize/openai_responses.cpp
@@ -157,10 +165,14 @@ target_link_libraries(test_http PRIVATE llm)
 add_executable(test_curl tests/unit/test_curl.cpp)
 target_link_libraries(test_curl PRIVATE llm)
 
+add_executable(test_policy tests/unit/test_policy.cpp)
+target_link_libraries(test_policy PRIVATE llm)
+
 # CTest registration
 enable_testing()
 add_test(NAME test_http      COMMAND test_http)
 add_test(NAME test_curl      COMMAND test_curl)
+add_test(NAME test_policy    COMMAND test_policy)
 
 # Label curl tests as integration (require mock server)
 set_tests_properties(test_curl PROPERTIES LABELS "integration")
