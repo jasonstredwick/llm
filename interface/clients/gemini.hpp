@@ -2,6 +2,10 @@
  * Gemini client — typed adapter between gemini::Request/Response
  * and the orchestrator's HTTP transport engine.
  *
+ * Supports two authentication modes:
+ *   - ApiKeyAuth:  Google AI Studio (Generative Language API)
+ *   - VertexAuth:  Google Cloud Vertex AI
+ *
  * Each client is bound to a single (auth, endpoint, model) configuration.
  * Registration with the orchestrator happens at construction.
  *
@@ -20,6 +24,7 @@
 
 #include <string>
 #include <string_view>
+#include <variant>
 
 
 namespace jai::llm { class Orchestrator; }
@@ -28,29 +33,58 @@ namespace jai::llm { class Orchestrator; }
 namespace jai::llm::gemini {
 
 
+// Well-known Vertex AI location for the global endpoint.
+// Routes requests to the most available region automatically.
+// See: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
+inline constexpr std::string_view LOCATION_GLOBAL = "global";
+
+
+// API key authentication for Google AI Studio (Generative Language API).
+// The key is passed as a URL query parameter.
+struct ApiKeyAuth {
+    std::string api_key;
+};
+
+
+// Vertex AI authentication via short-lived OAuth2 bearer token.
+// The token is passed in the Authorization header.
+// Location defaults to the global endpoint; set to a specific region
+// (e.g., "us-central1") for data residency requirements.
+struct VertexAuth {
+    std::string access_token;
+    std::string project;
+    std::string location{LOCATION_GLOBAL};
+};
+
+
+// Normalize a model string to its rate limit group.
+// Gemini has per-model rate limits. Strips preview/experimental/point-release
+// suffixes but preserves variant names.
+//   "gemini-2.5-pro-preview-05-06" → "gemini-2.5-pro"
+//   "gemini-2.5-flash-lite"        → "gemini-2.5-flash-lite"
+//   "gemini-2.5-flash-001"         → "gemini-2.5-flash"
+std::string ModelGroup(std::string_view model);
+
+
 class Client {
 private:
     Orchestrator& orchestrator;
-    size_t registration_index{};  // opaque token from Orchestrator::Register
-    std::string api_key{};
-    std::string model{};
-    std::string endpoint_url{"https://generativelanguage.googleapis.com/v1beta"};
+    size_t registration_index{};
+    std::variant<ApiKeyAuth, VertexAuth> auth;
+    std::string model;
 
 public:
+    // API Key authentication (Google AI Studio).
     Client(Orchestrator& orchestrator,
-           std::string api_key,
-           std::string model);
-
-    Client(Orchestrator& orchestrator,
-           std::string api_key,
+           ApiKeyAuth auth,
            std::string model,
-           const ClientPolicy& client_policy);
+           const ClientPolicy& client_policy = {});
 
+    // Vertex AI authentication.
     Client(Orchestrator& orchestrator,
-           std::string api_key,
+           VertexAuth auth,
            std::string model,
-           const ClientPolicy& client_policy,
-           std::string endpoint_url);
+           const ClientPolicy& client_policy = {});
 
     Client(const Client&) = default;
     Client(Client&&) noexcept = default;
@@ -58,20 +92,13 @@ public:
     Client& operator=(const Client&) = delete;
     Client& operator=(Client&&) = delete;
 
-    // Async call — submits the request to the orchestrator and returns
-    // immediately. The returned Result blocks on access (Data(), Error())
-    // until the orchestrator has emplaced a result. Use IsDone() to poll
-    // without blocking.
     Result<Response> CallAsync(const Request& r,
                                const AttemptPolicy& call_policy = {}) const;
 
-    // Sync call — blocks until the response is available.
-    // Internally calls CallAsync and waits for completion.
     Response CallSync(const Request& r,
                       const AttemptPolicy& call_policy = {}) const;
 
     std::string_view GetModel() const { return model; }
-    std::string_view GetEndpoint() const { return endpoint_url; }
 };
 
 

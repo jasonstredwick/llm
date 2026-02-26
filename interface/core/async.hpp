@@ -36,7 +36,7 @@ struct ResultSync {
     std::mutex mtx{};
     std::condition_variable cv{};
     bool ready{false};         // orchestrator has finished (success or failure)
-    bool succeeded{false};     // true = response available via Checkout, false = error
+    bool succeeded{false};     // true = response available via GetResponse, false = error
     std::string error_msg{};   // populated on failure before signaling
 
     // Signal readiness — called by the orchestrator from its worker thread.
@@ -81,7 +81,7 @@ bool RetrySlotRequest(Orchestrator* orch,
  * Holds a deserialization function, an orchestrator reference, and a ticket
  * identifying the completed slot. The orchestrator signals readiness through
  * a heap-stable ResultSync block; accessors block until signaled, then pull
- * the curl::Response from the orchestrator (via Checkout), deserialize on
+ * the curl::Response from the orchestrator (via GetResponse), deserialize on
  * the caller's thread, and cache the result.
  *
  * Pull model benefits:

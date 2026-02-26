@@ -2,6 +2,10 @@
  * Anthropic client — typed adapter between anthropic::Request/Message
  * and the orchestrator's HTTP transport engine.
  *
+ * Currently supports API key authentication (direct Anthropic API).
+ * Future auth modes (AWS Bedrock, Vertex AI) can be added to the
+ * auth variant without changing the public interface.
+ *
  * Each client is bound to a single (auth, endpoint, model) configuration.
  * Registration with the orchestrator happens at construction.
  *
@@ -20,6 +24,7 @@
 
 #include <string>
 #include <string_view>
+#include <variant>
 
 
 namespace jai::llm { class Orchestrator; }
@@ -28,32 +33,39 @@ namespace jai::llm { class Orchestrator; }
 namespace jai::llm::anthropic {
 
 
+// API key authentication for the direct Anthropic API.
+// The key is passed in the x-api-key header.
+// The version field controls the anthropic-version header; override it
+// to opt into beta features (e.g., extended thinking, computer use).
+struct ApiKeyAuth {
+    std::string api_key;
+    std::string version{"2023-06-01"};
+};
+
+
+// Normalize a model string to its rate limit family.
+// Anthropic groups rate limits by model family — all Opus versions share
+// one pool, all Sonnet versions share another, etc.
+//   "claude-opus-4-20250514"     → "opus"
+//   "claude-sonnet-4.5-20250929" → "sonnet"
+//   "claude-3-5-sonnet-20241022" → "sonnet"  (legacy naming)
+// Returns the model string as-is if the family cannot be determined.
+std::string ModelGroup(std::string_view model);
+
+
 class Client {
 private:
     Orchestrator& orchestrator;
-    size_t registration_index{};  // opaque token from Orchestrator::Register
-    std::string api_key{};
-    std::string model{};
-    std::string endpoint_url{"https://api.anthropic.com/v1/messages"};
+    size_t registration_index{};
+    std::variant<ApiKeyAuth> auth;
+    std::string model;
 
 public:
-    // Construct with default policies.
+    // API Key authentication (default Anthropic endpoint).
     Client(Orchestrator& orchestrator,
-           std::string api_key,
-           std::string model);
-
-    // Construct with client policy overrides.
-    Client(Orchestrator& orchestrator,
-           std::string api_key,
+           ApiKeyAuth auth,
            std::string model,
-           const ClientPolicy& client_policy);
-
-    // Construct with client policy overrides and custom endpoint.
-    Client(Orchestrator& orchestrator,
-           std::string api_key,
-           std::string model,
-           const ClientPolicy& client_policy,
-           std::string endpoint_url);
+           const ClientPolicy& client_policy = {});
 
     Client(const Client&) = default;
     Client(Client&&) noexcept = default;
@@ -61,21 +73,13 @@ public:
     Client& operator=(const Client&) = delete;
     Client& operator=(Client&&) = delete;
 
-    // Async call — submits the request to the orchestrator and returns
-    // immediately. The returned Result blocks on access (Data(), Error())
-    // until the orchestrator has emplaced a result. Use IsDone() to poll
-    // without blocking.
     Result<Message> CallAsync(const Request& r,
                               const AttemptPolicy& call_policy = {}) const;
 
-    // Sync call — blocks until the response is available.
-    // Internally calls CallAsync and waits for completion.
     Message CallSync(const Request& r,
                      const AttemptPolicy& call_policy = {}) const;
 
-    // Accessors
     std::string_view GetModel() const { return model; }
-    std::string_view GetEndpoint() const { return endpoint_url; }
 };
 
 

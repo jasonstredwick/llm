@@ -7,14 +7,14 @@
  * Pull-based design: clients submit requests with a shared ResultSync block.
  * The orchestrator drives the curl event loop and signals the ResultSync block
  * on HTTP completion (success or failure). Deserialization happens on the
- * caller's thread via Checkout; if it fails, the caller requests a retry
- * via RetrySlot.
+ * caller's thread via GetResponse; if it fails, the caller requests a retry
+ * via RetrySlot. On success the caller calls ReleaseSlot to free resources.
  *
  * Slot management uses intrusive doubly-linked lists. Each slot carries prev/next
  * indices and belongs to exactly one of four lists:
  *   - awaiting:   pending dispatch (new work at back, retries at front) [per-queue]
  *   - active:     in-flight with curl [per-queue]
- *   - completed:  HTTP done, awaiting Checkout or RetrySlot from caller [per-queue]
+ *   - completed:  HTTP done, awaiting GetResponse/ReleaseSlot/RetrySlot [per-queue]
  * Plus a global free list for recycled slots.
  *
  * Flow:
@@ -24,8 +24,9 @@
  *   4. On HTTP success:      active → completed, signal ResultSync
  *   5. On HTTP retry:        active → front of awaiting (priority over new work)
  *   6. On permanent failure: active → completed, signal ResultSync with error
- *   7. Caller Checkout:      completed → free (moves curl::Response out)
- *   8. Caller RetrySlot:     completed → front of awaiting (deserialization retry)
+ *   7. Caller GetResponse:   borrows const ref to Response (slot stays completed)
+ *   8. Caller ReleaseSlot:   completed → free (deserialization succeeded)
+ *   9. Caller RetrySlot:     completed → front of awaiting (deserialization retry)
  *
  * Backoff is a queue-level concern, not per-slot. The dispatch gate checks
  * rate limit watermarks; individual retries don't carry their own delay.
@@ -84,7 +85,7 @@ private:
         FREE,       // in the global free list
         AWAITING,   // in a queue's awaiting list (pending dispatch)
         ACTIVE,     // in a queue's active list (curl::Attempt in-flight)
-        COMPLETED,  // HTTP done, awaiting Checkout or RetrySlot from caller
+        COMPLETED,  // HTTP done, awaiting GetResponse/ReleaseSlot/RetrySlot
     };
 
     struct ClientRegistration {
@@ -118,7 +119,7 @@ private:
         curl::HeaderList header_list;
 
         // The live attempt. Emplaced when dispatched, reset on completion.
-        // Stays alive in COMPLETED state so Checkout can move the Response out.
+        // Stays alive in COMPLETED state so GetResponse can borrow the Response.
         std::optional<curl::Attempt> attempt{};
 
         Slot(http::Request req,
@@ -147,7 +148,7 @@ private:
     struct QueueState {
         ListHead awaiting{};    // pending dispatch
         ListHead active{};      // in-flight with curl
-        ListHead completed{};   // HTTP done, awaiting Checkout or RetrySlot
+        ListHead completed{};   // HTTP done, awaiting retrieval or retry
 
         // Adaptive rate limit watermarks (from provider response headers)
         std::optional<int64_t> remaining_requests{};
@@ -188,7 +189,8 @@ public:
     //----- Submission -----
 
     // Submit returns a ticket (slot index) that the caller uses with
-    // Checkout and RetrySlot. The ResultSync block is signaled on completion.
+    // GetResponse, ReleaseSlot, and RetrySlot. The ResultSync block is
+    // signaled on completion.
     size_t Submit(RegistrationToken token,
                   http::Request request,
                   const AttemptPolicy& call_site_policy,

@@ -8,6 +8,10 @@
  *
  * If you know the provider at compile time, prefer the typed client directly.
  *
+ * Authentication is provider-specific. Each provider defines its own auth
+ * struct(s) in its header (e.g., gemini::ApiKeyAuth, gemini::VertexAuth).
+ * See the provider-specific client headers for details.
+ *
  * TODO: Revisit whether this is needed once the provider clients are fully
  *       fleshed out. It may be that a simple std::variant<anthropic::Client,
  *       gemini::Client, openai::Client> suffices.
@@ -16,10 +20,6 @@
  */
 
 #pragma once
-
-
-#include <string>
-#include <variant>
 
 
 namespace jai::llm {
@@ -32,21 +32,6 @@ enum class ModelContract {
     Gemini,
     OpenAI
 };
-
-
-struct AuthAPIKey {
-    std::string api_key;
-};
-
-
-struct AuthGoogleCredentials {
-    std::string credentials;
-    std::string project;
-    std::string location;
-};
-
-
-using Auth = std::variant<AuthAPIKey, AuthGoogleCredentials>;
 
 
 // Placeholder — the shape of the type-erased client is still being determined.

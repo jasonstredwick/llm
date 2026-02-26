@@ -2,6 +2,10 @@
  * OpenAI client — typed adapter between openai::Request/Response
  * and the orchestrator's HTTP transport engine.
  *
+ * Currently supports API key authentication (direct OpenAI API).
+ * Future auth modes (Azure OpenAI) can be added to the auth variant
+ * without changing the public interface.
+ *
  * Each client is bound to a single (auth, endpoint, model) configuration.
  * Registration with the orchestrator happens at construction.
  *
@@ -20,6 +24,7 @@
 
 #include <string>
 #include <string_view>
+#include <variant>
 
 
 namespace jai::llm { class Orchestrator; }
@@ -28,29 +33,34 @@ namespace jai::llm { class Orchestrator; }
 namespace jai::llm::openai {
 
 
+// API key authentication for the direct OpenAI API.
+// The key is passed as a Bearer token in the Authorization header.
+struct ApiKeyAuth {
+    std::string api_key;
+};
+
+
+// Normalize a model string to its rate limit group.
+// OpenAI groups models by base name — strips trailing -YYYY-MM-DD date suffix.
+//   "gpt-4o-2024-08-06" → "gpt-4o"
+//   "o3-2025-04-16"     → "o3"
+//   "o3-mini"           → "o3-mini"  (mini is a variant, not a date)
+std::string ModelGroup(std::string_view model);
+
+
 class Client {
 private:
     Orchestrator& orchestrator;
-    size_t registration_index{};  // opaque token from Orchestrator::Register
-    std::string api_key{};
-    std::string model{};
-    std::string endpoint_url{"https://api.openai.com/v1/responses"};
+    size_t registration_index{};
+    std::variant<ApiKeyAuth> auth;
+    std::string model;
 
 public:
+    // API Key authentication (default OpenAI endpoint).
     Client(Orchestrator& orchestrator,
-           std::string api_key,
-           std::string model);
-
-    Client(Orchestrator& orchestrator,
-           std::string api_key,
+           ApiKeyAuth auth,
            std::string model,
-           const ClientPolicy& client_policy);
-
-    Client(Orchestrator& orchestrator,
-           std::string api_key,
-           std::string model,
-           const ClientPolicy& client_policy,
-           std::string endpoint_url);
+           const ClientPolicy& client_policy = {});
 
     Client(const Client&) = default;
     Client(Client&&) noexcept = default;
@@ -58,20 +68,13 @@ public:
     Client& operator=(const Client&) = delete;
     Client& operator=(Client&&) = delete;
 
-    // Async call — submits the request to the orchestrator and returns
-    // immediately. The returned Result blocks on access (Data(), Error())
-    // until the orchestrator has emplaced a result. Use IsDone() to poll
-    // without blocking.
     Result<Response> CallAsync(const Request& r,
                                const AttemptPolicy& call_policy = {}) const;
 
-    // Sync call — blocks until the response is available.
-    // Internally calls CallAsync and waits for completion.
     Response CallSync(const Request& r,
                       const AttemptPolicy& call_policy = {}) const;
 
     std::string_view GetModel() const { return model; }
-    std::string_view GetEndpoint() const { return endpoint_url; }
 };
 
 

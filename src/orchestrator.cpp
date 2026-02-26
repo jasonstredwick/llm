@@ -433,7 +433,7 @@ void Orchestrator::ProcessCompletion(Slot& slot, size_t slot_index) {
 
     // --- HTTP success: move to completed, signal caller. ---
     // The attempt (and its curl::Response) stays alive so the caller
-    // can Checkout the response on their thread.
+    // can borrow the response via GetResponse on their thread.
     slot.state = SlotState::COMPLETED;
     ListPushBack(queue.completed, slot_index);
     slot.sync->Signal(true);

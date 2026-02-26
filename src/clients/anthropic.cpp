@@ -1,83 +1,112 @@
 /***
  * Anthropic client — implementation.
  *
+ * Protocol-level helpers (URL building, header construction, model grouping)
+ * are file-local. Serialize/Deserialize are defined in the separate
+ * src/protocols/serialize/ and src/protocols/deserialize/ translation units.
+ *
  * @author jason.stredwick@gmail.com
  */
 
 #include "../../interface/clients/anthropic.hpp"
 
 #include "../orchestrator.hpp"
-#include "../protocols/anthropic.hpp"
+#include "../curl.hpp"
+#include "../http.hpp"
 
+#include <cstddef>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <variant>
+#include <vector>
 
 
 namespace jai::llm::anthropic {
 
 
-//----- Construction -----
+// Forward declarations — defined in src/protocols/{serialize,deserialize}/.
+Message Deserialize(const curl::Response& response);
+std::vector<std::byte> Serialize(const Request&);
+
+
+// ----- ModelGroup (public) -----
+
+std::string ModelGroup(std::string_view model) {
+    // Family names are stable across both naming conventions:
+    //   New: claude-{family}-{version}[-{date}]
+    //   Old: claude-{major}-{minor}-{family}[-{date}]
+    // A simple substring check is robust to both.
+    if (model.find("opus")   != std::string_view::npos) return "opus";
+    if (model.find("sonnet") != std::string_view::npos) return "sonnet";
+    if (model.find("haiku")  != std::string_view::npos) return "haiku";
+    return std::string{model};
+}
+
+
+namespace {
+
+
+// ----- Endpoint defaults -----
+
+constexpr std::string_view DEFAULT_ENDPOINT =
+    "https://api.anthropic.com/v1/messages";
+
+
+// ----- Request headers -----
+
+http::RequestHeaders BuildRequestHeaders(const ApiKeyAuth& auth) {
+    return http::RequestHeaders{std::vector<std::pair<std::string, std::string>>{
+        {"Content-Type", "application/json"},
+        {"x-api-key", auth.api_key},
+        {"anthropic-version", auth.version}
+    }};
+}
+
+
+// ----- Auth identity (for QueueKey) -----
+
+std::string AuthIdentity(const ApiKeyAuth& auth) { return auth.api_key; }
+
+
+} // anonymous namespace
+
+
+// ----- Construction -----
 
 Client::Client(Orchestrator& orchestrator_,
-               std::string api_key_,
-               std::string model_)
-    : Client{orchestrator_, std::move(api_key_), std::move(model_), ClientPolicy{}}
-{}
-
-
-Client::Client(Orchestrator& orchestrator_,
-               std::string api_key_,
+               ApiKeyAuth auth_,
                std::string model_,
                const ClientPolicy& client_policy)
     : orchestrator{orchestrator_}
-    , api_key{std::move(api_key_)}
+    , auth{std::move(auth_)}
     , model{std::move(model_)}
 {
+    const auto& a = std::get<ApiKeyAuth>(auth);
     auto token = orchestrator.Register(client_policy, QueueKey{
-        .auth_identity = api_key,
-        .endpoint_url = endpoint_url,
+        .auth_identity = AuthIdentity(a),
+        .endpoint_url = std::string{DEFAULT_ENDPOINT},
         .model_group = ModelGroup(model)
     });
     registration_index = token.index;
 }
 
 
-Client::Client(Orchestrator& orchestrator_,
-               std::string api_key_,
-               std::string model_,
-               const ClientPolicy& client_policy,
-               std::string endpoint_url_)
-    : orchestrator{orchestrator_}
-    , api_key{std::move(api_key_)}
-    , model{std::move(model_)}
-    , endpoint_url{std::move(endpoint_url_)}
-{
-    auto token = orchestrator.Register(client_policy, QueueKey{
-        .auth_identity = api_key,
-        .endpoint_url = endpoint_url,
-        .model_group = ModelGroup(model)
-    });
-    registration_index = token.index;
-}
-
-
-//----- CallAsync -----
+// ----- CallAsync -----
 
 Result<Message> Client::CallAsync(const Request& r,
                                   const AttemptPolicy& call_policy) const {
-    // Build the HTTP request from protocol-specific functions.
-    // TODO: GenRequestHeaders/GenUrl need api_key, model, and endpoint_url
-    //       to inject auth headers and build the full URL. Update Gen*
-    //       signatures to accept client config once the protocol layer is
-    //       finalized.
+    auto headers = std::visit([](const auto& a) {
+        return BuildRequestHeaders(a);
+    }, auth);
+
     http::Request http_request{
-        .headers = GenRequestHeaders(r),
-        .method = GenMethod(r),
-        .url = GenUrl(r),
+        .headers = std::move(headers),
+        .method = http::Method::POST,
+        .url = std::string{DEFAULT_ENDPOINT},
         .body = Serialize(r)
     };
 
-    // Create the sync block first — it's heap-stable and shared between
-    // the Result and the orchestrator's slot.
     auto sync = std::make_shared<ResultSync>();
 
     size_t ticket = orchestrator.Submit(
@@ -91,7 +120,7 @@ Result<Message> Client::CallAsync(const Request& r,
 }
 
 
-//----- CallSync -----
+// ----- CallSync -----
 
 Message Client::CallSync(const Request& r,
                          const AttemptPolicy& call_policy) const {
