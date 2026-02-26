@@ -1,9 +1,9 @@
 /***
- * async.cpp — bridge functions for Result::Resolve().
+ * async.cpp — bridge functions for AsyncResult::Resolve() and CallCoro.
  *
  * These non-template functions live here so that Orchestrator and
- * curl::Response are complete types when compiled. The template
- * Result<T>::Resolve() calls these through declared-only signatures
+ * curl::Response are complete types when compiled. AsyncResult<T>::Resolve()
+ * and CallCoro's coroutine body call these through declared-only signatures
  * in async.hpp.
  *
  * @author jason.stredwick@gmail.com

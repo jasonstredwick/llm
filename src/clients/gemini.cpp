@@ -187,7 +187,7 @@ Client::Client(Orchestrator& orchestrator_,
 
 // ----- CallAsync -----
 
-Result<Response> Client::CallAsync(const Request& r,
+AsyncResult<Response> Client::CallAsync(const Request& r,
                                    const AttemptPolicy& call_policy) const {
     auto [headers, url] = std::visit([&](const auto& a) {
         return std::pair{
@@ -212,7 +212,7 @@ Result<Response> Client::CallAsync(const Request& r,
         sync
     );
 
-    return Result<Response>{orchestrator, ticket, &Deserialize, std::move(sync)};
+    return AsyncResult<Response>{orchestrator, ticket, &Deserialize, std::move(sync)};
 }
 
 
@@ -229,6 +229,61 @@ Response Client::CallSync(const Request& r,
     }
 
     return std::move(result.Data());
+}
+
+
+// ----- CallCoro -----
+
+CoroAsyncResult<Response> Client::CallCoro(const Request& r,
+                                      const AttemptPolicy& call_policy) const {
+    // Capture before first suspension point so the coroutine frame holds
+    // these directly, not through `this`. Matches Result's lifetime
+    // semantics: only the Orchestrator must outlive the CoroAsyncResult.
+    Orchestrator* orch = &orchestrator;
+    size_t reg_index = registration_index;
+
+    auto [headers, url] = std::visit([&](const auto& a) {
+        return std::pair{
+            BuildRequestHeaders(a),
+            BuildUrl(a, model)
+        };
+    }, auth);
+
+    http::Request http_request{
+        .headers = std::move(headers),
+        .method = http::Method::POST,
+        .url = std::move(url),
+        .body = Serialize(r)
+    };
+
+    auto sync = std::make_shared<ResultSync>();
+
+    size_t ticket = orch->Submit(
+        Orchestrator::RegistrationToken{reg_index},
+        std::move(http_request),
+        call_policy,
+        sync
+    );
+
+    while (true) {
+        co_await SyncAwaiter{sync};
+
+        if (!sync->succeeded) {
+            throw AnnotatedException{sync->error_msg};
+        }
+
+        try {
+            const auto& resp = GetResponseRef(orch, ticket);
+            auto data = Deserialize(resp);
+            ReleaseSlotRequest(orch, ticket);
+            co_return std::move(data);
+        } catch (...) {
+            sync->Reset();
+            if (!RetrySlotRequest(orch, ticket, sync)) {
+                throw;  // retry budget exhausted
+            }
+        }
+    }
 }
 
 

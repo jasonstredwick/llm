@@ -92,11 +92,20 @@ public:
     Client& operator=(const Client&) = delete;
     Client& operator=(Client&&) = delete;
 
-    Result<Response> CallAsync(const Request& r,
+    AsyncResult<Response> CallAsync(const Request& r,
                                const AttemptPolicy& call_policy = {}) const;
 
     Response CallSync(const Request& r,
                       const AttemptPolicy& call_policy = {}) const;
+
+    // Coroutine-based call. Returns a CoroAsyncResult that can be co_await-ed
+    // or polled after the event loop completes.
+    //
+    // Unlike CallAsync (where deserialization runs on the caller's thread),
+    // deserialization runs on the orchestrator's thread inside RunOnce().
+    // The data is then copied out to the caller via co_await or Data().
+    CoroAsyncResult<Response> CallCoro(const Request& r,
+                                  const AttemptPolicy& call_policy = {}) const;
 
     std::string_view GetModel() const { return model; }
 };

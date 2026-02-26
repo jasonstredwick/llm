@@ -1,12 +1,14 @@
 /***
- * Async unit tests — ResultSync signaling and AsyncTask coroutine mechanics.
+ * Async unit tests — ResultSync signaling, SyncAwaiter, CoroAsyncResult,
+ * and AsyncTask coroutine mechanics.
  *
  * ResultSync is a standalone synchronization primitive that can be tested
  * without the orchestrator. AsyncTask is a coroutine wrapper testable
- * by stepping through coroutine frames.
+ * by stepping through coroutine frames. CoroAsyncResult and SyncAwaiter test
+ * the coroutine-based call path.
  *
- * Result<T> tests require a live Orchestrator + curl::Response, so they
- * belong in the integration test suite.
+ * AsyncResult<T> tests require a live Orchestrator + curl::Response, so
+ * they belong in the integration test suite.
  */
 
 #include <atomic>
@@ -344,6 +346,231 @@ void test_async_task_exception_capture() {
 
 
 /***
+ * SyncAwaiter Tests
+ */
+
+void test_sync_awaiter_ready_immediately() {
+    std::println("Testing SyncAwaiter: ready immediately (no suspension)...");
+
+    auto sync = std::make_shared<ResultSync>();
+    sync->Signal(true);  // pre-signal
+
+    SyncAwaiter awaiter{sync};
+    REQUIRE_EQ(awaiter.await_ready(), true);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_sync_awaiter_not_ready() {
+    std::println("Testing SyncAwaiter: not ready (would suspend)...");
+
+    auto sync = std::make_shared<ResultSync>();
+    SyncAwaiter awaiter{sync};
+
+    REQUIRE_EQ(awaiter.await_ready(), false);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_sync_awaiter_race_protection() {
+    std::println("Testing SyncAwaiter: race between await_ready and await_suspend...");
+
+    auto sync = std::make_shared<ResultSync>();
+    SyncAwaiter awaiter{sync};
+
+    // await_ready returns false (not signaled yet).
+    REQUIRE_EQ(awaiter.await_ready(), false);
+
+    // Signal fires between await_ready and await_suspend.
+    sync->Signal(true);
+
+    // await_suspend should return false (don't suspend, already signaled).
+    bool should_suspend = awaiter.await_suspend(std::noop_coroutine());
+    REQUIRE_EQ(should_suspend, false);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_sync_coro_handle_resume() {
+    std::println("Testing ResultSync: coroutine handle resumed on signal...");
+
+    auto sync = std::make_shared<ResultSync>();
+    bool resumed = false;
+
+    // Use a thread to simulate the orchestrator signaling.
+    // Store a coroutine handle manually, then signal.
+    // We can't easily create a real coroutine handle for this test,
+    // so verify the handle is stored and cleared correctly.
+    {
+        std::lock_guard lock(sync->mtx);
+        REQUIRE(!sync->coro_handle);
+    }
+
+    // After signal with no coro_handle, everything still works.
+    sync->Signal(true);
+    REQUIRE_EQ(sync->ready, true);
+
+    // Verify coro_handle was cleared by Signal (it was empty, so exchange is no-op).
+    {
+        std::lock_guard lock(sync->mtx);
+        REQUIRE(!sync->coro_handle);
+    }
+    std::println("  [SUCCESS]");
+}
+
+
+/***
+ * CoroAsyncResult Tests
+ */
+
+// Simple coroutine that returns an int via co_return.
+CoroAsyncResult<int> coro_return_value() {
+    co_return 42;
+}
+
+
+// Coroutine that suspends on a SyncAwaiter, then returns.
+CoroAsyncResult<int> coro_await_sync(std::shared_ptr<ResultSync> sync) {
+    co_await SyncAwaiter{sync};
+    co_return 99;
+}
+
+
+// Coroutine that throws.
+CoroAsyncResult<int> coro_throw() {
+    throw std::runtime_error("coro error");
+    co_return 0;
+}
+
+
+// Coroutine that throws after awaiting.
+CoroAsyncResult<int> coro_throw_after_await(std::shared_ptr<ResultSync> sync) {
+    co_await SyncAwaiter{sync};
+    throw std::runtime_error("post-await error");
+    co_return 0;
+}
+
+
+void test_coro_result_immediate_return() {
+    std::println("Testing CoroAsyncResult: immediate co_return...");
+
+    auto result = coro_return_value();
+
+    // Eager start + no suspension points → already done.
+    REQUIRE_EQ(result.IsReady(), true);
+    REQUIRE_EQ(result.HasData(), true);
+    REQUIRE_EQ(result.Data(), 42);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_await_sync() {
+    std::println("Testing CoroAsyncResult: suspend on SyncAwaiter, then signal...");
+
+    auto sync = std::make_shared<ResultSync>();
+    auto result = coro_await_sync(sync);
+
+    // Should be suspended at the SyncAwaiter.
+    REQUIRE_EQ(result.IsReady(), false);
+
+    // Signal the sync — this resumes the coroutine.
+    sync->Signal(true);
+
+    // Now the coroutine has run to co_return.
+    REQUIRE_EQ(result.IsReady(), true);
+    REQUIRE_EQ(result.Data(), 99);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_exception_immediate() {
+    std::println("Testing CoroAsyncResult: immediate throw...");
+
+    auto result = coro_throw();
+
+    // Eager start → throws immediately → captured in promise.
+    REQUIRE_EQ(result.IsReady(), true);
+    REQUIRE_EQ(result.HasException(), true);
+    REQUIRE_EQ(result.HasData(), false);
+
+    bool caught = false;
+    try {
+        result.RethrowIfException();
+    } catch (const std::runtime_error& e) {
+        caught = true;
+        REQUIRE_EQ(std::string{e.what()}, std::string{"coro error"});
+    }
+    REQUIRE(caught);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_exception_after_await() {
+    std::println("Testing CoroAsyncResult: throw after SyncAwaiter...");
+
+    auto sync = std::make_shared<ResultSync>();
+    auto result = coro_throw_after_await(sync);
+
+    REQUIRE_EQ(result.IsReady(), false);
+
+    sync->Signal(true);
+
+    REQUIRE_EQ(result.IsReady(), true);
+    REQUIRE_EQ(result.HasException(), true);
+
+    bool caught = false;
+    try {
+        result.RethrowIfException();
+    } catch (const std::runtime_error& e) {
+        caught = true;
+        REQUIRE_EQ(std::string{e.what()}, std::string{"post-await error"});
+    }
+    REQUIRE(caught);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_move_construct() {
+    std::println("Testing CoroAsyncResult: move construction...");
+
+    auto sync = std::make_shared<ResultSync>();
+    auto original = coro_await_sync(sync);
+    REQUIRE_EQ(original.IsReady(), false);
+
+    // Move-construct.
+    auto moved = std::move(original);
+
+    // Signal through the moved result.
+    sync->Signal(true);
+    REQUIRE_EQ(moved.IsReady(), true);
+    REQUIRE_EQ(moved.Data(), 99);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_threaded_signal() {
+    std::println("Testing CoroAsyncResult: signal from another thread...");
+
+    auto sync = std::make_shared<ResultSync>();
+    auto result = coro_await_sync(sync);
+
+    REQUIRE_EQ(result.IsReady(), false);
+
+    // Signal from a different thread.
+    std::thread signaler([&]() {
+        std::this_thread::sleep_for(10ms);
+        sync->Signal(true);
+    });
+
+    signaler.join();
+
+    REQUIRE_EQ(result.IsReady(), true);
+    REQUIRE_EQ(result.Data(), 99);
+    std::println("  [SUCCESS]");
+}
+
+
+/***
  * Main
  */
 
@@ -367,6 +594,20 @@ int main() {
     run(test_sync_threaded_wait);
     run(test_sync_threaded_wait_failure);
     run(test_sync_threaded_retry_cycle);
+
+    std::println("\n===== SyncAwaiter Tests =====");
+    run(test_sync_awaiter_ready_immediately);
+    run(test_sync_awaiter_not_ready);
+    run(test_sync_awaiter_race_protection);
+    run(test_sync_coro_handle_resume);
+
+    std::println("\n===== CoroAsyncResult Tests =====");
+    run(test_coro_result_immediate_return);
+    run(test_coro_result_await_sync);
+    run(test_coro_result_exception_immediate);
+    run(test_coro_result_exception_after_await);
+    run(test_coro_result_move_construct);
+    run(test_coro_result_threaded_signal);
 
     std::println("\n===== AsyncTask Tests =====");
     run(test_async_task_initial_state);
