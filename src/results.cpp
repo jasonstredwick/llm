@@ -1,21 +1,16 @@
 /***
- * async.cpp — AsyncResultBase::Resolve() and bridge functions.
- *
- * The wait/retry loop lives here so that Orchestrator, curl::Response,
- * and ResultSync are complete types when compiled. The public header
- * (async.hpp) only forward-declares ResultSync and never references
- * curl::Response.
+ * results.cpp — AsyncResultBase and SubmitResult implementations.
  *
  * @author jason.stredwick@gmail.com
  */
 
-#include "../interface/core/async.hpp"
+#include "results.hpp"
 
-#include "orchestrator.hpp"
 #include "curl.hpp"
-#include "sync.hpp"
+#include "orchestrator.hpp"
 
 #include <condition_variable>
+#include <exception>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -32,40 +27,39 @@ void WaitForSync(std::shared_ptr<ResultSync> const& sync) {
     sync->cv.wait(lock, [&sync] { return sync->ready; });
 }
 
+
 bool SyncSucceeded(std::shared_ptr<ResultSync> const& sync) {
     std::lock_guard lock(sync->mtx);
     return sync->succeeded;
 }
+
 
 std::string TakeSyncError(std::shared_ptr<ResultSync> const& sync) {
     std::lock_guard lock(sync->mtx);
     return std::move(sync->error_msg);
 }
 
-void ResetSync(std::shared_ptr<ResultSync> const& sync) {
-    std::lock_guard lock(sync->mtx);
-    sync->ready = false;
-    sync->succeeded = false;
-    sync->error_msg.clear();
-}
 
 } // anonymous namespace
 
 
-// ----- Public bridge functions (declared in async.hpp) -----
+// ----- AsyncResultBase -----
 
-std::shared_ptr<ResultSync> MakeResultSync() {
-    return std::make_shared<ResultSync>();
-}
+AsyncResultBase::AsyncResultBase(Orchestrator& orch, Ticket tkt, std::shared_ptr<ResultSync> s)
+    : orchestrator{&orch}
+    , ticket{tkt}
+    , sync{std::move(s)}
+    , eptr{}
+    , error_msg{}
+    , resolved{false}
+{}
 
 
-bool IsSyncReady(std::shared_ptr<ResultSync> const& sync) {
+bool AsyncResultBase::IsDone() const {
     std::lock_guard lock(sync->mtx);
     return sync->ready;
 }
 
-
-// ----- AsyncResultBase::Resolve() -----
 
 void AsyncResultBase::Resolve() {
     if (resolved) { return; }
@@ -91,7 +85,7 @@ void AsyncResultBase::Resolve() {
         }
 
         // Deserialization failed — ask orchestrator to retry.
-        ResetSync(sync);
+        sync->Reset();
         if (!orchestrator->RetrySlot(ticket, sync)) {
             // Retry budget exhausted — slot already released by RetrySlot.
             break;
@@ -100,6 +94,24 @@ void AsyncResultBase::Resolve() {
     }
 
     resolved = true;
+}
+
+
+// ----- SubmitResult -----
+
+const curl::Response& SubmitResult::GetResponse() const {
+    return orchestrator->GetResponse(ticket);
+}
+
+
+void SubmitResult::ReleaseSlot() {
+    orchestrator->ReleaseSlot(ticket);
+}
+
+
+bool SubmitResult::RetrySlot() {
+    sync->Reset();
+    return orchestrator->RetrySlot(ticket, sync);
 }
 
 

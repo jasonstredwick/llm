@@ -93,7 +93,7 @@ typename openai::Responses::Response_t Deserialize<openai::Responses>(const curl
 
 
 template <>
-typename openai::Responses::Response_t DeserializeAndRelease<openai::Responses>(Orchestrator* orch, size_t ticket) {
+typename openai::Responses::Response_t DeserializeAndRelease<openai::Responses>(Orchestrator* orch, Ticket ticket) {
     const auto& resp = orch->GetResponse(ticket);
     auto data = openai::Deserialize(resp);
     orch->ReleaseSlot(ticket);

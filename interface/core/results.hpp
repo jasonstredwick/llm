@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <coroutine>
 #include <cstddef>
 #include <exception>
@@ -14,28 +13,19 @@ namespace jai::llm {
 
 
 class Orchestrator;
-struct ResultSync;  // defined in src/sync.hpp — implementation detail
+struct ResultSync;
 
 
-// ResultSync bridge — defined in async.cpp. Keeps the public header free
-// of the full ResultSync definition.
-std::shared_ptr<ResultSync> MakeResultSync();
-bool IsSyncReady(std::shared_ptr<ResultSync> const& sync);
+using Ticket = size_t;
 
 
 /***
  * AsyncResultBase — non-template base for AsyncResult.
  *
- * Owns the orchestrator wiring (ticket, sync block) and the wait/retry
- * loop (Resolve). The two type-dependent steps — deserialization and
- * error storage — are delegated to pure virtual methods overridden by
- * the derived AsyncResult<T, E>.
+ * Owns the wait/retry loop (Resolve). Deserialization and error storage
+ * are delegated to pure virtual methods overridden by AsyncResult<T, E>.
  *
- * Resolve() is defined in async.cpp, keeping curl::Response, ResultSync
- * internals, and the orchestrator API behind the interface boundary.
- *
- * Non-copyable, movable. Move transfers ownership of the ResultSync block
- * (heap-stable) so the orchestrator's signal pointer remains valid.
+ * Non-copyable, movable.
  */
 class AsyncResultBase {
 protected:
@@ -43,22 +33,18 @@ protected:
     virtual void ApplyDeserialization() = 0;
     virtual void ApplyError() = 0;
 
-    Orchestrator* orchestrator{nullptr};
-    size_t ticket{0};
-    std::shared_ptr<ResultSync> sync{MakeResultSync()};
-    std::exception_ptr eptr{};
-    std::string error_msg{};   // populated by Resolve() before calling ApplyError()
-    bool resolved{false};
+    Orchestrator* orchestrator;
+    Ticket ticket;
+    std::shared_ptr<ResultSync> sync;
+    std::exception_ptr eptr;
+    std::string error_msg; // populated by Resolve() before calling ApplyError()
+    bool resolved;
 
-    // Wait/retry loop — defined in async.cpp.
+    // Wait/retry loop
     void Resolve();
 
 public:
-    AsyncResultBase(Orchestrator& orch, size_t tkt, std::shared_ptr<ResultSync> s)
-        : orchestrator{&orch}
-        , ticket{tkt}
-        , sync{std::move(s)}
-    {}
+    AsyncResultBase(Orchestrator&, Ticket, std::shared_ptr<ResultSync>);
 
     AsyncResultBase(AsyncResultBase const&) = delete;
     AsyncResultBase(AsyncResultBase&&) = default;
@@ -66,12 +52,10 @@ public:
     AsyncResultBase& operator=(AsyncResultBase&&) = default;
     virtual ~AsyncResultBase() = default;
 
-    // Sync block access — the client passes this to the orchestrator at
-    // submit time so the orchestrator can signal readiness.
     std::shared_ptr<ResultSync>& SyncBlock() { return sync; }
 
     // Non-blocking check. Safe to call from any thread.
-    bool IsDone() const { return IsSyncReady(sync); }
+    bool IsDone() const;
 
     // Blocks until resolved.
     bool HasException() { Resolve(); return eptr != nullptr; }
@@ -87,14 +71,8 @@ public:
 /***
  * AsyncResult — blocking pull-based result container for LLM API calls.
  *
- * Derives from AsyncResultBase, which owns the wait/retry loop. This
- * template adds typed data/error storage and implements the two virtual
- * hooks for deserialization and error emplacement.
- *
- * Pull model benefits:
- *   - Data/error slots are only written after AsyncResult is in its final
- *     location (no dangling pointers from moves).
- *   - Deserialization runs on the user's thread, freeing the orchestrator.
+ * Adds typed data/error storage to AsyncResultBase and implements the
+ * virtual hooks for deserialization and error emplacement.
  *
  * Non-copyable, movable.
  */
@@ -104,30 +82,23 @@ public:
     using Data_t = T;
     using Error_t = E;
 
-    // Typed deserialization function. Provided by the client at CallAsync
-    // time. Takes the orchestrator and ticket to borrow the completed
-    // response internally — the caller never sees curl::Response.
-    using DeserializeFn = Data_t (*)(Orchestrator*, size_t);
+    using DeserializeFn = Data_t (*)(Orchestrator*, Ticket);
 
 private:
     std::optional<Data_t> data{};
     std::optional<Error_t> error{};
     DeserializeFn deserialize_fn{nullptr};
 
-    // Called by AsyncResultBase::Resolve() on successful HTTP completion.
     void ApplyDeserialization() override {
         data.emplace(deserialize_fn(orchestrator, ticket));
     }
 
-    // Called by AsyncResultBase::Resolve() on HTTP failure.
-    // Reads error_msg populated by the base class Resolve().
     void ApplyError() override {
         error.emplace(std::move(error_msg));
     }
 
 public:
-    // Constructed by the client in CallAsync.
-    AsyncResult(Orchestrator& orch, size_t tkt, DeserializeFn fn, std::shared_ptr<ResultSync> s)
+    AsyncResult(Orchestrator& orch, Ticket tkt, DeserializeFn fn, std::shared_ptr<ResultSync> s)
         : AsyncResultBase{orch, tkt, std::move(s)}
         , deserialize_fn{fn}
     {}
@@ -153,18 +124,11 @@ public:
 /***
  * CoroAsyncResult — coroutine-based result container for LLM API calls.
  *
- * Returned by Client::CallCoro(). The coroutine body starts eagerly,
- * submits the request to the orchestrator, and suspends at a SyncAwaiter
- * until the orchestrator signals completion. On resumption, the coroutine
- * deserializes the response, stores the result in the promise (coroutine
- * frame), and finishes. The caller retrieves the result via co_await or
- * by polling IsReady()/Data() after the event loop completes.
+ * The coroutine starts eagerly and suspends until the result is ready.
+ * The caller retrieves the result via co_await or by polling
+ * IsReady()/Data() after the event loop completes.
  *
- * Data lives in the coroutine frame (promise). The caller gets a copy
- * via co_await's await_resume — one extra hop, intentionally simple.
- *
- * Non-copyable, move-constructible. Destroying a CoroAsyncResult destroys
- * the coroutine frame.
+ * Non-copyable, move-constructible.
  */
 template <typename T>
 class CoroAsyncResult {
@@ -180,18 +144,14 @@ public:
 
         std::optional<Data_t> data{};
         std::exception_ptr eptr{};
-        std::coroutine_handle<> waiting{};  // caller co_await-ing on this CoroAsyncResult
+        std::coroutine_handle<> waiting{};
 
         CoroAsyncResult get_return_object() {
             return CoroAsyncResult{coro_handle::from_promise(*this)};
         }
 
-        // Eager start: the coroutine begins immediately and runs until
-        // the first co_await (SyncAwaiter), where it suspends.
         static auto initial_suspend() noexcept { return std::suspend_never{}; }
 
-        // Suspend at final to keep the frame alive for the caller to read.
-        // If a caller is co_await-ing on us, resume them.
         auto final_suspend() noexcept {
             struct FinalAwaiter {
                 bool await_ready() const noexcept { return false; }
@@ -211,7 +171,6 @@ public:
 
         void unhandled_exception() { eptr = std::current_exception(); }
 
-        // Forward all co_await expressions unchanged (SyncAwaiter, etc.).
         template <typename Awaitable>
         auto&& await_transform(Awaitable&& a) { return std::forward<Awaitable>(a); }
     };

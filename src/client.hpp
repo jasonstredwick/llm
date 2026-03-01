@@ -48,7 +48,7 @@ template <typename Endpoint>
 typename Endpoint::Response_t Deserialize(const curl::Response&);
 
 template <typename Endpoint>
-typename Endpoint::Response_t DeserializeAndRelease(Orchestrator* orch, size_t ticket);
+typename Endpoint::Response_t DeserializeAndRelease(Orchestrator* orch, Ticket ticket);
 
 template <typename Endpoint, typename Auth>
 std::string EndpointBase(const Auth&);
@@ -84,9 +84,7 @@ struct Client {
 
 
 // ----- Bridge functions -----
-// Defined in instance.cpp. Allow endpoint .cpp files to interact
-// with the orchestrator and client storage without including
-// instance_impl.hpp.
+// Defined in instance.cpp.
 
 // Returns existing client_id if a client with the same key exists,
 // otherwise registers with the orchestrator, constructs and stores
@@ -102,8 +100,7 @@ size_t FindOrCreateClient(std::string auth_identity, std::string endpoint_url,
                           std::string url);
 
 
-// Forward declaration — defined in instance_impl.hpp where Orchestrator
-// is a complete type, allowing inline method definitions.
+// Forward declaration — defined in src/results.hpp.
 struct SubmitResult;
 
 SubmitResult SubmitRequest(size_t client_id, std::vector<std::byte> body,

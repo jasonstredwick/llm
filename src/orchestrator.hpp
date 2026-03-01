@@ -36,11 +36,10 @@
 
 #pragma once
 
-#include "../interface/core/async.hpp"
-#include "policy.hpp"
 #include "curl.hpp"
 #include "http.hpp"
-#include "sync.hpp"
+#include "policy.hpp"
+#include "results.hpp"
 
 #include <cstddef>
 #include <cstdint>

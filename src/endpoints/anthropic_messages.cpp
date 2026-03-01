@@ -66,7 +66,7 @@ typename anthropic::Messages::Response_t Deserialize<anthropic::Messages>(const 
 
 
 template <>
-typename anthropic::Messages::Response_t DeserializeAndRelease<anthropic::Messages>(Orchestrator* orch, size_t ticket) {
+typename anthropic::Messages::Response_t DeserializeAndRelease<anthropic::Messages>(Orchestrator* orch, Ticket ticket) {
     const auto& resp = orch->GetResponse(ticket);
     auto data = anthropic::Deserialize(resp);
     orch->ReleaseSlot(ticket);

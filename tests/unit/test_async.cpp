@@ -17,7 +17,7 @@
 #include <thread>
 
 #include "test_assert.hpp"
-#include "../../interface/core/async.hpp"
+#include "../../interface/core/results.hpp"
 #include "../../src/sync.hpp"
 
 

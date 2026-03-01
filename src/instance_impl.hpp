@@ -50,33 +50,4 @@ struct Instance::Impl {
 };
 
 
-// ----- SubmitResult -----
-// Returned by SubmitRequest. Wraps the orchestrator interaction so
-// that endpoint code (CallCoro, etc.) never calls Orchestrator directly.
-// Forward-declared in client.hpp; defined here where Orchestrator is complete.
-
-struct SubmitResult {
-    Orchestrator* orchestrator;
-    size_t ticket;
-    std::shared_ptr<ResultSync> sync;
-
-    // Borrow the completed HTTP response from the orchestrator.
-    const curl::Response& GetResponse() const {
-        return orchestrator->GetResponse(ticket);
-    }
-
-    // Release the completed slot back to the free list.
-    void ReleaseSlot() {
-        orchestrator->ReleaseSlot(ticket);
-    }
-
-    // Reset the sync block and re-queue for retry.
-    // Returns false if the retry budget is exhausted (slot released).
-    bool RetrySlot() {
-        sync->Reset();
-        return orchestrator->RetrySlot(ticket, sync);
-    }
-};
-
-
 }

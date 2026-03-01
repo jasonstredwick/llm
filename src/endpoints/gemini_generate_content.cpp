@@ -110,7 +110,7 @@ typename gemini::GenerateContent::Response_t Deserialize<gemini::GenerateContent
 // Wrapper matching AsyncResult<Response>::DeserializeFn signature.
 // Borrows the response from the orchestrator, deserializes, and releases.
 template <>
-typename gemini::GenerateContent::Response_t DeserializeAndRelease<gemini::GenerateContent>(Orchestrator* orch, size_t ticket) {
+typename gemini::GenerateContent::Response_t DeserializeAndRelease<gemini::GenerateContent>(Orchestrator* orch, Ticket ticket) {
     const auto& resp = orch->GetResponse(ticket);
     auto data = gemini::Deserialize(resp);
     orch->ReleaseSlot(ticket);

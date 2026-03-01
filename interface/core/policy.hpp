@@ -12,7 +12,6 @@
 
 
 #include <chrono>
-#include <compare>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
