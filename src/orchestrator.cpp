@@ -169,10 +169,20 @@ size_t Orchestrator::RunOnce() {
 void Orchestrator::RunUntilComplete() {
     while (PendingCount() > 0) {
         RunOnce();
-        if (PendingCount() > 0 && ActiveCount() == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        if (PendingCount() > 0) {
+            WaitForActivity(ActiveCount() > 0 ? 50 : 1);
         }
     }
+}
+
+
+int Orchestrator::WaitForActivity(int timeout_ms) {
+    return interface.WaitForActivity(timeout_ms);
+}
+
+
+void Orchestrator::Wakeup() {
+    interface.Wakeup();
 }
 
 

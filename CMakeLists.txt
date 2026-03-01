@@ -92,6 +92,7 @@ endif()
 
 # Define the library
 add_library(llm STATIC
+    src/instance.cpp
     src/async.cpp
     src/curl.cpp
     src/http.cpp
@@ -100,6 +101,9 @@ add_library(llm STATIC
     src/clients/anthropic.cpp
     src/clients/openai.cpp
     src/clients/gemini.cpp
+    src/endpoints/anthropic_messages.cpp
+    src/endpoints/gemini_generate_content.cpp
+    src/endpoints/openai_responses.cpp
     src/protocols/serialize/anthropic_messages.cpp
     src/protocols/serialize/gemini_generate_content.cpp
     src/protocols/serialize/openai_responses.cpp

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../interface/clients/policy.hpp"
 #include "../interface/core/error.hpp"
+#include "../interface/core/policy.hpp"
 #include "http.hpp"
 
 #include <cstddef>
@@ -165,6 +165,16 @@ public:
     std::string AddHandle(void* curl_easy_handle);
     std::vector<Attempt*> ExecOnce();
     std::string RemoveHandle(void* curl_easy_handle) noexcept;
+
+    // Block until network activity occurs or timeout_ms expires.
+    // Returns the number of file descriptors with activity, or -1 on error.
+    // Safe to interrupt from another thread via Wakeup().
+    int WaitForActivity(int timeout_ms);
+
+    // Interrupt a blocked WaitForActivity() call from another thread.
+    // Thread-safe — this is the only Interface method safe to call
+    // concurrently with WaitForActivity().
+    void Wakeup();
 };
 
 

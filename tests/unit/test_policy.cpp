@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "test_assert.hpp"
-#include "../../interface/clients/policy.hpp"
+#include "../../src/policy.hpp"
 
 using namespace jai::llm;
 using namespace std::chrono_literals;

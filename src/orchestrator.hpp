@@ -36,10 +36,11 @@
 
 #pragma once
 
-#include "../interface/clients/policy.hpp"
 #include "../interface/core/async.hpp"
+#include "policy.hpp"
 #include "curl.hpp"
 #include "http.hpp"
+#include "sync.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -217,6 +218,13 @@ public:
 
     size_t RunOnce();
     void RunUntilComplete();
+
+    // Block until network activity or timeout. For use by the loop thread.
+    int WaitForActivity(int timeout_ms);
+
+    // Interrupt a blocked WaitForActivity() from another thread.
+    // Thread-safe relative to WaitForActivity().
+    void Wakeup();
 
     //----- Observability -----
 

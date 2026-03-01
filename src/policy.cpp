@@ -7,7 +7,7 @@
  * @author jason.stredwick@gmail.com
  */
 
-#include "../interface/clients/policy.hpp"
+#include "policy.hpp"
 
 
 namespace jai::llm {
@@ -96,8 +96,8 @@ ResolvedRetryPolicy Resolve(const RetryPolicy& orchestrator,
                             const RetryPolicy& client) {
     ResolvedRetryPolicy defaults{};
     return ResolvedRetryPolicy{
-        .retryable_status_codes     = ResolveField(orchestrator.retryable_status_codes,     client.retryable_status_codes,     defaults.retryable_status_codes),
-        .max_retries                = ResolveField(orchestrator.max_retries,                client.max_retries,                defaults.max_retries),
+        .retryable_status_codes       = ResolveField(orchestrator.retryable_status_codes,       client.retryable_status_codes,       defaults.retryable_status_codes),
+        .max_retries                  = ResolveField(orchestrator.max_retries,                  client.max_retries,                  defaults.max_retries),
         .retry_on_deserialize_failure = ResolveField(orchestrator.retry_on_deserialize_failure, client.retry_on_deserialize_failure, defaults.retry_on_deserialize_failure),
     };
 }
@@ -109,10 +109,10 @@ ResolvedRateLimitPolicy Resolve(const RateLimitPolicy& orchestrator,
                                 const RateLimitPolicy& client) {
     ResolvedRateLimitPolicy defaults{};
     return ResolvedRateLimitPolicy{
-        .backoff_floor               = ResolveField(orchestrator.backoff_floor,               client.backoff_floor,               defaults.backoff_floor),
-        .initial_max_concurrent      = ResolveField(orchestrator.initial_max_concurrent,      client.initial_max_concurrent,      defaults.initial_max_concurrent),
+        .backoff_floor                = ResolveField(orchestrator.backoff_floor,                client.backoff_floor,                 defaults.backoff_floor),
+        .initial_max_concurrent       = ResolveField(orchestrator.initial_max_concurrent,       client.initial_max_concurrent,        defaults.initial_max_concurrent),
         .min_remaining_before_backoff = ResolveField(orchestrator.min_remaining_before_backoff, client.min_remaining_before_backoff, defaults.min_remaining_before_backoff),
-        .use_provider_headers        = ResolveField(orchestrator.use_provider_headers,        client.use_provider_headers,        defaults.use_provider_headers),
+        .use_provider_headers         = ResolveField(orchestrator.use_provider_headers,         client.use_provider_headers,          defaults.use_provider_headers),
     };
 }
 

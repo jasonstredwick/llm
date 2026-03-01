@@ -1,11 +1,10 @@
 /***
- * Async unit tests — ResultSync signaling, SyncAwaiter, CoroAsyncResult,
- * and AsyncTask coroutine mechanics.
+ * Async unit tests — ResultSync signaling, SyncAwaiter, and CoroAsyncResult
+ * coroutine mechanics.
  *
  * ResultSync is a standalone synchronization primitive that can be tested
- * without the orchestrator. AsyncTask is a coroutine wrapper testable
- * by stepping through coroutine frames. CoroAsyncResult and SyncAwaiter test
- * the coroutine-based call path.
+ * without the orchestrator. CoroAsyncResult and SyncAwaiter test the
+ * coroutine-based call path.
  *
  * AsyncResult<T> tests require a live Orchestrator + curl::Response, so
  * they belong in the integration test suite.
@@ -19,6 +18,7 @@
 
 #include "test_assert.hpp"
 #include "../../interface/core/async.hpp"
+#include "../../src/sync.hpp"
 
 
 using namespace jai::llm;
@@ -192,155 +192,6 @@ void test_sync_threaded_retry_cycle() {
     waiter.join();
     REQUIRE_EQ(signal_count, 2);
     REQUIRE_EQ(sync->succeeded, true);
-    std::println("  [SUCCESS]");
-}
-
-
-/***
- * AsyncTask Tests
- */
-
-// Simple coroutine that yields once, then completes.
-AsyncTask<int> simple_coro() {
-    co_await std::suspend_always{};
-    co_return;
-}
-
-
-// Coroutine that yields multiple times.
-AsyncTask<int> multi_step_coro() {
-    co_await std::suspend_always{};
-    co_await std::suspend_always{};
-    co_await std::suspend_always{};
-    co_return;
-}
-
-
-// Coroutine that throws.
-AsyncTask<int> throwing_coro() {
-    co_await std::suspend_always{};
-    throw std::runtime_error("coroutine error");
-    co_return;
-}
-
-
-void test_async_task_initial_state() {
-    std::println("Testing AsyncTask: initial state...");
-
-    auto task = simple_coro();
-
-    REQUIRE_EQ(task.IsReady(), false);
-    REQUIRE_EQ(task.HasData(), false);
-    REQUIRE_EQ(task.HasError(), false);
-    std::println("  [SUCCESS]");
-}
-
-
-void test_async_task_step() {
-    std::println("Testing AsyncTask: manual step...");
-
-    auto task = simple_coro();
-
-    // First step: resume from initial_suspend to first co_await.
-    bool more = task();
-    REQUIRE_EQ(more, true);  // suspended at co_await
-
-    // Second step: resume from co_await to co_return.
-    more = task();
-    REQUIRE_EQ(more, false);  // done
-    std::println("  [SUCCESS]");
-}
-
-
-void test_async_task_multi_step() {
-    std::println("Testing AsyncTask: multi-step coroutine...");
-
-    auto task = multi_step_coro();
-
-    int steps = 0;
-    while (task()) {
-        ++steps;
-    }
-
-    // initial_suspend (step 1) + 3 co_awaits (steps 2,3,4) = 4 resumes,
-    // last resume returns false. So we count 3 true-returning steps
-    // (initial_suspend is the first resume, then 3 suspensions, then final).
-    // Actually: initial_suspend → resume(1, more=true) → co_await1 → resume(2, more=true)
-    //           → co_await2 → resume(3, more=true) → co_await3 → resume(4, more=false)
-    // So steps where task() returns true = 3.
-    REQUIRE_EQ(steps, 3);
-    std::println("  [SUCCESS]");
-}
-
-
-void test_async_task_disable_suspension() {
-    std::println("Testing AsyncTask: disable_suspension runs to completion...");
-
-    auto task = multi_step_coro();
-
-    task.disable_suspension();
-
-    // After disable_suspension, task should have run to completion.
-    // More steps should return false.
-    bool more = task();
-    REQUIRE_EQ(more, false);
-    std::println("  [SUCCESS]");
-}
-
-
-void test_async_task_data_slot() {
-    std::println("Testing AsyncTask: DataSlot emplacement...");
-
-    auto task = simple_coro();
-
-    REQUIRE_EQ(task.HasData(), false);
-
-    task.DataSlot().emplace(42);
-
-    REQUIRE_EQ(task.HasData(), true);
-    REQUIRE_EQ(task.IsReady(), true);
-    REQUIRE_EQ(task.Data(), 42);
-    std::println("  [SUCCESS]");
-}
-
-
-void test_async_task_error_slot() {
-    std::println("Testing AsyncTask: ErrorSlot emplacement...");
-
-    auto task = simple_coro();
-
-    REQUIRE_EQ(task.HasError(), false);
-
-    task.ErrorSlot().emplace("some error");
-
-    REQUIRE_EQ(task.HasError(), true);
-    REQUIRE_EQ(task.IsReady(), true);
-    REQUIRE_EQ(task.Error(), std::string{"some error"});
-    std::println("  [SUCCESS]");
-}
-
-
-void test_async_task_exception_capture() {
-    std::println("Testing AsyncTask: exception capture...");
-
-    auto task = throwing_coro();
-
-    // Step past initial_suspend.
-    task();
-
-    // This resume hits the throw.
-    task();
-
-    REQUIRE_EQ(task.HasException(), true);
-
-    bool caught = false;
-    try {
-        task.RethrowIfException();
-    } catch (const std::runtime_error& e) {
-        caught = true;
-        REQUIRE_EQ(std::string{e.what()}, std::string{"coroutine error"});
-    }
-    REQUIRE(caught);
     std::println("  [SUCCESS]");
 }
 
@@ -608,15 +459,6 @@ int main() {
     run(test_coro_result_exception_after_await);
     run(test_coro_result_move_construct);
     run(test_coro_result_threaded_signal);
-
-    std::println("\n===== AsyncTask Tests =====");
-    run(test_async_task_initial_state);
-    run(test_async_task_step);
-    run(test_async_task_multi_step);
-    run(test_async_task_disable_suspension);
-    run(test_async_task_data_slot);
-    run(test_async_task_error_slot);
-    run(test_async_task_exception_capture);
 
     std::println("\n===== Results: {} failed =====", failed);
     return failed;

@@ -422,6 +422,33 @@ std::string Interface::RemoveHandle(void* curl_easy_handle) noexcept {
 }
 
 
+int Interface::WaitForActivity(int timeout_ms) {
+    CURLM* curlm_ptr = ToCurl<CURLM>(handle.get());
+    int numfds{0};
+    CURLMcode code = curl_multi_poll(curlm_ptr, nullptr, 0,
+                                     timeout_ms, &numfds);
+    if (code != CURLM_OK) {
+        throw AnnotatedException{
+            std::string{"curl::Interface::WaitForActivity curl_multi_poll failed: "} +
+            curl_multi_strerror(code)
+        };
+    }
+    return numfds;
+}
+
+
+void Interface::Wakeup() {
+    CURLM* curlm_ptr = ToCurl<CURLM>(handle.get());
+    CURLMcode code = curl_multi_wakeup(curlm_ptr);
+    if (code != CURLM_OK) {
+        throw AnnotatedException{
+            std::string{"curl::Interface::Wakeup curl_multi_wakeup failed: "} +
+            curl_multi_strerror(code)
+        };
+    }
+}
+
+
 Interface::Global::Global() { curl_global_init(CURL_GLOBAL_DEFAULT); }
 Interface::Global::~Global() noexcept { curl_global_cleanup(); }
 Interface::Global Interface::global{};
