@@ -11,14 +11,12 @@
  */
 
 #include <atomic>
-#include <chrono>
 #include <print>
 #include <string>
 #include <thread>
 
 #include "test_assert.hpp"
-#include "../../interface/core/results.hpp"
-#include "../../src/sync.hpp"
+#include "../../src/results.hpp"
 
 
 using namespace jai::llm;
@@ -206,7 +204,7 @@ void test_sync_awaiter_ready_immediately() {
     auto sync = std::make_shared<ResultSync>();
     sync->Signal(true);  // pre-signal
 
-    SyncAwaiter awaiter{sync};
+    SyncAwaiter awaiter{sync.get()};
     REQUIRE_EQ(awaiter.await_ready(), true);
     std::println("  [SUCCESS]");
 }
@@ -216,7 +214,7 @@ void test_sync_awaiter_not_ready() {
     std::println("Testing SyncAwaiter: not ready (would suspend)...");
 
     auto sync = std::make_shared<ResultSync>();
-    SyncAwaiter awaiter{sync};
+    SyncAwaiter awaiter{sync.get()};
 
     REQUIRE_EQ(awaiter.await_ready(), false);
     std::println("  [SUCCESS]");
@@ -227,7 +225,7 @@ void test_sync_awaiter_race_protection() {
     std::println("Testing SyncAwaiter: race between await_ready and await_suspend...");
 
     auto sync = std::make_shared<ResultSync>();
-    SyncAwaiter awaiter{sync};
+    SyncAwaiter awaiter{sync.get()};
 
     // await_ready returns false (not signaled yet).
     REQUIRE_EQ(awaiter.await_ready(), false);
@@ -282,7 +280,7 @@ CoroAsyncResult<int> coro_return_value() {
 
 // Coroutine that suspends on a SyncAwaiter, then returns.
 CoroAsyncResult<int> coro_await_sync(std::shared_ptr<ResultSync> sync) {
-    co_await SyncAwaiter{sync};
+    co_await SyncAwaiter{sync.get()};
     co_return 99;
 }
 
@@ -296,7 +294,7 @@ CoroAsyncResult<int> coro_throw() {
 
 // Coroutine that throws after awaiting.
 CoroAsyncResult<int> coro_throw_after_await(std::shared_ptr<ResultSync> sync) {
-    co_await SyncAwaiter{sync};
+    co_await SyncAwaiter{sync.get()};
     throw std::runtime_error("post-await error");
     co_return 0;
 }

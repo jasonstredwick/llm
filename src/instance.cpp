@@ -183,18 +183,14 @@ SubmitResult SubmitRequest(size_t client_id, std::vector<std::byte> body,
     }
     Client* client = impl.clients[client_id].get();
 
-    http::Request http_request{
-        .headers = client->request_headers,
-        .method = http::Method::POST,
-        .url = client->url,
-        .body = std::move(body)
-    };
-
     auto sync = std::make_shared<ResultSync>();
 
     size_t ticket = impl.orchestrator.Submit(
         Orchestrator::RegistrationToken{client->registration_index},
-        std::move(http_request),
+        client->request_headers,
+        client->url,
+        http::Method::POST,
+        std::move(body),
         policy,
         sync
     );

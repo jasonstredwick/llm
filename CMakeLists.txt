@@ -93,14 +93,11 @@ endif()
 # Define the library
 add_library(llm STATIC
     src/instance.cpp
-    src/async.cpp
+    src/results.cpp
     src/curl.cpp
     src/http.cpp
     src/orchestrator.cpp
     src/policy.cpp
-    src/clients/anthropic.cpp
-    src/clients/openai.cpp
-    src/clients/gemini.cpp
     src/endpoints/anthropic_messages.cpp
     src/endpoints/gemini_generate_content.cpp
     src/endpoints/openai_responses.cpp
@@ -178,8 +175,8 @@ target_link_libraries(test_model_group PRIVATE llm)
 add_executable(test_orchestrator tests/unit/test_orchestrator.cpp)
 target_link_libraries(test_orchestrator PRIVATE llm)
 
-add_executable(test_async tests/unit/test_async.cpp)
-target_link_libraries(test_async PRIVATE llm)
+add_executable(test_results tests/unit/test_results.cpp)
+target_link_libraries(test_results PRIVATE llm)
 
 # CTest registration
 enable_testing()
@@ -188,7 +185,7 @@ add_test(NAME test_curl          COMMAND test_curl)
 add_test(NAME test_policy        COMMAND test_policy)
 add_test(NAME test_model_group   COMMAND test_model_group)
 add_test(NAME test_orchestrator  COMMAND test_orchestrator)
-add_test(NAME test_async         COMMAND test_async)
+add_test(NAME test_results       COMMAND test_results)
 
 # Label curl tests as integration (require mock server)
 set_tests_properties(test_curl PROPERTIES LABELS "integration")

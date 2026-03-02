@@ -1,7 +1,7 @@
 /***
  * Orchestrator — managed HTTP transport engine for LLM API calls.
  *
- * Provider-agnostic. Operates on http::Request → curl::Response.
+ * Provider-agnostic. Accepts request data (headers, URL, body) and produces curl::Response.
  * Manages concurrency, rate limiting, retry, and connection pooling.
  *
  * Pull-based design: clients submit requests with a shared ResultSync block.
@@ -104,7 +104,11 @@ private:
         size_t next{NONE};
 
         // --- Provided at Submit ---
-        http::Request request;
+        // Headers and URL are borrowed from Client (which outlives all Slots).
+        // Body is owned because it is unique to each request.
+        const std::string* url;
+        http::Method method;
+        std::vector<std::byte> body;
         AttemptPolicy attempt_policy;
         size_t registration_index{};
 
@@ -115,23 +119,28 @@ private:
         SlotState state{SlotState::FREE};
         size_t retry_count{0};
 
-        // Prepared curl data: constructed once from request, reused across retries.
+        // Prepared curl data: constructed once from headers, reused across retries.
         curl::HeaderList header_list;
 
         // The live attempt. Emplaced when dispatched, reset on completion.
         // Stays alive in COMPLETED state so GetResponse can borrow the Response.
         std::optional<curl::Attempt> attempt{};
 
-        Slot(http::Request req,
+        Slot(const http::RequestHeaders& headers,
+             const std::string& url_ref,
+             http::Method method_,
+             std::vector<std::byte> body_,
              AttemptPolicy policy,
              size_t reg_index,
              std::shared_ptr<ResultSync> sync_block)
-            : request{std::move(req)}
+            : url{&url_ref}
+            , method{method_}
+            , body{std::move(body_)}
             , attempt_policy{std::move(policy)}
             , registration_index{reg_index}
             , sync{std::move(sync_block)}
             , state{SlotState::AWAITING}
-            , header_list{request.headers}  // must follow request in member decl order
+            , header_list{headers}
         {}
     };
 
@@ -190,9 +199,13 @@ public:
 
     // Submit returns a ticket (slot index) that the caller uses with
     // GetResponse, ReleaseSlot, and RetrySlot. The ResultSync block is
-    // signaled on completion.
+    // signaled on completion. Headers and URL are borrowed from Client
+    // (which outlives all Slots); body is moved.
     size_t Submit(RegistrationToken token,
-                  http::Request request,
+                  const http::RequestHeaders& headers,
+                  const std::string& url,
+                  http::Method method,
+                  std::vector<std::byte> body,
                   const AttemptPolicy& call_site_policy,
                   std::shared_ptr<ResultSync> sync);
 
@@ -245,7 +258,10 @@ private:
     const ClientRegistration& GetClientRegistration(RegistrationToken token) const;
 
     // Allocate a slot: take from free list or grow the pool.
-    size_t AllocateSlot(http::Request request,
+    size_t AllocateSlot(const http::RequestHeaders& headers,
+                        const std::string& url,
+                        http::Method method,
+                        std::vector<std::byte> body,
                         AttemptPolicy policy,
                         size_t reg_index,
                         std::shared_ptr<ResultSync> sync);

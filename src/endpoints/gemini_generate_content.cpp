@@ -229,7 +229,7 @@ CoroAsyncResult<gemini::GenerateContent::Response_t> CallCoro<gemini::GenerateCo
     auto sr = SubmitRequest(client_id, Serialize<gemini::GenerateContent>(request), policy);
 
     while (true) {
-        co_await SyncAwaiter{sr.sync};
+        co_await SyncAwaiter{sr.sync.get()};
 
         if (!sr.sync->succeeded) {
             throw AnnotatedException{sr.sync->error_msg};

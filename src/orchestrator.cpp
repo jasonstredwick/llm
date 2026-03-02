@@ -52,7 +52,10 @@ Orchestrator::Register(const ClientPolicy& client_policy, QueueKey queue_key) {
 //----- Submission -----
 
 size_t Orchestrator::Submit(RegistrationToken token,
-                            http::Request request,
+                            const http::RequestHeaders& headers,
+                            const std::string& url,
+                            http::Method method,
+                            std::vector<std::byte> body,
                             const AttemptPolicy& call_site_policy,
                             std::shared_ptr<ResultSync> sync) {
     const auto& reg = GetClientRegistration(token);
@@ -60,7 +63,10 @@ size_t Orchestrator::Submit(RegistrationToken token,
     AttemptPolicy merged_attempt = Merge(reg.attempt_policy, call_site_policy);
 
     size_t slot_index = AllocateSlot(
-        std::move(request),
+        headers,
+        url,
+        method,
+        std::move(body),
         std::move(merged_attempt),
         token.index,
         std::move(sync)
@@ -303,7 +309,10 @@ Orchestrator::GetClientRegistration(RegistrationToken token) const {
 
 //----- Internal: slot allocation -----
 
-size_t Orchestrator::AllocateSlot(http::Request request,
+size_t Orchestrator::AllocateSlot(const http::RequestHeaders& headers,
+                                   const std::string& url,
+                                   http::Method method,
+                                   std::vector<std::byte> body,
                                    AttemptPolicy policy,
                                    size_t reg_index,
                                    std::shared_ptr<ResultSync> sync) {
@@ -311,7 +320,10 @@ size_t Orchestrator::AllocateSlot(http::Request request,
         size_t index = ListPopFront(free_list);
         slots[index].~Slot();
         new (&slots[index]) Slot(
-            std::move(request),
+            headers,
+            url,
+            method,
+            std::move(body),
             std::move(policy),
             reg_index,
             std::move(sync)
@@ -321,7 +333,10 @@ size_t Orchestrator::AllocateSlot(http::Request request,
 
     size_t index = slots.size();
     slots.emplace_back(
-        std::move(request),
+        headers,
+        url,
+        method,
+        std::move(body),
         std::move(policy),
         reg_index,
         std::move(sync)
@@ -367,10 +382,10 @@ void Orchestrator::LaunchAttempt(Slot& slot, size_t slot_index) {
     slot.attempt.emplace(
         interface,
         slot.attempt_policy,
-        slot.request.method,
-        slot.request.url,
+        slot.method,
+        *slot.url,
         slot.header_list,
-        slot.request.body
+        slot.body
     );
     attempt_to_slot[&(*slot.attempt)] = slot_index;
 }

@@ -28,15 +28,9 @@ static OrchestratorPolicy NoDispatchPolicy() {
 }
 
 
-// Helper: create a minimal http::Request for submission.
-static http::Request DummyRequest() {
-    return http::Request{
-        .headers = http::RequestHeaders{},
-        .method = http::Method::POST,
-        .url = "https://api.example.com/v1/test",
-        .body = {}
-    };
-}
+// Helper: dummy request fields for submission.
+static const http::RequestHeaders DUMMY_HEADERS{};
+static const std::string DUMMY_URL = "https://api.example.com/v1/test";
 
 
 // Helper: create a QueueKey with the given model group.
@@ -84,8 +78,8 @@ void test_register_same_queue_key_reuses_queue() {
     auto sync0 = std::make_shared<ResultSync>();
     auto sync1 = std::make_shared<ResultSync>();
 
-    orch.Submit(t0, DummyRequest(), {}, sync0);
-    orch.Submit(t1, DummyRequest(), {}, sync1);
+    orch.Submit(t0, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {}, sync0);
+    orch.Submit(t1, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {}, sync1);
 
     // Both slots should be awaiting (dispatch blocked).
     REQUIRE_EQ(orch.AwaitingCount(), 2u);
@@ -103,8 +97,8 @@ void test_register_different_keys_separate_queues() {
     auto sync0 = std::make_shared<ResultSync>();
     auto sync1 = std::make_shared<ResultSync>();
 
-    orch.Submit(t0, DummyRequest(), {}, sync0);
-    orch.Submit(t1, DummyRequest(), {}, sync1);
+    orch.Submit(t0, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {}, sync0);
+    orch.Submit(t1, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {}, sync1);
 
     // Both awaiting, from separate queues.
     REQUIRE_EQ(orch.AwaitingCount(), 2u);
@@ -123,7 +117,7 @@ void test_submit_returns_ticket() {
     auto token = orch.Register({}, MakeKey());
     auto sync = std::make_shared<ResultSync>();
 
-    size_t ticket = orch.Submit(token, DummyRequest(), {}, sync);
+    size_t ticket = orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},sync);
 
     // First submission should get slot 0.
     REQUIRE_EQ(ticket, 0u);
@@ -141,9 +135,9 @@ void test_submit_multiple_sequential_tickets() {
     auto s1 = std::make_shared<ResultSync>();
     auto s2 = std::make_shared<ResultSync>();
 
-    size_t t0 = orch.Submit(token, DummyRequest(), {}, s0);
-    size_t t1 = orch.Submit(token, DummyRequest(), {}, s1);
-    size_t t2 = orch.Submit(token, DummyRequest(), {}, s2);
+    size_t t0 = orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s0);
+    size_t t1 = orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s1);
+    size_t t2 = orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s2);
 
     REQUIRE_EQ(t0, 0u);
     REQUIRE_EQ(t1, 1u);
@@ -178,15 +172,15 @@ void test_counts_after_submit() {
     auto s1 = std::make_shared<ResultSync>();
     auto s2 = std::make_shared<ResultSync>();
 
-    orch.Submit(token, DummyRequest(), {}, s0);
+    orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s0);
     REQUIRE_EQ(orch.AwaitingCount(), 1u);
     REQUIRE_EQ(orch.ActiveCount(), 0u);
     REQUIRE_EQ(orch.PendingCount(), 1u);
 
-    orch.Submit(token, DummyRequest(), {}, s1);
+    orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s1);
     REQUIRE_EQ(orch.AwaitingCount(), 2u);
 
-    orch.Submit(token, DummyRequest(), {}, s2);
+    orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s2);
     REQUIRE_EQ(orch.AwaitingCount(), 3u);
     REQUIRE_EQ(orch.ActiveCount(), 0u);
     REQUIRE_EQ(orch.CompletedCount(), 0u);
@@ -206,9 +200,9 @@ void test_counts_multiple_queues() {
     auto s1 = std::make_shared<ResultSync>();
     auto s2 = std::make_shared<ResultSync>();
 
-    orch.Submit(t_a, DummyRequest(), {}, s0);
-    orch.Submit(t_a, DummyRequest(), {}, s1);
-    orch.Submit(t_b, DummyRequest(), {}, s2);
+    orch.Submit(t_a, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s0);
+    orch.Submit(t_a, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s1);
+    orch.Submit(t_b, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},s2);
 
     // Counts aggregate across all queues.
     REQUIRE_EQ(orch.AwaitingCount(), 3u);
@@ -325,7 +319,7 @@ void test_run_once_blocked_dispatch() {
 
     auto token = orch.Register({}, MakeKey());
     auto sync = std::make_shared<ResultSync>();
-    orch.Submit(token, DummyRequest(), {}, sync);
+    orch.Submit(token, DUMMY_HEADERS, DUMMY_URL, http::Method::POST, {}, {},sync);
 
     // RunOnce with blocked dispatch — slot remains awaiting.
     size_t remaining = orch.RunOnce();

@@ -139,7 +139,7 @@ CoroAsyncResult<anthropic::Messages::Response_t> CallCoro<anthropic::Messages>(
     auto sr = SubmitRequest(client_id, Serialize<anthropic::Messages>(request), policy);
 
     while (true) {
-        co_await SyncAwaiter{sr.sync};
+        co_await SyncAwaiter{sr.sync.get()};
 
         if (!sr.sync->succeeded) {
             throw AnnotatedException{sr.sync->error_msg};

@@ -199,7 +199,7 @@ CoroAsyncResult<openai::Responses::Response_t> CallCoro<openai::Responses>(
     auto sr = SubmitRequest(client_id, Serialize<openai::Responses>(request), policy);
 
     while (true) {
-        co_await SyncAwaiter{sr.sync};
+        co_await SyncAwaiter{sr.sync.get()};
 
         if (!sr.sync->succeeded) {
             throw AnnotatedException{sr.sync->error_msg};

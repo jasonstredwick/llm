@@ -15,7 +15,7 @@ namespace jai::llm {
 
 class Orchestrator;
 
-namespace curl { class Response; }
+namespace curl { struct Response; }
 
 
 /***
@@ -105,7 +105,7 @@ struct SubmitResult {
  * await_suspend returns false (don't suspend) and the coroutine continues.
  */
 struct SyncAwaiter {
-    std::shared_ptr<ResultSync> sync;
+    ResultSync* sync;
 
     bool await_ready() const {
         std::lock_guard lock(sync->mtx);
