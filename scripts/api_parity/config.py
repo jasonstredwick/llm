@@ -115,26 +115,6 @@ def baseline_url_path(provider: str, name: str) -> Path:
     cfg = ENDPOINTS[provider]
     return spec_dir(provider) / f"{name}.raw.{cfg.raw_ext}"
 
-def diff_json_path(provider: str) -> Path:
-    """Path to the diff output JSON (scratch)."""
-    cfg = ENDPOINTS[provider]
-    d = SCRATCH_DIR / "diffs"
-    d.mkdir(parents=True, exist_ok=True)
-    return d / f"{cfg.provider}_{cfg.endpoint}_diff.json"
-
-def report_md_path(provider: str) -> Path:
-    """Path to the generated report (scratch)."""
-    cfg = ENDPOINTS[provider]
-    d = SCRATCH_DIR / "reports"
-    d.mkdir(parents=True, exist_ok=True)
-    return d / f"{cfg.provider}_{cfg.endpoint}_report.md"
-
-def checklist_md_path(provider: str) -> Path:
-    """Path to the generated integration checklist (scratch)."""
-    cfg = ENDPOINTS[provider]
-    d = SCRATCH_DIR / "checklists"
-    d.mkdir(parents=True, exist_ok=True)
-    return d / f"{cfg.provider}_{cfg.endpoint}_checklist.md"
 
 
 # ---------------------------------------------------------------------------

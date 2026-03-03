@@ -44,6 +44,7 @@ END_DESERIALIZE
 BEGIN_DESERIALIZE(openai::Response::EasyInputMessage)
     FIELD(src, content),
     FIELD(src, role),
+    FIELD(src, phase),
     FIELD(src, type)
 END_DESERIALIZE
 
@@ -134,7 +135,8 @@ BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage)
     FIELD(src, content),
     FIELD(src, role),
     FIELD(src, status),
-    FIELD(src, type)
+    FIELD(src, type),
+    FIELD(src, phase)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(openai::Response::ResponseFileSearchToolCall::ResponseFileSearchToolCall_results)

@@ -1,8 +1,9 @@
 """
 Stage 3: Diff — Compare current extraction against previous baseline.
 
-Structural diff only: compares objects, fields (type + required), and enum values.
-Description changes are noted but kept separate from structural changes.
+Recursively compares the two JSON trees, ignoring the ``meta`` block
+(which contains timestamps and other non-structural bookkeeping).
+Any structural difference triggers a full regeneration.
 
 Usage:
     from scripts.api_parity.diff import diff
@@ -11,144 +12,22 @@ Usage:
 
 import json
 from pathlib import Path
-from typing import Any
 
 from . import config
 
 
-def _diff_section(baseline: dict, current: dict) -> dict[str, Any]:
-    """
-    Diff a single section (request or response).
-
-    Returns a dict with added/removed/changed objects, fields, enums, and
-    description changes.
-    """
-    b_objects = baseline.get("objects", {})
-    c_objects = current.get("objects", {})
-    b_enums = baseline.get("enums", {})
-    c_enums = current.get("enums", {})
-
-    result: dict[str, Any] = {
-        "added_objects": [],
-        "removed_objects": [],
-        "added_fields": [],
-        "removed_fields": [],
-        "changed_fields": [],
-        "added_enum_values": [],
-        "removed_enum_values": [],
-        "description_changes": [],
-    }
-
-    # Object-level diff
-    b_obj_names = set(b_objects.keys())
-    c_obj_names = set(c_objects.keys())
-
-    result["added_objects"] = sorted(c_obj_names - b_obj_names)
-    result["removed_objects"] = sorted(b_obj_names - c_obj_names)
-
-    # Field-level diff for objects present in both
-    for obj_name in sorted(b_obj_names & c_obj_names):
-        b_fields = b_objects[obj_name].get("fields", {})
-        c_fields = c_objects[obj_name].get("fields", {})
-
-        b_field_names = set(b_fields.keys())
-        c_field_names = set(c_fields.keys())
-
-        # Added fields
-        for fname in sorted(c_field_names - b_field_names):
-            f = c_fields[fname]
-            entry: dict[str, Any] = {
-                "object": obj_name,
-                "field": fname,
-                "type": f.get("type", "unknown"),
-                "required": f.get("required", False),
-            }
-            if "value" in f:
-                entry["value"] = f["value"]
-            if "values" in f:
-                entry["values"] = f["values"]
-            result["added_fields"].append(entry)
-
-        # Removed fields
-        for fname in sorted(b_field_names - c_field_names):
-            result["removed_fields"].append({
-                "object": obj_name,
-                "field": fname,
-            })
-
-        # Changed fields (present in both)
-        for fname in sorted(b_field_names & c_field_names):
-            bf = b_fields[fname]
-            cf = c_fields[fname]
-            changes: dict[str, Any] = {}
-
-            # Structural: type
-            if bf.get("type") != cf.get("type"):
-                changes["type"] = {"old": bf.get("type"), "new": cf.get("type")}
-
-            # Structural: required
-            if bf.get("required") != cf.get("required"):
-                changes["required"] = {"old": bf.get("required"), "new": cf.get("required")}
-
-            # Structural: value (kind discriminator)
-            if bf.get("value") != cf.get("value"):
-                changes["value"] = {"old": bf.get("value"), "new": cf.get("value")}
-
-            # Structural: values (string enum)
-            if bf.get("values") != cf.get("values"):
-                changes["values"] = {"old": bf.get("values"), "new": cf.get("values")}
-
-            if changes:
-                result["changed_fields"].append({
-                    "object": obj_name,
-                    "field": fname,
-                    "changes": changes,
-                })
-
-            # Description changes (non-structural, tracked separately)
-            b_desc = bf.get("description", "")
-            c_desc = cf.get("description", "")
-            if b_desc != c_desc:
-                result["description_changes"].append({
-                    "object": obj_name,
-                    "field": fname,
-                    "old_desc": b_desc,
-                    "new_desc": c_desc,
-                })
-
-    # Enum-level diff
-    b_enum_names = set(b_enums.keys())
-    c_enum_names = set(c_enums.keys())
-
-    for enum_name in sorted(c_enum_names - b_enum_names):
-        for val in c_enums[enum_name].get("values", []):
-            result["added_enum_values"].append({"enum": enum_name, "value": val})
-
-    for enum_name in sorted(b_enum_names - c_enum_names):
-        for val in b_enums[enum_name].get("values", []):
-            result["removed_enum_values"].append({"enum": enum_name, "value": val})
-
-    for enum_name in sorted(b_enum_names & c_enum_names):
-        b_vals = set(b_enums[enum_name].get("values", []))
-        c_vals = set(c_enums[enum_name].get("values", []))
-        for val in sorted(c_vals - b_vals):
-            result["added_enum_values"].append({"enum": enum_name, "value": val})
-        for val in sorted(b_vals - c_vals):
-            result["removed_enum_values"].append({"enum": enum_name, "value": val})
-
-    return result
+def _sorted(obj: object) -> object:
+    """Return *obj* with all dicts sorted by key (recursively)."""
+    if isinstance(obj, dict):
+        return {k: _sorted(v) for k, v in sorted(obj.items())}
+    if isinstance(obj, list):
+        return [_sorted(v) for v in obj]
+    return obj
 
 
-def _has_structural_changes(result: dict) -> bool:
-    """Return True if the diff result contains any structural changes."""
-    for section in ("request", "response"):
-        s = result[section]
-        if (s["added_objects"] or s["removed_objects"]
-                or s["added_fields"] or s["removed_fields"]
-                or s["changed_fields"]
-                or s["added_enum_values"] or s["removed_enum_values"]):
-            return True
-    return False
+def _changed(baseline: object, current: object) -> bool:
+    """Return True on the first structural difference between two trees."""
+    return _sorted(baseline) != _sorted(current)
 
 
 def diff(provider: str) -> bool:
@@ -159,7 +38,6 @@ def diff(provider: str) -> bool:
     """
     json_path = config.extracted_json_path(provider)
     baseline_path = config.baseline_json_path(provider)
-    diff_path = config.diff_json_path(provider)
 
     if not json_path.exists():
         raise FileNotFoundError(
@@ -174,44 +52,17 @@ def diff(provider: str) -> bool:
     current = json.loads(json_path.read_text(encoding="utf-8"))
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
 
+    # Strip non-structural metadata before comparing.
+    current.pop("meta", None)
+    baseline.pop("meta", None)
+
     print(f"Diffing {provider}: {baseline_path.name} vs {json_path.name}")
 
-    result = {
-        "meta": {
-            "provider": provider,
-            "baseline_file": str(baseline_path.name),
-            "current_file": str(json_path.name),
-            "baseline_fetched_at": baseline.get("meta", {}).get("fetched_at", "unknown"),
-            "current_fetched_at": current.get("meta", {}).get("fetched_at", "unknown"),
-        },
-        "request": _diff_section(
-            baseline.get("request", {}),
-            current.get("request", {}),
-        ),
-        "response": _diff_section(
-            baseline.get("response", {}),
-            current.get("response", {}),
-        ),
-    }
+    changed = _changed(baseline, current)
 
-    diff_path.parent.mkdir(parents=True, exist_ok=True)
-    diff_path.write_text(
-        json.dumps(result, indent=2, ensure_ascii=False) + '\n',
-        encoding="utf-8",
-    )
-
-    # Summary
-    changed = _has_structural_changes(result)
-    for section in ("request", "response"):
-        s = result[section]
-        total = (len(s["added_objects"]) + len(s["removed_objects"])
-                 + len(s["added_fields"]) + len(s["removed_fields"])
-                 + len(s["changed_fields"])
-                 + len(s["added_enum_values"]) + len(s["removed_enum_values"]))
-        desc_changes = len(s["description_changes"])
-        print(f"  {section}: {total} structural changes, {desc_changes} description changes")
-
-    print(f"  -> {diff_path}")
-    if not changed:
+    if changed:
+        print(f"  Changes detected for {provider}.")
+    else:
         print(f"  No structural changes for {provider}.")
+
     return changed

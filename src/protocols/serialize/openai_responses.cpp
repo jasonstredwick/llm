@@ -45,6 +45,7 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::EasyInputMessage)
     FIELD(obj, content, CommaDirection::NONE)
     FIELD(obj, role, CommaDirection::BEFORE)
+    FIELD(obj, phase, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
@@ -136,6 +137,7 @@ BEGIN_SERIALIZE(Request::ResponseOutputMessage)
     FIELD(obj, role, CommaDirection::BEFORE)
     FIELD(obj, status, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, phase, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ResponseFileSearchToolCall::ResponseFileSearchToolCall_results)

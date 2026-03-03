@@ -3,7 +3,7 @@
     "provider": "openai",
     "endpoint": "responses",
     "source_url": "https://developers.openai.com/api/reference/resources/responses/methods/create/index.md",
-    "fetched_at": "2026-02-24T00:05:23Z",
+    "fetched_at": "2026-03-03T18:26:39Z",
     "raw_file": "scratch/api_parity/openai/responses.raw.md"
   },
   "request": {
@@ -541,6 +541,16 @@
               ]
             },
             {
+              "name": "phase",
+              "type": "enum",
+              "required": false,
+              "description": "Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages. Use `commentary` for an intermediate assistant message and `final_answer` for the final assistant message. For follow-up requests with models like `gpt-5.3-codex` and later, preserve and resend phase on all assistant messages. Omitting it can degrade performance. Not used for user messages.",
+              "values": [
+                "commentary",
+                "final_answer"
+              ]
+            },
+            {
               "name": "type",
               "type": "kind",
               "required": false,
@@ -869,6 +879,16 @@
               "required": true,
               "description": "The type of the output message. Always `message`.",
               "value": "message"
+            },
+            {
+              "name": "phase",
+              "type": "enum",
+              "required": false,
+              "description": "Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages. Use `commentary` for an intermediate assistant message and `final_answer` for the final assistant message. For follow-up requests with models like `gpt-5.3-codex` and later, preserve and resend phase on all assistant messages. Omitting it can degrade performance. Not used for user messages.",
+              "values": [
+                "commentary",
+                "final_answer"
+              ]
             }
           ],
           "children": [
@@ -5935,6 +5955,16 @@
                   ]
                 },
                 {
+                  "name": "phase",
+                  "type": "enum",
+                  "required": false,
+                  "description": "Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages. Use `commentary` for an intermediate assistant message and `final_answer` for the final assistant message. For follow-up requests with models like `gpt-5.3-codex` and later, preserve and resend phase on all assistant messages. Omitting it can degrade performance. Not used for user messages.",
+                  "values": [
+                    "commentary",
+                    "final_answer"
+                  ]
+                },
+                {
                   "name": "type",
                   "type": "kind",
                   "required": false,
@@ -6263,6 +6293,16 @@
                   "required": false,
                   "description": "The type of the output message. Always `message`.",
                   "value": "message"
+                },
+                {
+                  "name": "phase",
+                  "type": "enum",
+                  "required": false,
+                  "description": "Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages. Use `commentary` for an intermediate assistant message and `final_answer` for the final assistant message. For follow-up requests with models like `gpt-5.3-codex` and later, preserve and resend phase on all assistant messages. Omitting it can degrade performance. Not used for user messages.",
+                  "values": [
+                    "commentary",
+                    "final_answer"
+                  ]
                 }
               ],
               "children": [

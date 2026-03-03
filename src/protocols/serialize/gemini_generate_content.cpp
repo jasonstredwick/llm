@@ -18,7 +18,7 @@ BEGIN_SERIALIZE(Blob)
     FIELD(obj, data, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(CodeExecution)
+BEGIN_SERIALIZE_EMPTY(CodeExecution)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(CodeExecutionResult)
@@ -75,6 +75,9 @@ END_SERIALIZE
 BEGIN_SERIALIZE(ImageConfig)
     FIELD(obj, aspectRatio, CommaDirection::NONE)
     FIELD(obj, imageSize, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE_EMPTY(ImageSearch)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Interval)
@@ -135,7 +138,10 @@ BEGIN_SERIALIZE(ThinkingConfig)
     FIELD(obj, thinkingLevel, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(UrlContext)
+BEGIN_SERIALIZE_EMPTY(UrlContext)
+END_SERIALIZE
+
+BEGIN_SERIALIZE_EMPTY(WebSearch)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(GoogleSearchRetrieval)
@@ -144,10 +150,6 @@ END_SERIALIZE
 
 BEGIN_SERIALIZE(FunctionResponsePart)
     FIELD(obj, inlineData, CommaDirection::NONE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(GoogleSearch)
-    FIELD(obj, timeRangeFilter, CommaDirection::NONE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(RetrievalConfig)
@@ -174,6 +176,11 @@ BEGIN_SERIALIZE(McpServer)
     FIELD(obj, name, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(SearchTypes)
+    FIELD(obj, webSearch, CommaDirection::NONE)
+    FIELD(obj, imageSearch, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(FunctionResponse)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, name, CommaDirection::BEFORE)
@@ -193,16 +200,9 @@ BEGIN_SERIALIZE(SpeakerVoiceConfig)
     FIELD(obj, voiceConfig, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Tool)
-    FIELD(obj, functionDeclarations, CommaDirection::NONE)
-    FIELD(obj, googleSearchRetrieval, CommaDirection::BEFORE)
-    FIELD(obj, codeExecution, CommaDirection::BEFORE)
-    FIELD(obj, googleSearch, CommaDirection::BEFORE)
-    FIELD(obj, computerUse, CommaDirection::BEFORE)
-    FIELD(obj, urlContext, CommaDirection::BEFORE)
-    FIELD(obj, fileSearch, CommaDirection::BEFORE)
-    FIELD(obj, mcpServers, CommaDirection::BEFORE)
-    FIELD(obj, googleMaps, CommaDirection::BEFORE)
+BEGIN_SERIALIZE(GoogleSearch)
+    FIELD(obj, timeRangeFilter, CommaDirection::NONE)
+    FIELD(obj, searchTypes, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Part)
@@ -221,6 +221,18 @@ END_SERIALIZE
 
 BEGIN_SERIALIZE(MultiSpeakerVoiceConfig)
     FIELD(obj, speakerVoiceConfigs, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Tool)
+    FIELD(obj, functionDeclarations, CommaDirection::NONE)
+    FIELD(obj, googleSearchRetrieval, CommaDirection::BEFORE)
+    FIELD(obj, codeExecution, CommaDirection::BEFORE)
+    FIELD(obj, googleSearch, CommaDirection::BEFORE)
+    FIELD(obj, computerUse, CommaDirection::BEFORE)
+    FIELD(obj, urlContext, CommaDirection::BEFORE)
+    FIELD(obj, fileSearch, CommaDirection::BEFORE)
+    FIELD(obj, mcpServers, CommaDirection::BEFORE)
+    FIELD(obj, googleMaps, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Content)

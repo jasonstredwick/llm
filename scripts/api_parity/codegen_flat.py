@@ -631,7 +631,8 @@ class FlatCppCodegen:
         """Emit a BEGIN_SERIALIZE block for a flat struct."""
         fields = schema.get("fields", [])
 
-        lines = [f"BEGIN_SERIALIZE({name})"]
+        macro = "BEGIN_SERIALIZE_EMPTY" if not fields else "BEGIN_SERIALIZE"
+        lines = [f"{macro}({name})"]
         for i, field in enumerate(fields):
             fname = field["name"]
             cpp_name = _escape(fname)

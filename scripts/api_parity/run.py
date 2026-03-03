@@ -6,8 +6,6 @@ Usage:
     python -m scripts.api_parity.run fetch     --provider openai
     python -m scripts.api_parity.run extract   --provider openai
     python -m scripts.api_parity.run diff      --provider openai
-    python -m scripts.api_parity.run report    --provider openai
-    python -m scripts.api_parity.run checklist --provider openai   # generate integration checklist
     python -m scripts.api_parity.run promote   --provider openai
     python -m scripts.api_parity.run generate  --provider openai   # codegen C++ from extraction
     python -m scripts.api_parity.run deploy    --provider openai   # copy generated files into source tree
@@ -35,8 +33,6 @@ from scripts.api_parity import config
 from scripts.api_parity.fetch import fetch as do_fetch
 from scripts.api_parity.extract import extract as do_extract
 from scripts.api_parity.diff import diff as do_diff
-from scripts.api_parity.report import report as do_report
-from scripts.api_parity.checklist import checklist as do_checklist
 from scripts.api_parity.codegen import generate as do_generate_tree
 from scripts.api_parity.codegen_flat import generate as do_generate_flat
 
@@ -224,7 +220,7 @@ def main() -> None:
     )
     parser.add_argument(
         "command",
-        choices=["fetch", "extract", "diff", "report", "checklist",
+        choices=["fetch", "extract", "diff",
                  "promote", "audit", "generate", "deploy", "build", "clean"],
         help="Pipeline stage to run",
     )
@@ -273,8 +269,6 @@ def main() -> None:
         "fetch": do_fetch,
         "extract": do_extract,
         "diff": do_diff,
-        "report": do_report,
-        "checklist": do_checklist,
         "promote": do_promote,
         "generate": do_generate,
         "deploy": do_deploy,

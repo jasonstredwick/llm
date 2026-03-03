@@ -96,7 +96,7 @@ as input for the model's response.
     A list of one or many input items to the model, containing
     different content types.
 
-    - `EasyInputMessage = object { content, role, type }`
+    - `EasyInputMessage = object { content, role, phase, type }`
 
       A message input to the model with a role indicating instruction following
       hierarchy. Instructions given with the `developer` or `system` role take
@@ -198,6 +198,19 @@ as input for the model's response.
         - `"system"`
 
         - `"developer"`
+
+      - `phase: optional "commentary" or "final_answer"`
+
+        Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages.
+
+        Use `commentary` for an intermediate assistant message and `final_answer` for
+        the final assistant message. For follow-up requests with models like
+        `gpt-5.3-codex` and later, preserve and resend phase on all assistant
+        messages. Omitting it can degrade performance. Not used for user messages.
+
+        - `"commentary"`
+
+        - `"final_answer"`
 
       - `type: optional "message"`
 
@@ -311,7 +324,7 @@ as input for the model's response.
 
         - `"message"`
 
-    - `ResponseOutputMessage = object { id, content, role, 2 more }`
+    - `ResponseOutputMessage = object { id, content, role, 3 more }`
 
       An output message from the model.
 
@@ -489,6 +502,19 @@ as input for the model's response.
         The type of the output message. Always `message`.
 
         - `"message"`
+
+      - `phase: optional "commentary" or "final_answer"`
+
+        Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages.
+
+        Use `commentary` for an intermediate assistant message and `final_answer` for
+        the final assistant message. For follow-up requests with models like
+        `gpt-5.3-codex` and later, preserve and resend phase on all assistant
+        messages. Omitting it can degrade performance. Not used for user messages.
+
+        - `"commentary"`
+
+        - `"final_answer"`
 
     - `ResponseFileSearchToolCall = object { id, queries, status, 2 more }`
 
@@ -3650,7 +3676,7 @@ as input for the model's response.
       A list of one or many input items to the model, containing
       different content types.
 
-      - `EasyInputMessage = object { content, role, type }`
+      - `EasyInputMessage = object { content, role, phase, type }`
 
         A message input to the model with a role indicating instruction following
         hierarchy. Instructions given with the `developer` or `system` role take
@@ -3752,6 +3778,19 @@ as input for the model's response.
           - `"system"`
 
           - `"developer"`
+
+        - `phase: optional "commentary" or "final_answer"`
+
+          Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages.
+
+          Use `commentary` for an intermediate assistant message and `final_answer` for
+          the final assistant message. For follow-up requests with models like
+          `gpt-5.3-codex` and later, preserve and resend phase on all assistant
+          messages. Omitting it can degrade performance. Not used for user messages.
+
+          - `"commentary"`
+
+          - `"final_answer"`
 
         - `type: optional "message"`
 
@@ -3865,7 +3904,7 @@ as input for the model's response.
 
           - `"message"`
 
-      - `ResponseOutputMessage = object { id, content, role, 2 more }`
+      - `ResponseOutputMessage = object { id, content, role, 3 more }`
 
         An output message from the model.
 
@@ -4043,6 +4082,19 @@ as input for the model's response.
           The type of the output message. Always `message`.
 
           - `"message"`
+
+        - `phase: optional "commentary" or "final_answer"`
+
+          Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages.
+
+          Use `commentary` for an intermediate assistant message and `final_answer` for
+          the final assistant message. For follow-up requests with models like
+          `gpt-5.3-codex` and later, preserve and resend phase on all assistant
+          messages. Omitting it can degrade performance. Not used for user messages.
+
+          - `"commentary"`
+
+          - `"final_answer"`
 
       - `ResponseFileSearchToolCall = object { id, queries, status, 2 more }`
 
@@ -5665,7 +5717,7 @@ as input for the model's response.
       the model, you might consider using the `output_text` property where
       supported in SDKs.
 
-    - `ResponseOutputMessage = object { id, content, role, 2 more }`
+    - `ResponseOutputMessage = object { id, content, role, 3 more }`
 
       An output message from the model.
 
@@ -5843,6 +5895,19 @@ as input for the model's response.
         The type of the output message. Always `message`.
 
         - `"message"`
+
+      - `phase: optional "commentary" or "final_answer"`
+
+        Labels an `assistant` message as intermediate commentary (`commentary`) or the final answer (`final_answer`). For models like `gpt-5.3-codex` and beyond, when sending follow-up requests, preserve and resend phase on all assistant messages — dropping it can degrade performance. Not used for user messages.
+
+        Use `commentary` for an intermediate assistant message and `final_answer` for
+        the final assistant message. For follow-up requests with models like
+        `gpt-5.3-codex` and later, preserve and resend phase on all assistant
+        messages. Omitting it can degrade performance. Not used for user messages.
+
+        - `"commentary"`
+
+        - `"final_answer"`
 
     - `ResponseFileSearchToolCall = object { id, queries, status, 2 more }`
 

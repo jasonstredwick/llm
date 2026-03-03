@@ -62,6 +62,13 @@ BEGIN_DESERIALIZE(gemini::GroundingPassageId)
     FIELD(src, partIndex)
 END_DESERIALIZE
 
+BEGIN_DESERIALIZE(gemini::Image)
+    FIELD(src, sourceUri),
+    FIELD(src, imageUri),
+    FIELD(src, title),
+    FIELD(src, domain)
+END_DESERIALIZE
+
 BEGIN_DESERIALIZE(gemini::LogprobsResultCandidate)
     FIELD(src, token),
     FIELD(src, tokenId),
@@ -210,6 +217,7 @@ END_DESERIALIZE
 
 BEGIN_DESERIALIZE(gemini::GroundingChunk)
     FIELD(src, web),
+    FIELD(src, image),
     FIELD(src, retrievedContext),
     FIELD(src, maps)
 END_DESERIALIZE

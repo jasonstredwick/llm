@@ -1246,8 +1246,6 @@ class CppCodegen:
         ]
 
         for rec in self._req_structs:
-            if not rec.fields:
-                continue
             parts.append(self._serialize_block(rec))
             parts.append("\n\n")
 
@@ -1290,7 +1288,8 @@ class CppCodegen:
         return "".join(parts)
 
     def _serialize_block(self, rec: _StructRecord) -> str:
-        lines = [f"BEGIN_SERIALIZE({rec.qualified})"]
+        macro = "BEGIN_SERIALIZE_EMPTY" if not rec.fields else "BEGIN_SERIALIZE"
+        lines = [f"{macro}({rec.qualified})"]
         for i, fi in enumerate(rec.fields):
             cd = "NONE" if i == 0 else "BEFORE"
             if fi.cpp_name != fi.json_name:

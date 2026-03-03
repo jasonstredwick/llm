@@ -22,6 +22,9 @@
 #define BEGIN_SERIALIZE(Type)\
 void SerializeFrom(simdjson::builder::string_builder& builder, const Type& obj) {\
     builder.start_object();
+#define BEGIN_SERIALIZE_EMPTY(Type)\
+void SerializeFrom(simdjson::builder::string_builder& builder, const Type&) {\
+    builder.start_object();
 #define END_SERIALIZE\
     builder.end_object();\
 }

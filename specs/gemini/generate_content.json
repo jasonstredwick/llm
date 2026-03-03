@@ -3,10 +3,10 @@
     "provider": "gemini",
     "endpoint": "generate_content",
     "source_url": "https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta",
-    "fetched_at": "2026-02-24T00:05:23Z",
+    "fetched_at": "2026-03-03T18:26:39Z",
     "parser": "discovery",
     "discovery_version": "v1beta",
-    "discovery_revision": "20260223"
+    "discovery_revision": "20260227"
   },
   "schemas": {
     "AttributionSourceId": {
@@ -235,9 +235,9 @@
           ],
           "enum_descriptions": [
             "Unspecified status. This value should not be used.",
-            "Code execution completed successfully.",
-            "Code execution finished but with a failure. `stderr` should contain the reason.",
-            "Code execution ran for too long, and was cancelled. There may or may not be a partial output present."
+            "Code execution completed successfully. `output` contains the stdout, if any.",
+            "Code execution failed. `output` contains the stderr and stdout, if any.",
+            "Code execution ran for too long, and was cancelled. There may or may not be a partial `output` present."
           ],
           "required": true,
           "description": "Required. Outcome of the code execution."
@@ -249,7 +249,7 @@
           "description": "Optional. Contains stdout when code execution is successful, stderr or other description otherwise."
         }
       ],
-      "description": "Result of executing the `ExecutableCode`. Only generated when using the `CodeExecution`, and always follows a `part` containing the `ExecutableCode`."
+      "description": "Result of executing the `ExecutableCode`. Generated only when the `CodeExecution` tool is used."
     },
     "ComputerUse": {
       "name": "ComputerUse",
@@ -789,7 +789,7 @@
           "name": "logprobs",
           "type": "int32",
           "required": false,
-          "description": "Optional. Only valid if response_logprobs=True. This sets the number of top logprobs to return at each decoding step in the Candidate.logprobs_result. The number must be in the range of [0, 20]."
+          "description": "Optional. Only valid if response_logprobs=True. This sets the number of top logprobs, including the chosen candidate, to return at each decoding step in the Candidate.logprobs_result. The number must be in the range of [0, 20]."
         },
         {
           "name": "enableEnhancedCivicAnswers",
@@ -920,6 +920,12 @@
           "type": "Interval",
           "required": false,
           "description": "Optional. Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa)."
+        },
+        {
+          "name": "searchTypes",
+          "type": "SearchTypes",
+          "required": false,
+          "description": "Optional. The set of search types to enable. If not set, web search is enabled by default."
         }
       ],
       "description": "GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google."
@@ -967,6 +973,12 @@
           "description": "Grounding chunk from the web."
         },
         {
+          "name": "image",
+          "type": "Image",
+          "required": false,
+          "description": "Optional. Grounding chunk from image search."
+        },
+        {
           "name": "retrievedContext",
           "type": "RetrievedContext",
           "required": false,
@@ -979,7 +991,7 @@
           "description": "Optional. Grounding chunk from Google Maps."
         }
       ],
-      "description": "Grounding chunk."
+      "description": "A `GroundingChunk` represents a segment of supporting evidence that grounds the model's response. It can be a chunk from the web, a retrieved context from a file, or information from Google Maps."
     },
     "GroundingMetadata": {
       "name": "GroundingMetadata",
@@ -1049,6 +1061,37 @@
       ],
       "description": "Identifier for a part within a `GroundingPassage`."
     },
+    "Image": {
+      "name": "Image",
+      "side": "response",
+      "fields": [
+        {
+          "name": "sourceUri",
+          "type": "string",
+          "required": false,
+          "description": "The web page URI for attribution."
+        },
+        {
+          "name": "imageUri",
+          "type": "string",
+          "required": false,
+          "description": "The image asset URL."
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "The title of the web page that the image is from."
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "required": false,
+          "description": "The root domain of the web page that the image is from, e.g. \"example.com\"."
+        }
+      ],
+      "description": "Chunk from image search."
+    },
     "ImageConfig": {
       "name": "ImageConfig",
       "side": "request",
@@ -1063,10 +1106,16 @@
           "name": "imageSize",
           "type": "string",
           "required": false,
-          "description": "Optional. Specifies the size of generated images. Supported values are `512PX`, `1K`, `2K`, `4K`. If not specified, the model will use default value `1K`."
+          "description": "Optional. Specifies the size of generated images. Supported values are `512`, `1K`, `2K`, `4K`. If not specified, the model will use default value `1K`."
         }
       ],
       "description": "Config for image generation features."
+    },
+    "ImageSearch": {
+      "name": "ImageSearch",
+      "side": "request",
+      "fields": [],
+      "description": "Image search for grounding and related configurations."
     },
     "Interval": {
       "name": "Interval",
@@ -1182,7 +1231,7 @@
           "name": "placeId",
           "type": "string",
           "required": false,
-          "description": "This ID of the place, in `places/{place_id}` format. A user can use this ID to look up that place."
+          "description": "The ID of the place, in `places/{place_id}` format. A user can use this ID to look up that place."
         },
         {
           "name": "placeAnswerSources",
@@ -1835,6 +1884,25 @@
       ],
       "description": "Google search entry point."
     },
+    "SearchTypes": {
+      "name": "SearchTypes",
+      "side": "request",
+      "fields": [
+        {
+          "name": "webSearch",
+          "type": "WebSearch",
+          "required": false,
+          "description": "Optional. Setting this field enables web search. Only text results are returned."
+        },
+        {
+          "name": "imageSearch",
+          "type": "ImageSearch",
+          "required": false,
+          "description": "Optional. Setting this field enables image search. Image bytes are returned."
+        }
+      ],
+      "description": "Different types of search that can be enabled on the GoogleSearch tool."
+    },
     "SemanticRetrieverChunk": {
       "name": "SemanticRetrieverChunk",
       "side": "response",
@@ -2217,6 +2285,12 @@
         }
       ],
       "description": "Chunk from the web."
+    },
+    "WebSearch": {
+      "name": "WebSearch",
+      "side": "request",
+      "fields": [],
+      "description": "Standard web search for grounding and related configurations."
     }
   },
   "request_type": "GenerateContentRequest",
