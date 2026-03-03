@@ -42,7 +42,10 @@ Orchestrator::Register(const ClientPolicy& client_policy, QueueKey queue_key) {
         .rate_limit_policy = Resolve(policy.rate_limit_policy, client_policy.rate_limit_policy)
     });
 
-    queues.try_emplace(registrations.back().queue_key);
+    auto [it, inserted] = queues.try_emplace(registrations.back().queue_key);
+    if (inserted) {
+        it->second.rate_limit_policy = registrations.back().rate_limit_policy;
+    }
 
     return RegistrationToken{index};
 }
@@ -77,7 +80,7 @@ size_t Orchestrator::Submit(RegistrationToken token,
     slots[slot_index].state = SlotState::AWAITING;
 
     // Attempt immediate dispatch if rate limits permit.
-    DispatchFromQueue(queue, reg.rate_limit_policy);
+    DispatchFromQueue(queue, queue.rate_limit_policy);
 
     return slot_index;
 }
@@ -173,12 +176,7 @@ size_t Orchestrator::RunOnce() {
 
     // 3. Dispatch newly eligible work across all queues.
     for (auto&& [key, queue] : queues) {
-        for (const auto& reg : registrations) {
-            if (reg.queue_key == key) {
-                DispatchFromQueue(queue, reg.rate_limit_policy);
-                break;
-            }
-        }
+        DispatchFromQueue(queue, queue.rate_limit_policy);
     }
 
     return PendingCount();

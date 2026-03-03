@@ -159,6 +159,10 @@ private:
         ListHead active{};      // in-flight with curl
         ListHead completed{};   // HTTP done, awaiting retrieval or retry
 
+        // Set once at registration time. If multiple clients share a queue,
+        // the first registration's policy wins (they should be identical).
+        ResolvedRateLimitPolicy rate_limit_policy{};
+
         // Adaptive rate limit watermarks (from provider response headers)
         std::optional<int64_t> remaining_requests{};
         std::optional<int64_t> remaining_tokens{};
