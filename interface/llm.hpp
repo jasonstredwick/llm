@@ -29,13 +29,15 @@
 #include "core/policy.hpp"
 #include "core/results.hpp"
 
-#include <atomic>
 #include <cstddef>
 #include <memory>
 #include <string>
 
 
 namespace jai::llm {
+
+
+struct Impl;
 
 
 class Instance {
@@ -86,31 +88,27 @@ public:
 
         template <typename Data>
         AsyncResult<Endpoint, Data> CallAsync(const Request_t& request,
-                                               Data (*transform)(const Response_t&),
-                                               const AttemptPolicy& policy = {}) const {
+                                              Data (*transform)(const Response_t&),
+                                              const AttemptPolicy& policy = {}) const {
             return jai::llm::CallAsync<Endpoint, Data>(client_id, request, transform, policy);
         }
 
         template <typename Data>
         CoroAsyncResult<Endpoint, Data> CallCoro(const Request_t& request,
-                                                  Data (*transform)(const Response_t&),
-                                                  const AttemptPolicy& policy = {}) const {
+                                                 Data (*transform)(const Response_t&),
+                                                 const AttemptPolicy& policy = {}) const {
             return jai::llm::CallCoro<Endpoint, Data>(client_id, request, transform, policy);
         }
 
         template <typename Data>
         Result<Endpoint, Data> CallSync(const Request_t& request,
-                                         Data (*transform)(const Response_t&),
-                                         const AttemptPolicy& policy = {}) const {
+                                        Data (*transform)(const Response_t&),
+                                        const AttemptPolicy& policy = {}) const {
             return jai::llm::CallSync<Endpoint, Data>(client_id, request, transform, policy);
         }
     };
 
 private:
-    static std::atomic<bool> alive;
-    static Instance* self;
-
-    struct Impl;
     std::unique_ptr<Impl> impl{nullptr};
 
 public:
@@ -169,15 +167,6 @@ public:
     // Cumulative token usage across all calls since Instance construction.
     // Thread-safe.
     TokenUsage TotalUsage() const;
-
-private:
-    //----- Bridge function access -----
-    static Instance* Get();
-
-    // Single friend accessor — returns the Impl* for the live singleton.
-    // All bridge functions (FindOrCreateClient, SubmitRequest, etc.) call
-    // this instead of needing individual friend declarations.
-    friend Impl* GetImpl();
 };
 
 

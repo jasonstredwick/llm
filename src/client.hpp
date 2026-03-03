@@ -22,7 +22,6 @@
 #include "orchestrator.hpp"
 
 #include <cstddef>
-#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -97,7 +96,6 @@ struct Client {
 
 
 // ----- Bridge functions -----
-// Defined in instance.cpp.
 
 // Returns existing client_id if a client with the same key exists,
 // otherwise registers with the orchestrator, constructs and stores

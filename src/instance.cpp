@@ -19,10 +19,8 @@ namespace jai::llm {
 
 // ----- Static singleton state -----
 
-std::atomic<bool> Instance::alive{false};
-Instance* Instance::self{nullptr};
-
-Instance* Instance::Get() { return self; }
+std::atomic<bool> Impl::alive{false};
+Impl* Impl::self{nullptr};
 
 
 // ----- Construction / Destruction -----
@@ -32,7 +30,7 @@ Instance::Instance() : Instance(Config{}) {}
 
 Instance::Instance(const Config& config) {
     bool expected = false;
-    if (!alive.compare_exchange_strong(expected, true)) {
+    if (!Impl::alive.compare_exchange_strong(expected, true)) {
         throw AnnotatedException{
             "jai::llm::Instance: only one Instance may exist per process."
         };
@@ -41,23 +39,23 @@ Instance::Instance(const Config& config) {
     try {
         impl = std::make_unique<Impl>(config);
     } catch (const AnnotatedException&) {
-        alive.store(false);
+        Impl::alive.store(false);
         throw;
     } catch (const std::exception& e) {
-        alive.store(false);
+        Impl::alive.store(false);
         throw AnnotatedException{e.what()};
     }
 
-    self = this;
+    Impl::self = impl.get();
 }
 
 
 Instance::~Instance() noexcept {
-    self = nullptr;
+    Impl::self = nullptr;
     try {
         Stop();
         impl.reset();
-        alive.store(false);
+        Impl::alive.store(false);
     } catch (const std::exception&) {}
 }
 
@@ -65,7 +63,7 @@ Instance::~Instance() noexcept {
 // ----- Event loop -----
 
 size_t Instance::ExecOnce() {
-    if (!self || !impl) { return 0; }
+    if (!Impl::self || !impl) { return 0; }
     if (impl->config.threading == ThreadingMode::INTERNAL) {
         return 0;  // no-op in threaded mode
     }
@@ -89,7 +87,7 @@ size_t Instance::ExecOnce() {
 
 
 void Instance::Start() {
-    if (!self || !impl) {
+    if (!Impl::self || !impl) {
         throw AnnotatedException{
             "jai::llm::Instance::Start(): Instance is not available."
         };
@@ -99,10 +97,12 @@ void Instance::Start() {
             "jai::llm::Instance::Start(): only valid in INTERNAL threading mode."
         };
     }
+
+    std::lock_guard lock(impl->lifecycle_mtx);
+
     if (impl->started) { return; }
 
     try {
-        impl->started = true;
         impl->loop_thread = std::jthread{[this](std::stop_token token) {
             try {
                 while (!token.stop_requested()) {
@@ -130,18 +130,22 @@ void Instance::Start() {
                 impl->dead.store(true, std::memory_order_release);
             }
         }};
+        impl->started = true;
     } catch (const AnnotatedException&) {
-        impl->started = false;
         throw;
     } catch (const std::exception& e) {
-        impl->started = false;
         throw AnnotatedException{e.what()};
     }
 }
 
 
 void Instance::Stop() {
-    if (!impl || !impl->started) { return; }
+    if (!impl) { return; }
+
+    std::lock_guard lock(impl->lifecycle_mtx);
+
+    if (!impl->started) { return; }
+
     impl->loop_thread.request_stop();
     // Wake the loop thread if it's blocked in WaitForActivity so it
     // can observe the stop request promptly.
@@ -150,21 +154,6 @@ void Instance::Stop() {
         impl->loop_thread.join();
     }
     impl->started = false;
-}
-
-
-// ----- Impl accessor -----
-// Single friend of Instance. All bridge functions go through this
-// instead of needing individual friend declarations in llm.hpp.
-
-Instance::Impl* GetImpl() {
-    Instance* instance = Instance::Get();
-    if (!instance) {
-        throw AnnotatedException{
-            "jai::llm: no Instance exists."
-        };
-    }
-    return instance->impl.get();
 }
 
 
@@ -177,7 +166,7 @@ size_t FindOrCreateClient(std::string auth_identity, std::string endpoint_url,
                           std::string model, http::RequestHeaders headers,
                           std::string url)
 {
-    auto& impl = *GetImpl();
+    auto& impl = *Impl::GetImpl();
 
     ClientKey key{
         .queue_key = QueueKey{
@@ -197,12 +186,13 @@ size_t FindOrCreateClient(std::string auth_identity, std::string endpoint_url,
     }
 
     // Slow path: acquire exclusive lock, double-check, then create.
+    // Register must be inside the lock to avoid duplicate registrations
+    // when two threads race with the same key.
     std::unique_lock lock(impl.clients_mtx);
     if (auto it = impl.client_map.find(key); it != impl.client_map.end()) {
         return it->second;  // another thread beat us
     }
 
-    // Register with the orchestrator and construct the client.
     auto token = impl.orchestrator.Register(key.policy, key.queue_key);
 
     size_t id = impl.clients.size();
@@ -221,7 +211,7 @@ SubmitResult SubmitRequest(size_t client_id, std::vector<std::byte> body,
                            const AttemptPolicy& policy)
 {
     try {
-        auto& impl = *GetImpl();
+        auto& impl = *Impl::GetImpl();
 
         if (impl.dead.load(std::memory_order_acquire)) {
             throw FatalInstanceError{
@@ -230,15 +220,18 @@ SubmitResult SubmitRequest(size_t client_id, std::vector<std::byte> body,
             };
         }
 
-        // No lock needed: ClientHandle can only exist after FindOrCreateClient
-        // completes, and clients are never removed. Direct free-function callers
-        // with invalid IDs hit the bounds check and get an exception.
-        if (client_id >= impl.clients.size()) {
-            throw AnnotatedException{
-                "jai::llm::SubmitRequest: invalid client ID."
-            };
+        // Shared lock: concurrent reads are safe, but we must not read
+        // while FindOrCreateClient is doing emplace_back (UB per standard).
+        Client* client = nullptr;
+        {
+            std::shared_lock lock(impl.clients_mtx);
+            if (client_id >= impl.clients.size()) {
+                throw AnnotatedException{
+                    "jai::llm::SubmitRequest: invalid client ID."
+                };
+            }
+            client = impl.clients[client_id].get();
         }
-        Client* client = impl.clients[client_id].get();
 
         auto sync = std::make_shared<ResultSync>();
 
@@ -279,7 +272,7 @@ void AccumulateField(std::optional<int64_t>& dst, const std::optional<int64_t>& 
 
 
 void AccumulateUsage(const TokenUsage& usage) {
-    auto& impl = *GetImpl();
+    auto& impl = *Impl::GetImpl();
     std::lock_guard lock(impl.usage_mtx);
     AccumulateField(impl.total_usage.input_tokens, usage.input_tokens);
     AccumulateField(impl.total_usage.output_tokens, usage.output_tokens);
@@ -294,20 +287,22 @@ void AccumulateUsage(const TokenUsage& usage) {
 // ----- Observability -----
 
 TokenUsage Instance::TotalUsage() const {
-    if (!self || !impl) { return {}; }
+    if (!Impl::self || !impl) { return {}; }
     std::lock_guard lock(impl->usage_mtx);
     return impl->total_usage;
 }
 
 
 size_t Instance::PendingCount() const {
-    if (!self || !impl) { return 0; }
+    if (!Impl::self || !impl) { return 0; }
     return impl->orchestrator.PendingCount();
 }
 
 
 bool Instance::IsRunning() const {
-    return self && impl && impl->started;
+    if (!Impl::self || !impl) { return false; }
+    std::lock_guard lock(impl->lifecycle_mtx);
+    return impl->started;
 }
 
 

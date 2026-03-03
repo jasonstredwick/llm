@@ -1,5 +1,5 @@
 /***
- * Instance::Impl — shared internal definition.
+ * Impl — shared internal definition.
  *
  * Included by instance.cpp and per-endpoint specialization files
  * (src/endpoints/) so they can access the orchestrator and
@@ -18,33 +18,47 @@
 #include "client.hpp"
 #include "orchestrator.hpp"
 
+#include <atomic>
 #include <flat_map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
-#include <vector>
+#include <deque>
 
 
 namespace jai::llm {
 
 
-struct Instance::Impl {
+struct Impl {
+    // ----- Singleton state (process-wide) -----
+    static std::atomic<bool> alive;
+    static Impl* self;
+
+    // Returns the live Impl* or throws if no Instance exists.
+    static Impl* GetImpl() {
+        if (!self) {
+            throw AnnotatedException{"jai::llm: no Instance exists."};
+        }
+        return self;
+    }
+
     Instance::Config config;
     Orchestrator orchestrator;
 
-    // Client storage — dedup map + indexed vector.
-    // client_map maps a ClientKey to the client_id (index into clients).
-    // clients provides O(1) lookup by client_id at submit time.
-    // Protected by clients_mtx for thread-safe creation and access.
-    mutable std::shared_mutex clients_mtx{};
+    // Client storage — dedup map + indexed deque.
+    // clients_mtx guards all container access: shared for reads,
+    // exclusive for creation (FindOrCreateClient).
+    std::shared_mutex clients_mtx{};
     std::flat_map<ClientKey, size_t> client_map{};
-    std::vector<std::unique_ptr<Client>> clients{};
+    std::deque<std::unique_ptr<Client>> clients{};
 
     // Cumulative token usage across all calls — thread-safe.
-    mutable std::mutex usage_mtx{};
+    std::mutex usage_mtx{};
     TokenUsage total_usage{};
 
+    // Guards Start/Stop state transitions and started flag.
+    std::mutex lifecycle_mtx{};
     std::jthread loop_thread{};
     bool started{false};
 
@@ -53,7 +67,7 @@ struct Instance::Impl {
     std::atomic<bool> dead{false};
     std::string fatal_error{};
 
-    explicit Impl(const Config& cfg)
+    explicit Impl(const Instance::Config& cfg)
         : config{cfg}
         , orchestrator{cfg.policy}
     {}
