@@ -442,8 +442,7 @@ int main() {
         test_connection_refused();
 
         std::println("");
-        std::println("=== Integration Tests (require mock server on port 8080) ===");
-        std::println("Ensure: python tests/mock_server.py 8080");
+        std::println("=== Integration Tests (mock server on port 8080) ===");
         test_sync_post();
         test_sync_post_response_headers();
         test_sync_post_empty_body();

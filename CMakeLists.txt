@@ -181,15 +181,64 @@ target_link_libraries(test_results PRIVATE llm)
 add_executable(test_projections tests/unit/test_projections.cpp)
 target_link_libraries(test_projections PRIVATE llm)
 
+add_executable(test_error tests/unit/test_error.cpp)
+target_link_libraries(test_error PRIVATE llm)
+
+add_executable(test_types tests/unit/test_types.cpp)
+target_link_libraries(test_types PRIVATE llm)
+
+add_executable(test_instance tests/unit/test_instance.cpp)
+target_link_libraries(test_instance PRIVATE llm)
+
+# Integration tests (require mock server on port 8080)
+add_executable(test_integration tests/integration/test_integration.cpp)
+target_link_libraries(test_integration PRIVATE llm)
+
 # CTest registration
 enable_testing()
+
+# Unit tests (no external dependencies)
 add_test(NAME test_http          COMMAND test_http)
-add_test(NAME test_curl          COMMAND test_curl)
 add_test(NAME test_policy        COMMAND test_policy)
 add_test(NAME test_model_group   COMMAND test_model_group)
 add_test(NAME test_orchestrator  COMMAND test_orchestrator)
 add_test(NAME test_results       COMMAND test_results)
 add_test(NAME test_projections   COMMAND test_projections)
+add_test(NAME test_error         COMMAND test_error)
+add_test(NAME test_types         COMMAND test_types)
+add_test(NAME test_instance      COMMAND test_instance)
 
-# Label curl tests as integration (require mock server)
-set_tests_properties(test_curl PROPERTIES LABELS "integration")
+# ---- Mock server fixture (auto start/stop for integration tests) ----
+set(MOCK_SERVER_PORT 8080)
+set(MOCK_SERVER_PID_FILE "${CMAKE_CURRENT_BINARY_DIR}/.mock_server.pid")
+
+add_test(
+    NAME mock_server_start
+    COMMAND ${Python3_EXECUTABLE}
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/start_mock_server.py"
+            ${MOCK_SERVER_PORT}
+            ${MOCK_SERVER_PID_FILE}
+)
+set_tests_properties(mock_server_start PROPERTIES
+    FIXTURES_SETUP    MockServer
+    LABELS            "integration"
+)
+
+add_test(
+    NAME mock_server_stop
+    COMMAND ${Python3_EXECUTABLE}
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/stop_mock_server.py"
+            ${MOCK_SERVER_PID_FILE}
+)
+set_tests_properties(mock_server_stop PROPERTIES
+    FIXTURES_CLEANUP  MockServer
+    LABELS            "integration"
+)
+
+# Integration tests (automatically get a running mock server via fixture)
+add_test(NAME test_curl          COMMAND test_curl)
+add_test(NAME test_integration   COMMAND test_integration)
+set_tests_properties(test_curl test_integration PROPERTIES
+    LABELS            "integration"
+    FIXTURES_REQUIRED MockServer
+)
