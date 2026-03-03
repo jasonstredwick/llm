@@ -107,7 +107,7 @@ public:
 
     // Finalize is called exactly once for every Attempt when libcurl reports CURLMSG_DONE.
     // It must be safe to call for both success and failure results.
-    void Finalize(Interface& interface, const std::string& result_error_str) noexcept;
+    void Finalize(Interface& interface, const std::string& result_error_str);
 
     const std::string& GetErrorMessage() const { return response.error_message; }
     const Response& GetResponse() const { return response; }
@@ -119,7 +119,7 @@ public:
     bool IsUnhooked() const { return unhooked; }
 
 private:
-    void ExtractMetadata() noexcept;
+    void ExtractMetadata();
 
     void Fail(const std::string message, bool should_raise = false) {
         response.state = Response::State::FAILED;
@@ -164,7 +164,7 @@ public:
 
     std::string AddHandle(void* curl_easy_handle);
     std::vector<Attempt*> ExecOnce();
-    std::string RemoveHandle(void* curl_easy_handle) noexcept;
+    std::string RemoveHandle(void* curl_easy_handle);
 
     // Block until network activity occurs or timeout_ms expires.
     // Returns the number of file descriptors with activity, or -1 on error.

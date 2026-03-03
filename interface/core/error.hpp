@@ -85,6 +85,33 @@ public:
 };
 
 
+/**
+ * FatalInstanceError — thrown when the Instance is unrecoverably broken.
+ *
+ * Indicates the event loop or orchestrator encountered an error from which
+ * the current Instance cannot recover (e.g. curl multi handle failure,
+ * internal invariant violation). All pending requests have been drained
+ * with error signals; no further work can be submitted.
+ *
+ * Catching this type lets the caller programmatically detect the condition
+ * and construct a new Instance to resume operations.
+ *
+ * Inherits from AnnotatedException so existing catch blocks still work.
+ */
+class FatalInstanceError : public AnnotatedException {
+public:
+    explicit FatalInstanceError(std::string msg_,
+                                std::source_location source_ = std::source_location::current())
+    : AnnotatedException(std::move(msg_), source_)
+    {}
+    explicit FatalInstanceError(std::string msg_,
+                                std::string context_msg_,
+                                std::source_location source_ = std::source_location::current())
+    : AnnotatedException(std::move(msg_), std::move(context_msg_), source_)
+    {}
+};
+
+
 inline std::string to_string(const AnnotatedException::Context& ctx) {
     std::string prefix{};
     if (!ctx.msg.empty()) {

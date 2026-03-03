@@ -59,6 +59,19 @@ std::string ModelGroup(std::string_view model);
 template <typename Endpoint>
 std::vector<std::byte> Serialize(const typename Endpoint::Request_t&);
 
+// ----- Envelope metadata extraction -----
+// Normalize provider-specific fields into common types.
+// Unsupported fields are returned as nullopt.
+
+template <typename Endpoint>
+TokenUsage ExtractUsage(const typename Endpoint::Response_t&);
+
+template <typename Endpoint>
+std::optional<std::string> ExtractModel(const typename Endpoint::Response_t&);
+
+template <typename Endpoint>
+std::optional<std::string> ExtractStopReason(const typename Endpoint::Response_t&);
+
 
 // ----- Client identity -----
 // Uniquely identifies a client by its queue placement and policy.
@@ -105,6 +118,10 @@ struct SubmitResult;
 
 SubmitResult SubmitRequest(size_t client_id, std::vector<std::byte> body,
                            const AttemptPolicy& policy);
+
+// Accumulate token usage from a successful call into the Instance total.
+// Thread-safe. Called by Resolve() and CallCoro after successful extraction.
+void AccumulateUsage(const TokenUsage& usage);
 
 
 }

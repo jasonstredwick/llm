@@ -109,7 +109,7 @@ Attempt::Attempt(Interface& interface,
     try {
         const size_t buffer_size = 131072; // 128 KB
         response.body.reserve(buffer_size);
-    } catch(...) {
+    } catch (const std::exception&) {
         Fail(std::string("Failed to create Attempt; failed to allocate response buffers."), true);
     }
 
@@ -209,7 +209,7 @@ Attempt::Attempt(Interface& interface,
 }
 
 
-void Attempt::Finalize(Interface& interface, const std::string& result_error_str) noexcept {
+void Attempt::Finalize(Interface& interface, const std::string& result_error_str) {
     std::string remove_handle_error_str = interface.RemoveHandle(handle.get());
     if (!remove_handle_error_str.empty()) { Fail(remove_handle_error_str); }
     else { unhooked = true; }
@@ -223,7 +223,7 @@ void Attempt::Finalize(Interface& interface, const std::string& result_error_str
 }
 
 
-void Attempt::ExtractMetadata() noexcept {
+void Attempt::ExtractMetadata() {
     CURL* curl_ptr = ToCurl<CURL>(handle.get());
 
     char* url{nullptr};
@@ -278,7 +278,7 @@ size_t Attempt::OnHeader(std::span<const std::byte> header_raw) {
                 response.headers.emplace_back();
                 response.headers.back().reserve(1024); // 1 KB
                 response.abnormal_headers.emplace_back();
-            } catch (...) {
+            } catch (const std::exception&) {
                 return 0;
             }
         } else {
@@ -304,7 +304,7 @@ size_t Attempt::OnWrite(std::span<const std::byte> data) {
     if (cancel_requested) { return 0; }
     try {
         response.body.append_range(data);
-    } catch (...) { return 0; }
+    } catch (const std::exception&) { return 0; }
     return data.size();
 }
 
@@ -411,7 +411,7 @@ std::vector<Attempt*> Interface::ExecOnce() {
 }
 
 
-std::string Interface::RemoveHandle(void* curl_easy_handle) noexcept {
+std::string Interface::RemoveHandle(void* curl_easy_handle) {
     CURLM* curlm_ptr = ToCurl<CURLM>(handle.get());
     CURL* curl_ptr = ToCurl<CURL>(curl_easy_handle);
     CURLMcode code = curl_multi_remove_handle(curlm_ptr, curl_ptr);

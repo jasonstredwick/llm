@@ -18,6 +18,11 @@ class Orchestrator;
 namespace curl { struct Response; }
 
 
+// Build transport-level AttemptMetadata from a completed curl::Response.
+// Defined in results.cpp. Caller overrides outcome and error as needed.
+AttemptMetadata BuildTransportMetadata(const curl::Response& resp);
+
+
 /***
  * ResultSync — shared signaling block between the orchestrator and a
  * AsyncResult (blocking) or CoroAsyncResult (coroutine).

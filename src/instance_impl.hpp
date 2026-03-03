@@ -20,6 +20,7 @@
 
 #include <flat_map>
 #include <memory>
+#include <mutex>
 #include <shared_mutex>
 #include <thread>
 #include <vector>
@@ -40,8 +41,17 @@ struct Instance::Impl {
     std::flat_map<ClientKey, size_t> client_map{};
     std::vector<std::unique_ptr<Client>> clients{};
 
+    // Cumulative token usage across all calls — thread-safe.
+    mutable std::mutex usage_mtx{};
+    TokenUsage total_usage{};
+
     std::jthread loop_thread{};
     bool started{false};
+
+    // Set when the event loop thread exits due to an unrecoverable exception.
+    // Checked by SubmitRequest and ExecOnce to fail fast instead of hanging.
+    std::atomic<bool> dead{false};
+    std::string fatal_error{};
 
     explicit Impl(const Config& cfg)
         : config{cfg}

@@ -25,6 +25,7 @@
 
 
 #include "core/call.hpp"
+#include "core/error.hpp"
 #include "core/policy.hpp"
 #include "core/results.hpp"
 
@@ -67,16 +68,41 @@ public:
         ClientHandle& operator=(ClientHandle&&) noexcept = default;
         ~ClientHandle() = default;
 
-        AsyncResult<Response_t> CallAsync(const Request_t& request, const AttemptPolicy& policy = {}) const {
+        size_t Id() const { return client_id; }
+
+        AsyncResult<Endpoint> CallAsync(const Request_t& request, const AttemptPolicy& policy = {}) const {
             return jai::llm::CallAsync<Endpoint>(client_id, request, policy);
         }
 
-        CoroAsyncResult<Response_t> CallCoro(const Request_t& request, const AttemptPolicy& policy = {}) const {
+        CoroAsyncResult<Endpoint> CallCoro(const Request_t& request, const AttemptPolicy& policy = {}) const {
             return jai::llm::CallCoro<Endpoint>(client_id, request, policy);
         }
 
-        Response_t CallSync(const Request_t& request, const AttemptPolicy& policy = {}) const {
+        Result<Endpoint, void> CallSync(const Request_t& request, const AttemptPolicy& policy = {}) const {
             return jai::llm::CallSync<Endpoint>(client_id, request, policy);
+        }
+
+        // ----- Tier 2: user transform overloads -----
+
+        template <typename Data>
+        AsyncResult<Endpoint, Data> CallAsync(const Request_t& request,
+                                               Data (*transform)(const Response_t&),
+                                               const AttemptPolicy& policy = {}) const {
+            return jai::llm::CallAsync<Endpoint, Data>(client_id, request, transform, policy);
+        }
+
+        template <typename Data>
+        CoroAsyncResult<Endpoint, Data> CallCoro(const Request_t& request,
+                                                  Data (*transform)(const Response_t&),
+                                                  const AttemptPolicy& policy = {}) const {
+            return jai::llm::CallCoro<Endpoint, Data>(client_id, request, transform, policy);
+        }
+
+        template <typename Data>
+        Result<Endpoint, Data> CallSync(const Request_t& request,
+                                         Data (*transform)(const Response_t&),
+                                         const AttemptPolicy& policy = {}) const {
+            return jai::llm::CallSync<Endpoint, Data>(client_id, request, transform, policy);
         }
     };
 
@@ -125,14 +151,24 @@ public:
                                         std::string model,
                                         const ClientPolicy& policy = {})
     {
-        auto id = jai::llm::CreateClientImpl<Endpoint, Auth>(std::move(auth), std::move(model), policy);
-        return ClientHandle<Endpoint>{id};
+        try {
+            auto id = jai::llm::CreateClientImpl<Endpoint, Auth>(std::move(auth), std::move(model), policy);
+            return ClientHandle<Endpoint>{id};
+        } catch (const AnnotatedException&) {
+            throw;
+        } catch (const std::exception& e) {
+            throw AnnotatedException{e.what()};
+        }
     }
 
     //----- Observability -----
 
     size_t PendingCount() const;
     bool IsRunning() const;
+
+    // Cumulative token usage across all calls since Instance construction.
+    // Thread-safe.
+    TokenUsage TotalUsage() const;
 
 private:
     //----- Bridge function access -----

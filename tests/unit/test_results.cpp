@@ -6,7 +6,7 @@
  * without the orchestrator. CoroAsyncResult and SyncAwaiter test the
  * coroutine-based call path.
  *
- * AsyncResult<T> tests require a live Orchestrator + curl::Response, so
+ * AsyncResult<Endpoint> tests require a live Orchestrator + curl::Response, so
  * they belong in the integration test suite.
  */
 
@@ -21,6 +21,14 @@
 
 using namespace jai::llm;
 using namespace std::chrono_literals;
+
+
+// ----- Test endpoint tag for CoroAsyncResult tests -----
+// CoroAsyncResult<Endpoint> requires Endpoint::Response_t.
+struct TestEndpoint {
+    using Request_t = int;    // unused in unit tests
+    using Response_t = int;
+};
 
 
 /***
@@ -270,45 +278,70 @@ void test_sync_coro_handle_resume() {
 
 /***
  * CoroAsyncResult Tests
+ *
+ * CoroAsyncResult<Endpoint> requires Endpoint::Response_t.
+ * Coroutines now co_return Result<Endpoint> (not plain values).
  */
 
+// Helper: build a successful Result with the given value.
+Result<TestEndpoint, void> make_result(int value) {
+    Result<TestEndpoint, void> r;
+    r.data.emplace(value);
+    return r;
+}
+
+// Helper: build a Result with an error.
+Result<TestEndpoint, void> make_error_result(std::string error) {
+    Result<TestEndpoint, void> r;
+    r.error.emplace(std::move(error));
+    return r;
+}
+
+
 // Simple coroutine that returns an int via co_return.
-CoroAsyncResult<int> coro_return_value() {
-    co_return 42;
+CoroAsyncResult<TestEndpoint> coro_return_value() {
+    co_return make_result(42);
 }
 
 
 // Coroutine that suspends on a SyncAwaiter, then returns.
-CoroAsyncResult<int> coro_await_sync(std::shared_ptr<ResultSync> sync) {
+CoroAsyncResult<TestEndpoint> coro_await_sync(std::shared_ptr<ResultSync> sync) {
     co_await SyncAwaiter{sync.get()};
-    co_return 99;
+    co_return make_result(99);
 }
 
 
 // Coroutine that throws.
-CoroAsyncResult<int> coro_throw() {
+CoroAsyncResult<TestEndpoint> coro_throw() {
     throw std::runtime_error("coro error");
-    co_return 0;
+    co_return make_result(0);
 }
 
 
 // Coroutine that throws after awaiting.
-CoroAsyncResult<int> coro_throw_after_await(std::shared_ptr<ResultSync> sync) {
+CoroAsyncResult<TestEndpoint> coro_throw_after_await(std::shared_ptr<ResultSync> sync) {
     co_await SyncAwaiter{sync.get()};
     throw std::runtime_error("post-await error");
-    co_return 0;
+    co_return make_result(0);
+}
+
+
+// Coroutine that returns a result with error (not an exception).
+CoroAsyncResult<TestEndpoint> coro_return_error() {
+    co_return make_error_result("call failed");
 }
 
 
 void test_coro_result_immediate_return() {
     std::println("Testing CoroAsyncResult: immediate co_return...");
 
-    auto result = coro_return_value();
+    auto coro = coro_return_value();
 
     // Eager start + no suspension points → already done.
-    REQUIRE_EQ(result.IsReady(), true);
-    REQUIRE_EQ(result.HasData(), true);
-    REQUIRE_EQ(result.Data(), 42);
+    REQUIRE_EQ(coro.IsReady(), true);
+    const auto& result = coro.Get();
+    REQUIRE(result.data.has_value());
+    REQUIRE_EQ(*result.data, 42);
     std::println("  [SUCCESS]");
 }
 
@@ -317,64 +350,51 @@ void test_coro_result_await_sync() {
     std::println("Testing CoroAsyncResult: suspend on SyncAwaiter, then signal...");
 
     auto sync = std::make_shared<ResultSync>();
-    auto result = coro_await_sync(sync);
+    auto coro = coro_await_sync(sync);
 
     // Should be suspended at the SyncAwaiter.
-    REQUIRE_EQ(result.IsReady(), false);
+    REQUIRE_EQ(coro.IsReady(), false);
 
     // Signal the sync — this resumes the coroutine.
     sync->Signal(true);
 
     // Now the coroutine has run to co_return.
-    REQUIRE_EQ(result.IsReady(), true);
-    REQUIRE_EQ(result.Data(), 99);
+    REQUIRE_EQ(coro.IsReady(), true);
+    REQUIRE_EQ(*coro.Get().data, 99);
     std::println("  [SUCCESS]");
 }
 
 
 void test_coro_result_exception_immediate() {
-    std::println("Testing CoroAsyncResult: immediate throw...");
+    std::println("Testing CoroAsyncResult: immediate throw stored as error...");
 
-    auto result = coro_throw();
+    auto coro = coro_throw();
 
-    // Eager start → throws immediately → captured in promise.
-    REQUIRE_EQ(result.IsReady(), true);
-    REQUIRE_EQ(result.HasException(), true);
-    REQUIRE_EQ(result.HasData(), false);
+    // Eager start → throws immediately → unhandled_exception stores error on Result.
+    REQUIRE_EQ(coro.IsReady(), true);
 
-    bool caught = false;
-    try {
-        result.RethrowIfException();
-    } catch (const std::runtime_error& e) {
-        caught = true;
-        REQUIRE_EQ(std::string{e.what()}, std::string{"coro error"});
-    }
-    REQUIRE(caught);
+    const auto& result = coro.Get();
+    REQUIRE(result.error.has_value());
+    REQUIRE(!result.data.has_value());
     std::println("  [SUCCESS]");
 }
 
 
 void test_coro_result_exception_after_await() {
-    std::println("Testing CoroAsyncResult: throw after SyncAwaiter...");
+    std::println("Testing CoroAsyncResult: throw after SyncAwaiter stored as error...");
 
     auto sync = std::make_shared<ResultSync>();
-    auto result = coro_throw_after_await(sync);
+    auto coro = coro_throw_after_await(sync);
 
-    REQUIRE_EQ(result.IsReady(), false);
+    REQUIRE_EQ(coro.IsReady(), false);
 
     sync->Signal(true);
 
-    REQUIRE_EQ(result.IsReady(), true);
-    REQUIRE_EQ(result.HasException(), true);
+    REQUIRE_EQ(coro.IsReady(), true);
 
-    bool caught = false;
-    try {
-        result.RethrowIfException();
-    } catch (const std::runtime_error& e) {
-        caught = true;
-        REQUIRE_EQ(std::string{e.what()}, std::string{"post-await error"});
-    }
-    REQUIRE(caught);
+    const auto& result = coro.Get();
+    REQUIRE(result.error.has_value());
+    REQUIRE(!result.data.has_value());
     std::println("  [SUCCESS]");
 }
 
@@ -392,7 +412,7 @@ void test_coro_result_move_construct() {
     // Signal through the moved result.
     sync->Signal(true);
     REQUIRE_EQ(moved.IsReady(), true);
-    REQUIRE_EQ(moved.Data(), 99);
+    REQUIRE_EQ(*moved.Get().data, 99);
     std::println("  [SUCCESS]");
 }
 
@@ -401,9 +421,9 @@ void test_coro_result_threaded_signal() {
     std::println("Testing CoroAsyncResult: signal from another thread...");
 
     auto sync = std::make_shared<ResultSync>();
-    auto result = coro_await_sync(sync);
+    auto coro = coro_await_sync(sync);
 
-    REQUIRE_EQ(result.IsReady(), false);
+    REQUIRE_EQ(coro.IsReady(), false);
 
     // Signal from a different thread.
     std::thread signaler([&]() {
@@ -413,8 +433,185 @@ void test_coro_result_threaded_signal() {
 
     signaler.join();
 
-    REQUIRE_EQ(result.IsReady(), true);
-    REQUIRE_EQ(result.Data(), 99);
+    REQUIRE_EQ(coro.IsReady(), true);
+    REQUIRE_EQ(*coro.Get().data, 99);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_error_return() {
+    std::println("Testing CoroAsyncResult: co_return with error result...");
+
+    auto coro = coro_return_error();
+
+    REQUIRE_EQ(coro.IsReady(), true);
+    const auto& result = coro.Get();
+    REQUIRE(result.error.has_value());
+    REQUIRE(!result.data.has_value());
+    REQUIRE_EQ(*result.error, std::string{"call failed"});
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_get() {
+    std::println("Testing CoroAsyncResult: Get() returns full Result aggregate...");
+
+    auto coro = coro_return_value();
+
+    REQUIRE_EQ(coro.IsReady(), true);
+    const auto& result = coro.Get();
+    REQUIRE(result.data.has_value());
+    REQUIRE_EQ(*result.data, 42);
+    REQUIRE(!result.error.has_value());
+    std::println("  [SUCCESS]");
+}
+
+
+void test_coro_result_take() {
+    std::println("Testing CoroAsyncResult: Take() moves Result out...");
+
+    auto coro = coro_return_value();
+
+    REQUIRE_EQ(coro.IsReady(), true);
+    auto result = coro.Take();
+    REQUIRE(result.data.has_value());
+    REQUIRE_EQ(*result.data, 42);
+    REQUIRE(!result.error.has_value());
+    std::println("  [SUCCESS]");
+}
+
+
+/***
+ * TokenUsage Tests
+ */
+
+void test_token_usage_default() {
+    std::println("Testing TokenUsage: default construction...");
+
+    TokenUsage usage{};
+    REQUIRE(!usage.input_tokens.has_value());
+    REQUIRE(!usage.output_tokens.has_value());
+    REQUIRE(!usage.total_tokens.has_value());
+    REQUIRE(!usage.cache_creation_tokens.has_value());
+    REQUIRE(!usage.cache_read_tokens.has_value());
+    REQUIRE(!usage.reasoning_tokens.has_value());
+    REQUIRE(!usage.tool_use_tokens.has_value());
+    std::println("  [SUCCESS]");
+}
+
+
+void test_attempt_metadata_default() {
+    std::println("Testing AttemptMetadata: default construction...");
+
+    AttemptMetadata am{};
+    REQUIRE_EQ(am.status_code, static_cast<int64_t>(-1));
+    REQUIRE_EQ(am.duration_us, static_cast<int64_t>(-1));
+    REQUIRE_EQ(am.outcome, AttemptOutcome::SUCCESS);
+    REQUIRE(am.error.empty());
+    REQUIRE(!am.usage.has_value());
+    REQUIRE(!am.model.has_value());
+    REQUIRE(!am.stop_reason.has_value());
+    std::println("  [SUCCESS]");
+}
+
+
+void test_result_default() {
+    std::println("Testing Result<Endpoint, void>: default construction...");
+
+    Result<TestEndpoint, void> result{};
+    REQUIRE(!result.data.has_value());
+    REQUIRE(!result.error.has_value());
+    REQUIRE(result.attempts.empty());
+    std::println("  [SUCCESS]");
+}
+
+
+/***
+ * Tier 2: Result<Endpoint, Data> and TransformResult Tests
+ */
+
+// User data type for Tier 2 tests.
+struct UserData {
+    std::string label{};
+    int doubled{0};
+};
+
+// User transform: convert int Response_t to UserData.
+UserData DoubleTransform(const int& value) {
+    return UserData{.label = "doubled", .doubled = value * 2};
+}
+
+// User transform that throws.
+UserData ThrowingTransform(const int& /*value*/) {
+    throw std::runtime_error("transform failed");
+}
+
+
+void test_result_data_default() {
+    std::println("Testing Result<Endpoint, Data>: default construction...");
+
+    Result<TestEndpoint, UserData> result{};
+    REQUIRE(!result.data.has_value());
+    REQUIRE(!result.response.has_value());
+    REQUIRE(!result.error.has_value());
+    REQUIRE(result.attempts.empty());
+    std::println("  [SUCCESS]");
+}
+
+
+void test_transform_result_success() {
+    std::println("Testing TransformResult: success path...");
+
+    Result<TestEndpoint, void> tier1;
+    tier1.data.emplace(21);
+    tier1.attempts.push_back(AttemptMetadata{.outcome = AttemptOutcome::SUCCESS});
+
+    auto result = TransformResult<TestEndpoint, UserData>(std::move(tier1), &DoubleTransform);
+
+    REQUIRE(result.data.has_value());
+    REQUIRE_EQ(result.data->label, std::string{"doubled"});
+    REQUIRE_EQ(result.data->doubled, 42);
+    REQUIRE(result.response.has_value());
+    REQUIRE_EQ(*result.response, 21);
+    REQUIRE(!result.error.has_value());
+    REQUIRE_EQ(result.attempts.size(), static_cast<size_t>(1));
+    std::println("  [SUCCESS]");
+}
+
+
+void test_transform_result_transform_throws() {
+    std::println("Testing TransformResult: transform throws...");
+
+    Result<TestEndpoint, void> tier1;
+    tier1.data.emplace(10);
+
+    auto result = TransformResult<TestEndpoint, UserData>(std::move(tier1), &ThrowingTransform);
+
+    // Transform failed — error set, data empty, but response still preserved.
+    REQUIRE(!result.data.has_value());
+    REQUIRE(result.response.has_value());
+    REQUIRE_EQ(*result.response, 10);
+    REQUIRE(result.error.has_value());
+    REQUIRE(result.error->find("User transform failed") != std::string::npos);
+    std::println("  [SUCCESS]");
+}
+
+
+void test_transform_result_tier1_error() {
+    std::println("Testing TransformResult: Tier 1 error passthrough...");
+
+    Result<TestEndpoint, void> tier1;
+    tier1.error.emplace("HTTP 500");
+    tier1.attempts.push_back(AttemptMetadata{.outcome = AttemptOutcome::HTTP_ERROR, .error = "HTTP 500"});
+
+    auto result = TransformResult<TestEndpoint, UserData>(std::move(tier1), &DoubleTransform);
+
+    // Error passed through, no data or response.
+    REQUIRE(!result.data.has_value());
+    REQUIRE(!result.response.has_value());
+    REQUIRE(result.error.has_value());
+    REQUIRE_EQ(*result.error, std::string{"HTTP 500"});
+    REQUIRE_EQ(result.attempts.size(), static_cast<size_t>(1));
     std::println("  [SUCCESS]");
 }
 
@@ -457,6 +654,20 @@ int main() {
     run(test_coro_result_exception_after_await);
     run(test_coro_result_move_construct);
     run(test_coro_result_threaded_signal);
+    run(test_coro_result_error_return);
+    run(test_coro_result_get);
+    run(test_coro_result_take);
+
+    std::println("\n===== New Type Tests =====");
+    run(test_token_usage_default);
+    run(test_attempt_metadata_default);
+    run(test_result_default);
+
+    std::println("\n===== Tier 2: User Transform Tests =====");
+    run(test_result_data_default);
+    run(test_transform_result_success);
+    run(test_transform_result_transform_throws);
+    run(test_transform_result_tier1_error);
 
     std::println("\n===== Results: {} failed =====", failed);
     return failed;

@@ -9,9 +9,9 @@
 #include "../../interface/core/call.hpp"
 
 #include "../instance_impl.hpp"
+#include "../results.hpp"
 
-#include "../../interface/core/error.hpp"
-
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -107,14 +107,10 @@ typename gemini::GenerateContent::Response_t Deserialize<gemini::GenerateContent
 }
 
 
-// Wrapper matching AsyncResult<Response>::DeserializeFn signature.
-// Borrows the response from the orchestrator, deserializes, and releases.
+// Deserialize from a live slot (does NOT release — caller handles release).
 template <>
 typename gemini::GenerateContent::Response_t DeserializeAndRelease<gemini::GenerateContent>(Orchestrator* orch, Ticket ticket) {
-    const auto& resp = orch->GetResponse(ticket);
-    auto data = gemini::Deserialize(resp);
-    orch->ReleaseSlot(ticket);
-    return data;
+    return gemini::Deserialize(orch->GetResponse(ticket));
 }
 
 
@@ -170,6 +166,62 @@ std::vector<std::byte> Serialize<gemini::GenerateContent>(const gemini::Generate
 }
 
 
+// ----- Envelope metadata extraction -----
+
+template <>
+TokenUsage ExtractUsage<gemini::GenerateContent>(const gemini::GenerateContentResponse& resp) {
+    TokenUsage usage{};
+    if (resp.usageMetadata) {
+        auto& u = *resp.usageMetadata;
+        if (u.promptTokenCount)        usage.input_tokens         = *u.promptTokenCount;
+        if (u.candidatesTokenCount)    usage.output_tokens        = *u.candidatesTokenCount;
+        if (u.totalTokenCount)         usage.total_tokens         = *u.totalTokenCount;
+        if (u.cachedContentTokenCount) usage.cache_read_tokens    = *u.cachedContentTokenCount;
+        if (u.thoughtsTokenCount)      usage.reasoning_tokens     = *u.thoughtsTokenCount;
+        if (u.toolUsePromptTokenCount) usage.tool_use_tokens      = *u.toolUsePromptTokenCount;
+        // Gemini does not report cache_creation_tokens.
+    }
+    return usage;
+}
+
+
+template <>
+std::optional<std::string> ExtractModel<gemini::GenerateContent>(const gemini::GenerateContentResponse& resp) {
+    return resp.modelVersion;
+}
+
+
+template <>
+std::optional<std::string> ExtractStopReason<gemini::GenerateContent>(const gemini::GenerateContentResponse& resp) {
+    if (!resp.candidates || resp.candidates->empty()) return std::nullopt;
+    auto& first = resp.candidates->front();
+    if (!first.finishReason) return std::nullopt;
+    switch (*first.finishReason) {
+        case gemini::FinishReason::FINISH_REASON_UNSPECIFIED: return "unspecified";
+        case gemini::FinishReason::STOP:                      return "stop";
+        case gemini::FinishReason::MAX_TOKENS:                return "max_tokens";
+        case gemini::FinishReason::SAFETY:                    return "safety";
+        case gemini::FinishReason::RECITATION:                return "recitation";
+        case gemini::FinishReason::LANGUAGE:                  return "language";
+        case gemini::FinishReason::OTHER:                     return "other";
+        case gemini::FinishReason::BLOCKLIST:                 return "blocklist";
+        case gemini::FinishReason::PROHIBITED_CONTENT:        return "prohibited_content";
+        case gemini::FinishReason::SPII:                      return "spii";
+        case gemini::FinishReason::MALFORMED_FUNCTION_CALL:   return "malformed_function_call";
+        case gemini::FinishReason::IMAGE_SAFETY:              return "image_safety";
+        case gemini::FinishReason::IMAGE_PROHIBITED_CONTENT:  return "image_prohibited_content";
+        case gemini::FinishReason::IMAGE_OTHER:               return "image_other";
+        case gemini::FinishReason::NO_IMAGE:                  return "no_image";
+        case gemini::FinishReason::IMAGE_RECITATION:          return "image_recitation";
+        case gemini::FinishReason::UNEXPECTED_TOOL_CALL:      return "unexpected_tool_call";
+        case gemini::FinishReason::TOO_MANY_TOOL_CALLS:       return "too_many_tool_calls";
+        case gemini::FinishReason::MISSING_THOUGHT_SIGNATURE: return "missing_thought_signature";
+        case gemini::FinishReason::MALFORMED_RESPONSE:        return "malformed_response";
+    }
+    return std::nullopt;
+}
+
+
 // ----- CreateClientImpl specializations -----
 
 template <>
@@ -202,18 +254,32 @@ size_t CreateClientImpl<gemini::GenerateContent, gemini::VertexAuth>(
 }
 
 
+// ----- Extract wrapper (bridges internal extraction into ExtractFn pointer) -----
+
+namespace {
+
+void ExtractEnvelope(const gemini::GenerateContentResponse& data, AttemptMetadata& am) {
+    am.usage.emplace(ExtractUsage<gemini::GenerateContent>(data));
+    am.model = ExtractModel<gemini::GenerateContent>(data);
+    am.stop_reason = ExtractStopReason<gemini::GenerateContent>(data);
+}
+
+} // anonymous namespace
+
+
 // ----- CallAsync -----
 
 template <>
-AsyncResult<gemini::GenerateContent::Response_t> CallAsync<gemini::GenerateContent>(
+AsyncResult<gemini::GenerateContent> CallAsync<gemini::GenerateContent>(
     size_t client_id,
     const gemini::GenerateContent::Request_t& request,
     const AttemptPolicy& policy)
 {
     auto sr = SubmitRequest(client_id, Serialize<gemini::GenerateContent>(request), policy);
-    return AsyncResult<gemini::GenerateContent::Response_t>{
+    return AsyncResult<gemini::GenerateContent>{
         *sr.orchestrator, sr.ticket,
         &DeserializeAndRelease<gemini::GenerateContent>,
+        &ExtractEnvelope,
         std::move(sr.sync)};
 }
 
@@ -221,27 +287,49 @@ AsyncResult<gemini::GenerateContent::Response_t> CallAsync<gemini::GenerateConte
 // ----- CallCoro -----
 
 template <>
-CoroAsyncResult<gemini::GenerateContent::Response_t> CallCoro<gemini::GenerateContent>(
+CoroAsyncResult<gemini::GenerateContent> CallCoro<gemini::GenerateContent>(
     size_t client_id,
     const gemini::GenerateContent::Request_t& request,
     const AttemptPolicy& policy)
 {
     auto sr = SubmitRequest(client_id, Serialize<gemini::GenerateContent>(request), policy);
+    Result<gemini::GenerateContent, void> result;
 
     while (true) {
         co_await SyncAwaiter{sr.sync.get()};
 
+        const auto& response = sr.GetResponse();
+        auto am = BuildTransportMetadata(response);
+
         if (!sr.sync->succeeded) {
-            throw AnnotatedException{sr.sync->error_msg};
+            am.error = sr.sync->error_msg;
+            am.outcome = (response.state == curl::Response::State::FAILED)
+                ? AttemptOutcome::TRANSPORT_ERROR
+                : AttemptOutcome::HTTP_ERROR;
+            result.attempts.push_back(std::move(am));
+
+            if (!sr.RetrySlot()) {
+                result.error.emplace(result.attempts.back().error);
+                co_return std::move(result);
+            }
+            continue;
         }
 
         try {
-            auto data = Deserialize<gemini::GenerateContent>(sr.GetResponse());
+            result.data.emplace(Deserialize<gemini::GenerateContent>(response));
+            am.outcome = AttemptOutcome::SUCCESS;
+            ExtractEnvelope(*result.data, am);
+            if (am.usage) { AccumulateUsage(*am.usage); }
+            result.attempts.push_back(std::move(am));
             sr.ReleaseSlot();
-            co_return std::move(data);
-        } catch (...) {
+            co_return std::move(result);
+        } catch (const std::exception& e) {
+            am.outcome = AttemptOutcome::DESERIALIZATION_ERROR;
+            am.error = e.what();
+            result.attempts.push_back(std::move(am));
             if (!sr.RetrySlot()) {
-                throw;  // retry budget exhausted
+                result.error.emplace(result.attempts.back().error);
+                co_return std::move(result);
             }
         }
     }
@@ -251,17 +339,13 @@ CoroAsyncResult<gemini::GenerateContent::Response_t> CallCoro<gemini::GenerateCo
 // ----- CallSync -----
 
 template <>
-gemini::GenerateContent::Response_t CallSync<gemini::GenerateContent>(
+Result<gemini::GenerateContent, void> CallSync<gemini::GenerateContent>(
     size_t client_id,
     const gemini::GenerateContent::Request_t& request,
     const AttemptPolicy& policy)
 {
-    auto result = CallAsync<gemini::GenerateContent>(client_id, request, policy);
-    result.RethrowIfException();
-    if (result.HasError()) {
-        throw AnnotatedException{result.Error()};
-    }
-    return std::move(result.Data());
+    auto ar = CallAsync<gemini::GenerateContent>(client_id, request, policy);
+    return ar.Take();
 }
 
 

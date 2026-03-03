@@ -7,7 +7,6 @@
 #include "orchestrator.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <string>
 #include <thread>
 
@@ -87,19 +86,29 @@ size_t Orchestrator::Submit(RegistrationToken token,
 //----- Caller retrieval (called from user's thread) -----
 
 const curl::Response& Orchestrator::GetResponse(size_t ticket) const {
-    assert(ticket < slots.size());
+    if (ticket >= slots.size()) {
+        throw AnnotatedException{"Orchestrator::GetResponse: invalid ticket."};
+    }
     const auto& slot = slots[ticket];
-    assert(slot.state == SlotState::COMPLETED);
-    assert(slot.attempt.has_value());
+    if (slot.state != SlotState::COMPLETED) {
+        throw AnnotatedException{"Orchestrator::GetResponse: slot is not in COMPLETED state."};
+    }
+    if (!slot.attempt.has_value()) {
+        throw AnnotatedException{"Orchestrator::GetResponse: slot has no attempt."};
+    }
 
     return slot.attempt->GetResponse();
 }
 
 
 void Orchestrator::ReleaseSlot(size_t ticket) {
-    assert(ticket < slots.size());
+    if (ticket >= slots.size()) {
+        throw AnnotatedException{"Orchestrator::ReleaseSlot: invalid ticket."};
+    }
     auto& slot = slots[ticket];
-    assert(slot.state == SlotState::COMPLETED);
+    if (slot.state != SlotState::COMPLETED) {
+        throw AnnotatedException{"Orchestrator::ReleaseSlot: slot is not in COMPLETED state."};
+    }
 
     const auto& reg = registrations[slot.registration_index];
     auto& queue = queues[reg.queue_key];
@@ -116,9 +125,13 @@ void Orchestrator::ReleaseSlot(size_t ticket) {
 
 
 bool Orchestrator::RetrySlot(size_t ticket, std::shared_ptr<ResultSync> sync) {
-    assert(ticket < slots.size());
+    if (ticket >= slots.size()) {
+        throw AnnotatedException{"Orchestrator::RetrySlot: invalid ticket."};
+    }
     auto& slot = slots[ticket];
-    assert(slot.state == SlotState::COMPLETED);
+    if (slot.state != SlotState::COMPLETED) {
+        throw AnnotatedException{"Orchestrator::RetrySlot: slot is not in COMPLETED state."};
+    }
 
     const auto& reg = registrations[slot.registration_index];
     const auto& retry_policy = reg.retry_policy;
@@ -192,6 +205,21 @@ void Orchestrator::Wakeup() {
 }
 
 
+void Orchestrator::DrainAll(const std::string& error) {
+    for (auto& slot : slots) {
+        if (slot.state == SlotState::FREE || slot.state == SlotState::COMPLETED) {
+            continue;
+        }
+        // AWAITING or ACTIVE — the caller is waiting on this sync.
+        // Signal failure so they unblock and get the error through Result.
+        if (slot.sync) {
+            slot.sync->Signal(false, error);
+        }
+        slot.state = SlotState::COMPLETED;
+    }
+}
+
+
 //----- Observability -----
 
 size_t Orchestrator::AwaitingCount() const {
@@ -259,7 +287,9 @@ void Orchestrator::ListPushFront(ListHead& list, size_t index) {
 
 
 size_t Orchestrator::ListPopFront(ListHead& list) {
-    assert(!list.Empty());
+    if (list.Empty()) {
+        throw AnnotatedException{"Orchestrator::ListPopFront: list is empty."};
+    }
     size_t index = list.head;
     auto& slot = slots[index];
 
@@ -302,7 +332,9 @@ void Orchestrator::ListRemove(ListHead& list, size_t index) {
 
 const Orchestrator::ClientRegistration&
 Orchestrator::GetClientRegistration(RegistrationToken token) const {
-    assert(token.index < registrations.size());
+    if (token.index >= registrations.size()) {
+        throw AnnotatedException{"Orchestrator::GetClientRegistration: invalid token."};
+    }
     return registrations[token.index];
 }
 
@@ -355,7 +387,7 @@ void Orchestrator::DispatchFromQueue(QueueState& queue,
             break;
         }
 
-        // Rate limit gate
+        // Server-side rate limit gate
         if (rl_policy.use_provider_headers && queue.remaining_requests.has_value()) {
             if (*queue.remaining_requests <= static_cast<int64_t>(rl_policy.min_remaining_before_backoff)) {
                 if (queue.reset_time.has_value() &&
@@ -367,10 +399,41 @@ void Orchestrator::DispatchFromQueue(QueueState& queue,
             }
         }
 
+        // Client-side resource pressure gate
+        if (queue.resource_backoff_until.has_value()) {
+            if (std::chrono::steady_clock::now() < *queue.resource_backoff_until) {
+                break;
+            }
+            queue.resource_backoff_until.reset();
+            queue.resource_backoff_count = 0;
+        }
+
         size_t slot_index = ListPopFront(queue.awaiting);
         auto& slot = slots[slot_index];
 
-        LaunchAttempt(slot, slot_index);
+        try {
+            LaunchAttempt(slot, slot_index);
+        } catch (const std::exception& e) {
+            // Construction failed — resource pressure (allocation, handle exhaustion).
+            // Signal this slot as failed so the caller gets it through the normal
+            // Result error path. Pause the entire queue with escalating backoff.
+            using namespace std::chrono;
+            constexpr milliseconds base{100};
+            constexpr size_t max_escalation = 2;  // 100ms → 200ms → 400ms
+            auto exponent = std::min(queue.resource_backoff_count, max_escalation);
+            auto delay = base * (size_t{1} << exponent);
+            queue.resource_backoff_until = steady_clock::now() + delay;
+            ++queue.resource_backoff_count;
+
+            slot.state = SlotState::COMPLETED;
+            ListPushBack(queue.completed, slot_index);
+            slot.sync->Signal(false, std::string{"Attempt construction failed: "} + e.what());
+            break;  // pause this queue
+        }
+
+        // Successful launch — clear any resource backoff.
+        queue.resource_backoff_count = 0;
+        queue.resource_backoff_until.reset();
 
         slot.state = SlotState::ACTIVE;
         ListPushBack(queue.active, slot_index);
@@ -403,19 +466,19 @@ void Orchestrator::ProcessCompletion(Slot& slot, size_t slot_index) {
     ListRemove(queue.active, slot_index);
     attempt_to_slot.erase(&(*slot.attempt));
 
-    assert(slot.attempt.has_value());
+    if (!slot.attempt.has_value()) {
+        throw AnnotatedException{"Orchestrator::ProcessCompletion: slot has no attempt."};
+    }
     const auto& response = slot.attempt->GetResponse();
 
     UpdateRateLimits(queue, response);
 
     // --- Transport-level failure ---
+    // Signal the caller so they can record transport metadata (timing, bytes).
+    // The attempt stays alive so GetResponse() works on the caller's thread.
+    // The caller is responsible for calling RetrySlot() or ReleaseSlot().
     if (slot.attempt->IsFailed()) {
-        if (Requeue(slot, slot_index)) {
-            slot.attempt.reset();
-            return;
-        }
         std::string error = "Transport error: " + slot.attempt->GetErrorMessage();
-        slot.attempt.reset();
         slot.state = SlotState::COMPLETED;
         ListPushBack(queue.completed, slot_index);
         slot.sync->Signal(false, std::move(error));
@@ -425,21 +488,18 @@ void Orchestrator::ProcessCompletion(Slot& slot, size_t slot_index) {
     int64_t status = response.status_code;
 
     // --- 429: rate-limit re-queue, does NOT count against retry limit ---
+    // Silent retry — no signal to caller, no metadata recorded.
     if (status == 429) {
         slot.attempt.reset();
         RequeueRateLimit(slot, slot_index);
         return;
     }
 
-    // --- Retryable HTTP status (5xx): counts against retry limit ---
+    // --- Retryable HTTP status (5xx): signal caller for counted retry ---
+    // The attempt stays alive so the caller can extract transport metadata.
+    // The caller calls RetrySlot() (which checks budget) or ReleaseSlot().
     if (IsRetryable(status, retry_policy)) {
-        if (Requeue(slot, slot_index)) {
-            slot.attempt.reset();
-            return;
-        }
-        std::string error = "HTTP " + std::to_string(status) + " after "
-                          + std::to_string(slot.retry_count) + " retries";
-        slot.attempt.reset();
+        std::string error = "HTTP " + std::to_string(status);
         slot.state = SlotState::COMPLETED;
         ListPushBack(queue.completed, slot_index);
         slot.sync->Signal(false, std::move(error));
@@ -447,9 +507,9 @@ void Orchestrator::ProcessCompletion(Slot& slot, size_t slot_index) {
     }
 
     // --- Non-retryable HTTP error ---
+    // The attempt stays alive so the caller can extract transport metadata.
     if (status >= 400) {
         std::string error = "HTTP " + std::to_string(status);
-        slot.attempt.reset();
         slot.state = SlotState::COMPLETED;
         ListPushBack(queue.completed, slot_index);
         slot.sync->Signal(false, std::move(error));

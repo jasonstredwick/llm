@@ -163,6 +163,13 @@ private:
         std::optional<int64_t> remaining_requests{};
         std::optional<int64_t> remaining_tokens{};
         std::optional<std::chrono::steady_clock::time_point> reset_time{};
+
+        // Client-side resource pressure backoff.
+        // Set when curl::Attempt construction fails (allocation, handle exhaustion).
+        // Pauses all dispatches on this queue until the backoff expires.
+        // Escalates: 100ms → 200ms → 400ms, capped at 400ms.
+        std::optional<std::chrono::steady_clock::time_point> resource_backoff_until{};
+        size_t resource_backoff_count{0};
     };
 
 private:
@@ -237,6 +244,11 @@ public:
     // Interrupt a blocked WaitForActivity() from another thread.
     // Thread-safe relative to WaitForActivity().
     void Wakeup();
+
+    // Signal all non-free, non-completed slots as failed with the given error.
+    // Used when the event loop thread encounters an unrecoverable exception
+    // so that all waiting callers unblock instead of hanging forever.
+    void DrainAll(const std::string& error);
 
     //----- Observability -----
 

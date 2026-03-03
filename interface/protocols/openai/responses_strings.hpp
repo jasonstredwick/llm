@@ -1441,6 +1441,22 @@ constexpr std::string_view to_string_view(openai::Request::EasyInputMessage::Rol
 }
 
 template <>
+constexpr std::optional<openai::Request::EasyInputMessage::Phase>
+from_string_view<openai::Request::EasyInputMessage::Phase>(std::string_view sv) {
+    if (sv == "commentary") return openai::Request::EasyInputMessage::Phase::COMMENTARY;
+    if (sv == "final_answer") return openai::Request::EasyInputMessage::Phase::FINAL_ANSWER;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::EasyInputMessage::Phase val) {
+    switch (val) {
+        case openai::Request::EasyInputMessage::Phase::COMMENTARY: return "commentary";
+        case openai::Request::EasyInputMessage::Phase::FINAL_ANSWER: return "final_answer";
+        default: throw AnnotatedException{"invalid openai::Request::EasyInputMessage::Phase"};
+    }
+}
+
+template <>
 constexpr std::optional<openai::Request::Message::ResponseInputImage::Detail>
 from_string_view<openai::Request::Message::ResponseInputImage::Detail>(std::string_view sv) {
     if (sv == "low") return openai::Request::Message::ResponseInputImage::Detail::LOW;
@@ -1509,6 +1525,22 @@ constexpr std::string_view to_string_view(openai::Request::ResponseOutputMessage
         case openai::Request::ResponseOutputMessage::Status::COMPLETED: return "completed";
         case openai::Request::ResponseOutputMessage::Status::INCOMPLETE: return "incomplete";
         default: throw AnnotatedException{"invalid openai::Request::ResponseOutputMessage::Status"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Request::ResponseOutputMessage::Phase>
+from_string_view<openai::Request::ResponseOutputMessage::Phase>(std::string_view sv) {
+    if (sv == "commentary") return openai::Request::ResponseOutputMessage::Phase::COMMENTARY;
+    if (sv == "final_answer") return openai::Request::ResponseOutputMessage::Phase::FINAL_ANSWER;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Request::ResponseOutputMessage::Phase val) {
+    switch (val) {
+        case openai::Request::ResponseOutputMessage::Phase::COMMENTARY: return "commentary";
+        case openai::Request::ResponseOutputMessage::Phase::FINAL_ANSWER: return "final_answer";
+        default: throw AnnotatedException{"invalid openai::Request::ResponseOutputMessage::Phase"};
     }
 }
 
@@ -2807,6 +2839,22 @@ constexpr std::string_view to_string_view(openai::Response::EasyInputMessage::Ro
 }
 
 template <>
+constexpr std::optional<openai::Response::EasyInputMessage::Phase>
+from_string_view<openai::Response::EasyInputMessage::Phase>(std::string_view sv) {
+    if (sv == "commentary") return openai::Response::EasyInputMessage::Phase::COMMENTARY;
+    if (sv == "final_answer") return openai::Response::EasyInputMessage::Phase::FINAL_ANSWER;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Response::EasyInputMessage::Phase val) {
+    switch (val) {
+        case openai::Response::EasyInputMessage::Phase::COMMENTARY: return "commentary";
+        case openai::Response::EasyInputMessage::Phase::FINAL_ANSWER: return "final_answer";
+        default: throw AnnotatedException{"invalid openai::Response::EasyInputMessage::Phase"};
+    }
+}
+
+template <>
 constexpr std::optional<openai::Response::Message::ResponseInputImage::Detail>
 from_string_view<openai::Response::Message::ResponseInputImage::Detail>(std::string_view sv) {
     if (sv == "low") return openai::Response::Message::ResponseInputImage::Detail::LOW;
@@ -2875,6 +2923,22 @@ constexpr std::string_view to_string_view(openai::Response::ResponseOutputMessag
         case openai::Response::ResponseOutputMessage::Status::COMPLETED: return "completed";
         case openai::Response::ResponseOutputMessage::Status::INCOMPLETE: return "incomplete";
         default: throw AnnotatedException{"invalid openai::Response::ResponseOutputMessage::Status"};
+    }
+}
+
+template <>
+constexpr std::optional<openai::Response::ResponseOutputMessage::Phase>
+from_string_view<openai::Response::ResponseOutputMessage::Phase>(std::string_view sv) {
+    if (sv == "commentary") return openai::Response::ResponseOutputMessage::Phase::COMMENTARY;
+    if (sv == "final_answer") return openai::Response::ResponseOutputMessage::Phase::FINAL_ANSWER;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(openai::Response::ResponseOutputMessage::Phase val) {
+    switch (val) {
+        case openai::Response::ResponseOutputMessage::Phase::COMMENTARY: return "commentary";
+        case openai::Response::ResponseOutputMessage::Phase::FINAL_ANSWER: return "final_answer";
+        default: throw AnnotatedException{"invalid openai::Response::ResponseOutputMessage::Phase"};
     }
 }
 

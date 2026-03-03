@@ -6,8 +6,10 @@
 #include <variant>
 #include <vector>
 
+#include "../core/call.hpp"
 #include "../core/error.hpp"
 #include "../core/types.hpp"
+#include "../llm.hpp"
 #include "../protocols/anthropic/messages.hpp"
 #include "../protocols/anthropic/messages_strings.hpp"
 #include "../protocols/gemini/generate_content.hpp"
@@ -50,11 +52,6 @@ constexpr const Options default_options{
 };
 
 
-inline void Call(std::optional<Prompt> system_prompt, const std::vector<Block>& content, Options options = default_options) {
-}
-
-
-
 
 template <typename T> constexpr T Generate(std::optional<Prompt> system_prompt,
                                            const std::vector<Block>& content,
@@ -83,9 +80,9 @@ constexpr anthropic::Request Generate<anthropic::Request>(std::optional<Prompt> 
                                                           Options options) {
     using MessageParam = anthropic::Request::MessageParam;
 
-    auto TransformBlock_f = [](Block const& block) -> MessageParam::ContentBlockParam {
+    auto TransformBlock_f = [](Block const& block) -> MessageParam::ContentItem {
         return std::visit(overloaded{
-            [](projection::text::Image const& image) -> MessageParam::ContentBlockParam {
+            [](projection::text::Image const& image) -> MessageParam::ContentItem {
                 using MediaType = MessageParam::ImageBlockParam::Base64ImageSource::MediaType;
                 auto media_type = jai::llm::from_string_view<MediaType>(image.media_type);
                 if (!media_type) {
@@ -101,7 +98,7 @@ constexpr anthropic::Request Generate<anthropic::Request>(std::optional<Prompt> 
                     }
                 };
             },
-            [](projection::text::Prompt const& prompt) -> MessageParam::ContentBlockParam {
+            [](projection::text::Prompt const& prompt) -> MessageParam::ContentItem {
                 return MessageParam::TextBlockParam{.text=prompt.text};
             }
         }, block);
@@ -154,8 +151,8 @@ constexpr anthropic::Request Generate<anthropic::Request>(std::optional<Prompt> 
 
     return anthropic::Request{
         .max_tokens=static_cast<double>(*options.max_output_tokens),
-        .messages=std::vector<MessageParam>{{
-            .content=content | std::views::transform(TransformBlock_f) | std::ranges::to<std::vector>(),
+        .messages=std::vector<MessageParam>{MessageParam{
+            .content=MessageParam::Content{content | std::views::transform(TransformBlock_f) | std::ranges::to<std::vector>()},
             .role=MessageParam::Role::USER
         }},
         .model="",
@@ -382,7 +379,12 @@ constexpr Result Extract<anthropic::Message>(anthropic::Message const& response)
         .usage=usage,
         .metadata=Metadata{
             .id=response.id.value_or(""),
-            .model=response.model.value_or("")
+            .model=response.model ? std::visit(overloaded{
+                [](std::string const& s) -> std::string { return s; },
+                [](anthropic::Message::ModelValues const& v) -> std::string {
+                    return std::string{jai::llm::to_string_view(v)};
+                }
+            }, *response.model) : std::string{}
         }
     };
 }
@@ -585,6 +587,51 @@ constexpr Result Extract<openai::Response>(openai::Response const& response) {
 }
 
 
+// --- Tier 3: Projection Call functions ---
+// Build a provider-specific request via Generate, then delegate to Tier 2
+// with Extract as the transform. Endpoint is deduced from the ClientHandle.
+
+template <typename Endpoint>
+jai::llm::AsyncResult<Endpoint, Result> CallAsync(
+    const jai::llm::Instance::ClientHandle<Endpoint>& client,
+    std::optional<Prompt> system_prompt,
+    const std::vector<Block>& content,
+    Options options = default_options,
+    const jai::llm::AttemptPolicy& policy = {}) {
+    auto request = Generate<typename Endpoint::Request_t>(
+        std::move(system_prompt), content, options);
+    return jai::llm::CallAsync<Endpoint, Result>(
+        client.Id(), request,
+        &Extract<typename Endpoint::Response_t>, policy);
+}
+
+template <typename Endpoint>
+jai::llm::CoroAsyncResult<Endpoint, Result> CallCoro(
+    const jai::llm::Instance::ClientHandle<Endpoint>& client,
+    std::optional<Prompt> system_prompt,
+    const std::vector<Block>& content,
+    Options options = default_options,
+    const jai::llm::AttemptPolicy& policy = {}) {
+    auto request = Generate<typename Endpoint::Request_t>(
+        std::move(system_prompt), content, options);
+    return jai::llm::CallCoro<Endpoint, Result>(
+        client.Id(), request,
+        &Extract<typename Endpoint::Response_t>, policy);
+}
+
+template <typename Endpoint>
+jai::llm::Result<Endpoint, Result> CallSync(
+    const jai::llm::Instance::ClientHandle<Endpoint>& client,
+    std::optional<Prompt> system_prompt,
+    const std::vector<Block>& content,
+    Options options = default_options,
+    const jai::llm::AttemptPolicy& policy = {}) {
+    auto request = Generate<typename Endpoint::Request_t>(
+        std::move(system_prompt), content, options);
+    return jai::llm::CallSync<Endpoint, Result>(
+        client.Id(), request,
+        &Extract<typename Endpoint::Response_t>, policy);
+}
 
 
 }

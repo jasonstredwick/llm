@@ -64,7 +64,7 @@ struct CitationSource {
 struct CodeExecution {
 };
 
-/** Result of executing the `ExecutableCode`. Only generated when using the `CodeExecution`, and always ... */
+/** Result of executing the `ExecutableCode`. Generated only when the `CodeExecution` tool is used. */
 struct CodeExecutionResult {
     Required<Outcome> outcome;
     std::optional<std::string> output{};
@@ -139,10 +139,22 @@ struct GroundingPassageId {
     std::optional<int64_t> partIndex{};
 };
 
+/** Chunk from image search. */
+struct Image {
+    std::optional<std::string> sourceUri{};
+    std::optional<std::string> imageUri{};
+    std::optional<std::string> title{};
+    std::optional<std::string> domain{};
+};
+
 /** Config for image generation features. */
 struct ImageConfig {
     std::optional<std::string> aspectRatio{};
     std::optional<std::string> imageSize{};
+};
+
+/** Image search for grounding and related configurations. */
+struct ImageSearch {
 };
 
 /** Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive)... */
@@ -285,6 +297,10 @@ struct Web {
     std::optional<std::string> title{};
 };
 
+/** Standard web search for grounding and related configurations. */
+struct WebSearch {
+};
+
 /** A collection of source attributions for a piece of content. */
 struct CitationMetadata {
     std::optional<std::vector<CitationSource>> citationSources{};
@@ -305,11 +321,6 @@ struct GoogleAiGenerativelanguageV1betaGroundingSupport {
     std::optional<GoogleAiGenerativelanguageV1betaSegment> segment{};
     std::optional<std::vector<int64_t>> groundingChunkIndices{};
     std::optional<std::vector<double>> confidenceScores{};
-};
-
-/** GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google. */
-struct GoogleSearch {
-    std::optional<Interval> timeRangeFilter{};
 };
 
 /** Retrieval config. */
@@ -381,6 +392,12 @@ struct UrlContextMetadata {
     std::optional<std::vector<UrlMetadata>> urlMetadata{};
 };
 
+/** Different types of search that can be enabled on the GoogleSearch tool. */
+struct SearchTypes {
+    std::optional<WebSearch> webSearch{};
+    std::optional<ImageSearch> imageSearch{};
+};
+
 /** The result output from a `FunctionCall` that contains a string representing the `FunctionDeclaration... */
 struct FunctionResponse {
     std::optional<std::string> id{};
@@ -419,17 +436,10 @@ struct Maps {
     std::optional<PlaceAnswerSources> placeAnswerSources{};
 };
 
-/** Tool details that the model may use to generate response. A `Tool` is a piece of code that enables t... */
-struct Tool {
-    std::optional<std::vector<FunctionDeclaration>> functionDeclarations{};
-    std::optional<GoogleSearchRetrieval> googleSearchRetrieval{};
-    std::optional<CodeExecution> codeExecution{};
-    std::optional<GoogleSearch> googleSearch{};
-    std::optional<ComputerUse> computerUse{};
-    std::optional<UrlContext> urlContext{};
-    std::optional<FileSearch> fileSearch{};
-    std::optional<std::vector<McpServer>> mcpServers{};
-    std::optional<GoogleMaps> googleMaps{};
+/** GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google. */
+struct GoogleSearch {
+    std::optional<Interval> timeRangeFilter{};
+    std::optional<SearchTypes> searchTypes{};
 };
 
 /** A datatype containing media that is part of a multi-part `Content` message. A `Part` consists of dat... */
@@ -452,11 +462,25 @@ struct MultiSpeakerVoiceConfig {
     Required<std::vector<SpeakerVoiceConfig>> speakerVoiceConfigs;
 };
 
-/** Grounding chunk. */
+/** A `GroundingChunk` represents a segment of supporting evidence that grounds the model's response. It... */
 struct GroundingChunk {
     std::optional<Web> web{};
+    std::optional<Image> image{};
     std::optional<RetrievedContext> retrievedContext{};
     std::optional<Maps> maps{};
+};
+
+/** Tool details that the model may use to generate response. A `Tool` is a piece of code that enables t... */
+struct Tool {
+    std::optional<std::vector<FunctionDeclaration>> functionDeclarations{};
+    std::optional<GoogleSearchRetrieval> googleSearchRetrieval{};
+    std::optional<CodeExecution> codeExecution{};
+    std::optional<GoogleSearch> googleSearch{};
+    std::optional<ComputerUse> computerUse{};
+    std::optional<UrlContext> urlContext{};
+    std::optional<FileSearch> fileSearch{};
+    std::optional<std::vector<McpServer>> mcpServers{};
+    std::optional<GoogleMaps> googleMaps{};
 };
 
 /** The base structured datatype containing multi-part content of a message. A `Content` includes a `rol... */

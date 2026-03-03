@@ -61,6 +61,7 @@ struct Request {
         struct TypeKind : Kind { static constexpr std::string_view value = "message"; };
 
         enum class Role { USER, ASSISTANT, SYSTEM, DEVELOPER };
+        enum class Phase { COMMENTARY, FINAL_ANSWER };
 
         enum class ContentItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
         using ContentItem = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
@@ -68,6 +69,7 @@ struct Request {
 
         Required<Content> content;
         Required<Role> role;
+        std::optional<Phase> phase{};
         std::optional<TypeKind> type{};
     };
 
@@ -189,6 +191,7 @@ struct Request {
         struct TypeKind : Kind { static constexpr std::string_view value = "message"; };
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Phase { COMMENTARY, FINAL_ANSWER };
 
         enum class ContentKind { OUTPUT_TEXT, REFUSAL };
         using Content = std::variant<ResponseOutputText, ResponseOutputRefusal>;
@@ -198,6 +201,7 @@ struct Request {
         Required<RoleKind> role{{}};
         Required<Status> status;
         Required<TypeKind> type{{}};
+        std::optional<Phase> phase{};
     };
 
     struct ResponseFileSearchToolCall {
@@ -1393,6 +1397,7 @@ struct Response {
         struct TypeKind : Kind { static constexpr std::string_view value = "message"; };
 
         enum class Role { USER, ASSISTANT, SYSTEM, DEVELOPER };
+        enum class Phase { COMMENTARY, FINAL_ANSWER };
 
         enum class ContentItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
         using ContentItem = std::variant<ResponseInputText, ResponseInputImage, ResponseInputFile>;
@@ -1400,6 +1405,7 @@ struct Response {
 
         std::optional<Content> content{};
         std::optional<Role> role{};
+        std::optional<Phase> phase{};
         std::optional<TypeKind> type{};
     };
 
@@ -1521,6 +1527,7 @@ struct Response {
         struct TypeKind : Kind { static constexpr std::string_view value = "message"; };
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Phase { COMMENTARY, FINAL_ANSWER };
 
         enum class ContentKind { OUTPUT_TEXT, REFUSAL };
         using Content = std::variant<ResponseOutputText, ResponseOutputRefusal>;
@@ -1530,6 +1537,7 @@ struct Response {
         std::optional<RoleKind> role{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
+        std::optional<Phase> phase{};
     };
 
     struct ResponseFileSearchToolCall {

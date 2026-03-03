@@ -178,6 +178,9 @@ target_link_libraries(test_orchestrator PRIVATE llm)
 add_executable(test_results tests/unit/test_results.cpp)
 target_link_libraries(test_results PRIVATE llm)
 
+add_executable(test_projections tests/unit/test_projections.cpp)
+target_link_libraries(test_projections PRIVATE llm)
+
 # CTest registration
 enable_testing()
 add_test(NAME test_http          COMMAND test_http)
@@ -186,6 +189,7 @@ add_test(NAME test_policy        COMMAND test_policy)
 add_test(NAME test_model_group   COMMAND test_model_group)
 add_test(NAME test_orchestrator  COMMAND test_orchestrator)
 add_test(NAME test_results       COMMAND test_results)
+add_test(NAME test_projections   COMMAND test_projections)
 
 # Label curl tests as integration (require mock server)
 set_tests_properties(test_curl PROPERTIES LABELS "integration")
