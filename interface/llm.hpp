@@ -16,7 +16,7 @@
  * while one is alive will throw.
  *
  * Lifetime: Instance must outlive all ClientHandles created from it and all
- * outstanding AsyncResult / CoroResult objects.
+ * outstanding AsyncResult objects.
  *
  * @author jason.stredwick@gmail.com
  */
@@ -77,14 +77,10 @@ public:
         ~ClientHandle() = default;
 
         AsyncResult<Endpoint> CallAsync(const Request_t&, const AttemptPolicy& = {}) const;
-        CoroResult<Endpoint> CallCoro(const Request_t&, const AttemptPolicy& = {}) const;
         Result<Endpoint> CallSync(const Request_t&, const AttemptPolicy& = {}) const;
 
         template <typename Data>
         AsyncResult<Endpoint, Data> CallAsync(const Request_t&, Transform_f<Data>, const AttemptPolicy& = {}) const;
-
-        template <typename Data>
-        CoroResult<Endpoint, Data> CallCoro(const Request_t&, Transform_f<Data>, const AttemptPolicy& = {}) const;
 
         template <typename Data>
         Result<Endpoint, Data> CallSync(const Request_t&, Transform_f<Data>, const AttemptPolicy& = {}) const;
@@ -145,16 +141,6 @@ Instance::ClientHandle<Endpoint>::CallAsync(
 
 
 template <typename Endpoint>
-CoroResult<Endpoint>
-Instance::ClientHandle<Endpoint>::CallCoro(
-    const Request_t& request,
-    const AttemptPolicy& policy) const
-{
-    return jai::llm::CallCoro<Endpoint, void>(client_id, request, nullptr, policy);
-}
-
-
-template <typename Endpoint>
 Result<Endpoint>
 Instance::ClientHandle<Endpoint>::CallSync(
     const Request_t& request,
@@ -181,18 +167,6 @@ Instance::ClientHandle<Endpoint>::CallAsync(
         PrepareAsync<Endpoint>(client_id, request, policy),
         transform
     };
-}
-
-
-template <typename Endpoint>
-template <typename Data>
-CoroResult<Endpoint, Data>
-Instance::ClientHandle<Endpoint>::CallCoro(
-    const Request_t& request,
-    Transform_f<Data> transform,
-    const AttemptPolicy& policy) const
-{
-    return jai::llm::CallCoro<Endpoint, Data>(client_id, request, transform, policy);
 }
 
 

@@ -118,7 +118,7 @@ SubmitResult SubmitRequest(size_t client_id, std::vector<std::byte> body,
                            const AttemptPolicy& policy);
 
 // Accumulate token usage from a successful call into the Instance total.
-// Thread-safe. Called by Resolve() and CallCoro after successful extraction.
+// Thread-safe. Called by Resolve() after successful extraction.
 void AccumulateUsage(const TokenUsage& usage);
 
 

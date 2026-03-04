@@ -1,6 +1,5 @@
 #pragma once
 
-#include <coroutine>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -241,96 +240,6 @@ public:
     Result<Endpoint, Data> Take() {
         Resolve();
         return std::move(result);
-    }
-};
-
-
-/***
- * CoroResult — a pure delivery mechanism — coroutine-based result container
- *
- * The coroutine starts eagerly and suspends until the result is ready.
- * The caller retrieves the result via co_await or by polling
- * IsReady()/Get() after the event loop completes.
- *
- * The coroutine body (CallCoro) builds and co_returns Result,
- */
-template <typename Endpoint, typename Data = void>
-class CoroResult {
-public:
-    class Promise_t;
-    using promise_type = Promise_t;
-
-    class Promise_t {
-    public:
-        using coro_handle = std::coroutine_handle<Promise_t>;
-
-        Result<Endpoint, Data> result{};
-        std::coroutine_handle<> waiting{};
-
-        CoroResult get_return_object() {
-            return CoroResult{coro_handle::from_promise(*this)};
-        }
-
-        static auto initial_suspend() noexcept { return std::suspend_never{}; }
-
-        auto final_suspend() noexcept {
-            struct FinalAwaiter {
-                bool await_ready() const noexcept { return false; }
-
-                void await_suspend(coro_handle h) noexcept {
-                    if (h.promise().waiting) {
-                        h.promise().waiting.resume();
-                    }
-                }
-
-                void await_resume() noexcept {}
-            };
-            return FinalAwaiter{};
-        }
-
-        void return_value(Result<Endpoint, Data> val) { result = std::move(val); }
-
-        void unhandled_exception() {
-            // All exceptions should be caught in CallCoro and stored
-            // on the Result as error information. This is a last resort.
-            result.error.emplace("Unhandled exception in coroutine");
-        }
-
-        template <typename Awaitable>
-        auto&& await_transform(Awaitable&& a) { return std::forward<Awaitable>(a); }
-    };
-
-private:
-    using coro_handle = typename Promise_t::coro_handle;
-    coro_handle handle;
-
-public:
-    CoroResult(coro_handle h) : handle{h} {}
-
-    CoroResult(const CoroResult&) = delete;
-    CoroResult(CoroResult&& other) noexcept : handle{other.handle} {
-        other.handle = nullptr;
-    }
-    CoroResult& operator=(const CoroResult&) = delete;
-    CoroResult& operator=(CoroResult&&) = delete;
-    ~CoroResult() { if (handle) { handle.destroy(); } }
-
-    // Allows:  auto result = co_await client.CallCoro(request);
-    auto operator co_await() {
-        struct Awaiter {
-            CoroResult& task;
-
-            bool await_ready() const noexcept { return task.handle.done(); }
-
-            void await_suspend(std::coroutine_handle<> caller) noexcept {
-                task.handle.promise().waiting = caller;
-            }
-
-            Result<Endpoint, Data> await_resume() {
-                return std::move(task.handle.promise().result);
-            }
-        };
-        return Awaiter{*this};
     }
 };
 

@@ -608,20 +608,6 @@ jai::llm::AsyncResult<Endpoint, Result> CallAsync(
 }
 
 template <typename Endpoint>
-jai::llm::CoroResult<Endpoint, Result> CallCoro(
-    const jai::llm::Instance::ClientHandle<Endpoint>& client,
-    std::optional<Prompt> system_prompt,
-    const std::vector<Block>& content,
-    Options options = default_options,
-    const jai::llm::AttemptPolicy& policy = {}) {
-    auto request = Generate<typename Endpoint::Request_t>(
-        std::move(system_prompt), content, options);
-    return jai::llm::CallCoro<Endpoint, Result>(
-        client.Id(), request,
-        &Extract<typename Endpoint::Response_t>, policy);
-}
-
-template <typename Endpoint>
 jai::llm::Result<Endpoint, Result> CallSync(
     const jai::llm::Instance::ClientHandle<Endpoint>& client,
     std::optional<Prompt> system_prompt,

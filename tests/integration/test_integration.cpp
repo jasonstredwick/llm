@@ -5,7 +5,7 @@
  *     python tests/mock_server.py 8080
  *
  * These tests exercise the full request lifecycle:
- *   - Instance construction → CreateClient → CallSync/CallAsync/CallCoro
+ *   - Instance construction → CreateClient → CallSync/CallAsync
  *   - Provider-specific serialization → HTTP transport → deserialization
  *   - Error propagation (HTTP 500, connection refused)
  *   - Result metadata (attempts, usage, model, stop_reason)
