@@ -78,7 +78,7 @@ Last updated: 2026-02-17
 |-----------|--------|-------|
 | `Orchestrator` | Skeletal | Owns Interface + SlotPool, methods declared |
 | `SlotPool` | Skeletal | Type defined, allocation logic not implemented |
-| `AsyncTask` | Skeletal | Coroutine promise type defined, constructor throws |
+| `AsyncTask` | Removed | Coroutine support removed; may revisit with executor/scheduler integration |
 
 ### Projections
 
@@ -130,7 +130,7 @@ This is an inferred priority list based on code analysis. Adjust as needed.
 6. **Streaming support** — The architecture identifies streaming as a call semantic but no
    streaming infrastructure exists yet.
 
-7. **Async execution** — `AsyncTask` is a stub. Coroutine-based async needs real implementation.
+7. **Coroutine / async execution** — Coroutine support (CoroResult, CallCoro) was removed. C++ coroutines require an executor/scheduler to control thread affinity, which the library does not provide. Revisit if/when `std::execution` (P2300) matures or if user-supplied executor integration is needed. For Python asyncio integration, `AsyncResult` provides the necessary building blocks (IsReady, SyncBlock, Take).
 
 8. **Projection completeness** — `projection::text::Call()` is empty. Tools, multi-turn,
    document content, and streaming projections are not started.

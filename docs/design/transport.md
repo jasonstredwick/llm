@@ -14,7 +14,7 @@ it has no knowledge of JSON, prompts, or provider semantics.
 | `src/orchestrator.hpp` | `Orchestrator` (in progress) |
 | `src/orchestrator.cpp` | Implementation |
 | `src/memory.hpp` | `SlotPool` allocator |
-| `interface/clients/policy.hpp` | `AttemptPolicy`, `ConnectionPolicy`, `ClientPolicy` |
+| `interface/core/policy.hpp` | `AttemptPolicy`, `ConnectionPolicy`, `ClientPolicy` |
 
 ## http::Request
 
@@ -196,7 +196,7 @@ Move-only. The underlying `curl_slist` is freed on destruction via a custom dele
 
 ## AttemptPolicy
 
-Per-request configuration (from `interface/clients/policy.hpp`):
+Per-request configuration (from `interface/core/policy.hpp`):
 
 | Field | Type | Purpose |
 |-------|------|---------|

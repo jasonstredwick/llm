@@ -9,7 +9,7 @@ flow back to the user.
 1. Massive parallel HTTP calls to LLM providers with dynamic rate limit management.
 2. Provider-agnostic transport — the orchestrator knows HTTP, not Anthropic/Gemini/OpenAI.
 3. Support both projection-based usage (constrained, easy) and raw API usage (full control).
-4. Sync and async call patterns (targeting C++26 coroutines, with sync fallback).
+4. Sync and async call patterns (blocking CallSync, non-blocking AsyncResult).
 5. Single-threaded curl event loop now, multi-threaded support later.
 
 ## Layering
@@ -287,13 +287,13 @@ Governs proactive rate limiting:
 **Sync:** The client calls `orchestrator.RunUntilComplete()`, which drives `ExecOnce()` in a
 blocking loop until all submitted requests complete. The client then reads results through handles.
 
-**Async (C++26):** The client calls `orchestrator.Poll()` between coroutine yields, allowing the
-caller's event loop to interleave other work. Results are read through handles when slots reach
-terminal state. The coroutine machinery resumes the awaiting coroutine when its handle becomes
-terminal.
+**Async:** The client uses `AsyncResult` with non-blocking `IsReady()` checks, allowing the
+caller's event loop to interleave other work. Results are read through `Take()` when ready.
+For Python asyncio integration, `AsyncResult`'s `SyncBlock()` provides the signaling primitive
+needed to bridge into async frameworks.
 
 Both modes use the same orchestrator internals. The difference is only in how the outer loop is
-driven (blocking vs yielding).
+driven (blocking vs polling).
 
 ## Threading Model
 
