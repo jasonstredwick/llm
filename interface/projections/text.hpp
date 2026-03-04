@@ -587,6 +587,7 @@ constexpr Result Extract<openai::Response>(openai::Response const& response) {
 }
 
 
+#if 0
 // --- Tier 3: Projection Call functions ---
 // Build a provider-specific request via Generate, then delegate to Tier 2
 // with Extract as the transform. Endpoint is deduced from the ClientHandle.
@@ -597,7 +598,8 @@ jai::llm::AsyncResult<Endpoint, Result> CallAsync(
     std::optional<Prompt> system_prompt,
     const std::vector<Block>& content,
     Options options = default_options,
-    const jai::llm::AttemptPolicy& policy = {}) {
+    const jai::llm::AttemptPolicy& policy = {})
+{
     auto request = Generate<typename Endpoint::Request_t>(
         std::move(system_prompt), content, options);
     return jai::llm::CallAsync<Endpoint, Result>(
@@ -606,7 +608,7 @@ jai::llm::AsyncResult<Endpoint, Result> CallAsync(
 }
 
 template <typename Endpoint>
-jai::llm::CoroAsyncResult<Endpoint, Result> CallCoro(
+jai::llm::CoroResult<Endpoint, Result> CallCoro(
     const jai::llm::Instance::ClientHandle<Endpoint>& client,
     std::optional<Prompt> system_prompt,
     const std::vector<Block>& content,
@@ -632,6 +634,7 @@ jai::llm::Result<Endpoint, Result> CallSync(
         client.Id(), request,
         &Extract<typename Endpoint::Response_t>, policy);
 }
+#endif
 
 
 }

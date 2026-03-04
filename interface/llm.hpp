@@ -16,7 +16,7 @@
  * while one is alive will throw.
  *
  * Lifetime: Instance must outlive all ClientHandles created from it and all
- * outstanding AsyncResult / CoroAsyncResult objects.
+ * outstanding AsyncResult / CoroResult objects.
  *
  * @author jason.stredwick@gmail.com
  */
@@ -37,9 +37,12 @@
 namespace jai::llm {
 
 
+// Forward declarations
 struct Impl;
+void RunUntilDoneImpl(const std::shared_ptr<ResultSync>&);
 
 
+// Primary entry point to library.
 class Instance {
 public:
     enum class ThreadingMode {
@@ -58,6 +61,9 @@ public:
         using Request_t = typename Endpoint::Request_t;
         using Response_t = typename Endpoint::Response_t;
 
+        template <typename T>
+        using Transform_f = T (*)(const Response_t&);
+
     private:
         size_t client_id{0};
 
@@ -70,42 +76,18 @@ public:
         ClientHandle& operator=(ClientHandle&&) noexcept = default;
         ~ClientHandle() = default;
 
-        size_t Id() const { return client_id; }
-
-        AsyncResult<Endpoint> CallAsync(const Request_t& request, const AttemptPolicy& policy = {}) const {
-            return jai::llm::CallAsync<Endpoint>(client_id, request, policy);
-        }
-
-        CoroAsyncResult<Endpoint> CallCoro(const Request_t& request, const AttemptPolicy& policy = {}) const {
-            return jai::llm::CallCoro<Endpoint>(client_id, request, policy);
-        }
-
-        Result<Endpoint, void> CallSync(const Request_t& request, const AttemptPolicy& policy = {}) const {
-            return jai::llm::CallSync<Endpoint>(client_id, request, policy);
-        }
-
-        // ----- Tier 2: user transform overloads -----
+        AsyncResult<Endpoint> CallAsync(const Request_t&, const AttemptPolicy& = {}) const;
+        CoroResult<Endpoint> CallCoro(const Request_t&, const AttemptPolicy& = {}) const;
+        Result<Endpoint> CallSync(const Request_t&, const AttemptPolicy& = {}) const;
 
         template <typename Data>
-        AsyncResult<Endpoint, Data> CallAsync(const Request_t& request,
-                                              Data (*transform)(const Response_t&),
-                                              const AttemptPolicy& policy = {}) const {
-            return jai::llm::CallAsync<Endpoint, Data>(client_id, request, transform, policy);
-        }
+        AsyncResult<Endpoint, Data> CallAsync(const Request_t&, Transform_f<Data>, const AttemptPolicy& = {}) const;
 
         template <typename Data>
-        CoroAsyncResult<Endpoint, Data> CallCoro(const Request_t& request,
-                                                 Data (*transform)(const Response_t&),
-                                                 const AttemptPolicy& policy = {}) const {
-            return jai::llm::CallCoro<Endpoint, Data>(client_id, request, transform, policy);
-        }
+        CoroResult<Endpoint, Data> CallCoro(const Request_t&, Transform_f<Data>, const AttemptPolicy& = {}) const;
 
         template <typename Data>
-        Result<Endpoint, Data> CallSync(const Request_t& request,
-                                        Data (*transform)(const Response_t&),
-                                        const AttemptPolicy& policy = {}) const {
-            return jai::llm::CallSync<Endpoint, Data>(client_id, request, transform, policy);
-        }
+        Result<Endpoint, Data> CallSync(const Request_t&, Transform_f<Data>, const AttemptPolicy& = {}) const;
     };
 
 private:
@@ -137,37 +119,114 @@ public:
     void Stop();
 
     //----- Client factory -----
-    // Returns a lightweight ClientHandle parameterized on the endpoint tag.
-    // Delegates to the free-function CreateClientImpl (declared in core/call.hpp),
-    // which each endpoint translation unit specializes.
-    //
-    // Endpoint is specified explicitly; Auth is deduced from the argument:
-    //   auto client = inst.CreateClient<anthropic::Messages>(auth, model);
 
     template <typename Endpoint, typename Auth>
-    ClientHandle<Endpoint> CreateClient(Auth auth,
-                                        std::string model,
-                                        const ClientPolicy& policy = {})
-    {
-        try {
-            auto id = jai::llm::CreateClientImpl<Endpoint, Auth>(std::move(auth), std::move(model), policy);
-            return ClientHandle<Endpoint>{id};
-        } catch (const AnnotatedException&) {
-            throw;
-        } catch (const std::exception& e) {
-            throw AnnotatedException{e.what()};
-        }
-    }
+    ClientHandle<Endpoint> CreateClient(Auth, std::string model, const ClientPolicy& = {});
 
     //----- Observability -----
 
     size_t PendingCount() const;
     bool IsRunning() const;
-
-    // Cumulative token usage across all calls since Instance construction.
-    // Thread-safe.
     TokenUsage TotalUsage() const;
 };
+
+
+template <typename Endpoint>
+AsyncResult<Endpoint>
+Instance::ClientHandle<Endpoint>::CallAsync(
+    const Request_t& request,
+    const AttemptPolicy& policy) const
+{
+    return AsyncResult<Endpoint, void>{
+        PrepareAsync<Endpoint>(client_id, request, policy),
+        nullptr
+    };
+}
+
+
+template <typename Endpoint>
+CoroResult<Endpoint>
+Instance::ClientHandle<Endpoint>::CallCoro(
+    const Request_t& request,
+    const AttemptPolicy& policy) const
+{
+    return jai::llm::CallCoro<Endpoint, void>(client_id, request, nullptr, policy);
+}
+
+
+template <typename Endpoint>
+Result<Endpoint>
+Instance::ClientHandle<Endpoint>::CallSync(
+    const Request_t& request,
+    const AttemptPolicy& policy) const
+{
+    auto aresult = AsyncResult<Endpoint, void>{
+        PrepareAsync<Endpoint>(client_id, request, policy),
+        nullptr
+    };
+    RunUntilDoneImpl(aresult.SyncBlock());
+    return aresult.Take();
+}
+
+
+template <typename Endpoint>
+template <typename Data>
+AsyncResult<Endpoint, Data>
+Instance::ClientHandle<Endpoint>::CallAsync(
+    const Request_t& request,
+    Transform_f<Data> transform,
+    const AttemptPolicy& policy) const
+{
+    return AsyncResult<Endpoint, Data>{
+        PrepareAsync<Endpoint>(client_id, request, policy),
+        transform
+    };
+}
+
+
+template <typename Endpoint>
+template <typename Data>
+CoroResult<Endpoint, Data>
+Instance::ClientHandle<Endpoint>::CallCoro(
+    const Request_t& request,
+    Transform_f<Data> transform,
+    const AttemptPolicy& policy) const
+{
+    return jai::llm::CallCoro<Endpoint, Data>(client_id, request, transform, policy);
+}
+
+
+template <typename Endpoint>
+template <typename Data>
+Result<Endpoint, Data>
+Instance::ClientHandle<Endpoint>::CallSync(
+    const Request_t& request,
+    Transform_f<Data> transform,
+    const AttemptPolicy& policy) const
+{
+    auto aresult = AsyncResult<Endpoint, Data>{
+        PrepareAsync<Endpoint>(client_id, request, policy),
+        transform
+    };
+    RunUntilDoneImpl(aresult.SyncBlock());
+    return aresult.Take();
+}
+
+
+template <typename Endpoint, typename Auth>
+Instance::ClientHandle<Endpoint> Instance::CreateClient(Auth auth,
+                                                        std::string model,
+                                                        const ClientPolicy& policy)
+{
+    try {
+        auto id = jai::llm::CreateClientImpl<Endpoint, Auth>(std::move(auth), std::move(model), policy);
+        return ClientHandle<Endpoint>{id};
+    } catch (const AnnotatedException&) {
+        throw;
+    } catch (const std::exception& e) {
+        throw AnnotatedException{e.what()};
+    }
+}
 
 
 }

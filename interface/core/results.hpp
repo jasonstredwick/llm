@@ -78,7 +78,7 @@ struct AttemptMetadata {
  * (if failed), and a chronological list of per-attempt metadata covering
  * every counted attempt (silent retries like 429 are excluded).
  */
-template <typename Endpoint, typename Data>
+template <typename Endpoint, typename Data = void>
 struct Result {
     using Data_t = Data;
     using Response_t = typename Endpoint::Response_t;
@@ -101,29 +101,20 @@ struct Result<Endpoint, void> {
 
 
 /***
- * TransformResult — apply a user-provided transform to a Tier 1 result.
- *
- * Converts Result<Endpoint, void> into Result<Endpoint, Data> by running
- * the transform function on the response data. The original Response_t is
- * preserved in result.response regardless of whether the transform succeeds.
- * If the transform throws, the error is captured on the result.
+ * AsyncResultArgs - a structure to be filled with information used to
+ *                   construct AsyncResult.
  */
-template <typename Endpoint, typename Data>
-Result<Endpoint, Data> TransformResult(Result<Endpoint, void>&& tier1,
-                                        Data (*transform)(const typename Endpoint::Response_t&)) {
-    Result<Endpoint, Data> result;
-    result.error = std::move(tier1.error);
-    result.attempts = std::move(tier1.attempts);
-    if (tier1.data) {
-        try {
-            result.data.emplace(transform(*tier1.data));
-        } catch (const std::exception& e) {
-            result.error.emplace(std::string{"User transform failed: "} + e.what());
-        }
-        result.response.emplace(std::move(*tier1.data));
-    }
-    return result;
-}
+template <typename Endpoint>
+struct AsyncResultArgs {
+    using Deserialize_f = typename Endpoint::Response_t (*)(Orchestrator*, Ticket);
+    using Extract_f = void (*)(const typename Endpoint::Response_t&, AttemptMetadata&);
+
+    Orchestrator* orch;
+    Ticket ticket;
+    Deserialize_f deserialize_fn;
+    Extract_f extract_fn;
+    std::shared_ptr<ResultSync> result_sync;
+};
 
 
 /***
@@ -151,9 +142,9 @@ protected:
     // Wait/retry loop
     void Resolve();
 
-public:
     AsyncResultBase(Orchestrator&, Ticket, std::shared_ptr<ResultSync>);
 
+public:
     AsyncResultBase(AsyncResultBase const&) = delete;
     AsyncResultBase(AsyncResultBase&&) = default;
     AsyncResultBase& operator=(AsyncResultBase const&) = delete;
@@ -162,49 +153,54 @@ public:
 
     std::shared_ptr<ResultSync>& SyncBlock() { return sync; }
 
+protected:
     // Non-blocking check. Safe to call from any thread.
     bool IsReadyBase() const;
 };
 
 
-// Forward declaration — two-param template with void default.
-template <typename Endpoint, typename Data = void>
-class AsyncResult;
-
-
 /***
- * AsyncResult<Endpoint, void> — blocking pull-based result container (Tier 1).
- *
- * Parameterized on an Endpoint tag type (e.g. anthropic::Messages).
- * Stores a Result<Endpoint, void> aggregate with data, error, and per-attempt
- * metadata. Implements the virtual hooks for deserialization, envelope
- * metadata extraction, and error emplacement.
- *
- * AsyncResult is a pure delivery mechanism — all outcome information
- * (data, error, diagnostics) lives on the Result itself.
- *
- * Non-copyable, movable.
+ * AsyncResult — a pure delivery mechanism — blocking pull-based result container.
  */
-template <typename Endpoint>
-class AsyncResult<Endpoint, void> : public AsyncResultBase {
+template <typename Endpoint, typename Data = void>
+class AsyncResult : public AsyncResultBase {
 public:
     using Response_t = typename Endpoint::Response_t;
 
-    using DeserializeFn = Response_t (*)(Orchestrator*, Ticket);
-    using ExtractFn = void (*)(const Response_t&, AttemptMetadata&);
+    using Deserialize_f = Response_t (*)(Orchestrator*, Ticket);
+    using Extract_f = void (*)(const Response_t&, AttemptMetadata&);
+    using Transform_f = Data (*)(const Response_t&);
 
 private:
-    Result<Endpoint, void> result{};
-    DeserializeFn deserialize_fn{nullptr};
-    ExtractFn extract_fn{nullptr};
+    Result<Endpoint, Data> result{};
+    Deserialize_f deserialize_fn{nullptr};
+    Extract_f extract_fn{nullptr};
+    Transform_f transform_fn{nullptr};
 
     void ApplyDeserialization() override {
-        result.data.emplace(deserialize_fn(orchestrator, ticket));
+        if constexpr (std::is_void_v<Data>) {
+            if (deserialize_fn) {
+                result.data.emplace(deserialize_fn(orchestrator, ticket));
+            }
+        } else {
+            if (deserialize_fn) {
+                result.response.emplace(deserialize_fn(orchestrator, ticket));
+                if (transform_fn) {
+                    result.data.emplace(transform_fn(*result.response));
+                }
+            }
+        }
     }
 
     void ApplyExtraction(AttemptMetadata& am) override {
-        if (extract_fn && result.data) {
-            extract_fn(*result.data, am);
+        if constexpr (std::is_void_v<Data>) {
+            if (extract_fn && result.data) {
+                extract_fn(*result.data, am);
+            }
+        } else {
+            if (extract_fn && result.response) {
+                extract_fn(*result.response, am);
+            }
         }
     }
 
@@ -217,11 +213,11 @@ private:
     }
 
 public:
-    AsyncResult(Orchestrator& orch, Ticket tkt, DeserializeFn fn,
-                ExtractFn efn, std::shared_ptr<ResultSync> s)
-        : AsyncResultBase{orch, tkt, std::move(s)}
-        , deserialize_fn{fn}
-        , extract_fn{efn}
+    AsyncResult(AsyncResultArgs<Endpoint>&& args, Transform_f tfn)
+        : AsyncResultBase{args.orch, args.ticket, std::move(args.result_sync)}
+        , deserialize_fn{args.deserialize_fn}
+        , extract_fn{args.extract_fn}
+        , transform_fn{tfn}
     {}
 
     AsyncResult(AsyncResult const&) = delete;
@@ -230,215 +226,36 @@ public:
     AsyncResult& operator=(AsyncResult&&) = default;
     ~AsyncResult() override = default;
 
-    // ----- User interface -----
 
     // Non-blocking check. Safe to call from any thread.
     bool IsReady() const { return IsReadyBase(); }
 
     // Blocking access — resolves on first call, then returns cached result.
-    const Result<Endpoint, void>& Get() {
-        Resolve();
-        return result;
-    }
-
-    // Move the result out — blocks until resolved.
-    // After Take(), the internal result is in a moved-from state.
-    Result<Endpoint, void> Take() {
-        Resolve();
-        return std::move(result);
-    }
-};
-
-
-/***
- * AsyncResult<Endpoint, Data> — blocking pull-based result container (Tier 2).
- *
- * Wraps an AsyncResult<Endpoint, void> and applies a user-provided transform
- * function to convert Response_t into Data. The original Response_t is
- * preserved in result.response.
- *
- * Does NOT inherit from AsyncResultBase — delegates to the inner Tier 1
- * AsyncResult for all orchestrator interaction.
- *
- * Non-copyable, movable.
- */
-template <typename Endpoint, typename Data>
-class AsyncResult {
-    using Response_t = typename Endpoint::Response_t;
-
-    AsyncResult<Endpoint, void> inner;
-    Data (*transform_fn)(const Response_t&);
-    Result<Endpoint, Data> result{};
-    bool resolved{false};
-
-    void ResolveTransform() {
-        if (resolved) { return; }
-        result = TransformResult<Endpoint, Data>(inner.Take(), transform_fn);
-        resolved = true;
-    }
-
-public:
-    AsyncResult(AsyncResult<Endpoint, void> inner_, Data (*fn)(const Response_t&))
-        : inner{std::move(inner_)}, transform_fn{fn} {}
-
-    AsyncResult(const AsyncResult&) = delete;
-    AsyncResult(AsyncResult&&) = default;
-    AsyncResult& operator=(const AsyncResult&) = delete;
-    AsyncResult& operator=(AsyncResult&&) = default;
-    ~AsyncResult() = default;
-
-    // ----- User interface -----
-
-    // Non-blocking check. Safe to call from any thread.
-    bool IsReady() const { return inner.IsReady(); }
-
-    // Blocking access — resolves on first call, then returns cached result.
     const Result<Endpoint, Data>& Get() {
-        ResolveTransform();
+        Resolve();
         return result;
     }
 
     // Move the result out — blocks until resolved.
     // After Take(), the internal result is in a moved-from state.
     Result<Endpoint, Data> Take() {
-        ResolveTransform();
+        Resolve();
         return std::move(result);
     }
 };
 
 
-// Forward declaration — two-param template with void default.
-template <typename Endpoint, typename Data = void>
-class CoroAsyncResult;
-
-
 /***
- * CoroAsyncResult<Endpoint, void> — coroutine-based result container (Tier 1).
+ * CoroResult — a pure delivery mechanism — coroutine-based result container
  *
- * Parameterized on an Endpoint tag type (e.g. anthropic::Messages).
  * The coroutine starts eagerly and suspends until the result is ready.
  * The caller retrieves the result via co_await or by polling
  * IsReady()/Get() after the event loop completes.
  *
- * The coroutine body (CallCoro) builds and co_returns a Result<Endpoint, void>,
- * which includes per-attempt metadata. All outcome information lives on the
- * Result — CoroAsyncResult is a pure delivery mechanism.
- *
- * Non-copyable, move-constructible.
+ * The coroutine body (CallCoro) builds and co_returns Result,
  */
-template <typename Endpoint>
-class CoroAsyncResult<Endpoint, void> {
-public:
-    class Promise_t;
-    using promise_type = Promise_t;
-
-    class Promise_t {
-    public:
-        using coro_handle = std::coroutine_handle<Promise_t>;
-
-        Result<Endpoint, void> result{};
-        std::coroutine_handle<> waiting{};
-
-        CoroAsyncResult get_return_object() {
-            return CoroAsyncResult{coro_handle::from_promise(*this)};
-        }
-
-        static auto initial_suspend() noexcept { return std::suspend_never{}; }
-
-        auto final_suspend() noexcept {
-            struct FinalAwaiter {
-                bool await_ready() const noexcept { return false; }
-
-                void await_suspend(coro_handle h) noexcept {
-                    if (h.promise().waiting) {
-                        h.promise().waiting.resume();
-                    }
-                }
-
-                void await_resume() noexcept {}
-            };
-            return FinalAwaiter{};
-        }
-
-        void return_value(Result<Endpoint, void> val) { result = std::move(val); }
-
-        void unhandled_exception() {
-            // All exceptions should be caught in CallCoro and stored
-            // on the Result as error information. This is a last resort.
-            result.error.emplace("Unhandled exception in coroutine");
-        }
-
-        template <typename Awaitable>
-        auto&& await_transform(Awaitable&& a) { return std::forward<Awaitable>(a); }
-    };
-
-private:
-    using coro_handle = typename Promise_t::coro_handle;
-    coro_handle handle;
-
-public:
-    CoroAsyncResult(coro_handle h) : handle{h} {}
-
-    CoroAsyncResult(const CoroAsyncResult&) = delete;
-    CoroAsyncResult(CoroAsyncResult&& other) noexcept : handle{other.handle} {
-        other.handle = nullptr;
-    }
-    CoroAsyncResult& operator=(const CoroAsyncResult&) = delete;
-    CoroAsyncResult& operator=(CoroAsyncResult&&) = delete;
-    ~CoroAsyncResult() { if (handle) { handle.destroy(); } }
-
-    // ----- Polling interface (after RunOnce/RunUntilComplete) -----
-
-    // Non-blocking check. Safe to call from any thread.
-    bool IsReady() const { return handle.done(); }
-
-    // Access the result.
-    // Caller must ensure IsReady() before calling.
-    const Result<Endpoint, void>& Get() const {
-        return handle.promise().result;
-    }
-
-    // Move the result out.
-    // Caller must ensure IsReady() before calling.
-    // After Take(), the internal result is in a moved-from state.
-    Result<Endpoint, void> Take() {
-        return std::move(handle.promise().result);
-    }
-
-    // ----- Awaitable interface -----
-    // Allows:  Result<Endpoint, void> result = co_await client.CallCoro(request);
-
-    auto operator co_await() {
-        struct Awaiter {
-            CoroAsyncResult& task;
-
-            bool await_ready() const noexcept { return task.handle.done(); }
-
-            void await_suspend(std::coroutine_handle<> caller) noexcept {
-                task.handle.promise().waiting = caller;
-            }
-
-            Result<Endpoint, void> await_resume() {
-                return std::move(task.handle.promise().result);
-            }
-        };
-        return Awaiter{*this};
-    }
-};
-
-
-/***
- * CoroAsyncResult<Endpoint, Data> — coroutine-based result container (Tier 2).
- *
- * Used by the Tier 2 CallCoro overload, which co_awaits the Tier 1
- * CoroAsyncResult<Endpoint, void> and applies a user transform via
- * TransformResult. The result carries both the user Data and the
- * original Response_t.
- *
- * Non-copyable, move-constructible.
- */
-template <typename Endpoint, typename Data>
-class CoroAsyncResult {
+template <typename Endpoint, typename Data = void>
+class CoroResult {
 public:
     class Promise_t;
     using promise_type = Promise_t;
@@ -450,8 +267,8 @@ public:
         Result<Endpoint, Data> result{};
         std::coroutine_handle<> waiting{};
 
-        CoroAsyncResult get_return_object() {
-            return CoroAsyncResult{coro_handle::from_promise(*this)};
+        CoroResult get_return_object() {
+            return CoroResult{coro_handle::from_promise(*this)};
         }
 
         static auto initial_suspend() noexcept { return std::suspend_never{}; }
@@ -474,6 +291,8 @@ public:
         void return_value(Result<Endpoint, Data> val) { result = std::move(val); }
 
         void unhandled_exception() {
+            // All exceptions should be caught in CallCoro and stored
+            // on the Result as error information. This is a last resort.
             result.error.emplace("Unhandled exception in coroutine");
         }
 
@@ -486,34 +305,20 @@ private:
     coro_handle handle;
 
 public:
-    CoroAsyncResult(coro_handle h) : handle{h} {}
+    CoroResult(coro_handle h) : handle{h} {}
 
-    CoroAsyncResult(const CoroAsyncResult&) = delete;
-    CoroAsyncResult(CoroAsyncResult&& other) noexcept : handle{other.handle} {
+    CoroResult(const CoroResult&) = delete;
+    CoroResult(CoroResult&& other) noexcept : handle{other.handle} {
         other.handle = nullptr;
     }
-    CoroAsyncResult& operator=(const CoroAsyncResult&) = delete;
-    CoroAsyncResult& operator=(CoroAsyncResult&&) = delete;
-    ~CoroAsyncResult() { if (handle) { handle.destroy(); } }
+    CoroResult& operator=(const CoroResult&) = delete;
+    CoroResult& operator=(CoroResult&&) = delete;
+    ~CoroResult() { if (handle) { handle.destroy(); } }
 
-    // ----- Polling interface (after RunOnce/RunUntilComplete) -----
-
-    bool IsReady() const { return handle.done(); }
-
-    const Result<Endpoint, Data>& Get() const {
-        return handle.promise().result;
-    }
-
-    Result<Endpoint, Data> Take() {
-        return std::move(handle.promise().result);
-    }
-
-    // ----- Awaitable interface -----
-    // Allows:  Result<Endpoint, Data> result = co_await client.CallCoro(request, &transform);
-
+    // Allows:  auto result = co_await client.CallCoro(request);
     auto operator co_await() {
         struct Awaiter {
-            CoroAsyncResult& task;
+            CoroResult& task;
 
             bool await_ready() const noexcept { return task.handle.done(); }
 

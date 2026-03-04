@@ -270,24 +270,25 @@ void ExtractEnvelope(const gemini::GenerateContentResponse& data, AttemptMetadat
 // ----- CallAsync -----
 
 template <>
-AsyncResult<gemini::GenerateContent> CallAsync<gemini::GenerateContent>(
+AsyncResultArgs<gemini::GenerateContent> PrepareAsync(
     size_t client_id,
     const gemini::GenerateContent::Request_t& request,
     const AttemptPolicy& policy)
 {
     auto sr = SubmitRequest(client_id, Serialize<gemini::GenerateContent>(request), policy);
-    return AsyncResult<gemini::GenerateContent>{
-        *sr.orchestrator, sr.ticket,
-        &DeserializeAndRelease<gemini::GenerateContent>,
-        &ExtractEnvelope,
-        std::move(sr.sync)};
+    return AsyncResultArgs<gemini::GenerateContent>{
+        .orch=sr.orchestrator,
+        .ticket=sr.ticket,
+        .deserialize_fn=&DeserializeAndRelease<gemini::GenerateContent>,
+        .extract_fn=&ExtractEnvelope,
+        .result_sync=std::move(sr.sync)};
 }
 
 
 // ----- CallCoro -----
 
 template <>
-CoroAsyncResult<gemini::GenerateContent> CallCoro<gemini::GenerateContent>(
+CoroResult<gemini::GenerateContent> CallCoro<gemini::GenerateContent>(
     size_t client_id,
     const gemini::GenerateContent::Request_t& request,
     const AttemptPolicy& policy)
@@ -333,19 +334,6 @@ CoroAsyncResult<gemini::GenerateContent> CallCoro<gemini::GenerateContent>(
             }
         }
     }
-}
-
-
-// ----- CallSync -----
-
-template <>
-Result<gemini::GenerateContent, void> CallSync<gemini::GenerateContent>(
-    size_t client_id,
-    const gemini::GenerateContent::Request_t& request,
-    const AttemptPolicy& policy)
-{
-    auto ar = CallAsync<gemini::GenerateContent>(client_id, request, policy);
-    return ar.Take();
 }
 
 

@@ -10,6 +10,7 @@
 
 #include "core/error.hpp"
 #include "instance_impl.hpp"
+#include "results.hpp"
 
 #include <thread>
 
@@ -204,6 +205,28 @@ size_t FindOrCreateClient(std::string auth_identity, std::string endpoint_url,
     }));
     impl.client_map.emplace(std::move(key), id);
     return id;
+}
+
+
+void RunUntilDoneImpl(const std::shared_ptr<ResultSync>& sync) {
+    try {
+        auto& impl = *Impl::GetImpl();
+
+        if (impl.config.threading == Instance::ThreadingMode::INTERNAL) {
+            return;
+        }
+        while (true) {
+            {
+                std::lock_guard lock(sync->mtx);
+                if (sync->ready) { return; }
+            }
+            impl.orchestrator.RunOnce();
+        }
+    } catch (const AnnotatedException&) {
+        throw;
+    } catch (const std::exception& e) {
+        throw AnnotatedException{e.what()};
+    }
 }
 
 

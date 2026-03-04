@@ -175,24 +175,25 @@ void ExtractEnvelope(const anthropic::Message& data, AttemptMetadata& am) {
 // ----- CallAsync -----
 
 template <>
-AsyncResult<anthropic::Messages> CallAsync<anthropic::Messages>(
+AsyncResultArgs<anthropic::Messages> PrepareAsync(
     size_t client_id,
     const anthropic::Messages::Request_t& request,
     const AttemptPolicy& policy)
 {
     auto sr = SubmitRequest(client_id, Serialize<anthropic::Messages>(request), policy);
-    return AsyncResult<anthropic::Messages>{
-        *sr.orchestrator, sr.ticket,
-        &DeserializeAndRelease<anthropic::Messages>,
-        &ExtractEnvelope,
-        std::move(sr.sync)};
+    return AsyncResultArgs<anthropic::Messages>{
+        .orch=sr.orchestrator,
+        .ticket=sr.ticket,
+        .deserialize_fn=&DeserializeAndRelease<anthropic::Messages>,
+        .extract_fn=&ExtractEnvelope,
+        .result_sync=std::move(sr.sync)};
 }
 
 
 // ----- CallCoro -----
 
 template <>
-CoroAsyncResult<anthropic::Messages> CallCoro<anthropic::Messages>(
+CoroResult<anthropic::Messages> CallCoro<anthropic::Messages>(
     size_t client_id,
     const anthropic::Messages::Request_t& request,
     const AttemptPolicy& policy)
@@ -238,19 +239,6 @@ CoroAsyncResult<anthropic::Messages> CallCoro<anthropic::Messages>(
             }
         }
     }
-}
-
-
-// ----- CallSync -----
-
-template <>
-Result<anthropic::Messages, void> CallSync<anthropic::Messages>(
-    size_t client_id,
-    const anthropic::Messages::Request_t& request,
-    const AttemptPolicy& policy)
-{
-    auto ar = CallAsync<anthropic::Messages>(client_id, request, policy);
-    return ar.Take();
 }
 
 

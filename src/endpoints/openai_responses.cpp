@@ -240,24 +240,25 @@ void ExtractEnvelope(const openai::Response& data, AttemptMetadata& am) {
 // ----- CallAsync -----
 
 template <>
-AsyncResult<openai::Responses> CallAsync<openai::Responses>(
+AsyncResultArgs<openai::Responses> PrepareAsync(
     size_t client_id,
     const openai::Responses::Request_t& request,
     const AttemptPolicy& policy)
 {
     auto sr = SubmitRequest(client_id, Serialize<openai::Responses>(request), policy);
-    return AsyncResult<openai::Responses>{
-        *sr.orchestrator, sr.ticket,
-        &DeserializeAndRelease<openai::Responses>,
-        &ExtractEnvelope,
-        std::move(sr.sync)};
+    return AsyncResultArgs<openai::Responses>{
+        .orch=sr.orchestrator,
+        .ticket=sr.ticket,
+        .deserialize_fn=&DeserializeAndRelease<openai::Responses>,
+        .extract_fn=&ExtractEnvelope,
+        .result_sync=std::move(sr.sync)};
 }
 
 
 // ----- CallCoro -----
 
 template <>
-CoroAsyncResult<openai::Responses> CallCoro<openai::Responses>(
+CoroResult<openai::Responses> CallCoro<openai::Responses>(
     size_t client_id,
     const openai::Responses::Request_t& request,
     const AttemptPolicy& policy)
@@ -303,19 +304,6 @@ CoroAsyncResult<openai::Responses> CallCoro<openai::Responses>(
             }
         }
     }
-}
-
-
-// ----- CallSync -----
-
-template <>
-Result<openai::Responses, void> CallSync<openai::Responses>(
-    size_t client_id,
-    const openai::Responses::Request_t& request,
-    const AttemptPolicy& policy)
-{
-    auto ar = CallAsync<openai::Responses>(client_id, request, policy);
-    return ar.Take();
 }
 
 
