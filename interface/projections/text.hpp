@@ -46,8 +46,21 @@ struct Result {
 };
 
 
+// Pre-parsed model identity — computed once at ClientHandle construction,
+// passed to Generate for version-gated feature decisions.
+struct ModelInfo {
+    std::string model;      // raw model string (set in request body)
+    std::string family;     // normalized family: "opus", "sonnet", "gemini-2.5-pro", "gpt-5", "o3", ...
+    double version{0.0};    // extracted major.minor version number
+};
+
+// Per-endpoint parsing — specializations live alongside Generate/Extract.
 template <typename Endpoint>
-typename Endpoint::Request_t Generate(std::optional<Prompt> system_prompt,
+ModelInfo ParseModelInfo(std::string_view model);
+
+template <typename Endpoint>
+typename Endpoint::Request_t Generate(const ModelInfo& model_info,
+                                      std::optional<Prompt> system_prompt,
                                       const std::vector<Block>& content,
                                       Options options = default_options);
 
@@ -65,15 +78,26 @@ Result Extract(typename Endpoint::Response_t const& response);
 //      is the extracted string.
 //   2) User transform — user provides Data (*)(const Result&) to convert the
 //      extracted text into their own type. Returns Result<Endpoint, Data>.
-//      (Requires std::function for composition — deferred.)
 
 template <typename Endpoint>
 class ClientHandle {
     jai::llm::Instance::ClientHandle<Endpoint> handle;
+    ModelInfo info;
 
 public:
-    explicit ClientHandle(jai::llm::Instance::ClientHandle<Endpoint> h)
-        : handle{std::move(h)} {}
+    // One-stop construction: creates the underlying client and stores model info.
+    template <typename Auth>
+    ClientHandle(jai::llm::Instance& instance, Auth auth, std::string model,
+                 const jai::llm::ClientPolicy& policy = {})
+        : handle{instance.template CreateClient<Endpoint>(std::move(auth), model, policy)}
+        , info{ParseModelInfo<Endpoint>(model)}
+    {}
+
+    // Wrap a pre-built handle with model info.
+    ClientHandle(jai::llm::Instance::ClientHandle<Endpoint> h, std::string model)
+        : handle{std::move(h)}
+        , info{ParseModelInfo<Endpoint>(model)}
+    {}
 
     ClientHandle(const ClientHandle&) = default;
     ClientHandle(ClientHandle&&) noexcept = default;
@@ -90,7 +114,7 @@ public:
               const jai::llm::AttemptPolicy& policy = {}) const
     {
         auto request = Generate<Endpoint>(
-            std::move(system_prompt), content, options);
+            info, std::move(system_prompt), content, options);
         return handle.CallAsync(request, &Extract<Endpoint>, policy);
     }
 
@@ -101,7 +125,7 @@ public:
              const jai::llm::AttemptPolicy& policy = {}) const
     {
         auto request = Generate<Endpoint>(
-            std::move(system_prompt), content, options);
+            info, std::move(system_prompt), content, options);
         return handle.CallSync(request, &Extract<Endpoint>, policy);
     }
 
@@ -118,7 +142,7 @@ public:
               const jai::llm::AttemptPolicy& policy = {}) const
     {
         auto request = Generate<Endpoint>(
-            std::move(system_prompt), content, options);
+            info, std::move(system_prompt), content, options);
         auto composed = [transform](typename Endpoint::Response_t const& response) -> Data {
             return transform(Extract<Endpoint>(response));
         };
@@ -134,7 +158,7 @@ public:
              const jai::llm::AttemptPolicy& policy = {}) const
     {
         auto request = Generate<Endpoint>(
-            std::move(system_prompt), content, options);
+            info, std::move(system_prompt), content, options);
         auto composed = [transform](typename Endpoint::Response_t const& response) -> Data {
             return transform(Extract<Endpoint>(response));
         };

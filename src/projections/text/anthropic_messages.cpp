@@ -1,5 +1,6 @@
 // proj::text Generate/Extract specializations for Anthropic Messages endpoint.
 
+#include <charconv>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -16,9 +17,65 @@
 namespace jai::llm::proj::text {
 
 
+// ----- ParseModelInfo -----
+// Anthropic model strings: "claude-{family}-{version}-{date}"
+// e.g. "claude-opus-4-20250514", "claude-sonnet-4.5-20250929"
+
+namespace {
+// Parse "major" or "major.minor" from a string_view into a double.
+// Stops at the first non-numeric/non-dot character. Returns 0.0 on failure.
+double ParseVersion(std::string_view sv) {
+    int64_t major = 0;
+    auto [p1, ec1] = std::from_chars(sv.data(), sv.data() + sv.size(), major);
+    if (ec1 != std::errc{}) return 0.0;
+    if (p1 < sv.data() + sv.size() && *p1 == '.') {
+        int64_t minor = 0;
+        auto [p2, ec2] = std::from_chars(p1 + 1, sv.data() + sv.size(), minor);
+        if (ec2 == std::errc{}) {
+            // Compute decimal: count digits in minor to get correct fraction
+            int digits = static_cast<int>(p2 - (p1 + 1));
+            double divisor = 1.0;
+            for (int i = 0; i < digits; ++i) divisor *= 10.0;
+            return static_cast<double>(major) + static_cast<double>(minor) / divisor;
+        }
+    }
+    return static_cast<double>(major);
+}
+} // anonymous namespace
+
+template <>
+ModelInfo ParseModelInfo<anthropic::Messages>(std::string_view model) {
+    auto family = std::string{};
+    if (model.find("opus")   != std::string_view::npos) family = "opus";
+    else if (model.find("sonnet") != std::string_view::npos) family = "sonnet";
+    else if (model.find("haiku")  != std::string_view::npos) family = "haiku";
+
+    // Extract version: find the family name, then parse the number after the next '-'.
+    auto version = 0.0;
+    if (!family.empty()) {
+        auto pos = model.find(family);
+        if (pos != std::string_view::npos) {
+            pos += family.size();
+            if (pos < model.size() && model[pos] == '-') {
+                version = ParseVersion(model.substr(pos + 1));
+            }
+        }
+    }
+
+    return ModelInfo{
+        .model=std::string{model},
+        .family=std::move(family),
+        .version=version
+    };
+}
+
+
+// ----- Generate -----
+
 template <>
 anthropic::Messages::Request_t
-Generate<anthropic::Messages>(std::optional<Prompt> system_prompt,
+Generate<anthropic::Messages>(const ModelInfo& model_info,
+                              std::optional<Prompt> system_prompt,
                               const std::vector<Block>& content,
                               Options options)
 {
@@ -51,7 +108,7 @@ Generate<anthropic::Messages>(std::optional<Prompt> system_prompt,
 
     auto output_config = std::optional<Request::OutputConfig>{};
     auto thinking_config = std::optional<Request::ThinkingConfigParam>{};
-    if (true) { // model version >= 4.6
+    if (model_info.version >= 4.6) {
         if (options.thinking_effort) {
             using Effort = Request::OutputConfig::Effort;
             switch (*options.thinking_effort) {
@@ -73,7 +130,7 @@ Generate<anthropic::Messages>(std::optional<Prompt> system_prompt,
                     break;
                 case proj::text::ThinkingEffort::MAX:
                     thinking_config = Request::ThinkingConfigAdaptive{};
-                    if (true) { // opus 4.6
+                    if (model_info.family == "opus" && model_info.version >= 4.6) {
                         output_config = Request::OutputConfig{.effort=Effort::MAX};
                     } else {
                         output_config = Request::OutputConfig{.effort=Effort::HIGH};
@@ -100,7 +157,7 @@ Generate<anthropic::Messages>(std::optional<Prompt> system_prompt,
             .content=MessageParam::Content{content | std::views::transform(TransformBlock_f) | std::ranges::to<std::vector>()},
             .role=MessageParam::Role::USER
         }},
-        .model="",
+        .model=model_info.model,
         .output_config=output_config,
         .system=std::move(system),
         .temperature=options.temperature,

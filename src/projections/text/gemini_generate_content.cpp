@@ -1,5 +1,6 @@
 // proj::text Generate/Extract specializations for Gemini GenerateContent endpoint.
 
+#include <charconv>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -15,9 +16,61 @@
 namespace jai::llm::proj::text {
 
 
+// ----- ParseModelInfo -----
+// Gemini model strings: "gemini-{version}-{variant}[-suffix]"
+// e.g. "gemini-2.5-pro-preview-05-06", "gemini-3-flash"
+
+namespace {
+double ParseVersion(std::string_view sv) {
+    int64_t major = 0;
+    auto [p1, ec1] = std::from_chars(sv.data(), sv.data() + sv.size(), major);
+    if (ec1 != std::errc{}) return 0.0;
+    if (p1 < sv.data() + sv.size() && *p1 == '.') {
+        int64_t minor = 0;
+        auto [p2, ec2] = std::from_chars(p1 + 1, sv.data() + sv.size(), minor);
+        if (ec2 == std::errc{}) {
+            int digits = static_cast<int>(p2 - (p1 + 1));
+            double divisor = 1.0;
+            for (int i = 0; i < digits; ++i) divisor *= 10.0;
+            return static_cast<double>(major) + static_cast<double>(minor) / divisor;
+        }
+    }
+    return static_cast<double>(major);
+}
+} // anonymous namespace
+
+template <>
+ModelInfo ParseModelInfo<gemini::GenerateContent>(std::string_view model) {
+    // Extract version: parse number after "gemini-"
+    auto version = 0.0;
+    constexpr auto prefix = std::string_view{"gemini-"};
+    if (model.starts_with(prefix)) {
+        version = ParseVersion(model.substr(prefix.size()));
+    }
+
+    // Family: strip suffixes (-preview, -exp, trailing date/point-release)
+    // to get something like "gemini-2.5-pro", "gemini-3-flash".
+    auto family = std::string{model};
+    if (auto pos = family.find("-preview"); pos != std::string::npos) {
+        family.erase(pos);
+    } else if (auto pos2 = family.find("-exp"); pos2 != std::string::npos) {
+        family.erase(pos2);
+    }
+
+    return ModelInfo{
+        .model=std::string{model},
+        .family=std::move(family),
+        .version=version
+    };
+}
+
+
+// ----- Generate -----
+
 template <>
 gemini::GenerateContent::Request_t
-Generate<gemini::GenerateContent>(std::optional<Prompt> system_prompt,
+Generate<gemini::GenerateContent>(const ModelInfo& model_info,
+                                  std::optional<Prompt> system_prompt,
                                   const std::vector<Block>& content,
                                   Options options)
 {
@@ -40,7 +93,7 @@ Generate<gemini::GenerateContent>(std::optional<Prompt> system_prompt,
     };
 
     auto thinking_config = std::optional<gemini::ThinkingConfig>{};
-    if (true) { // model version >= 3
+    if (model_info.version >= 3.0) {
         if (options.thinking_effort) {
             auto level = [&]() -> gemini::ThinkingLevel {
                 switch (*options.thinking_effort) {
@@ -70,7 +123,7 @@ Generate<gemini::GenerateContent>(std::optional<Prompt> system_prompt,
     }
 
     return Request{
-        .model="",
+        .model=model_info.model,
         .systemInstruction=system_prompt ?
             std::optional{gemini::Content{
                 .parts=std::vector<gemini::Part>{gemini::Part{.text=system_prompt->text}}

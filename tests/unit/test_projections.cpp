@@ -28,6 +28,69 @@ using namespace jai::llm;
 namespace text = jai::llm::proj::text;
 
 
+// Test model info — use versions that exercise thinking/reasoning paths.
+static const auto anthropic_model = text::ParseModelInfo<anthropic::Messages>("claude-sonnet-4.6-20260101");
+static const auto gemini_model = text::ParseModelInfo<gemini::GenerateContent>("gemini-3-flash");
+static const auto openai_model = text::ParseModelInfo<openai::Responses>("gpt-5.1-2026-01-01");
+
+
+// ===== ParseModelInfo tests =====
+
+
+void test_parse_model_info_anthropic() {
+    std::println("Testing ParseModelInfo<anthropic::Messages>...");
+
+    auto info = text::ParseModelInfo<anthropic::Messages>("claude-opus-4.6-20260101");
+    REQUIRE_EQ(info.family, std::string{"opus"});
+    REQUIRE_EQ(info.version, 4.6);
+    REQUIRE_EQ(info.model, std::string{"claude-opus-4.6-20260101"});
+
+    auto sonnet = text::ParseModelInfo<anthropic::Messages>("claude-sonnet-4.5-20250929");
+    REQUIRE_EQ(sonnet.family, std::string{"sonnet"});
+    REQUIRE_EQ(sonnet.version, 4.5);
+
+    auto haiku = text::ParseModelInfo<anthropic::Messages>("claude-haiku-4-20250514");
+    REQUIRE_EQ(haiku.family, std::string{"haiku"});
+    REQUIRE_EQ(haiku.version, 4.0);
+
+    std::println("  [SUCCESS]");
+}
+
+
+void test_parse_model_info_gemini() {
+    std::println("Testing ParseModelInfo<gemini::GenerateContent>...");
+
+    auto info = text::ParseModelInfo<gemini::GenerateContent>("gemini-2.5-pro-preview-05-06");
+    REQUIRE_EQ(info.version, 2.5);
+    REQUIRE_EQ(info.family, std::string{"gemini-2.5-pro"});
+
+    auto flash = text::ParseModelInfo<gemini::GenerateContent>("gemini-3-flash");
+    REQUIRE_EQ(flash.version, 3.0);
+    REQUIRE_EQ(flash.family, std::string{"gemini-3-flash"});
+
+    std::println("  [SUCCESS]");
+}
+
+
+void test_parse_model_info_openai() {
+    std::println("Testing ParseModelInfo<openai::Responses>...");
+
+    auto gpt5 = text::ParseModelInfo<openai::Responses>("gpt-5-2025-05-14");
+    REQUIRE_EQ(gpt5.version, 5.0);
+    REQUIRE_EQ(gpt5.family, std::string{"gpt-5"});
+
+    auto gpt51 = text::ParseModelInfo<openai::Responses>("gpt-5.1-codex-max-2025-06-01");
+    REQUIRE_EQ(gpt51.version, 5.1);
+    REQUIRE_EQ(gpt51.family, std::string{"gpt-5.1-codex-max"});
+
+    auto o3 = text::ParseModelInfo<openai::Responses>("o3-2025-04-16");
+    REQUIRE_EQ(o3.version, 3.0);
+    REQUIRE_EQ(o3.family, std::string{"o3"});
+
+    std::println("  [SUCCESS]");
+}
+
+
 // ===== Generate tests =====
 
 
@@ -35,6 +98,7 @@ void test_generate_anthropic() {
     std::println("Testing Generate<anthropic::Messages>: basic text prompt...");
 
     auto request = text::Generate<anthropic::Messages>(
+        anthropic_model,
         text::Prompt{.text = "You are a helpful assistant."},
         std::vector<text::Block>{text::Prompt{.text = "Hello"}},
         text::Options{
@@ -64,9 +128,9 @@ void test_generate_anthropic() {
     REQUIRE(request.temperature.has_value());
     REQUIRE_EQ(*request.temperature, 0.7);
 
-    // Check model is empty string (filled by orchestrator)
+    // Check model is set from ModelInfo
     auto const& model_variant = static_cast<const anthropic::Request::Model&>(*request.model);
-    REQUIRE_EQ(std::get<std::string>(model_variant), std::string{""});
+    REQUIRE_EQ(std::get<std::string>(model_variant), std::string{"claude-sonnet-4.6-20260101"});
 
     std::println("  [SUCCESS]");
 }
@@ -76,6 +140,7 @@ void test_generate_gemini() {
     std::println("Testing Generate<gemini::GenerateContent>: basic text prompt...");
 
     auto request = text::Generate<gemini::GenerateContent>(
+        gemini_model,
         text::Prompt{.text = "You are a helpful assistant."},
         std::vector<text::Block>{text::Prompt{.text = "Hello"}},
         text::Options{
@@ -104,8 +169,8 @@ void test_generate_gemini() {
     REQUIRE(request.generationConfig->temperature.has_value());
     REQUIRE_EQ(*request.generationConfig->temperature, 0.7);
 
-    // Check model is empty (filled by orchestrator)
-    REQUIRE_EQ(std::string{*request.model}, std::string{""});
+    // Check model is set from ModelInfo
+    REQUIRE_EQ(std::string{*request.model}, std::string{"gemini-3-flash"});
 
     std::println("  [SUCCESS]");
 }
@@ -115,6 +180,7 @@ void test_generate_openai() {
     std::println("Testing Generate<openai::Responses>: basic text prompt...");
 
     auto request = text::Generate<openai::Responses>(
+        openai_model,
         text::Prompt{.text = "You are a helpful assistant."},
         std::vector<text::Block>{text::Prompt{.text = "Hello"}},
         text::Options{
@@ -145,6 +211,7 @@ void test_generate_no_system_prompt() {
 
     // Anthropic — system should be nullopt
     auto anthropic_req = text::Generate<anthropic::Messages>(
+        anthropic_model,
         std::nullopt,
         std::vector<text::Block>{text::Prompt{.text = "Hello"}},
         text::Options{.max_output_tokens = 100}
@@ -153,6 +220,7 @@ void test_generate_no_system_prompt() {
 
     // Gemini — systemInstruction should be nullopt
     auto gemini_req = text::Generate<gemini::GenerateContent>(
+        gemini_model,
         std::nullopt,
         std::vector<text::Block>{text::Prompt{.text = "Hello"}},
         text::Options{.max_output_tokens = 100}
@@ -161,6 +229,7 @@ void test_generate_no_system_prompt() {
 
     // OpenAI — input should have only 1 item (user message, no system)
     auto openai_req = text::Generate<openai::Responses>(
+        openai_model,
         std::nullopt,
         std::vector<text::Block>{text::Prompt{.text = "Hello"}},
         text::Options{.max_output_tokens = 100}
@@ -462,7 +531,12 @@ int main() {
         }
     };
 
-    std::println("===== Generate Tests =====");
+    std::println("===== ParseModelInfo Tests =====");
+    run(test_parse_model_info_anthropic);
+    run(test_parse_model_info_gemini);
+    run(test_parse_model_info_openai);
+
+    std::println("\n===== Generate Tests =====");
     run(test_generate_anthropic);
     run(test_generate_gemini);
     run(test_generate_openai);
