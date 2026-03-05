@@ -106,9 +106,40 @@ public:
     }
 
     // --- User transform ---
-    // Deferred: requires composing Extract + user transform into a single
-    // callable (Response_t → Result → Data). Raw function pointers cannot
-    // capture; will be enabled when Transform_f migrates to std::function.
+    // Composes Extract<Endpoint> with the user's transform into a single
+    // callable (Response_t → Result → Data) via MoveFunction.
+
+    template <typename Data>
+    jai::llm::AsyncResult<Endpoint, Data>
+    CallAsync(std::optional<Prompt> system_prompt,
+              const std::vector<Block>& content,
+              Data (*transform)(const Result&),
+              Options options = default_options,
+              const jai::llm::AttemptPolicy& policy = {}) const
+    {
+        auto request = Generate<Endpoint>(
+            std::move(system_prompt), content, options);
+        auto composed = [transform](typename Endpoint::Response_t const& response) -> Data {
+            return transform(Extract<Endpoint>(response));
+        };
+        return handle.CallAsync(request, std::move(composed), policy);
+    }
+
+    template <typename Data>
+    jai::llm::Result<Endpoint, Data>
+    CallSync(std::optional<Prompt> system_prompt,
+             const std::vector<Block>& content,
+             Data (*transform)(const Result&),
+             Options options = default_options,
+             const jai::llm::AttemptPolicy& policy = {}) const
+    {
+        auto request = Generate<Endpoint>(
+            std::move(system_prompt), content, options);
+        auto composed = [transform](typename Endpoint::Response_t const& response) -> Data {
+            return transform(Extract<Endpoint>(response));
+        };
+        return handle.CallSync(request, std::move(composed), policy);
+    }
 };
 
 

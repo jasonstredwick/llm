@@ -2,14 +2,27 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
+#include <version>
 
 
 namespace jai::llm {
+
+
+// Prefer std::move_only_function (C++23) — move-only, SBO-friendly, no copy
+// overhead. Falls back to std::function on toolchains that don't provide it yet.
+#if defined(__cpp_lib_move_only_function) && __cpp_lib_move_only_function >= 202110L
+template <typename Sig>
+using MoveFunction = std::move_only_function<Sig>;
+#else
+template <typename Sig>
+using MoveFunction = std::function<Sig>;
+#endif
 
 
 class Orchestrator;
@@ -168,13 +181,13 @@ public:
 
     using Deserialize_f = Response_t (*)(Orchestrator*, Ticket);
     using Extract_f = void (*)(const Response_t&, AttemptMetadata&);
-    using Transform_f = Data (*)(const Response_t&);
+    using Transform_f = MoveFunction<Data(const Response_t&)>;
 
 private:
     Result<Endpoint, Data> result{};
     Deserialize_f deserialize_fn{nullptr};
     Extract_f extract_fn{nullptr};
-    Transform_f transform_fn{nullptr};
+    Transform_f transform_fn{};
 
     void ApplyDeserialization() override {
         if constexpr (std::is_void_v<Data>) {
@@ -216,7 +229,7 @@ public:
         : AsyncResultBase{args.orch, args.ticket, std::move(args.result_sync)}
         , deserialize_fn{args.deserialize_fn}
         , extract_fn{args.extract_fn}
-        , transform_fn{tfn}
+        , transform_fn{std::move(tfn)}
     {}
 
     AsyncResult(AsyncResult const&) = delete;

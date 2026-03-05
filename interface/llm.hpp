@@ -30,6 +30,7 @@
 #include "core/results.hpp"
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -62,7 +63,7 @@ public:
         using Response_t = typename Endpoint::Response_t;
 
         template <typename T>
-        using Transform_f = T (*)(const Response_t&);
+        using Transform_f = MoveFunction<T(const Response_t&)>;
 
     private:
         size_t client_id{0};
@@ -165,7 +166,7 @@ Instance::ClientHandle<Endpoint>::CallAsync(
 {
     return AsyncResult<Endpoint, Data>{
         PrepareAsync<Endpoint>(client_id, request, policy),
-        transform
+        std::move(transform)
     };
 }
 
@@ -180,7 +181,7 @@ Instance::ClientHandle<Endpoint>::CallSync(
 {
     auto aresult = AsyncResult<Endpoint, Data>{
         PrepareAsync<Endpoint>(client_id, request, policy),
-        transform
+        std::move(transform)
     };
     RunUntilDoneImpl(aresult.SyncBlock());
     return aresult.Take();
