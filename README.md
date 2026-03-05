@@ -151,6 +151,11 @@ scripts/             Build tooling and dependency management
 - **Platforms:** macOS ARM64, macOS x64, Windows x64
 
 
+## Author
+
+Jason Stredwick — [jason.stredwick@gmail.com](mailto:jason.stredwick@gmail.com)
+
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).

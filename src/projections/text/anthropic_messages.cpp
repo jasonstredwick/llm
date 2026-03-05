@@ -130,7 +130,7 @@ Generate<anthropic::Messages>(const ModelInfo& model_info,
                     break;
                 case proj::text::ThinkingEffort::MAX:
                     thinking_config = Request::ThinkingConfigAdaptive{};
-                    if (model_info.family == "opus" && model_info.version >= 4.6) {
+                    if (model_info.family == "opus") {
                         output_config = Request::OutputConfig{.effort=Effort::MAX};
                     } else {
                         output_config = Request::OutputConfig{.effort=Effort::HIGH};
@@ -149,6 +149,12 @@ Generate<anthropic::Messages>(const ModelInfo& model_info,
     auto system = std::optional<Request::System>{};
     if (system_prompt) {
         system = system_prompt->text;
+    }
+
+    if (!options.max_output_tokens) {
+        throw AnnotatedException{
+            "Anthropic Messages requires max_output_tokens to be set."
+        };
     }
 
     return Request{
