@@ -107,6 +107,9 @@ add_library(llm STATIC
     src/protocols/deserialize/anthropic_messages.cpp
     src/protocols/deserialize/gemini_generate_content.cpp
     src/protocols/deserialize/openai_responses.cpp
+    src/projections/text/anthropic_messages.cpp
+    src/projections/text/gemini_generate_content.cpp
+    src/projections/text/openai_responses.cpp
 )
 
 # Add include directories (Unified Sysroot)
