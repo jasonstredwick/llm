@@ -17,7 +17,7 @@ flow back to the user.
 ```
 User
   │
-  ├─ Projection path:  projection::text::{Generate, Extract}
+  ├─ Projection path:  proj::text::{Generate, Extract}
   │                     ↕
   ├─ Raw API path:      provider::{Request, Response} directly
   │                     ↕
@@ -37,7 +37,7 @@ curl::Interface  ── libcurl multi handle, connection pooling
 ### User
 
 The user provides prompts/content and receives results. For projection-based usage, the user works
-with `projection::text::Result` and never touches provider types. For raw API usage, the user works
+with `proj::text::Result` and never touches provider types. For raw API usage, the user works
 directly with provider request/response types (e.g., `anthropic::Request` → `anthropic::Message`).
 
 If the LLM response contains structured data (e.g., JSON), the user parses it themselves. The
@@ -195,7 +195,7 @@ Client reads: orchestrator.GetResponse(handle) → curl::Response const&
      ▼
 Client deserializes:
   provider::Deserialize(curl_response) → typed response
-  For projections: Extract(typed_response) → projection::text::Result
+  For projections: Extract(typed_response) → proj::text::Result
      │
      ▼
 Client calls: orchestrator.Release(handle)

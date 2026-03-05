@@ -194,7 +194,7 @@ Prompt: Response-side prompt representation.
 
 ## Projections
 
-**Namespace:** `jai::llm::projection::text`
+**Namespace:** `jai::llm::proj::text`
 
 ### File
 

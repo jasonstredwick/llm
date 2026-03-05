@@ -84,7 +84,7 @@ Last updated: 2026-02-17
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `projection::text` types | Done | `Options`, `Prompt`, `Image`, `Block` |
+| `proj::text` types | Done | `Options`, `Prompt`, `Image`, `Block` |
 | `Generate<anthropic::Request>` | Functional | Text, images, thinking effort mapping |
 | `Generate<gemini::Request>` | Functional | Text, images, thinking effort mapping |
 | `Generate<openai::Request>` | Functional | Text, images, thinking effort mapping |
@@ -132,7 +132,7 @@ This is an inferred priority list based on code analysis. Adjust as needed.
 
 7. **Coroutine / async execution** — Coroutine support (CoroResult, CallCoro) was removed. C++ coroutines require an executor/scheduler to control thread affinity, which the library does not provide. Revisit if/when `std::execution` (P2300) matures or if user-supplied executor integration is needed. For Python asyncio integration, `AsyncResult` provides the necessary building blocks (IsReady, SyncBlock, Take).
 
-8. **Projection completeness** — `projection::text::Call()` is empty. Tools, multi-turn,
+8. **Projection completeness** — `proj::text::Call()` is empty. Tools, multi-turn,
    document content, and streaming projections are not started.
 
 9. **Error response handling** — Provider-specific error responses (4xx/5xx with JSON error

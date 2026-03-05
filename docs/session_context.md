@@ -109,7 +109,7 @@ These are described fully in `docs/coding_conventions.md`. The short version:
 - **Validated domain types**: `EncodedUrl`, `Name64`, `NameLen<N>`, `Int64Bounded<Lo, Hi>`, `Int64Str`.
 - **Recursive types** use `ValueBox<T>` (heap-allocated value semantics).
 - Namespaces: `jai::llm` (core), `jai::llm::anthropic`, `jai::llm::gemini`, `jai::llm::openai`,
-  `jai::llm::projection::text`, `jai::llm::curl`, `jai::llm::http`.
+  `jai::llm::proj::text`, `jai::llm::curl`, `jai::llm::http`.
 
 ## Working With This Project
 

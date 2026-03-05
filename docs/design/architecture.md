@@ -161,7 +161,7 @@ implemented. See `docs/roadmap.md`.
 ## Projections Layer
 
 Projections provide optional normalized APIs that map common cross-provider operations into a
-single interface. The `projection::text` namespace implements this for basic text/image prompting.
+single interface. The `proj::text` namespace implements this for basic text/image prompting.
 
 A projection's `Generate<T>()` function template takes a provider-neutral description (system
 prompt, content blocks, options) and produces a provider-specific `Request` struct. This is a pure

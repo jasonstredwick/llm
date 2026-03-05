@@ -183,7 +183,7 @@ surface. Users include from `interface/`; they never include from `src/`.
 ## Naming Conventions
 
 **Namespaces:** lowercase, period-separated where nested: `jai::llm`, `jai::llm::anthropic`,
-`jai::llm::curl`, `jai::llm::http`, `jai::llm::projection::text`.
+`jai::llm::curl`, `jai::llm::http`, `jai::llm::proj::text`.
 
 **Types:** PascalCase for structs, classes, and enum classes: `ContentBlockParam`, `AttemptPolicy`,
 `StopReason`.

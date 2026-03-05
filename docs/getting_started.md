@@ -46,7 +46,7 @@ The simplest way to make an API call. Blocks the calling thread until the respon
 
 int main() {
     namespace llm = jai::llm;
-    namespace text = llm::projection::text;
+    namespace text = llm::proj::text;
 
     // 1. Create the Instance with internal threading
     llm::Instance instance({.threading = llm::Instance::ThreadingMode::INTERNAL});
@@ -192,12 +192,12 @@ for (const auto& attempt : result.attempts) {
 
 The raw protocol types (`anthropic::Request`, `openai::Request`, etc.) mirror each provider's API exactly. They are auto-generated and comprehensive, but verbose.
 
-For the common case of sending text (with optional images) and getting text back, the `projection::text` layer provides a provider-agnostic interface:
+For the common case of sending text (with optional images) and getting text back, the `proj::text` layer provides a provider-agnostic interface:
 
 ```cpp
 #include <jai/llm/projections/text.hpp>
 
-namespace text = jai::llm::projection::text;
+namespace text = jai::llm::proj::text;
 
 // Build a request for any provider from the same inputs
 auto request = text::Generate<llm::anthropic::Request>(
