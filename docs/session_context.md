@@ -32,25 +32,26 @@ native capabilities, and an optional normalized "projection" API for common cros
 
 ## Project Status (High Level)
 
-The protocol layer (data structures, serialization, deserialization) is substantially complete for
-all three providers. The transport layer (curl wrapper, HTTP request/response, attempt lifecycle) is
-implemented and functional. The upper layers — Client, Orchestrator, async execution, projections —
-are skeletal or in early development.
+All layers are functional: protocol (structs, serialization, deserialization) for all three
+providers, transport (libcurl wrapper, HTTP request/response, attempt lifecycle), client/orchestrator
+(Instance, ClientHandle, async/sync calls, rate limiting, retry), and projections (text projection
+with provider-agnostic Generate/Extract and version-aware request building).
 
-See `docs/roadmap.md` for detailed status.
+See `docs/roadmap.md` for planned enhancements.
 
 ## Key Documents
 
 | Document                     | Purpose                                                    |
 |------------------------------|-------------------------------------------------------------|
-| `docs/architecture.md`       | Layer model, component responsibilities, data flow          |
-| `docs/coding_conventions.md` | Type patterns, naming rules, file organization              |
-| `docs/serialization.md`      | simdjson-based ser/de framework                             |
-| `docs/protocols.md`          | Per-provider struct coverage and file map                   |
-| `docs/transport.md`          | curl/http layer: Interface, Attempt, Response lifecycle     |
-| `docs/roadmap.md`            | What's done, what's remaining, prioritized task list        |
-| `docs/decisions.md`          | Running log of design decisions with rationale              |
-| `docs/api_parity_pipeline.md`| API parity pipeline design (fetch, extract, diff, report)    |
+| `docs/getting_started.md`           | User guide: threading, calls, policies, projections, errors |
+| `docs/roadmap.md`                   | Planned enhancements and priorities                         |
+| `docs/coding_conventions.md`        | Type patterns, naming rules, file organization              |
+| `docs/design/architecture.md`       | Layer model, component responsibilities, data flow          |
+| `docs/design/serialization.md`      | simdjson-based ser/de framework                             |
+| `docs/design/protocols.md`          | Per-provider struct coverage and file map                   |
+| `docs/design/transport.md`          | curl/http layer: Interface, Attempt, Response lifecycle     |
+| `docs/design/decisions.md`          | Running log of design decisions with rationale              |
+| `docs/design/api_parity_pipeline.md`| API parity pipeline design (fetch, extract, diff, report)   |
 
 ## Directory Layout
 

@@ -1,47 +1,96 @@
-# llm - Unified LLM Interface
+# jai::llm
 
-A C++ project for a unified Large Language Model access layer, designed for high performance and modern C++ standards.
+A C++ library for calling LLM provider APIs. Provider-agnostic interface with managed concurrency, rate limiting, retry, and connection pooling — or drop down to the full provider-specific API when you need it.
 
-## Project Structure
+Supports Anthropic (Messages), OpenAI (Responses), and Google Gemini (GenerateContent).
 
-- **`deps/`**: (Ignored by Git) The Unified Sysroot. Contains all third-party headers and binaries.
-- **`scripts/`**: Contains `manage_deps.py`, the orchestrator for the dependency factory.
-- **`deps.lock.json`**: The single source of truth for all project dependencies and versions.
-- **`interface/`**: Public headers for the library.
-- **`src/`**: Implementation files.
 
-## Prerequisites
+## Quick Example
 
-- **CMake**: 3.25+
-- **Python**: 3.10+
-- **GitHub CLI (gh)**: Authenticated to access the binary repository.
-- **Compiler Requirements**:
-  - **Windows**: Visual Studio 2022 (Version 17.10 or later) is the minimum recommended version to support the C++26/23 features used in this project.
-  - **MacOS**: Homebrew LLVM/Clang (version 18+) is recommended for full C++26 feature support.
+```cpp
+#include <jai/llm/llm.hpp>
+#include <jai/llm/endpoints/anthropic_messages.hpp>
+#include <jai/llm/projections/text.hpp>
 
-## Dependency Management
+#include <iostream>
 
-The project uses a custom dependency manager (`scripts/manage_deps.py`) that runs automatically during the CMake configuration phase. 
+int main() {
+    namespace llm = jai::llm;
+    namespace text = llm::proj::text;
 
-1. **Automatic Sync**: When you run `cmake`, the script checks your local `deps/` folder against `deps.lock.json`.
-2. **Missing Binaries**: If binaries for your platform are missing from the local folder, the script attempts to download them from GitHub.
-3. **Build from Source**: If no pre-built binary is found on GitHub, the system automatically downloads the source, builds it locally in `third_party_workspace/`, and installs it into your `deps/` folder.
-4. **Binary Uploads**: While anyone can build dependencies locally, and the system will attempt to upload new artifacts to the GitHub Release to share them with other contributors, this step requires appropriate GitHub authentication and write permissions to the repository. If unauthorized, the system will simply skip the upload and use the local build.
+    // Start the instance (one per process, owns the event loop)
+    llm::Instance instance({.threading = llm::Instance::ThreadingMode::INTERNAL});
+    instance.Start();
 
-## Building the Library
+    // Create a text projection client
+    auto client = text::ClientHandle<llm::anthropic::Messages>(
+        instance,
+        llm::anthropic::ApiKeyAuth{.api_key = "sk-ant-..."},
+        "claude-sonnet-4.6-20260101"
+    );
 
-### MacOS (ARM64 / Apple Silicon)
+    // Synchronous call — builds the request, calls the API, extracts text
+    auto result = client.CallSync(
+        text::Prompt{"You are a helpful assistant."},
+        {text::Prompt{"What is the capital of France?"}},
+        {.max_output_tokens = 1024}
+    );
 
-By default, CMake will detect your native architecture:
+    if (result.data) {
+        std::cout << result.data->text << "\n";
+    }
+
+    instance.Stop();
+}
+```
+
+Swap `anthropic::Messages` for `openai::Responses` or `gemini::GenerateContent` and the rest stays the same.
+
+
+## Features
+
+- **Three providers, one interface** — Anthropic, OpenAI, and Gemini behind a common text projection, with full provider-specific APIs also available.
+- **Managed concurrency** — connection pooling, HTTP/2 multiplexing, and rate limiting driven by provider response headers.
+- **Policy-driven behavior** — timeouts, retries, rate limits, and connection settings cascade from instance to client to individual call. All explicit, nothing implicit.
+- **Two threading modes** — drive the event loop yourself (manual mode) or let the library spawn its own thread (internal mode). Both support sync and async calls.
+- **Modern C++** — C++26 target, C++23 minimum. Designated initializers, `std::variant` for tagged unions, `std::optional` everywhere, no raw pointers in the public API.
+- **Static library** — links into your binary with no runtime dependencies beyond the system C++ runtime.
+
+
+## Providers
+
+| Provider   | Endpoint            | Namespace             | Auth |
+|------------|---------------------|-----------------------|------|
+| Anthropic  | `/v1/messages`      | `jai::llm::anthropic` | API key |
+| OpenAI     | Responses API       | `jai::llm::openai`    | API key, Azure AD |
+| Gemini     | `generateContent`   | `jai::llm::gemini`    | API key, Vertex AI |
+
+
+## Building
+
+### Prerequisites
+
+- CMake 3.25+
+- Python 3.10+ (for dependency management during build)
+- GitHub CLI (`gh`), authenticated to access the binary repository
+- **macOS:** Homebrew LLVM/Clang 18+ recommended for full C++26 support
+- **Windows:** Visual Studio 2022 (17.10+)
+
+### Build
 
 ```bash
+# macOS / Linux
 cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build -S .
+cmake --build build --config Release
+
+# Windows
+cmake -B build -S .
 cmake --build build --config Release
 ```
 
-### MacOS (Intel / x86_64 Cross-Compilation)
+Dependencies (libcurl, simdjson, nghttp2, zlib, c-ares) are managed automatically via `scripts/manage_deps.py` and `deps.lock.json`. On first build, binaries are downloaded from GitHub or built from source as needed.
 
-You can build for Intel on an ARM Mac by explicitly setting the target architecture. The dependency manager will automatically switch to the `macos-x64` profile:
+### macOS Intel Cross-Compilation
 
 ```bash
 cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 \
@@ -51,19 +100,10 @@ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 \
 cmake --build build_x64 --config Release
 ```
 
-### Windows (x64)
-
-```powershell
-cmake -B build -S .
-cmake --build build --config Release
-```
-
-## Running Tests
-
-Once built, you can run the verification tests:
+### Tests
 
 ```bash
-# MacOS / Linux
+# macOS / Linux
 ./build/unit_test_http
 ./build/unit_test_curl
 
@@ -72,12 +112,45 @@ Once built, you can run the verification tests:
 .\build\Release\unit_test_curl.exe
 ```
 
-## Standards & Configuration
 
-- **C++ Standard**: C++26 (Targeted), C++23 (Minimum fallback).
-- **C Standard**: C11.
-- **Library Type**: Static (`.a` on Unix, `.lib` on Windows).
-- **Platform Keys**:
-  - `win11-x64`: Windows 11 64-bit.
-  - `macos-arm64`: Apple Silicon (M1/M2/M3).
-  - `macos-x64`: Intel-based Macs or cross-compiled Intel binaries.
+## Documentation
+
+- **[Getting Started](docs/getting_started.md)** — full user guide: threading modes, call styles, policies, error handling, projections, and multi-provider usage.
+- **[Architecture](docs/design/architecture.md)** — layer model, data flow, and design principles.
+- **[Roadmap](docs/roadmap.md)** — planned enhancements and priorities.
+- **[Coding Conventions](docs/coding_conventions.md)** — type patterns, naming rules, and file organization.
+
+
+## Project Layout
+
+```
+interface/           Public headers (the library's API surface)
+  core/              Foundational types, error handling, async primitives
+  endpoints/         Per-provider endpoint headers (include one to use a provider)
+  projections/       Provider-agnostic APIs (e.g. text projection)
+  protocols/         Provider-specific request/response data structures
+
+src/                 Implementation (not part of public API)
+  protocols/         JSON serialization and deserialization
+  projections/       Per-provider Generate/Extract implementations
+  curl.hpp/cpp       libcurl wrapper
+  http.hpp/cpp       HTTP request/response types
+  orchestrator.*     Request lifecycle management
+
+tests/               Unit and integration tests
+docs/                Project documentation
+scripts/             Build tooling and dependency management
+```
+
+
+## Standards
+
+- **C++ Standard:** C++26 (target), C++23 (minimum fallback)
+- **C Standard:** C11
+- **Library type:** Static (`.a` on Unix, `.lib` on Windows)
+- **Platforms:** macOS ARM64, macOS x64, Windows x64
+
+
+## License
+
+Apache 2.0 — see [LICENSE](LICENSE).

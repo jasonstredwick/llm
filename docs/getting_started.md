@@ -34,7 +34,7 @@ The library has four main pieces:
 
 ## Quick Example — Synchronous Call
 
-The simplest way to make an API call. Blocks the calling thread until the response arrives. Uses internal threading mode so the library's loop thread handles I/O while `CallSync` waits.
+The simplest way to make an API call. Uses the text projection's `ClientHandle` for one-stop construction and provider-agnostic calling. Blocks the calling thread until the response arrives.
 
 ```cpp
 #include <jai/llm/llm.hpp>
@@ -52,33 +52,29 @@ int main() {
     llm::Instance instance({.threading = llm::Instance::ThreadingMode::INTERNAL});
     instance.Start();
 
-    // 2. Create a client for the Anthropic Messages endpoint
-    auto client = instance.CreateClient<llm::anthropic::Messages>(
+    // 2. Create a text projection client — handles CreateClient + model parsing
+    auto client = text::ClientHandle<llm::anthropic::Messages>(
+        instance,
         llm::anthropic::ApiKeyAuth{.api_key = "sk-ant-..."},
-        "claude-sonnet-4-20250514"
+        "claude-sonnet-4.6-20260101"
     );
 
-    // 3. Build a request using the text projection (provider-agnostic)
-    auto request = text::Generate<llm::anthropic::Request>(
-        text::Prompt{"You are a helpful assistant."},  // system prompt
-        {text::Prompt{"What is the capital of France?"}},  // user content
+    // 3. Make a synchronous call (builds request, calls API, extracts text)
+    auto result = client.CallSync(
+        text::Prompt{"You are a helpful assistant."},
+        {text::Prompt{"What is the capital of France?"}},
         {.max_output_tokens = 1024}
     );
 
-    // 4. Make a synchronous call (blocks until the response arrives)
-    auto result = client.CallSync(request);
-
-    // 5. Check the result
+    // 4. Check the result
     if (result.error) {
         std::cerr << "Error: " << *result.error << "\n";
         instance.Stop();
         return 1;
     }
 
-    // result.data is the provider's native response type (anthropic::Message)
-    // Use the text projection to extract just the text:
-    auto extracted = text::Extract(*result.data);
-    std::cout << extracted.text << "\n";
+    // result.data is text::Result — just the extracted text
+    std::cout << result.data->text << "\n";
 
     instance.Stop();
     return 0;
@@ -192,44 +188,83 @@ for (const auto& attempt : result.attempts) {
 
 The raw protocol types (`anthropic::Request`, `openai::Request`, etc.) mirror each provider's API exactly. They are auto-generated and comprehensive, but verbose.
 
-For the common case of sending text (with optional images) and getting text back, the `proj::text` layer provides a provider-agnostic interface:
+For the common case of sending text (with optional images) and getting text back, the `proj::text` layer provides a provider-agnostic interface.
+
+### ClientHandle — one-stop construction
+
+The `proj::text::ClientHandle` wraps `Instance::CreateClient` and parses model info (family, version) at construction time. This enables version-aware request generation (e.g., thinking config is only included for models that support it).
 
 ```cpp
 #include <jai/llm/projections/text.hpp>
 
 namespace text = jai::llm::proj::text;
 
-// Build a request for any provider from the same inputs
-auto request = text::Generate<llm::anthropic::Request>(
-    text::Prompt{"You are a helpful assistant."},
+// One-stop: creates the underlying client and caches parsed model info
+auto client = text::ClientHandle<llm::anthropic::Messages>(
+    instance,
+    llm::anthropic::ApiKeyAuth{.api_key = "sk-ant-..."},
+    "claude-sonnet-4.6-20260101"
+);
+
+// CallSync/CallAsync combine Generate + Call + Extract in one step
+auto result = client.CallSync(
+    text::Prompt{"You are helpful."},
     {text::Prompt{"Explain quicksort briefly."}},
     {.max_output_tokens = 2048, .thinking_effort = text::ThinkingEffort::LOW}
 );
-
-// ... make the call ...
-
-// Extract a normalized result from any provider's response
-auto extracted = text::Extract(*result.data);
-std::cout << extracted.text << "\n";
-std::cout << "Tokens: " << extracted.usage.input_tokens
-          << " in, " << extracted.usage.output_tokens << " out\n";
-```
-
-The text projection also provides Tier 3 call functions that combine Generate + Call + Extract in one step:
-
-```cpp
-// One-liner: builds the request, calls the API, extracts text
-auto result = text::CallSync(client,
-    text::Prompt{"You are helpful."},
-    {text::Prompt{"Hello!"}},
-    {.max_output_tokens = 512});
 
 if (result.data) {
     std::cout << result.data->text << "\n";
 }
 ```
 
-Tier 3 works with `CallAsync` and `CallSync`.
+Both `CallAsync` and `CallSync` are available, matching the core library's call styles.
+
+### Generate and Extract — lower-level access
+
+If you need the raw provider request or want to call through the core `Instance::ClientHandle` directly, `Generate` and `Extract` are available as free functions. `Generate` takes a `ModelInfo` (obtained via `ParseModelInfo`) as its first argument for version-aware request building:
+
+```cpp
+auto model_info = text::ParseModelInfo<llm::anthropic::Messages>("claude-sonnet-4.6-20260101");
+
+auto request = text::Generate<llm::anthropic::Messages>(
+    model_info,
+    text::Prompt{"You are a helpful assistant."},
+    {text::Prompt{"Explain quicksort briefly."}},
+    {.max_output_tokens = 2048, .thinking_effort = text::ThinkingEffort::LOW}
+);
+
+// ... make the call via Instance::ClientHandle ...
+
+// Extract just the text from the provider response
+auto extracted = text::Extract<llm::anthropic::Messages>(*result.data);
+std::cout << extracted.text << "\n";
+```
+
+### User transform — custom result types
+
+You can provide a transform function to convert the extracted text into your own type:
+
+```cpp
+struct Summary { std::string content; int word_count; };
+
+Summary to_summary(const text::Result& r) {
+    // count words, etc.
+    return Summary{.content = r.text, .word_count = /* ... */};
+}
+
+// Returns Result<Endpoint, Summary> instead of Result<Endpoint, text::Result>
+auto result = client.CallSync(
+    text::Prompt{"Summarize this."},
+    {text::Prompt{"...long text..."}},
+    &to_summary,
+    {.max_output_tokens = 512}
+);
+
+if (result.data) {
+    std::cout << result.data->content << " (" << result.data->word_count << " words)\n";
+}
+```
 
 
 ## Multiple Providers
