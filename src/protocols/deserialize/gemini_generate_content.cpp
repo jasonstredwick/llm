@@ -25,11 +25,13 @@ BEGIN_DESERIALIZE(gemini::CitationSource)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(gemini::CodeExecutionResult)
+    FIELD(src, id),
     FIELD(src, outcome),
     FIELD(src, output)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(gemini::ExecutableCode)
+    FIELD(src, id),
     FIELD(src, language),
     FIELD(src, code)
 END_DESERIALIZE
@@ -55,6 +57,10 @@ BEGIN_DESERIALIZE(gemini::GoogleAiGenerativelanguageV1betaSegment)
     FIELD(src, startIndex),
     FIELD(src, endIndex),
     FIELD(src, text)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(gemini::GroundingChunkStringList)
+    FIELD(src, values)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(gemini::GroundingPassageId)
@@ -90,13 +96,6 @@ BEGIN_DESERIALIZE(gemini::RetrievalMetadata)
     FIELD(src, googleSearchDynamicRetrievalScore)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(gemini::RetrievedContext)
-    FIELD(src, uri),
-    FIELD(src, title),
-    FIELD(src, text),
-    FIELD(src, fileSearchStore)
-END_DESERIALIZE
-
 BEGIN_DESERIALIZE(gemini::ReviewSnippet)
     FIELD(src, reviewId),
     FIELD(src, googleMapsUri),
@@ -117,6 +116,18 @@ END_DESERIALIZE
 BEGIN_DESERIALIZE(gemini::SemanticRetrieverChunk)
     FIELD(src, source),
     FIELD(src, chunk)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(gemini::ToolCall)
+    FIELD(src, id),
+    FIELD(src, toolType),
+    FIELD(src, args)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(gemini::ToolResponse)
+    FIELD(src, id),
+    FIELD(src, toolType),
+    FIELD(src, response)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(gemini::UrlMetadata)
@@ -140,7 +151,15 @@ END_DESERIALIZE
 BEGIN_DESERIALIZE(gemini::GoogleAiGenerativelanguageV1betaGroundingSupport)
     FIELD(src, segment),
     FIELD(src, groundingChunkIndices),
-    FIELD(src, confidenceScores)
+    FIELD(src, confidenceScores),
+    FIELD(src, renderedParts)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(gemini::GroundingChunkCustomMetadata)
+    FIELD(src, stringValue),
+    FIELD(src, stringListValue),
+    FIELD(src, numericValue),
+    FIELD(src, key)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(gemini::TopCandidates)
@@ -187,6 +206,14 @@ BEGIN_DESERIALIZE(gemini::FunctionResponse)
     FIELD(src, scheduling)
 END_DESERIALIZE
 
+BEGIN_DESERIALIZE(gemini::RetrievedContext)
+    FIELD(src, uri),
+    FIELD(src, title),
+    FIELD(src, text),
+    FIELD(src, fileSearchStore),
+    FIELD(src, customMetadata)
+END_DESERIALIZE
+
 BEGIN_DESERIALIZE(gemini::LogprobsResult)
     FIELD(src, logProbabilitySum),
     FIELD(src, topCandidates),
@@ -209,6 +236,8 @@ BEGIN_DESERIALIZE(gemini::Part)
     FIELD(src, fileData),
     FIELD(src, executableCode),
     FIELD(src, codeExecutionResult),
+    FIELD(src, toolCall),
+    FIELD(src, toolResponse),
     FIELD(src, thought),
     FIELD(src, thoughtSignature),
     FIELD(src, partMetadata),

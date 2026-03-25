@@ -18,6 +18,63 @@ BEGIN_SERIALIZE(Request::Request_context_management)
     FIELD(obj, compact_threshold, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::ResponsePrompt::ResponseInputText)
+    FIELD(obj, text, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponsePrompt::ResponseInputImage)
+    FIELD(obj, detail, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, file_id, CommaDirection::BEFORE)
+    FIELD(obj, image_url, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponsePrompt::ResponseInputFile)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, file_data, CommaDirection::BEFORE)
+    FIELD(obj, file_id, CommaDirection::BEFORE)
+    FIELD(obj, file_url, CommaDirection::BEFORE)
+    FIELD(obj, filename, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponsePrompt)
+    FIELD(obj, id, CommaDirection::NONE)
+    FIELD(obj, variables, CommaDirection::BEFORE)
+    FIELD(obj, version, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::Reasoning)
+    FIELD(obj, effort, CommaDirection::NONE)
+    FIELD(obj, generate_summary, CommaDirection::BEFORE)
+    FIELD(obj, summary, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::Request_stream_options)
+    FIELD(obj, include_obfuscation, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponseTextConfig::ResponseFormatText)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponseTextConfig::ResponseFormatTextJSONSchemaConfig)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, schema, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, strict, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponseTextConfig::ResponseFormatJSONObject)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponseTextConfig)
+    FIELD(obj, format, CommaDirection::NONE)
+    FIELD(obj, verbosity, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::ResponseConversationParam)
     FIELD(obj, id, CommaDirection::NONE)
 END_SERIALIZE
@@ -76,6 +133,19 @@ BEGIN_SERIALIZE(Request::Message)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs::ResponseOutputText_logprobs_top_logprobs)
+    FIELD(obj, token, CommaDirection::NONE)
+    FIELD(obj, bytes, CommaDirection::BEFORE)
+    FIELD(obj, logprob, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs)
+    FIELD(obj, token, CommaDirection::NONE)
+    FIELD(obj, bytes, CommaDirection::BEFORE)
+    FIELD(obj, logprob, CommaDirection::BEFORE)
+    FIELD(obj, top_logprobs, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText::FileCitation)
     FIELD(obj, file_id, CommaDirection::NONE)
     FIELD(obj, filename, CommaDirection::BEFORE)
@@ -106,19 +176,6 @@ BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText::FilePath)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs::ResponseOutputText_logprobs_top_logprobs)
-    FIELD(obj, token, CommaDirection::NONE)
-    FIELD(obj, bytes, CommaDirection::BEFORE)
-    FIELD(obj, logprob, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs)
-    FIELD(obj, token, CommaDirection::NONE)
-    FIELD(obj, bytes, CommaDirection::BEFORE)
-    FIELD(obj, logprob, CommaDirection::BEFORE)
-    FIELD(obj, top_logprobs, CommaDirection::BEFORE)
-END_SERIALIZE
-
 BEGIN_SERIALIZE(Request::ResponseOutputMessage::ResponseOutputText)
     FIELD(obj, annotations, CommaDirection::NONE)
     FIELD(obj, logprobs, CommaDirection::BEFORE)
@@ -140,7 +197,7 @@ BEGIN_SERIALIZE(Request::ResponseOutputMessage)
     FIELD(obj, phase, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFileSearchToolCall::ResponseFileSearchToolCall_results)
+BEGIN_SERIALIZE(Request::FileSearchCall::FileSearchCall_results)
     FIELD(obj, attributes, CommaDirection::NONE)
     FIELD(obj, file_id, CommaDirection::BEFORE)
     FIELD(obj, filename, CommaDirection::BEFORE)
@@ -148,7 +205,7 @@ BEGIN_SERIALIZE(Request::ResponseFileSearchToolCall::ResponseFileSearchToolCall_
     FIELD(obj, text, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFileSearchToolCall)
+BEGIN_SERIALIZE(Request::FileSearchCall)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, queries, CommaDirection::BEFORE)
     FIELD(obj, status, CommaDirection::BEFORE)
@@ -156,74 +213,140 @@ BEGIN_SERIALIZE(Request::ResponseFileSearchToolCall)
     FIELD(obj, results, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Click)
-    FIELD(obj, button, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-    FIELD(obj, x, CommaDirection::BEFORE)
-    FIELD(obj, y, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::DoubleClick)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, x, CommaDirection::BEFORE)
-    FIELD(obj, y, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Drag::Drag_path)
-    FIELD(obj, x, CommaDirection::NONE)
-    FIELD(obj, y, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Drag)
-    FIELD(obj, path, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Keypress)
-    FIELD(obj, keys, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Move)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, x, CommaDirection::BEFORE)
-    FIELD(obj, y, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Screenshot)
-    FIELD(obj, type, CommaDirection::NONE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Scroll)
-    FIELD(obj, scroll_x, CommaDirection::NONE)
-    FIELD(obj, scroll_y, CommaDirection::BEFORE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-    FIELD(obj, x, CommaDirection::BEFORE)
-    FIELD(obj, y, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Type)
-    FIELD(obj, text, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::Wait)
-    FIELD(obj, type, CommaDirection::NONE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall::ResponseComputerToolCall_pending_safety_checks)
+BEGIN_SERIALIZE(Request::ComputerCall::ComputerCall_pending_safety_checks)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, code, CommaDirection::BEFORE)
     FIELD(obj, message, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseComputerToolCall)
+BEGIN_SERIALIZE(Request::ComputerCall::Click)
+    FIELD(obj, button, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::DoubleClick)
+    FIELD(obj, keys, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Drag::Drag_path)
+    FIELD(obj, x, CommaDirection::NONE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Drag)
+    FIELD(obj, path, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Keypress)
+    FIELD(obj, keys, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Move)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Screenshot)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Scroll)
+    FIELD(obj, scroll_x, CommaDirection::NONE)
+    FIELD(obj, scroll_y, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Type)
+    FIELD(obj, text, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::Wait)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsClick)
+    FIELD(obj, button, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsDoubleClick)
+    FIELD(obj, keys, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsDrag::Drag_path)
+    FIELD(obj, x, CommaDirection::NONE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsDrag)
+    FIELD(obj, path, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsKeypress)
+    FIELD(obj, keys, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsMove)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsScreenshot)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsScroll)
+    FIELD(obj, scroll_x, CommaDirection::NONE)
+    FIELD(obj, scroll_y, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, x, CommaDirection::BEFORE)
+    FIELD(obj, y, CommaDirection::BEFORE)
+    FIELD(obj, keys, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsType)
+    FIELD(obj, text, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall::ActionsWait)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerCall)
     FIELD(obj, id, CommaDirection::NONE)
-    FIELD(obj, action, CommaDirection::BEFORE)
     FIELD(obj, call_id, CommaDirection::BEFORE)
     FIELD(obj, pending_safety_checks, CommaDirection::BEFORE)
     FIELD(obj, status, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, action, CommaDirection::BEFORE)
+    FIELD(obj, actions, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ComputerCallOutput::ResponseComputerToolCallOutputScreenshot)
@@ -247,42 +370,43 @@ BEGIN_SERIALIZE(Request::ComputerCallOutput)
     FIELD(obj, status, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFunctionWebSearch::Search::Search_sources)
+BEGIN_SERIALIZE(Request::WebSearchCall::Search::Search_sources)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFunctionWebSearch::Search)
+BEGIN_SERIALIZE(Request::WebSearchCall::Search)
     FIELD(obj, query, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, queries, CommaDirection::BEFORE)
     FIELD(obj, sources, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFunctionWebSearch::OpenPage)
+BEGIN_SERIALIZE(Request::WebSearchCall::OpenPage)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFunctionWebSearch::FindInPage)
+BEGIN_SERIALIZE(Request::WebSearchCall::FindInPage)
     FIELD(obj, pattern, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFunctionWebSearch)
+BEGIN_SERIALIZE(Request::WebSearchCall)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, action, CommaDirection::BEFORE)
     FIELD(obj, status, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseFunctionToolCall)
+BEGIN_SERIALIZE(Request::FunctionCall)
     FIELD(obj, arguments, CommaDirection::NONE)
     FIELD(obj, call_id, CommaDirection::BEFORE)
     FIELD(obj, name, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, id, CommaDirection::BEFORE)
+    FIELD_ALT(obj, namespace_, "namespace", CommaDirection::BEFORE)
     FIELD(obj, status, CommaDirection::BEFORE)
 END_SERIALIZE
 
@@ -314,17 +438,337 @@ BEGIN_SERIALIZE(Request::FunctionCallOutput)
     FIELD(obj, status, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseReasoningItem::SummaryTextContent)
+BEGIN_SERIALIZE(Request::ToolSearchCall)
+    FIELD(obj, arguments, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, id, CommaDirection::BEFORE)
+    FIELD(obj, call_id, CommaDirection::BEFORE)
+    FIELD(obj, execution, CommaDirection::BEFORE)
+    FIELD(obj, status, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Function)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, parameters, CommaDirection::BEFORE)
+    FIELD(obj, strict, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::FileSearch::FileSearch_ranking_options::FileSearch_ranking_options_hybrid_search)
+    FIELD(obj, embedding_weight, CommaDirection::NONE)
+    FIELD(obj, text_weight, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::FileSearch::FileSearch_ranking_options)
+    FIELD(obj, hybrid_search, CommaDirection::NONE)
+    FIELD(obj, ranker, CommaDirection::BEFORE)
+    FIELD(obj, score_threshold, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::FileSearch::ComparisonFilter)
+    FIELD(obj, key, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, value, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::FileSearch::CompoundFilter::ComparisonFilter)
+    FIELD(obj, key, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, value, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::FileSearch::CompoundFilter)
+    FIELD(obj, filters, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::FileSearch)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, vector_store_ids, CommaDirection::BEFORE)
+    FIELD(obj, filters, CommaDirection::BEFORE)
+    FIELD(obj, max_num_results, CommaDirection::BEFORE)
+    FIELD(obj, ranking_options, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Computer)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::ComputerUsePreview)
+    FIELD(obj, display_height, CommaDirection::NONE)
+    FIELD(obj, display_width, CommaDirection::BEFORE)
+    FIELD(obj, environment, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::WebSearch::WebSearch_filters)
+    FIELD(obj, allowed_domains, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::WebSearch::WebSearch_user_location)
+    FIELD(obj, city, CommaDirection::NONE)
+    FIELD(obj, country, CommaDirection::BEFORE)
+    FIELD(obj, region, CommaDirection::BEFORE)
+    FIELD(obj, timezone, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::WebSearch)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, filters, CommaDirection::BEFORE)
+    FIELD(obj, search_context_size, CommaDirection::BEFORE)
+    FIELD(obj, user_location, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Mcp::McpToolFilter)
+    FIELD(obj, read_only, CommaDirection::NONE)
+    FIELD(obj, tool_names, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Mcp::McpToolApprovalFilter::McpToolApprovalFilter_always)
+    FIELD(obj, read_only, CommaDirection::NONE)
+    FIELD(obj, tool_names, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Mcp::McpToolApprovalFilter::McpToolApprovalFilter_never)
+    FIELD(obj, read_only, CommaDirection::NONE)
+    FIELD(obj, tool_names, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Mcp::McpToolApprovalFilter)
+    FIELD(obj, always, CommaDirection::NONE)
+    FIELD(obj, never, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Mcp)
+    FIELD(obj, server_label, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, allowed_tools, CommaDirection::BEFORE)
+    FIELD(obj, authorization, CommaDirection::BEFORE)
+    FIELD(obj, connector_id, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, headers, CommaDirection::BEFORE)
+    FIELD(obj, require_approval, CommaDirection::BEFORE)
+    FIELD(obj, server_description, CommaDirection::BEFORE)
+    FIELD(obj, server_url, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyDisabled)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+    FIELD(obj, domain, CommaDirection::NONE)
+    FIELD(obj, name, CommaDirection::BEFORE)
+    FIELD(obj, value, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist)
+    FIELD(obj, allowed_domains, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, domain_secrets, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, file_ids, CommaDirection::BEFORE)
+    FIELD(obj, memory_limit, CommaDirection::BEFORE)
+    FIELD(obj, network_policy, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::CodeInterpreter)
+    FIELD(obj, container, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::ImageGeneration::ImageGeneration_input_image_mask)
+    FIELD(obj, file_id, CommaDirection::NONE)
+    FIELD(obj, image_url, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::ImageGeneration)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, action, CommaDirection::BEFORE)
+    FIELD(obj, background, CommaDirection::BEFORE)
+    FIELD(obj, input_fidelity, CommaDirection::BEFORE)
+    FIELD(obj, input_image_mask, CommaDirection::BEFORE)
+    FIELD(obj, model, CommaDirection::BEFORE)
+    FIELD(obj, moderation, CommaDirection::BEFORE)
+    FIELD(obj, output_compression, CommaDirection::BEFORE)
+    FIELD(obj, output_format, CommaDirection::BEFORE)
+    FIELD(obj, partial_images, CommaDirection::BEFORE)
+    FIELD(obj, quality, CommaDirection::BEFORE)
+    FIELD(obj, size, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::LocalShell)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+    FIELD(obj, domain, CommaDirection::NONE)
+    FIELD(obj, name, CommaDirection::BEFORE)
+    FIELD(obj, value, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
+    FIELD(obj, allowed_domains, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, domain_secrets, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto::SkillReference)
+    FIELD(obj, skill_id, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, version, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto::InlineSkill::InlineSkillSource)
+    FIELD(obj, data, CommaDirection::NONE)
+    FIELD(obj, media_type, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto::InlineSkill)
+    FIELD(obj, description, CommaDirection::NONE)
+    FIELD(obj, name, CommaDirection::BEFORE)
+    FIELD(obj, source, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerAuto)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, file_ids, CommaDirection::BEFORE)
+    FIELD(obj, memory_limit, CommaDirection::BEFORE)
+    FIELD(obj, network_policy, CommaDirection::BEFORE)
+    FIELD(obj, skills, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::LocalEnvironment::LocalSkill)
+    FIELD(obj, description, CommaDirection::NONE)
+    FIELD(obj, name, CommaDirection::BEFORE)
+    FIELD(obj, path, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::LocalEnvironment)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, skills, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell::ContainerReference)
+    FIELD(obj, container_id, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Shell)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, environment, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Custom::Text)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Custom::Grammar)
+    FIELD(obj, definition, CommaDirection::NONE)
+    FIELD(obj, syntax, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Custom)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, format, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Namespace::Function)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, parameters, CommaDirection::BEFORE)
+    FIELD(obj, strict, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Namespace::Custom::Text)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Namespace::Custom::Grammar)
+    FIELD(obj, definition, CommaDirection::NONE)
+    FIELD(obj, syntax, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Namespace::Custom)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, format, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::Namespace)
+    FIELD(obj, description, CommaDirection::NONE)
+    FIELD(obj, name, CommaDirection::BEFORE)
+    FIELD(obj, tools, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::ToolSearch)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, execution, CommaDirection::BEFORE)
+    FIELD(obj, parameters, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::WebSearchPreview::WebSearchPreview_user_location)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, city, CommaDirection::BEFORE)
+    FIELD(obj, country, CommaDirection::BEFORE)
+    FIELD(obj, region, CommaDirection::BEFORE)
+    FIELD(obj, timezone, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::WebSearchPreview)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, search_content_types, CommaDirection::BEFORE)
+    FIELD(obj, search_context_size, CommaDirection::BEFORE)
+    FIELD(obj, user_location, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput::ApplyPatch)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearchOutput)
+    FIELD(obj, tools, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, id, CommaDirection::BEFORE)
+    FIELD(obj, call_id, CommaDirection::BEFORE)
+    FIELD(obj, execution, CommaDirection::BEFORE)
+    FIELD(obj, status, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::InputReasoning::SummaryTextContent)
     FIELD(obj, text, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseReasoningItem::ResponseReasoningItem_content)
+BEGIN_SERIALIZE(Request::InputReasoning::Reasoning_content)
     FIELD(obj, text, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseReasoningItem)
+BEGIN_SERIALIZE(Request::InputReasoning)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, summary, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
@@ -333,7 +777,7 @@ BEGIN_SERIALIZE(Request::ResponseReasoningItem)
     FIELD(obj, status, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCompactionItemParam)
+BEGIN_SERIALIZE(Request::Compaction)
     FIELD(obj, encrypted_content, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, id, CommaDirection::BEFORE)
@@ -346,17 +790,17 @@ BEGIN_SERIALIZE(Request::ImageGenerationCall)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCodeInterpreterToolCall::Logs)
+BEGIN_SERIALIZE(Request::CodeInterpreterCall::Logs)
     FIELD(obj, logs, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCodeInterpreterToolCall::Image)
+BEGIN_SERIALIZE(Request::CodeInterpreterCall::Image)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCodeInterpreterToolCall)
+BEGIN_SERIALIZE(Request::CodeInterpreterCall)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, code, CommaDirection::BEFORE)
     FIELD(obj, container_id, CommaDirection::BEFORE)
@@ -520,19 +964,19 @@ BEGIN_SERIALIZE(Request::McpCall)
     FIELD(obj, status, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCustomToolCallOutput::ResponseInputText)
+BEGIN_SERIALIZE(Request::CustomToolCallOutput::ResponseInputText)
     FIELD(obj, text, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCustomToolCallOutput::ResponseInputImage)
+BEGIN_SERIALIZE(Request::CustomToolCallOutput::ResponseInputImage)
     FIELD(obj, detail, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, file_id, CommaDirection::BEFORE)
     FIELD(obj, image_url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCustomToolCallOutput::ResponseInputFile)
+BEGIN_SERIALIZE(Request::CustomToolCallOutput::ResponseInputFile)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, file_data, CommaDirection::BEFORE)
     FIELD(obj, file_id, CommaDirection::BEFORE)
@@ -540,81 +984,25 @@ BEGIN_SERIALIZE(Request::ResponseCustomToolCallOutput::ResponseInputFile)
     FIELD(obj, filename, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCustomToolCallOutput)
+BEGIN_SERIALIZE(Request::CustomToolCallOutput)
     FIELD(obj, call_id, CommaDirection::NONE)
     FIELD(obj, output, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, id, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ResponseCustomToolCall)
+BEGIN_SERIALIZE(Request::CustomToolCall)
     FIELD(obj, call_id, CommaDirection::NONE)
     FIELD(obj, input, CommaDirection::BEFORE)
     FIELD(obj, name, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, id, CommaDirection::BEFORE)
+    FIELD_ALT(obj, namespace_, "namespace", CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ItemReference)
     FIELD(obj, id, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponsePrompt::ResponseInputText)
-    FIELD(obj, text, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponsePrompt::ResponseInputImage)
-    FIELD(obj, detail, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-    FIELD(obj, file_id, CommaDirection::BEFORE)
-    FIELD(obj, image_url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponsePrompt::ResponseInputFile)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, file_data, CommaDirection::BEFORE)
-    FIELD(obj, file_id, CommaDirection::BEFORE)
-    FIELD(obj, file_url, CommaDirection::BEFORE)
-    FIELD(obj, filename, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponsePrompt)
-    FIELD(obj, id, CommaDirection::NONE)
-    FIELD(obj, variables, CommaDirection::BEFORE)
-    FIELD(obj, version, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::Reasoning)
-    FIELD(obj, effort, CommaDirection::NONE)
-    FIELD(obj, generate_summary, CommaDirection::BEFORE)
-    FIELD(obj, summary, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::Request_stream_options)
-    FIELD(obj, include_obfuscation, CommaDirection::NONE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseTextConfig::ResponseFormatText)
-    FIELD(obj, type, CommaDirection::NONE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseTextConfig::ResponseFormatTextJSONSchemaConfig)
-    FIELD(obj, name, CommaDirection::NONE)
-    FIELD(obj, schema, CommaDirection::BEFORE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-    FIELD(obj, description, CommaDirection::BEFORE)
-    FIELD(obj, strict, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseTextConfig::ResponseFormatJSONObject)
-    FIELD(obj, type, CommaDirection::NONE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::ResponseTextConfig)
-    FIELD(obj, format, CommaDirection::NONE)
-    FIELD(obj, verbosity, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ToolChoiceAllowed)
@@ -651,43 +1039,44 @@ BEGIN_SERIALIZE(Request::ToolChoiceShell)
     FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionTool)
+BEGIN_SERIALIZE(Request::Function)
     FIELD(obj, name, CommaDirection::NONE)
     FIELD(obj, parameters, CommaDirection::BEFORE)
     FIELD(obj, strict, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
     FIELD(obj, description, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FileSearchTool::ComparisonFilter)
-    FIELD(obj, key, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-    FIELD(obj, value, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::FileSearchTool::CompoundFilter::ComparisonFilter)
-    FIELD(obj, key, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-    FIELD(obj, value, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::FileSearchTool::CompoundFilter)
-    FIELD(obj, filters, CommaDirection::NONE)
-    FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::FileSearchTool::FileSearchTool_ranking_options::FileSearchTool_ranking_options_hybrid_search)
+BEGIN_SERIALIZE(Request::FileSearch::FileSearch_ranking_options::FileSearch_ranking_options_hybrid_search)
     FIELD(obj, embedding_weight, CommaDirection::NONE)
     FIELD(obj, text_weight, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FileSearchTool::FileSearchTool_ranking_options)
+BEGIN_SERIALIZE(Request::FileSearch::FileSearch_ranking_options)
     FIELD(obj, hybrid_search, CommaDirection::NONE)
     FIELD(obj, ranker, CommaDirection::BEFORE)
     FIELD(obj, score_threshold, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FileSearchTool)
+BEGIN_SERIALIZE(Request::FileSearch::ComparisonFilter)
+    FIELD(obj, key, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, value, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::FileSearch::CompoundFilter::ComparisonFilter)
+    FIELD(obj, key, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, value, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::FileSearch::CompoundFilter)
+    FIELD(obj, filters, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::FileSearch)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, vector_store_ids, CommaDirection::BEFORE)
     FIELD(obj, filters, CommaDirection::BEFORE)
@@ -695,18 +1084,22 @@ BEGIN_SERIALIZE(Request::FileSearchTool)
     FIELD(obj, ranking_options, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ComputerTool)
+BEGIN_SERIALIZE(Request::Computer)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ComputerUsePreview)
     FIELD(obj, display_height, CommaDirection::NONE)
     FIELD(obj, display_width, CommaDirection::BEFORE)
     FIELD(obj, environment, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::WebSearchTool::WebSearchTool_filters)
+BEGIN_SERIALIZE(Request::WebSearch::WebSearch_filters)
     FIELD(obj, allowed_domains, CommaDirection::NONE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::WebSearchTool::WebSearchTool_user_location)
+BEGIN_SERIALIZE(Request::WebSearch::WebSearch_user_location)
     FIELD(obj, city, CommaDirection::NONE)
     FIELD(obj, country, CommaDirection::BEFORE)
     FIELD(obj, region, CommaDirection::BEFORE)
@@ -714,7 +1107,7 @@ BEGIN_SERIALIZE(Request::WebSearchTool::WebSearchTool_user_location)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::WebSearchTool)
+BEGIN_SERIALIZE(Request::WebSearch)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, filters, CommaDirection::BEFORE)
     FIELD(obj, search_context_size, CommaDirection::BEFORE)
@@ -747,6 +1140,7 @@ BEGIN_SERIALIZE(Request::Mcp)
     FIELD(obj, allowed_tools, CommaDirection::BEFORE)
     FIELD(obj, authorization, CommaDirection::BEFORE)
     FIELD(obj, connector_id, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
     FIELD(obj, headers, CommaDirection::BEFORE)
     FIELD(obj, require_approval, CommaDirection::BEFORE)
     FIELD(obj, server_description, CommaDirection::BEFORE)
@@ -805,42 +1199,42 @@ BEGIN_SERIALIZE(Request::LocalShell)
     FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyDisabled)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
     FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
     FIELD(obj, domain, CommaDirection::NONE)
     FIELD(obj, name, CommaDirection::BEFORE)
     FIELD(obj, value, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyAllowlist)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
     FIELD(obj, allowed_domains, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, domain_secrets, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto::SkillReference)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto::SkillReference)
     FIELD(obj, skill_id, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, version, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto::InlineSkill::InlineSkillSource)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto::InlineSkill::InlineSkillSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto::InlineSkill)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto::InlineSkill)
     FIELD(obj, description, CommaDirection::NONE)
     FIELD(obj, name, CommaDirection::BEFORE)
     FIELD(obj, source, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto)
+BEGIN_SERIALIZE(Request::Shell::ContainerAuto)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, file_ids, CommaDirection::BEFORE)
     FIELD(obj, memory_limit, CommaDirection::BEFORE)
@@ -848,45 +1242,87 @@ BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerAuto)
     FIELD(obj, skills, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::LocalEnvironment::LocalSkill)
+BEGIN_SERIALIZE(Request::Shell::LocalEnvironment::LocalSkill)
     FIELD(obj, description, CommaDirection::NONE)
     FIELD(obj, name, CommaDirection::BEFORE)
     FIELD(obj, path, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::LocalEnvironment)
+BEGIN_SERIALIZE(Request::Shell::LocalEnvironment)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, skills, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool::ContainerReference)
+BEGIN_SERIALIZE(Request::Shell::ContainerReference)
     FIELD(obj, container_id, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::FunctionShellTool)
+BEGIN_SERIALIZE(Request::Shell)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, environment, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::CustomTool::Text)
+BEGIN_SERIALIZE(Request::Custom::Text)
     FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::CustomTool::Grammar)
+BEGIN_SERIALIZE(Request::Custom::Grammar)
     FIELD(obj, definition, CommaDirection::NONE)
     FIELD(obj, syntax, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::CustomTool)
+BEGIN_SERIALIZE(Request::Custom)
     FIELD(obj, name, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
     FIELD(obj, description, CommaDirection::BEFORE)
     FIELD(obj, format, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::WebSearchPreviewTool::WebSearchPreviewTool_user_location)
+BEGIN_SERIALIZE(Request::Namespace::Function)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, parameters, CommaDirection::BEFORE)
+    FIELD(obj, strict, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::Namespace::Custom::Text)
+    FIELD(obj, type, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::Namespace::Custom::Grammar)
+    FIELD(obj, definition, CommaDirection::NONE)
+    FIELD(obj, syntax, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::Namespace::Custom)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, format, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::Namespace)
+    FIELD(obj, description, CommaDirection::NONE)
+    FIELD(obj, name, CommaDirection::BEFORE)
+    FIELD(obj, tools, CommaDirection::BEFORE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::ToolSearch)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, description, CommaDirection::BEFORE)
+    FIELD(obj, execution, CommaDirection::BEFORE)
+    FIELD(obj, parameters, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::WebSearchPreview::WebSearchPreview_user_location)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, city, CommaDirection::BEFORE)
     FIELD(obj, country, CommaDirection::BEFORE)
@@ -894,13 +1330,14 @@ BEGIN_SERIALIZE(Request::WebSearchPreviewTool::WebSearchPreviewTool_user_locatio
     FIELD(obj, timezone, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::WebSearchPreviewTool)
+BEGIN_SERIALIZE(Request::WebSearchPreview)
     FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, search_content_types, CommaDirection::BEFORE)
     FIELD(obj, search_context_size, CommaDirection::BEFORE)
     FIELD(obj, user_location, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::ApplyPatchTool)
+BEGIN_SERIALIZE(Request::ApplyPatch)
     FIELD(obj, type, CommaDirection::NONE)
 END_SERIALIZE
 

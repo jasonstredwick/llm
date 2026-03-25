@@ -25,6 +25,88 @@ struct Request {
         std::optional<double> compact_threshold{};
     };
 
+    struct ResponsePrompt {
+        struct ResponseInputText {
+            struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
+
+            Required<std::string> text;
+            Required<TypeKind> type{{}};
+        };
+
+        struct ResponseInputImage {
+            struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
+
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
+
+            Required<Detail> detail;
+            Required<TypeKind> type{{}};
+            std::optional<std::string> file_id{};
+            std::optional<std::string> image_url{};
+        };
+
+        struct ResponseInputFile {
+            struct TypeKind : Kind { static constexpr std::string_view value = "input_file"; };
+
+            Required<TypeKind> type{{}};
+            std::optional<std::string> file_data{};
+            std::optional<std::string> file_id{};
+            std::optional<std::string> file_url{};
+            std::optional<std::string> filename{};
+        };
+
+        using VariablesValue = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
+
+        Required<std::string> id;
+        std::optional<std::map<std::string, VariablesValue>> variables{};
+        std::optional<std::string> version{};
+    };
+
+    struct Reasoning {
+        enum class Effort { NONE, MINIMAL, LOW, MEDIUM, HIGH, XHIGH };
+        enum class GenerateSummary { AUTO, CONCISE, DETAILED };
+        enum class Summary { AUTO, CONCISE, DETAILED };
+
+        std::optional<Effort> effort{};
+        std::optional<GenerateSummary> generate_summary{};
+        std::optional<Summary> summary{};
+    };
+
+    struct Request_stream_options {
+        std::optional<bool> include_obfuscation{};
+    };
+
+    struct ResponseTextConfig {
+        struct ResponseFormatText {
+            struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+            Required<TypeKind> type{{}};
+        };
+
+        struct ResponseFormatTextJSONSchemaConfig {
+            struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
+
+            Required<std::string> name;
+            Required<std::map<std::string, jai::llm::json::Object>> schema;
+            Required<TypeKind> type{{}};
+            std::optional<std::string> description{};
+            std::optional<bool> strict{};
+        };
+
+        struct ResponseFormatJSONObject {
+            struct TypeKind : Kind { static constexpr std::string_view value = "json_object"; };
+
+            Required<TypeKind> type{{}};
+        };
+
+        enum class Verbosity { LOW, MEDIUM, HIGH };
+
+        enum class ResponseFormatTextConfigKind { TEXT, JSON_SCHEMA, JSON_OBJECT };
+        using ResponseFormatTextConfig = std::variant<ResponseFormatText, ResponseFormatTextJSONSchemaConfig, ResponseFormatJSONObject>;
+
+        std::optional<ResponseFormatTextConfig> format{};
+        std::optional<Verbosity> verbosity{};
+    };
+
     struct ResponseConversationParam {
         Required<std::string> id;
     };
@@ -40,7 +122,7 @@ struct Request {
         struct ResponseInputImage {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             Required<Detail> detail;
             Required<TypeKind> type{{}};
@@ -84,7 +166,7 @@ struct Request {
         struct ResponseInputImage {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             Required<Detail> detail;
             Required<TypeKind> type{{}};
@@ -118,6 +200,19 @@ struct Request {
 
     struct ResponseOutputMessage {
         struct ResponseOutputText {
+            struct ResponseOutputText_logprobs {
+                struct ResponseOutputText_logprobs_top_logprobs {
+                    Required<std::string> token;
+                    Required<std::vector<double>> bytes;
+                    Required<double> logprob;
+                };
+
+                Required<std::string> token;
+                Required<std::vector<double>> bytes;
+                Required<double> logprob;
+                Required<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs;
+            };
+
             struct FileCitation {
                 struct TypeKind : Kind { static constexpr std::string_view value = "file_citation"; };
 
@@ -156,19 +251,6 @@ struct Request {
                 Required<TypeKind> type{{}};
             };
 
-            struct ResponseOutputText_logprobs {
-                struct ResponseOutputText_logprobs_top_logprobs {
-                    Required<std::string> token;
-                    Required<std::vector<double>> bytes;
-                    Required<double> logprob;
-                };
-
-                Required<std::string> token;
-                Required<std::vector<double>> bytes;
-                Required<double> logprob;
-                Required<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs;
-            };
-
             struct TypeKind : Kind { static constexpr std::string_view value = "output_text"; };
 
             enum class AnnotationsKind { FILE_CITATION, URL_CITATION, CONTAINER_FILE_CITATION, FILE_PATH };
@@ -204,8 +286,8 @@ struct Request {
         std::optional<Phase> phase{};
     };
 
-    struct ResponseFileSearchToolCall {
-        struct ResponseFileSearchToolCall_results {
+    struct FileSearchCall {
+        struct FileSearchCall_results {
             using AttributesValue = std::variant<std::string, double, bool>;
 
             std::optional<std::map<std::string, AttributesValue>> attributes{};
@@ -223,10 +305,16 @@ struct Request {
         Required<std::vector<std::string>> queries;
         Required<Status> status;
         Required<TypeKind> type{{}};
-        std::optional<std::vector<ResponseFileSearchToolCall_results>> results{};
+        std::optional<std::vector<FileSearchCall_results>> results{};
     };
 
-    struct ResponseComputerToolCall {
+    struct ComputerCall {
+        struct ComputerCall_pending_safety_checks {
+            Required<std::string> id;
+            std::optional<std::string> code{};
+            std::optional<std::string> message{};
+        };
+
         struct Click {
             struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
 
@@ -236,11 +324,13 @@ struct Request {
             Required<TypeKind> type{{}};
             Required<double> x;
             Required<double> y;
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct DoubleClick {
             struct TypeKind : Kind { static constexpr std::string_view value = "double_click"; };
 
+            Required<std::vector<std::string>> keys;
             Required<TypeKind> type{{}};
             Required<double> x;
             Required<double> y;
@@ -256,6 +346,7 @@ struct Request {
 
             Required<std::vector<Drag_path>> path;
             Required<TypeKind> type{{}};
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct Keypress {
@@ -271,6 +362,7 @@ struct Request {
             Required<TypeKind> type{{}};
             Required<double> x;
             Required<double> y;
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct Screenshot {
@@ -287,6 +379,7 @@ struct Request {
             Required<TypeKind> type{{}};
             Required<double> x;
             Required<double> y;
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct Type {
@@ -302,25 +395,102 @@ struct Request {
             Required<TypeKind> type{{}};
         };
 
-        struct ResponseComputerToolCall_pending_safety_checks {
-            Required<std::string> id;
-            std::optional<std::string> code{};
-            std::optional<std::string> message{};
+        struct ActionsClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
+
+            enum class Button { LEFT, RIGHT, WHEEL, BACK, FORWARD };
+
+            Required<Button> button;
+            Required<TypeKind> type{{}};
+            Required<double> x;
+            Required<double> y;
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsDoubleClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "double_click"; };
+
+            Required<std::vector<std::string>> keys;
+            Required<TypeKind> type{{}};
+            Required<double> x;
+            Required<double> y;
+        };
+
+        struct ActionsDrag {
+            struct Drag_path {
+                Required<double> x;
+                Required<double> y;
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "drag"; };
+
+            Required<std::vector<Drag_path>> path;
+            Required<TypeKind> type{{}};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsKeypress {
+            struct TypeKind : Kind { static constexpr std::string_view value = "keypress"; };
+
+            Required<std::vector<std::string>> keys;
+            Required<TypeKind> type{{}};
+        };
+
+        struct ActionsMove {
+            struct TypeKind : Kind { static constexpr std::string_view value = "move"; };
+
+            Required<TypeKind> type{{}};
+            Required<double> x;
+            Required<double> y;
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsScreenshot {
+            struct TypeKind : Kind { static constexpr std::string_view value = "screenshot"; };
+
+            Required<TypeKind> type{{}};
+        };
+
+        struct ActionsScroll {
+            struct TypeKind : Kind { static constexpr std::string_view value = "scroll"; };
+
+            Required<double> scroll_x;
+            Required<double> scroll_y;
+            Required<TypeKind> type{{}};
+            Required<double> x;
+            Required<double> y;
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsType {
+            struct TypeKind : Kind { static constexpr std::string_view value = "type"; };
+
+            Required<std::string> text;
+            Required<TypeKind> type{{}};
+        };
+
+        struct ActionsWait {
+            struct TypeKind : Kind { static constexpr std::string_view value = "wait"; };
+
+            Required<TypeKind> type{{}};
         };
 
         struct TypeKind : Kind { static constexpr std::string_view value = "computer_call"; };
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
-        enum class ActionKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
-        using Action = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
+        enum class ComputerActionKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
+        using ComputerAction = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
+        enum class ComputerActionListKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
+        using ComputerActionList = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
 
         Required<std::string> id;
-        Required<Action> action;
         Required<std::string> call_id;
-        Required<std::vector<ResponseComputerToolCall_pending_safety_checks>> pending_safety_checks;
+        Required<std::vector<ComputerCall_pending_safety_checks>> pending_safety_checks;
         Required<Status> status;
         Required<TypeKind> type{{}};
+        std::optional<ComputerAction> action{};
+        std::optional<ComputerActionList> actions{};
     };
 
     struct ComputerCallOutput {
@@ -350,7 +520,7 @@ struct Request {
         std::optional<Status> status{};
     };
 
-    struct ResponseFunctionWebSearch {
+    struct WebSearchCall {
         struct Search {
             struct Search_sources {
                 struct TypeKind : Kind { static constexpr std::string_view value = "url"; };
@@ -395,7 +565,7 @@ struct Request {
         Required<TypeKind> type{{}};
     };
 
-    struct ResponseFunctionToolCall {
+    struct FunctionCall {
         struct TypeKind : Kind { static constexpr std::string_view value = "function_call"; };
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
@@ -405,6 +575,7 @@ struct Request {
         Required<std::string> name;
         Required<TypeKind> type{{}};
         std::optional<std::string> id{};
+        std::optional<std::string> namespace_{};
         std::optional<Status> status{};
     };
 
@@ -419,7 +590,7 @@ struct Request {
         struct ResponseInputImageContent {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             Required<TypeKind> type{{}};
             std::optional<Detail> detail{};
@@ -441,9 +612,8 @@ struct Request {
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
-        enum class OutputItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using OutputItem = std::variant<ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
-        using Output = std::variant<std::string, std::vector<OutputItem>>;
+        using OutputElement = std::variant<ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
+        using Output = std::variant<std::string, std::vector<OutputElement>>;
 
         Required<std::string> call_id;
         Required<Output> output;
@@ -452,7 +622,482 @@ struct Request {
         std::optional<Status> status{};
     };
 
-    struct ResponseReasoningItem {
+    struct ToolSearchCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_call"; };
+
+        enum class Execution { SERVER, CLIENT };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        Required<jai::llm::json::Object> arguments;
+        Required<TypeKind> type{{}};
+        std::optional<std::string> id{};
+        std::optional<std::string> call_id{};
+        std::optional<Execution> execution{};
+        std::optional<Status> status{};
+    };
+
+    struct ToolSearchOutput {
+        struct Function {
+            struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+            Required<std::string> name;
+            Required<std::map<std::string, jai::llm::json::Object>> parameters;
+            Required<bool> strict;
+            Required<TypeKind> type{{}};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+        };
+
+        struct FileSearch {
+            struct FileSearch_ranking_options {
+                struct FileSearch_ranking_options_hybrid_search {
+                    Required<double> embedding_weight;
+                    Required<double> text_weight;
+                };
+
+                enum class Ranker { AUTO, DEFAULT_2024_11_15 };
+
+                std::optional<FileSearch_ranking_options_hybrid_search> hybrid_search{};
+                std::optional<Ranker> ranker{};
+                std::optional<double> score_threshold{};
+            };
+
+            struct ComparisonFilter {
+                enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
+
+                using ValueElement = std::variant<std::string, double>;
+                using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
+
+                Required<std::string> key;
+                Required<Type> type;
+                Required<Value> value;
+            };
+
+            struct CompoundFilter {
+                struct ComparisonFilter {
+                    enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
+
+                    using ValueElement = std::variant<std::string, double>;
+                    using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
+
+                    Required<std::string> key;
+                    Required<Type> type;
+                    Required<Value> value;
+                };
+
+                enum class Type { AND, OR };
+
+                using Filters = std::variant<ComparisonFilter, jai::llm::json::Object>;
+
+                Required<std::vector<Filters>> filters;
+                Required<Type> type;
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "file_search"; };
+
+            using Filters = std::variant<ComparisonFilter, CompoundFilter>;
+
+            Required<TypeKind> type{{}};
+            Required<std::vector<std::string>> vector_store_ids;
+            std::optional<Filters> filters{};
+            std::optional<double> max_num_results{};
+            std::optional<FileSearch_ranking_options> ranking_options{};
+        };
+
+        struct Computer {
+            struct TypeKind : Kind { static constexpr std::string_view value = "computer"; };
+
+            Required<TypeKind> type{{}};
+        };
+
+        struct ComputerUsePreview {
+            struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
+
+            enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
+
+            Required<double> display_height;
+            Required<double> display_width;
+            Required<Environment> environment;
+            Required<TypeKind> type{{}};
+        };
+
+        struct WebSearch {
+            struct WebSearch_filters {
+                std::optional<std::vector<std::string>> allowed_domains{};
+            };
+
+            struct WebSearch_user_location {
+                struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
+
+                std::optional<std::string> city{};
+                std::optional<std::string> country{};
+                std::optional<std::string> region{};
+                std::optional<std::string> timezone{};
+                std::optional<TypeKind> type{};
+            };
+
+            enum class Type { WEB_SEARCH, WEB_SEARCH_2025_08_26 };
+            enum class SearchContextSize { LOW, MEDIUM, HIGH };
+
+            Required<Type> type;
+            std::optional<WebSearch_filters> filters{};
+            std::optional<SearchContextSize> search_context_size{};
+            std::optional<WebSearch_user_location> user_location{};
+        };
+
+        struct Mcp {
+            struct McpToolFilter {
+                std::optional<bool> read_only{};
+                std::optional<std::vector<std::string>> tool_names{};
+            };
+
+            struct McpToolApprovalFilter {
+                struct McpToolApprovalFilter_always {
+                    std::optional<bool> read_only{};
+                    std::optional<std::vector<std::string>> tool_names{};
+                };
+
+                struct McpToolApprovalFilter_never {
+                    std::optional<bool> read_only{};
+                    std::optional<std::vector<std::string>> tool_names{};
+                };
+
+                std::optional<McpToolApprovalFilter_always> always{};
+                std::optional<McpToolApprovalFilter_never> never{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "mcp"; };
+
+            enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR, CONNECTOR_GOOGLEDRIVE, CONNECTOR_MICROSOFTTEAMS, CONNECTOR_OUTLOOKCALENDAR, CONNECTOR_OUTLOOKEMAIL, CONNECTOR_SHAREPOINT };
+
+            using AllowedTools = std::variant<std::vector<std::string>, McpToolFilter>;
+            enum class RequireApprovalValues { ALWAYS, NEVER };
+            using RequireApproval = std::variant<RequireApprovalValues, McpToolApprovalFilter>;
+
+            Required<std::string> server_label;
+            Required<TypeKind> type{{}};
+            std::optional<std::vector<AllowedTools>> allowed_tools{};
+            std::optional<std::string> authorization{};
+            std::optional<ConnectorId> connector_id{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::map<std::string, std::string>> headers{};
+            std::optional<RequireApproval> require_approval{};
+            std::optional<std::string> server_description{};
+            std::optional<std::string> server_url{};
+        };
+
+        struct CodeInterpreter {
+            struct CodeInterpreterToolAuto {
+                struct ContainerNetworkPolicyDisabled {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
+
+                    Required<TypeKind> type{{}};
+                };
+
+                struct ContainerNetworkPolicyAllowlist {
+                    struct ContainerNetworkPolicyDomainSecret {
+                        Required<std::string> domain;
+                        Required<std::string> name;
+                        Required<std::string> value;
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "allowlist"; };
+
+                    Required<std::vector<std::string>> allowed_domains;
+                    Required<TypeKind> type{{}};
+                    std::optional<std::vector<ContainerNetworkPolicyDomainSecret>> domain_secrets{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "auto"; };
+
+                enum class MemoryLimit { V_1G, V_4G, V_16G, V_64G };
+
+                enum class NetworkPolicyKind { DISABLED, ALLOWLIST };
+                using NetworkPolicy = std::variant<ContainerNetworkPolicyDisabled, ContainerNetworkPolicyAllowlist>;
+
+                Required<TypeKind> type{{}};
+                std::optional<std::vector<std::string>> file_ids{};
+                std::optional<MemoryLimit> memory_limit{};
+                std::optional<NetworkPolicy> network_policy{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "code_interpreter"; };
+
+            enum class ContainerKind { AUTO };
+            using Container = std::variant<std::string, CodeInterpreterToolAuto>;
+
+            Required<Container> container;
+            Required<TypeKind> type{{}};
+        };
+
+        struct ImageGeneration {
+            struct ImageGeneration_input_image_mask {
+                std::optional<std::string> file_id{};
+                std::optional<std::string> image_url{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "image_generation"; };
+
+            enum class Action { GENERATE, EDIT, AUTO };
+            enum class Background { TRANSPARENT, OPAQUE, AUTO };
+            enum class InputFidelity { HIGH, LOW };
+            enum class Moderation { AUTO, LOW };
+            enum class OutputFormat { PNG, WEBP, JPEG };
+            enum class Quality { LOW, MEDIUM, HIGH, AUTO };
+            enum class Size { V_1024X1024, V_1024X1536, V_1536X1024, AUTO };
+
+            enum class ModelValues { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
+            using Model = std::variant<ModelValues, std::string>;
+
+            Required<TypeKind> type{{}};
+            std::optional<Action> action{};
+            std::optional<Background> background{};
+            std::optional<InputFidelity> input_fidelity{};
+            std::optional<ImageGeneration_input_image_mask> input_image_mask{};
+            std::optional<Model> model{};
+            std::optional<Moderation> moderation{};
+            std::optional<double> output_compression{};
+            std::optional<OutputFormat> output_format{};
+            std::optional<double> partial_images{};
+            std::optional<Quality> quality{};
+            std::optional<Size> size{};
+        };
+
+        struct LocalShell {
+            struct TypeKind : Kind { static constexpr std::string_view value = "local_shell"; };
+
+            Required<TypeKind> type{{}};
+        };
+
+        struct Shell {
+            struct ContainerAuto {
+                struct ContainerNetworkPolicyDisabled {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
+
+                    Required<TypeKind> type{{}};
+                };
+
+                struct ContainerNetworkPolicyAllowlist {
+                    struct ContainerNetworkPolicyDomainSecret {
+                        Required<std::string> domain;
+                        Required<std::string> name;
+                        Required<std::string> value;
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "allowlist"; };
+
+                    Required<std::vector<std::string>> allowed_domains;
+                    Required<TypeKind> type{{}};
+                    std::optional<std::vector<ContainerNetworkPolicyDomainSecret>> domain_secrets{};
+                };
+
+                struct SkillReference {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "skill_reference"; };
+
+                    Required<std::string> skill_id;
+                    Required<TypeKind> type{{}};
+                    std::optional<std::string> version{};
+                };
+
+                struct InlineSkill {
+                    struct InlineSkillSource {
+                        struct MediaTypeKind : Kind { static constexpr std::string_view value = "application/zip"; };
+                        struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
+
+                        Required<std::string> data;
+                        Required<MediaTypeKind> media_type{{}};
+                        Required<TypeKind> type{{}};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "inline"; };
+
+                    Required<std::string> description;
+                    Required<std::string> name;
+                    Required<InlineSkillSource> source;
+                    Required<TypeKind> type{{}};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_auto"; };
+
+                enum class MemoryLimit { V_1G, V_4G, V_16G, V_64G };
+
+                enum class NetworkPolicyKind { DISABLED, ALLOWLIST };
+                using NetworkPolicy = std::variant<ContainerNetworkPolicyDisabled, ContainerNetworkPolicyAllowlist>;
+                enum class SkillsKind { SKILL_REFERENCE, INLINE };
+                using Skills = std::variant<SkillReference, InlineSkill>;
+
+                Required<TypeKind> type{{}};
+                std::optional<std::vector<std::string>> file_ids{};
+                std::optional<MemoryLimit> memory_limit{};
+                std::optional<NetworkPolicy> network_policy{};
+                std::optional<std::vector<Skills>> skills{};
+            };
+
+            struct LocalEnvironment {
+                struct LocalSkill {
+                    Required<std::string> description;
+                    Required<std::string> name;
+                    Required<std::string> path;
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "local"; };
+
+                Required<TypeKind> type{{}};
+                std::optional<std::vector<LocalSkill>> skills{};
+            };
+
+            struct ContainerReference {
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_reference"; };
+
+                Required<std::string> container_id;
+                Required<TypeKind> type{{}};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "shell"; };
+
+            enum class EnvironmentKind { CONTAINER_AUTO, LOCAL, CONTAINER_REFERENCE };
+            using Environment = std::variant<ContainerAuto, LocalEnvironment, ContainerReference>;
+
+            Required<TypeKind> type{{}};
+            std::optional<Environment> environment{};
+        };
+
+        struct Custom {
+            struct Text {
+                struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                Required<TypeKind> type{{}};
+            };
+
+            struct Grammar {
+                struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                enum class Syntax { LARK, REGEX };
+
+                Required<std::string> definition;
+                Required<Syntax> syntax;
+                Required<TypeKind> type{{}};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+            enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+            using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+            Required<std::string> name;
+            Required<TypeKind> type{{}};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<CustomToolInputFormat> format{};
+        };
+
+        struct Namespace {
+            struct Function {
+                struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+                Required<std::string> name;
+                Required<TypeKind> type{{}};
+                std::optional<bool> defer_loading{};
+                std::optional<std::string> description{};
+                std::optional<jai::llm::json::Object> parameters{};
+                std::optional<bool> strict{};
+            };
+
+            struct Custom {
+                struct Text {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                    Required<TypeKind> type{{}};
+                };
+
+                struct Grammar {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                    enum class Syntax { LARK, REGEX };
+
+                    Required<std::string> definition;
+                    Required<Syntax> syntax;
+                    Required<TypeKind> type{{}};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+                enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+                using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+                Required<std::string> name;
+                Required<TypeKind> type{{}};
+                std::optional<bool> defer_loading{};
+                std::optional<std::string> description{};
+                std::optional<CustomToolInputFormat> format{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "namespace"; };
+
+            enum class ToolsKind { FUNCTION, CUSTOM };
+            using Tools = std::variant<Function, Custom>;
+
+            Required<std::string> description;
+            Required<std::string> name;
+            Required<std::vector<Tools>> tools;
+            Required<TypeKind> type{{}};
+        };
+
+        struct ToolSearch {
+            struct TypeKind : Kind { static constexpr std::string_view value = "tool_search"; };
+
+            enum class Execution { SERVER, CLIENT };
+
+            Required<TypeKind> type{{}};
+            std::optional<std::string> description{};
+            std::optional<Execution> execution{};
+            std::optional<jai::llm::json::Object> parameters{};
+        };
+
+        struct WebSearchPreview {
+            struct WebSearchPreview_user_location {
+                struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
+
+                Required<TypeKind> type{{}};
+                std::optional<std::string> city{};
+                std::optional<std::string> country{};
+                std::optional<std::string> region{};
+                std::optional<std::string> timezone{};
+            };
+
+            enum class Type { WEB_SEARCH_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11 };
+            enum class SearchContextSize { LOW, MEDIUM, HIGH };
+            enum class SearchContentTypesItem { TEXT, IMAGE };
+
+            Required<Type> type;
+            std::optional<std::vector<SearchContentTypesItem>> search_content_types{};
+            std::optional<SearchContextSize> search_context_size{};
+            std::optional<WebSearchPreview_user_location> user_location{};
+        };
+
+        struct ApplyPatch {
+            struct TypeKind : Kind { static constexpr std::string_view value = "apply_patch"; };
+
+            Required<TypeKind> type{{}};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_output"; };
+
+        enum class Execution { SERVER, CLIENT };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        enum class ToolsKind { FUNCTION, FILE_SEARCH, COMPUTER, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, NAMESPACE, TOOL_SEARCH, APPLY_PATCH };
+        using Tools = std::variant<Function, FileSearch, Computer, ComputerUsePreview, WebSearch, Mcp, CodeInterpreter, ImageGeneration, LocalShell, Shell, Custom, Namespace, ToolSearch, WebSearchPreview, ApplyPatch>;
+
+        Required<std::vector<Tools>> tools;
+        Required<TypeKind> type{{}};
+        std::optional<std::string> id{};
+        std::optional<std::string> call_id{};
+        std::optional<Execution> execution{};
+        std::optional<Status> status{};
+    };
+
+    struct InputReasoning {
         struct SummaryTextContent {
             struct TypeKind : Kind { static constexpr std::string_view value = "summary_text"; };
 
@@ -460,7 +1105,7 @@ struct Request {
             Required<TypeKind> type{{}};
         };
 
-        struct ResponseReasoningItem_content {
+        struct Reasoning_content {
             struct TypeKind : Kind { static constexpr std::string_view value = "reasoning_text"; };
 
             Required<std::string> text;
@@ -474,12 +1119,12 @@ struct Request {
         Required<std::string> id;
         Required<std::vector<SummaryTextContent>> summary;
         Required<TypeKind> type{{}};
-        std::optional<std::vector<ResponseReasoningItem_content>> content{};
+        std::optional<std::vector<Reasoning_content>> content{};
         std::optional<std::string> encrypted_content{};
         std::optional<Status> status{};
     };
 
-    struct ResponseCompactionItemParam {
+    struct Compaction {
         struct TypeKind : Kind { static constexpr std::string_view value = "compaction"; };
 
         Required<std::string> encrypted_content;
@@ -498,7 +1143,7 @@ struct Request {
         Required<TypeKind> type{{}};
     };
 
-    struct ResponseCodeInterpreterToolCall {
+    struct CodeInterpreterCall {
         struct Logs {
             struct TypeKind : Kind { static constexpr std::string_view value = "logs"; };
 
@@ -742,7 +1387,7 @@ struct Request {
         std::optional<Status> status{};
     };
 
-    struct ResponseCustomToolCallOutput {
+    struct CustomToolCallOutput {
         struct ResponseInputText {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
 
@@ -753,7 +1398,7 @@ struct Request {
         struct ResponseInputImage {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             Required<Detail> detail;
             Required<TypeKind> type{{}};
@@ -783,7 +1428,7 @@ struct Request {
         std::optional<std::string> id{};
     };
 
-    struct ResponseCustomToolCall {
+    struct CustomToolCall {
         struct TypeKind : Kind { static constexpr std::string_view value = "custom_tool_call"; };
 
         Required<std::string> call_id;
@@ -791,6 +1436,7 @@ struct Request {
         Required<std::string> name;
         Required<TypeKind> type{{}};
         std::optional<std::string> id{};
+        std::optional<std::string> namespace_{};
     };
 
     struct ItemReference {
@@ -798,88 +1444,6 @@ struct Request {
 
         Required<std::string> id;
         std::optional<TypeKind> type{};
-    };
-
-    struct ResponsePrompt {
-        struct ResponseInputText {
-            struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
-
-            Required<std::string> text;
-            Required<TypeKind> type{{}};
-        };
-
-        struct ResponseInputImage {
-            struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
-
-            enum class Detail { LOW, HIGH, AUTO };
-
-            Required<Detail> detail;
-            Required<TypeKind> type{{}};
-            std::optional<std::string> file_id{};
-            std::optional<std::string> image_url{};
-        };
-
-        struct ResponseInputFile {
-            struct TypeKind : Kind { static constexpr std::string_view value = "input_file"; };
-
-            Required<TypeKind> type{{}};
-            std::optional<std::string> file_data{};
-            std::optional<std::string> file_id{};
-            std::optional<std::string> file_url{};
-            std::optional<std::string> filename{};
-        };
-
-        using VariablesValue = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
-
-        Required<std::string> id;
-        std::optional<std::map<std::string, VariablesValue>> variables{};
-        std::optional<std::string> version{};
-    };
-
-    struct Reasoning {
-        enum class Effort { NONE, MINIMAL, LOW, MEDIUM, HIGH, XHIGH };
-        enum class GenerateSummary { AUTO, CONCISE, DETAILED };
-        enum class Summary { AUTO, CONCISE, DETAILED };
-
-        std::optional<Effort> effort{};
-        std::optional<GenerateSummary> generate_summary{};
-        std::optional<Summary> summary{};
-    };
-
-    struct Request_stream_options {
-        std::optional<bool> include_obfuscation{};
-    };
-
-    struct ResponseTextConfig {
-        struct ResponseFormatText {
-            struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
-
-            Required<TypeKind> type{{}};
-        };
-
-        struct ResponseFormatTextJSONSchemaConfig {
-            struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
-
-            Required<std::string> name;
-            Required<std::map<std::string, jai::llm::json::Object>> schema;
-            Required<TypeKind> type{{}};
-            std::optional<std::string> description{};
-            std::optional<bool> strict{};
-        };
-
-        struct ResponseFormatJSONObject {
-            struct TypeKind : Kind { static constexpr std::string_view value = "json_object"; };
-
-            Required<TypeKind> type{{}};
-        };
-
-        enum class Verbosity { LOW, MEDIUM, HIGH };
-
-        enum class ResponseFormatTextConfigKind { TEXT, JSON_SCHEMA, JSON_OBJECT };
-        using ResponseFormatTextConfig = std::variant<ResponseFormatText, ResponseFormatTextJSONSchemaConfig, ResponseFormatJSONObject>;
-
-        std::optional<ResponseFormatTextConfig> format{};
-        std::optional<Verbosity> verbosity{};
     };
 
     struct ToolChoiceAllowed {
@@ -893,7 +1457,8 @@ struct Request {
     };
 
     struct ToolChoiceTypes {
-        enum class Type { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER_USE_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11, IMAGE_GENERATION, CODE_INTERPRETER };
+        enum class TypeValues { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER, COMPUTER_USE_PREVIEW, COMPUTER_USE, WEB_SEARCH_PREVIEW_2025_03_11, IMAGE_GENERATION, CODE_INTERPRETER };
+        using Type = std::variant<TypeValues>;
 
         Required<Type> type;
     };
@@ -932,19 +1497,33 @@ struct Request {
         Required<TypeKind> type{{}};
     };
 
-    struct FunctionTool {
+    struct Function {
         struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
 
         Required<std::string> name;
         Required<std::map<std::string, jai::llm::json::Object>> parameters;
         Required<bool> strict;
         Required<TypeKind> type{{}};
+        std::optional<bool> defer_loading{};
         std::optional<std::string> description{};
     };
 
-    struct FileSearchTool {
+    struct FileSearch {
+        struct FileSearch_ranking_options {
+            struct FileSearch_ranking_options_hybrid_search {
+                Required<double> embedding_weight;
+                Required<double> text_weight;
+            };
+
+            enum class Ranker { AUTO, DEFAULT_2024_11_15 };
+
+            std::optional<FileSearch_ranking_options_hybrid_search> hybrid_search{};
+            std::optional<Ranker> ranker{};
+            std::optional<double> score_threshold{};
+        };
+
         struct ComparisonFilter {
-            enum class Type { EQ, NE, GT, GTE, LT, LTE };
+            enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
 
             using ValueElement = std::variant<std::string, double>;
             using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
@@ -956,7 +1535,7 @@ struct Request {
 
         struct CompoundFilter {
             struct ComparisonFilter {
-                enum class Type { EQ, NE, GT, GTE, LT, LTE };
+                enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
 
                 using ValueElement = std::variant<std::string, double>;
                 using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
@@ -974,19 +1553,6 @@ struct Request {
             Required<Type> type;
         };
 
-        struct FileSearchTool_ranking_options {
-            struct FileSearchTool_ranking_options_hybrid_search {
-                Required<double> embedding_weight;
-                Required<double> text_weight;
-            };
-
-            enum class Ranker { AUTO, DEFAULT_2024_11_15 };
-
-            std::optional<FileSearchTool_ranking_options_hybrid_search> hybrid_search{};
-            std::optional<Ranker> ranker{};
-            std::optional<double> score_threshold{};
-        };
-
         struct TypeKind : Kind { static constexpr std::string_view value = "file_search"; };
 
         using Filters = std::variant<ComparisonFilter, CompoundFilter>;
@@ -995,10 +1561,16 @@ struct Request {
         Required<std::vector<std::string>> vector_store_ids;
         std::optional<Filters> filters{};
         std::optional<double> max_num_results{};
-        std::optional<FileSearchTool_ranking_options> ranking_options{};
+        std::optional<FileSearch_ranking_options> ranking_options{};
     };
 
-    struct ComputerTool {
+    struct Computer {
+        struct TypeKind : Kind { static constexpr std::string_view value = "computer"; };
+
+        Required<TypeKind> type{{}};
+    };
+
+    struct ComputerUsePreview {
         struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
 
         enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
@@ -1009,12 +1581,12 @@ struct Request {
         Required<TypeKind> type{{}};
     };
 
-    struct WebSearchTool {
-        struct WebSearchTool_filters {
+    struct WebSearch {
+        struct WebSearch_filters {
             std::optional<std::vector<std::string>> allowed_domains{};
         };
 
-        struct WebSearchTool_user_location {
+        struct WebSearch_user_location {
             struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
 
             std::optional<std::string> city{};
@@ -1028,9 +1600,9 @@ struct Request {
         enum class SearchContextSize { LOW, MEDIUM, HIGH };
 
         Required<Type> type;
-        std::optional<WebSearchTool_filters> filters{};
+        std::optional<WebSearch_filters> filters{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<WebSearchTool_user_location> user_location{};
+        std::optional<WebSearch_user_location> user_location{};
     };
 
     struct Mcp {
@@ -1067,6 +1639,7 @@ struct Request {
         std::optional<std::vector<AllowedTools>> allowed_tools{};
         std::optional<std::string> authorization{};
         std::optional<ConnectorId> connector_id{};
+        std::optional<bool> defer_loading{};
         std::optional<std::map<std::string, std::string>> headers{};
         std::optional<RequireApproval> require_approval{};
         std::optional<std::string> server_description{};
@@ -1156,7 +1729,7 @@ struct Request {
         Required<TypeKind> type{{}};
     };
 
-    struct FunctionShellTool {
+    struct Shell {
         struct ContainerAuto {
             struct ContainerNetworkPolicyDisabled {
                 struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
@@ -1249,7 +1822,7 @@ struct Request {
         std::optional<Environment> environment{};
     };
 
-    struct CustomTool {
+    struct Custom {
         struct Text {
             struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
 
@@ -1273,12 +1846,76 @@ struct Request {
 
         Required<std::string> name;
         Required<TypeKind> type{{}};
+        std::optional<bool> defer_loading{};
         std::optional<std::string> description{};
         std::optional<CustomToolInputFormat> format{};
     };
 
-    struct WebSearchPreviewTool {
-        struct WebSearchPreviewTool_user_location {
+    struct Namespace {
+        struct Function {
+            struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+            Required<std::string> name;
+            Required<TypeKind> type{{}};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<jai::llm::json::Object> parameters{};
+            std::optional<bool> strict{};
+        };
+
+        struct Custom {
+            struct Text {
+                struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                Required<TypeKind> type{{}};
+            };
+
+            struct Grammar {
+                struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                enum class Syntax { LARK, REGEX };
+
+                Required<std::string> definition;
+                Required<Syntax> syntax;
+                Required<TypeKind> type{{}};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+            enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+            using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+            Required<std::string> name;
+            Required<TypeKind> type{{}};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<CustomToolInputFormat> format{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "namespace"; };
+
+        enum class ToolsKind { FUNCTION, CUSTOM };
+        using Tools = std::variant<Function, Custom>;
+
+        Required<std::string> description;
+        Required<std::string> name;
+        Required<std::vector<Tools>> tools;
+        Required<TypeKind> type{{}};
+    };
+
+    struct ToolSearch {
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search"; };
+
+        enum class Execution { SERVER, CLIENT };
+
+        Required<TypeKind> type{{}};
+        std::optional<std::string> description{};
+        std::optional<Execution> execution{};
+        std::optional<jai::llm::json::Object> parameters{};
+    };
+
+    struct WebSearchPreview {
+        struct WebSearchPreview_user_location {
             struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
 
             Required<TypeKind> type{{}};
@@ -1290,13 +1927,15 @@ struct Request {
 
         enum class Type { WEB_SEARCH_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11 };
         enum class SearchContextSize { LOW, MEDIUM, HIGH };
+        enum class SearchContentTypesItem { TEXT, IMAGE };
 
         Required<Type> type;
+        std::optional<std::vector<SearchContentTypesItem>> search_content_types{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<WebSearchPreviewTool_user_location> user_location{};
+        std::optional<WebSearchPreview_user_location> user_location{};
     };
 
-    struct ApplyPatchTool {
+    struct ApplyPatch {
         struct TypeKind : Kind { static constexpr std::string_view value = "apply_patch"; };
 
         Required<TypeKind> type{{}};
@@ -1307,17 +1946,17 @@ struct Request {
     enum class ServiceTier { AUTO, DEFAULT, FLEX, SCALE, PRIORITY };
     enum class Truncation { AUTO, DISABLED };
 
-    enum class InputItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE };
-    using InputItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, ResponseFileSearchToolCall, ResponseComputerToolCall, ComputerCallOutput, ResponseFunctionWebSearch, ResponseFunctionToolCall, FunctionCallOutput, ResponseReasoningItem, ResponseCompactionItemParam, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, ResponseCustomToolCallOutput, ResponseCustomToolCall, ItemReference>;
+    enum class InputItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, TOOL_SEARCH_CALL, TOOL_SEARCH_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE };
+    using InputItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, FileSearchCall, ComputerCall, ComputerCallOutput, WebSearchCall, FunctionCall, FunctionCallOutput, ToolSearchCall, ToolSearchOutput, InputReasoning, Compaction, ImageGenerationCall, CodeInterpreterCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, CustomToolCallOutput, CustomToolCall, ItemReference>;
     using Conversation = std::variant<std::string, ResponseConversationParam>;
     using Input = std::variant<std::string, std::vector<InputItem>>;
-    enum class ResponsesModelValues { GPT_5_2, GPT_5_2_2025_12_11, GPT_5_2_CHAT_LATEST, GPT_5_2_PRO, GPT_5_2_PRO_2025_12_11, GPT_5_1, GPT_5_1_2025_11_13, GPT_5_1_CODEX, GPT_5_1_MINI, GPT_5_1_CHAT_LATEST, GPT_5, GPT_5_MINI, GPT_5_NANO, GPT_5_2025_08_07, GPT_5_MINI_2025_08_07, GPT_5_NANO_2025_08_07, GPT_5_CHAT_LATEST, GPT_4_1, GPT_4_1_MINI, GPT_4_1_NANO, GPT_4_1_2025_04_14, GPT_4_1_MINI_2025_04_14, GPT_4_1_NANO_2025_04_14, O4_MINI, O4_MINI_2025_04_16, O3, O3_2025_04_16, O3_MINI, O3_MINI_2025_01_31, O1, O1_2024_12_17, O1_PREVIEW, O1_PREVIEW_2024_09_12, O1_MINI, O1_MINI_2024_09_12, GPT_4O, GPT_4O_2024_11_20, GPT_4O_2024_08_06, GPT_4O_2024_05_13, GPT_4O_AUDIO_PREVIEW, GPT_4O_AUDIO_PREVIEW_2024_10_01, GPT_4O_AUDIO_PREVIEW_2024_12_17, GPT_4O_AUDIO_PREVIEW_2025_06_03, GPT_4O_MINI_AUDIO_PREVIEW, GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17, GPT_4O_SEARCH_PREVIEW, GPT_4O_MINI_SEARCH_PREVIEW, GPT_4O_SEARCH_PREVIEW_2025_03_11, GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11, CHATGPT_4O_LATEST, CODEX_MINI_LATEST, GPT_4O_MINI, GPT_4O_MINI_2024_07_18, GPT_4_TURBO, GPT_4_TURBO_2024_04_09, GPT_4_0125_PREVIEW, GPT_4_TURBO_PREVIEW, GPT_4_1106_PREVIEW, GPT_4_VISION_PREVIEW, GPT_4, GPT_4_0314, GPT_4_0613, GPT_4_32K, GPT_4_32K_0314, GPT_4_32K_0613, GPT_3_5_TURBO, GPT_3_5_TURBO_16K, GPT_3_5_TURBO_0301, GPT_3_5_TURBO_0613, GPT_3_5_TURBO_1106, GPT_3_5_TURBO_0125, GPT_3_5_TURBO_16K_0613, O1_PRO, O1_PRO_2025_03_19, O3_PRO, O3_PRO_2025_06_10, O3_DEEP_RESEARCH, O3_DEEP_RESEARCH_2025_06_26, O4_MINI_DEEP_RESEARCH, O4_MINI_DEEP_RESEARCH_2025_06_26, COMPUTER_USE_PREVIEW, COMPUTER_USE_PREVIEW_2025_03_11, GPT_5_CODEX, GPT_5_PRO, GPT_5_PRO_2025_10_06, GPT_5_1_CODEX_MAX };
+    enum class ResponsesModelValues { GPT_5_4, GPT_5_4_MINI, GPT_5_4_NANO, GPT_5_4_MINI_2026_03_17, GPT_5_4_NANO_2026_03_17, GPT_5_3_CHAT_LATEST, GPT_5_2, GPT_5_2_2025_12_11, GPT_5_2_CHAT_LATEST, GPT_5_2_PRO, GPT_5_2_PRO_2025_12_11, GPT_5_1, GPT_5_1_2025_11_13, GPT_5_1_CODEX, GPT_5_1_MINI, GPT_5_1_CHAT_LATEST, GPT_5, GPT_5_MINI, GPT_5_NANO, GPT_5_2025_08_07, GPT_5_MINI_2025_08_07, GPT_5_NANO_2025_08_07, GPT_5_CHAT_LATEST, GPT_4_1, GPT_4_1_MINI, GPT_4_1_NANO, GPT_4_1_2025_04_14, GPT_4_1_MINI_2025_04_14, GPT_4_1_NANO_2025_04_14, O4_MINI, O4_MINI_2025_04_16, O3, O3_2025_04_16, O3_MINI, O3_MINI_2025_01_31, O1, O1_2024_12_17, O1_PREVIEW, O1_PREVIEW_2024_09_12, O1_MINI, O1_MINI_2024_09_12, GPT_4O, GPT_4O_2024_11_20, GPT_4O_2024_08_06, GPT_4O_2024_05_13, GPT_4O_AUDIO_PREVIEW, GPT_4O_AUDIO_PREVIEW_2024_10_01, GPT_4O_AUDIO_PREVIEW_2024_12_17, GPT_4O_AUDIO_PREVIEW_2025_06_03, GPT_4O_MINI_AUDIO_PREVIEW, GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17, GPT_4O_SEARCH_PREVIEW, GPT_4O_MINI_SEARCH_PREVIEW, GPT_4O_SEARCH_PREVIEW_2025_03_11, GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11, CHATGPT_4O_LATEST, CODEX_MINI_LATEST, GPT_4O_MINI, GPT_4O_MINI_2024_07_18, GPT_4_TURBO, GPT_4_TURBO_2024_04_09, GPT_4_0125_PREVIEW, GPT_4_TURBO_PREVIEW, GPT_4_1106_PREVIEW, GPT_4_VISION_PREVIEW, GPT_4, GPT_4_0314, GPT_4_0613, GPT_4_32K, GPT_4_32K_0314, GPT_4_32K_0613, GPT_3_5_TURBO, GPT_3_5_TURBO_16K, GPT_3_5_TURBO_0301, GPT_3_5_TURBO_0613, GPT_3_5_TURBO_1106, GPT_3_5_TURBO_0125, GPT_3_5_TURBO_16K_0613, O1_PRO, O1_PRO_2025_03_19, O3_PRO, O3_PRO_2025_06_10, O3_DEEP_RESEARCH, O3_DEEP_RESEARCH_2025_06_26, O4_MINI_DEEP_RESEARCH, O4_MINI_DEEP_RESEARCH_2025_06_26, COMPUTER_USE_PREVIEW, COMPUTER_USE_PREVIEW_2025_03_11, GPT_5_CODEX, GPT_5_PRO, GPT_5_PRO_2025_10_06, GPT_5_1_CODEX_MAX };
     using ResponsesModel = std::variant<std::string, ResponsesModelValues>;
     enum class ToolChoiceValues { NONE, AUTO, REQUIRED };
     enum class ToolChoiceKind { ALLOWED_TOOLS, FUNCTION, MCP, CUSTOM, APPLY_PATCH, SHELL };
     using ToolChoice = std::variant<ToolChoiceValues, ToolChoiceAllowed, ToolChoiceTypes, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell>;
-    enum class ToolKind { FUNCTION, FILE_SEARCH, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, APPLY_PATCH };
-    using Tool = std::variant<FunctionTool, FileSearchTool, ComputerTool, WebSearchTool, Mcp, CodeInterpreter, ImageGeneration, LocalShell, FunctionShellTool, CustomTool, WebSearchPreviewTool, ApplyPatchTool>;
+    enum class ToolsKind { FUNCTION, FILE_SEARCH, COMPUTER, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, NAMESPACE, TOOL_SEARCH, APPLY_PATCH };
+    using Tools = std::variant<Function, FileSearch, Computer, ComputerUsePreview, WebSearch, Mcp, CodeInterpreter, ImageGeneration, LocalShell, Shell, Custom, Namespace, ToolSearch, WebSearchPreview, ApplyPatch>;
 
     std::optional<bool> background{};
     std::optional<std::vector<Request_context_management>> context_management{};
@@ -1343,7 +1982,7 @@ struct Request {
     std::optional<double> temperature{};
     std::optional<ResponseTextConfig> text{};
     std::optional<ToolChoice> tool_choice{};
-    std::optional<std::vector<Tool>> tools{};
+    std::optional<std::vector<Tools>> tools{};
     std::optional<double> top_logprobs{};
     std::optional<double> top_p{};
     std::optional<Truncation> truncation{};
@@ -1365,6 +2004,104 @@ struct Response {
         std::optional<Reason> reason{};
     };
 
+    struct Response_conversation {
+        std::optional<std::string> id{};
+    };
+
+    struct ResponsePrompt {
+        struct ResponseInputText {
+            struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
+
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ResponseInputImage {
+            struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
+
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
+
+            std::optional<Detail> detail{};
+            std::optional<TypeKind> type{};
+            std::optional<std::string> file_id{};
+            std::optional<std::string> image_url{};
+        };
+
+        struct ResponseInputFile {
+            struct TypeKind : Kind { static constexpr std::string_view value = "input_file"; };
+
+            std::optional<TypeKind> type{};
+            std::optional<std::string> file_data{};
+            std::optional<std::string> file_id{};
+            std::optional<std::string> file_url{};
+            std::optional<std::string> filename{};
+        };
+
+        using VariablesValue = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
+
+        std::optional<std::string> id{};
+        std::optional<std::map<std::string, VariablesValue>> variables{};
+        std::optional<std::string> version{};
+    };
+
+    struct Reasoning {
+        enum class Effort { NONE, MINIMAL, LOW, MEDIUM, HIGH, XHIGH };
+        enum class GenerateSummary { AUTO, CONCISE, DETAILED };
+        enum class Summary { AUTO, CONCISE, DETAILED };
+
+        std::optional<Effort> effort{};
+        std::optional<GenerateSummary> generate_summary{};
+        std::optional<Summary> summary{};
+    };
+
+    struct ResponseTextConfig {
+        struct ResponseFormatText {
+            struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct ResponseFormatTextJSONSchemaConfig {
+            struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
+
+            std::optional<std::string> name{};
+            std::optional<std::map<std::string, jai::llm::json::Object>> schema{};
+            std::optional<TypeKind> type{};
+            std::optional<std::string> description{};
+            std::optional<bool> strict{};
+        };
+
+        struct ResponseFormatJSONObject {
+            struct TypeKind : Kind { static constexpr std::string_view value = "json_object"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        enum class Verbosity { LOW, MEDIUM, HIGH };
+
+        enum class ResponseFormatTextConfigKind { TEXT, JSON_SCHEMA, JSON_OBJECT };
+        using ResponseFormatTextConfig = std::variant<ResponseFormatText, ResponseFormatTextJSONSchemaConfig, ResponseFormatJSONObject>;
+
+        std::optional<ResponseFormatTextConfig> format{};
+        std::optional<Verbosity> verbosity{};
+    };
+
+    struct ResponseUsage {
+        struct ResponseUsage_input_tokens_details {
+            std::optional<double> cached_tokens{};
+        };
+
+        struct ResponseUsage_output_tokens_details {
+            std::optional<double> reasoning_tokens{};
+        };
+
+        std::optional<double> input_tokens{};
+        std::optional<ResponseUsage_input_tokens_details> input_tokens_details{};
+        std::optional<double> output_tokens{};
+        std::optional<ResponseUsage_output_tokens_details> output_tokens_details{};
+        std::optional<double> total_tokens{};
+    };
+
     struct EasyInputMessage {
         struct ResponseInputText {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
@@ -1376,7 +2113,7 @@ struct Response {
         struct ResponseInputImage {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             std::optional<Detail> detail{};
             std::optional<TypeKind> type{};
@@ -1420,7 +2157,7 @@ struct Response {
         struct ResponseInputImage {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             std::optional<Detail> detail{};
             std::optional<TypeKind> type{};
@@ -1454,6 +2191,19 @@ struct Response {
 
     struct ResponseOutputMessage {
         struct ResponseOutputText {
+            struct ResponseOutputText_logprobs {
+                struct ResponseOutputText_logprobs_top_logprobs {
+                    std::optional<std::string> token{};
+                    std::optional<std::vector<double>> bytes{};
+                    std::optional<double> logprob{};
+                };
+
+                std::optional<std::string> token{};
+                std::optional<std::vector<double>> bytes{};
+                std::optional<double> logprob{};
+                std::optional<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs{};
+            };
+
             struct FileCitation {
                 struct TypeKind : Kind { static constexpr std::string_view value = "file_citation"; };
 
@@ -1492,19 +2242,6 @@ struct Response {
                 std::optional<TypeKind> type{};
             };
 
-            struct ResponseOutputText_logprobs {
-                struct ResponseOutputText_logprobs_top_logprobs {
-                    std::optional<std::string> token{};
-                    std::optional<std::vector<double>> bytes{};
-                    std::optional<double> logprob{};
-                };
-
-                std::optional<std::string> token{};
-                std::optional<std::vector<double>> bytes{};
-                std::optional<double> logprob{};
-                std::optional<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs{};
-            };
-
             struct TypeKind : Kind { static constexpr std::string_view value = "output_text"; };
 
             enum class AnnotationsKind { FILE_CITATION, URL_CITATION, CONTAINER_FILE_CITATION, FILE_PATH };
@@ -1540,8 +2277,8 @@ struct Response {
         std::optional<Phase> phase{};
     };
 
-    struct ResponseFileSearchToolCall {
-        struct ResponseFileSearchToolCall_results {
+    struct FileSearchCall {
+        struct FileSearchCall_results {
             using AttributesValue = std::variant<std::string, double, bool>;
 
             std::optional<std::map<std::string, AttributesValue>> attributes{};
@@ -1559,10 +2296,16 @@ struct Response {
         std::optional<std::vector<std::string>> queries{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
-        std::optional<std::vector<ResponseFileSearchToolCall_results>> results{};
+        std::optional<std::vector<FileSearchCall_results>> results{};
     };
 
-    struct ResponseComputerToolCall {
+    struct ComputerCall {
+        struct ComputerCall_pending_safety_checks {
+            std::optional<std::string> id{};
+            std::optional<std::string> code{};
+            std::optional<std::string> message{};
+        };
+
         struct Click {
             struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
 
@@ -1572,11 +2315,13 @@ struct Response {
             std::optional<TypeKind> type{};
             std::optional<double> x{};
             std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct DoubleClick {
             struct TypeKind : Kind { static constexpr std::string_view value = "double_click"; };
 
+            std::optional<std::vector<std::string>> keys{};
             std::optional<TypeKind> type{};
             std::optional<double> x{};
             std::optional<double> y{};
@@ -1592,6 +2337,7 @@ struct Response {
 
             std::optional<std::vector<Drag_path>> path{};
             std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct Keypress {
@@ -1607,6 +2353,7 @@ struct Response {
             std::optional<TypeKind> type{};
             std::optional<double> x{};
             std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct Screenshot {
@@ -1623,6 +2370,7 @@ struct Response {
             std::optional<TypeKind> type{};
             std::optional<double> x{};
             std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
         };
 
         struct Type {
@@ -1638,25 +2386,102 @@ struct Response {
             std::optional<TypeKind> type{};
         };
 
-        struct ResponseComputerToolCall_pending_safety_checks {
-            std::optional<std::string> id{};
-            std::optional<std::string> code{};
-            std::optional<std::string> message{};
+        struct ActionsClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
+
+            enum class Button { LEFT, RIGHT, WHEEL, BACK, FORWARD };
+
+            std::optional<Button> button{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsDoubleClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "double_click"; };
+
+            std::optional<std::vector<std::string>> keys{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+        };
+
+        struct ActionsDrag {
+            struct Drag_path {
+                std::optional<double> x{};
+                std::optional<double> y{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "drag"; };
+
+            std::optional<std::vector<Drag_path>> path{};
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsKeypress {
+            struct TypeKind : Kind { static constexpr std::string_view value = "keypress"; };
+
+            std::optional<std::vector<std::string>> keys{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsMove {
+            struct TypeKind : Kind { static constexpr std::string_view value = "move"; };
+
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsScreenshot {
+            struct TypeKind : Kind { static constexpr std::string_view value = "screenshot"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsScroll {
+            struct TypeKind : Kind { static constexpr std::string_view value = "scroll"; };
+
+            std::optional<double> scroll_x{};
+            std::optional<double> scroll_y{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsType {
+            struct TypeKind : Kind { static constexpr std::string_view value = "type"; };
+
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsWait {
+            struct TypeKind : Kind { static constexpr std::string_view value = "wait"; };
+
+            std::optional<TypeKind> type{};
         };
 
         struct TypeKind : Kind { static constexpr std::string_view value = "computer_call"; };
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
-        enum class ActionKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
-        using Action = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
+        enum class ComputerActionKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
+        using ComputerAction = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
+        enum class ComputerActionListKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
+        using ComputerActionList = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
 
         std::optional<std::string> id{};
-        std::optional<Action> action{};
         std::optional<std::string> call_id{};
-        std::optional<std::vector<ResponseComputerToolCall_pending_safety_checks>> pending_safety_checks{};
+        std::optional<std::vector<ComputerCall_pending_safety_checks>> pending_safety_checks{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
+        std::optional<ComputerAction> action{};
+        std::optional<ComputerActionList> actions{};
     };
 
     struct ComputerCallOutput {
@@ -1686,7 +2511,7 @@ struct Response {
         std::optional<Status> status{};
     };
 
-    struct ResponseFunctionWebSearch {
+    struct WebSearchCall {
         struct Search {
             struct Search_sources {
                 struct TypeKind : Kind { static constexpr std::string_view value = "url"; };
@@ -1731,7 +2556,7 @@ struct Response {
         std::optional<TypeKind> type{};
     };
 
-    struct ResponseFunctionToolCall {
+    struct FunctionCall {
         struct TypeKind : Kind { static constexpr std::string_view value = "function_call"; };
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
@@ -1741,6 +2566,7 @@ struct Response {
         std::optional<std::string> name{};
         std::optional<TypeKind> type{};
         std::optional<std::string> id{};
+        std::optional<std::string> namespace_{};
         std::optional<Status> status{};
     };
 
@@ -1755,7 +2581,7 @@ struct Response {
         struct ResponseInputImageContent {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             std::optional<TypeKind> type{};
             std::optional<Detail> detail{};
@@ -1777,9 +2603,8 @@ struct Response {
 
         enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
 
-        enum class OutputItemKind { INPUT_TEXT, INPUT_IMAGE, INPUT_FILE };
-        using OutputItem = std::variant<ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
-        using Output = std::variant<std::string, std::vector<OutputItem>>;
+        using OutputElement = std::variant<ResponseInputTextContent, ResponseInputImageContent, ResponseInputFileContent>;
+        using Output = std::variant<std::string, std::vector<OutputElement>>;
 
         std::optional<std::string> call_id{};
         std::optional<Output> output{};
@@ -1788,7 +2613,482 @@ struct Response {
         std::optional<Status> status{};
     };
 
-    struct ResponseReasoningItem {
+    struct ToolSearchCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_call"; };
+
+        enum class Execution { SERVER, CLIENT };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        std::optional<jai::llm::json::Object> arguments{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> id{};
+        std::optional<std::string> call_id{};
+        std::optional<Execution> execution{};
+        std::optional<Status> status{};
+    };
+
+    struct ToolSearchOutput {
+        struct Function {
+            struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+            std::optional<std::string> name{};
+            std::optional<std::map<std::string, jai::llm::json::Object>> parameters{};
+            std::optional<bool> strict{};
+            std::optional<TypeKind> type{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+        };
+
+        struct FileSearch {
+            struct FileSearch_ranking_options {
+                struct FileSearch_ranking_options_hybrid_search {
+                    std::optional<double> embedding_weight{};
+                    std::optional<double> text_weight{};
+                };
+
+                enum class Ranker { AUTO, DEFAULT_2024_11_15 };
+
+                std::optional<FileSearch_ranking_options_hybrid_search> hybrid_search{};
+                std::optional<Ranker> ranker{};
+                std::optional<double> score_threshold{};
+            };
+
+            struct ComparisonFilter {
+                enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
+
+                using ValueElement = std::variant<std::string, double>;
+                using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
+
+                std::optional<std::string> key{};
+                std::optional<Type> type{};
+                std::optional<Value> value{};
+            };
+
+            struct CompoundFilter {
+                struct ComparisonFilter {
+                    enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
+
+                    using ValueElement = std::variant<std::string, double>;
+                    using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
+
+                    std::optional<std::string> key{};
+                    std::optional<Type> type{};
+                    std::optional<Value> value{};
+                };
+
+                enum class Type { AND, OR };
+
+                using Filters = std::variant<ComparisonFilter, jai::llm::json::Object>;
+
+                std::optional<std::vector<Filters>> filters{};
+                std::optional<Type> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "file_search"; };
+
+            using Filters = std::variant<ComparisonFilter, CompoundFilter>;
+
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> vector_store_ids{};
+            std::optional<Filters> filters{};
+            std::optional<double> max_num_results{};
+            std::optional<FileSearch_ranking_options> ranking_options{};
+        };
+
+        struct Computer {
+            struct TypeKind : Kind { static constexpr std::string_view value = "computer"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct ComputerUsePreview {
+            struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
+
+            enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
+
+            std::optional<double> display_height{};
+            std::optional<double> display_width{};
+            std::optional<Environment> environment{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct WebSearch {
+            struct WebSearch_filters {
+                std::optional<std::vector<std::string>> allowed_domains{};
+            };
+
+            struct WebSearch_user_location {
+                struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
+
+                std::optional<std::string> city{};
+                std::optional<std::string> country{};
+                std::optional<std::string> region{};
+                std::optional<std::string> timezone{};
+                std::optional<TypeKind> type{};
+            };
+
+            enum class Type { WEB_SEARCH, WEB_SEARCH_2025_08_26 };
+            enum class SearchContextSize { LOW, MEDIUM, HIGH };
+
+            std::optional<Type> type{};
+            std::optional<WebSearch_filters> filters{};
+            std::optional<SearchContextSize> search_context_size{};
+            std::optional<WebSearch_user_location> user_location{};
+        };
+
+        struct Mcp {
+            struct McpToolFilter {
+                std::optional<bool> read_only{};
+                std::optional<std::vector<std::string>> tool_names{};
+            };
+
+            struct McpToolApprovalFilter {
+                struct McpToolApprovalFilter_always {
+                    std::optional<bool> read_only{};
+                    std::optional<std::vector<std::string>> tool_names{};
+                };
+
+                struct McpToolApprovalFilter_never {
+                    std::optional<bool> read_only{};
+                    std::optional<std::vector<std::string>> tool_names{};
+                };
+
+                std::optional<McpToolApprovalFilter_always> always{};
+                std::optional<McpToolApprovalFilter_never> never{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "mcp"; };
+
+            enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR, CONNECTOR_GOOGLEDRIVE, CONNECTOR_MICROSOFTTEAMS, CONNECTOR_OUTLOOKCALENDAR, CONNECTOR_OUTLOOKEMAIL, CONNECTOR_SHAREPOINT };
+
+            using AllowedTools = std::variant<std::vector<std::string>, McpToolFilter>;
+            enum class RequireApprovalValues { ALWAYS, NEVER };
+            using RequireApproval = std::variant<RequireApprovalValues, McpToolApprovalFilter>;
+
+            std::optional<std::string> server_label{};
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<AllowedTools>> allowed_tools{};
+            std::optional<std::string> authorization{};
+            std::optional<ConnectorId> connector_id{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::map<std::string, std::string>> headers{};
+            std::optional<RequireApproval> require_approval{};
+            std::optional<std::string> server_description{};
+            std::optional<std::string> server_url{};
+        };
+
+        struct CodeInterpreter {
+            struct CodeInterpreterToolAuto {
+                struct ContainerNetworkPolicyDisabled {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
+
+                    std::optional<TypeKind> type{};
+                };
+
+                struct ContainerNetworkPolicyAllowlist {
+                    struct ContainerNetworkPolicyDomainSecret {
+                        std::optional<std::string> domain{};
+                        std::optional<std::string> name{};
+                        std::optional<std::string> value{};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "allowlist"; };
+
+                    std::optional<std::vector<std::string>> allowed_domains{};
+                    std::optional<TypeKind> type{};
+                    std::optional<std::vector<ContainerNetworkPolicyDomainSecret>> domain_secrets{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "auto"; };
+
+                enum class MemoryLimit { V_1G, V_4G, V_16G, V_64G };
+
+                enum class NetworkPolicyKind { DISABLED, ALLOWLIST };
+                using NetworkPolicy = std::variant<ContainerNetworkPolicyDisabled, ContainerNetworkPolicyAllowlist>;
+
+                std::optional<TypeKind> type{};
+                std::optional<std::vector<std::string>> file_ids{};
+                std::optional<MemoryLimit> memory_limit{};
+                std::optional<NetworkPolicy> network_policy{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "code_interpreter"; };
+
+            enum class ContainerKind { AUTO };
+            using Container = std::variant<std::string, CodeInterpreterToolAuto>;
+
+            std::optional<Container> container{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ImageGeneration {
+            struct ImageGeneration_input_image_mask {
+                std::optional<std::string> file_id{};
+                std::optional<std::string> image_url{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "image_generation"; };
+
+            enum class Action { GENERATE, EDIT, AUTO };
+            enum class Background { TRANSPARENT, OPAQUE, AUTO };
+            enum class InputFidelity { HIGH, LOW };
+            enum class Moderation { AUTO, LOW };
+            enum class OutputFormat { PNG, WEBP, JPEG };
+            enum class Quality { LOW, MEDIUM, HIGH, AUTO };
+            enum class Size { V_1024X1024, V_1024X1536, V_1536X1024, AUTO };
+
+            enum class ModelValues { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
+            using Model = std::variant<ModelValues, std::string>;
+
+            std::optional<TypeKind> type{};
+            std::optional<Action> action{};
+            std::optional<Background> background{};
+            std::optional<InputFidelity> input_fidelity{};
+            std::optional<ImageGeneration_input_image_mask> input_image_mask{};
+            std::optional<Model> model{};
+            std::optional<Moderation> moderation{};
+            std::optional<double> output_compression{};
+            std::optional<OutputFormat> output_format{};
+            std::optional<double> partial_images{};
+            std::optional<Quality> quality{};
+            std::optional<Size> size{};
+        };
+
+        struct LocalShell {
+            struct TypeKind : Kind { static constexpr std::string_view value = "local_shell"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct Shell {
+            struct ContainerAuto {
+                struct ContainerNetworkPolicyDisabled {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
+
+                    std::optional<TypeKind> type{};
+                };
+
+                struct ContainerNetworkPolicyAllowlist {
+                    struct ContainerNetworkPolicyDomainSecret {
+                        std::optional<std::string> domain{};
+                        std::optional<std::string> name{};
+                        std::optional<std::string> value{};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "allowlist"; };
+
+                    std::optional<std::vector<std::string>> allowed_domains{};
+                    std::optional<TypeKind> type{};
+                    std::optional<std::vector<ContainerNetworkPolicyDomainSecret>> domain_secrets{};
+                };
+
+                struct SkillReference {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "skill_reference"; };
+
+                    std::optional<std::string> skill_id{};
+                    std::optional<TypeKind> type{};
+                    std::optional<std::string> version{};
+                };
+
+                struct InlineSkill {
+                    struct InlineSkillSource {
+                        struct MediaTypeKind : Kind { static constexpr std::string_view value = "application/zip"; };
+                        struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
+
+                        std::optional<std::string> data{};
+                        std::optional<MediaTypeKind> media_type{};
+                        std::optional<TypeKind> type{};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "inline"; };
+
+                    std::optional<std::string> description{};
+                    std::optional<std::string> name{};
+                    std::optional<InlineSkillSource> source{};
+                    std::optional<TypeKind> type{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_auto"; };
+
+                enum class MemoryLimit { V_1G, V_4G, V_16G, V_64G };
+
+                enum class NetworkPolicyKind { DISABLED, ALLOWLIST };
+                using NetworkPolicy = std::variant<ContainerNetworkPolicyDisabled, ContainerNetworkPolicyAllowlist>;
+                enum class SkillsKind { SKILL_REFERENCE, INLINE };
+                using Skills = std::variant<SkillReference, InlineSkill>;
+
+                std::optional<TypeKind> type{};
+                std::optional<std::vector<std::string>> file_ids{};
+                std::optional<MemoryLimit> memory_limit{};
+                std::optional<NetworkPolicy> network_policy{};
+                std::optional<std::vector<Skills>> skills{};
+            };
+
+            struct LocalEnvironment {
+                struct LocalSkill {
+                    std::optional<std::string> description{};
+                    std::optional<std::string> name{};
+                    std::optional<std::string> path{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "local"; };
+
+                std::optional<TypeKind> type{};
+                std::optional<std::vector<LocalSkill>> skills{};
+            };
+
+            struct ContainerReference {
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_reference"; };
+
+                std::optional<std::string> container_id{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "shell"; };
+
+            enum class EnvironmentKind { CONTAINER_AUTO, LOCAL, CONTAINER_REFERENCE };
+            using Environment = std::variant<ContainerAuto, LocalEnvironment, ContainerReference>;
+
+            std::optional<TypeKind> type{};
+            std::optional<Environment> environment{};
+        };
+
+        struct Custom {
+            struct Text {
+                struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                std::optional<TypeKind> type{};
+            };
+
+            struct Grammar {
+                struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                enum class Syntax { LARK, REGEX };
+
+                std::optional<std::string> definition{};
+                std::optional<Syntax> syntax{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+            enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+            using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+            std::optional<std::string> name{};
+            std::optional<TypeKind> type{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<CustomToolInputFormat> format{};
+        };
+
+        struct Namespace {
+            struct Function {
+                struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+                std::optional<std::string> name{};
+                std::optional<TypeKind> type{};
+                std::optional<bool> defer_loading{};
+                std::optional<std::string> description{};
+                std::optional<jai::llm::json::Object> parameters{};
+                std::optional<bool> strict{};
+            };
+
+            struct Custom {
+                struct Text {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                    std::optional<TypeKind> type{};
+                };
+
+                struct Grammar {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                    enum class Syntax { LARK, REGEX };
+
+                    std::optional<std::string> definition{};
+                    std::optional<Syntax> syntax{};
+                    std::optional<TypeKind> type{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+                enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+                using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+                std::optional<std::string> name{};
+                std::optional<TypeKind> type{};
+                std::optional<bool> defer_loading{};
+                std::optional<std::string> description{};
+                std::optional<CustomToolInputFormat> format{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "namespace"; };
+
+            enum class ToolsKind { FUNCTION, CUSTOM };
+            using Tools = std::variant<Function, Custom>;
+
+            std::optional<std::string> description{};
+            std::optional<std::string> name{};
+            std::optional<std::vector<Tools>> tools{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ToolSearch {
+            struct TypeKind : Kind { static constexpr std::string_view value = "tool_search"; };
+
+            enum class Execution { SERVER, CLIENT };
+
+            std::optional<TypeKind> type{};
+            std::optional<std::string> description{};
+            std::optional<Execution> execution{};
+            std::optional<jai::llm::json::Object> parameters{};
+        };
+
+        struct WebSearchPreview {
+            struct WebSearchPreview_user_location {
+                struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
+
+                std::optional<TypeKind> type{};
+                std::optional<std::string> city{};
+                std::optional<std::string> country{};
+                std::optional<std::string> region{};
+                std::optional<std::string> timezone{};
+            };
+
+            enum class Type { WEB_SEARCH_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11 };
+            enum class SearchContextSize { LOW, MEDIUM, HIGH };
+            enum class SearchContentTypesItem { TEXT, IMAGE };
+
+            std::optional<Type> type{};
+            std::optional<std::vector<SearchContentTypesItem>> search_content_types{};
+            std::optional<SearchContextSize> search_context_size{};
+            std::optional<WebSearchPreview_user_location> user_location{};
+        };
+
+        struct ApplyPatch {
+            struct TypeKind : Kind { static constexpr std::string_view value = "apply_patch"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_output"; };
+
+        enum class Execution { SERVER, CLIENT };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        enum class ToolsKind { FUNCTION, FILE_SEARCH, COMPUTER, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, NAMESPACE, TOOL_SEARCH, APPLY_PATCH };
+        using Tools = std::variant<Function, FileSearch, Computer, ComputerUsePreview, WebSearch, Mcp, CodeInterpreter, ImageGeneration, LocalShell, Shell, Custom, Namespace, ToolSearch, WebSearchPreview, ApplyPatch>;
+
+        std::optional<std::vector<Tools>> tools{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> id{};
+        std::optional<std::string> call_id{};
+        std::optional<Execution> execution{};
+        std::optional<Status> status{};
+    };
+
+    struct InstructionsReasoning {
         struct SummaryTextContent {
             struct TypeKind : Kind { static constexpr std::string_view value = "summary_text"; };
 
@@ -1796,7 +3096,7 @@ struct Response {
             std::optional<TypeKind> type{};
         };
 
-        struct ResponseReasoningItem_content {
+        struct Reasoning_content {
             struct TypeKind : Kind { static constexpr std::string_view value = "reasoning_text"; };
 
             std::optional<std::string> text{};
@@ -1810,12 +3110,12 @@ struct Response {
         std::optional<std::string> id{};
         std::optional<std::vector<SummaryTextContent>> summary{};
         std::optional<TypeKind> type{};
-        std::optional<std::vector<ResponseReasoningItem_content>> content{};
+        std::optional<std::vector<Reasoning_content>> content{};
         std::optional<std::string> encrypted_content{};
         std::optional<Status> status{};
     };
 
-    struct ResponseCompactionItemParam {
+    struct Compaction {
         struct TypeKind : Kind { static constexpr std::string_view value = "compaction"; };
 
         std::optional<std::string> encrypted_content{};
@@ -1834,7 +3134,7 @@ struct Response {
         std::optional<TypeKind> type{};
     };
 
-    struct ResponseCodeInterpreterToolCall {
+    struct CodeInterpreterCall {
         struct Logs {
             struct TypeKind : Kind { static constexpr std::string_view value = "logs"; };
 
@@ -2078,7 +3378,7 @@ struct Response {
         std::optional<Status> status{};
     };
 
-    struct ResponseCustomToolCallOutput {
+    struct CustomToolCallOutput {
         struct ResponseInputText {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
 
@@ -2089,7 +3389,7 @@ struct Response {
         struct ResponseInputImage {
             struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
 
-            enum class Detail { LOW, HIGH, AUTO };
+            enum class Detail { LOW, HIGH, AUTO, ORIGINAL };
 
             std::optional<Detail> detail{};
             std::optional<TypeKind> type{};
@@ -2119,7 +3419,7 @@ struct Response {
         std::optional<std::string> id{};
     };
 
-    struct ResponseCustomToolCall {
+    struct CustomToolCall {
         struct TypeKind : Kind { static constexpr std::string_view value = "custom_tool_call"; };
 
         std::optional<std::string> call_id{};
@@ -2127,6 +3427,7 @@ struct Response {
         std::optional<std::string> name{};
         std::optional<TypeKind> type{};
         std::optional<std::string> id{};
+        std::optional<std::string> namespace_{};
     };
 
     struct ItemReference {
@@ -2134,6 +3435,864 @@ struct Response {
 
         std::optional<std::string> id{};
         std::optional<TypeKind> type{};
+    };
+
+    struct OutputResponseOutputMessage {
+        struct ResponseOutputText {
+            struct ResponseOutputText_logprobs {
+                struct ResponseOutputText_logprobs_top_logprobs {
+                    std::optional<std::string> token{};
+                    std::optional<std::vector<double>> bytes{};
+                    std::optional<double> logprob{};
+                };
+
+                std::optional<std::string> token{};
+                std::optional<std::vector<double>> bytes{};
+                std::optional<double> logprob{};
+                std::optional<std::vector<ResponseOutputText_logprobs_top_logprobs>> top_logprobs{};
+            };
+
+            struct FileCitation {
+                struct TypeKind : Kind { static constexpr std::string_view value = "file_citation"; };
+
+                std::optional<std::string> file_id{};
+                std::optional<std::string> filename{};
+                std::optional<double> index{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct URLCitation {
+                struct TypeKind : Kind { static constexpr std::string_view value = "url_citation"; };
+
+                std::optional<double> end_index{};
+                std::optional<double> start_index{};
+                std::optional<std::string> title{};
+                std::optional<TypeKind> type{};
+                std::optional<std::string> url{};
+            };
+
+            struct ContainerFileCitation {
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_file_citation"; };
+
+                std::optional<std::string> container_id{};
+                std::optional<double> end_index{};
+                std::optional<std::string> file_id{};
+                std::optional<std::string> filename{};
+                std::optional<double> start_index{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct FilePath {
+                struct TypeKind : Kind { static constexpr std::string_view value = "file_path"; };
+
+                std::optional<std::string> file_id{};
+                std::optional<double> index{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "output_text"; };
+
+            enum class AnnotationsKind { FILE_CITATION, URL_CITATION, CONTAINER_FILE_CITATION, FILE_PATH };
+            using Annotations = std::variant<FileCitation, URLCitation, ContainerFileCitation, FilePath>;
+
+            std::optional<std::vector<Annotations>> annotations{};
+            std::optional<std::vector<ResponseOutputText_logprobs>> logprobs{};
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ResponseOutputRefusal {
+            struct TypeKind : Kind { static constexpr std::string_view value = "refusal"; };
+
+            std::optional<std::string> refusal{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct RoleKind : Kind { static constexpr std::string_view value = "assistant"; };
+        struct TypeKind : Kind { static constexpr std::string_view value = "message"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+        enum class Phase { COMMENTARY, FINAL_ANSWER };
+
+        enum class ContentKind { OUTPUT_TEXT, REFUSAL };
+        using Content = std::variant<ResponseOutputText, ResponseOutputRefusal>;
+
+        std::optional<std::string> id{};
+        std::optional<std::vector<Content>> content{};
+        std::optional<RoleKind> role{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+        std::optional<Phase> phase{};
+    };
+
+    struct OutputFileSearchCall {
+        struct FileSearchCall_results {
+            using AttributesValue = std::variant<std::string, double, bool>;
+
+            std::optional<std::map<std::string, AttributesValue>> attributes{};
+            std::optional<std::string> file_id{};
+            std::optional<std::string> filename{};
+            std::optional<double> score{};
+            std::optional<std::string> text{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "file_search_call"; };
+
+        enum class Status { IN_PROGRESS, SEARCHING, COMPLETED, INCOMPLETE, FAILED };
+
+        std::optional<std::string> id{};
+        std::optional<std::vector<std::string>> queries{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+        std::optional<std::vector<FileSearchCall_results>> results{};
+    };
+
+    struct OutputFunctionCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "function_call"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        std::optional<std::string> arguments{};
+        std::optional<std::string> call_id{};
+        std::optional<std::string> name{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> id{};
+        std::optional<std::string> namespace_{};
+        std::optional<Status> status{};
+    };
+
+    struct OutputWebSearchCall {
+        struct Search {
+            struct Search_sources {
+                struct TypeKind : Kind { static constexpr std::string_view value = "url"; };
+
+                std::optional<TypeKind> type{};
+                std::optional<std::string> url{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "search"; };
+
+            std::optional<std::string> query{};
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> queries{};
+            std::optional<std::vector<Search_sources>> sources{};
+        };
+
+        struct OpenPage {
+            struct TypeKind : Kind { static constexpr std::string_view value = "open_page"; };
+
+            std::optional<TypeKind> type{};
+            std::optional<std::string> url{};
+        };
+
+        struct FindInPage {
+            struct TypeKind : Kind { static constexpr std::string_view value = "find_in_page"; };
+
+            std::optional<std::string> pattern{};
+            std::optional<TypeKind> type{};
+            std::optional<std::string> url{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "web_search_call"; };
+
+        enum class Status { IN_PROGRESS, SEARCHING, COMPLETED, FAILED };
+
+        enum class ActionKind { SEARCH, OPEN_PAGE, FIND_IN_PAGE };
+        using Action = std::variant<Search, OpenPage, FindInPage>;
+
+        std::optional<std::string> id{};
+        std::optional<Action> action{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+    };
+
+    struct OutputComputerCall {
+        struct ComputerCall_pending_safety_checks {
+            std::optional<std::string> id{};
+            std::optional<std::string> code{};
+            std::optional<std::string> message{};
+        };
+
+        struct Click {
+            struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
+
+            enum class Button { LEFT, RIGHT, WHEEL, BACK, FORWARD };
+
+            std::optional<Button> button{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct DoubleClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "double_click"; };
+
+            std::optional<std::vector<std::string>> keys{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+        };
+
+        struct Drag {
+            struct Drag_path {
+                std::optional<double> x{};
+                std::optional<double> y{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "drag"; };
+
+            std::optional<std::vector<Drag_path>> path{};
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct Keypress {
+            struct TypeKind : Kind { static constexpr std::string_view value = "keypress"; };
+
+            std::optional<std::vector<std::string>> keys{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct Move {
+            struct TypeKind : Kind { static constexpr std::string_view value = "move"; };
+
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct Screenshot {
+            struct TypeKind : Kind { static constexpr std::string_view value = "screenshot"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct Scroll {
+            struct TypeKind : Kind { static constexpr std::string_view value = "scroll"; };
+
+            std::optional<double> scroll_x{};
+            std::optional<double> scroll_y{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct Type {
+            struct TypeKind : Kind { static constexpr std::string_view value = "type"; };
+
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct Wait {
+            struct TypeKind : Kind { static constexpr std::string_view value = "wait"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "click"; };
+
+            enum class Button { LEFT, RIGHT, WHEEL, BACK, FORWARD };
+
+            std::optional<Button> button{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsDoubleClick {
+            struct TypeKind : Kind { static constexpr std::string_view value = "double_click"; };
+
+            std::optional<std::vector<std::string>> keys{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+        };
+
+        struct ActionsDrag {
+            struct Drag_path {
+                std::optional<double> x{};
+                std::optional<double> y{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "drag"; };
+
+            std::optional<std::vector<Drag_path>> path{};
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsKeypress {
+            struct TypeKind : Kind { static constexpr std::string_view value = "keypress"; };
+
+            std::optional<std::vector<std::string>> keys{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsMove {
+            struct TypeKind : Kind { static constexpr std::string_view value = "move"; };
+
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsScreenshot {
+            struct TypeKind : Kind { static constexpr std::string_view value = "screenshot"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsScroll {
+            struct TypeKind : Kind { static constexpr std::string_view value = "scroll"; };
+
+            std::optional<double> scroll_x{};
+            std::optional<double> scroll_y{};
+            std::optional<TypeKind> type{};
+            std::optional<double> x{};
+            std::optional<double> y{};
+            std::optional<std::vector<std::string>> keys{};
+        };
+
+        struct ActionsType {
+            struct TypeKind : Kind { static constexpr std::string_view value = "type"; };
+
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ActionsWait {
+            struct TypeKind : Kind { static constexpr std::string_view value = "wait"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "computer_call"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        enum class ComputerActionKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
+        using ComputerAction = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
+        enum class ComputerActionListKind { CLICK, DOUBLE_CLICK, DRAG, KEYPRESS, MOVE, SCREENSHOT, SCROLL, TYPE, WAIT };
+        using ComputerActionList = std::variant<Click, DoubleClick, Drag, Keypress, Move, Screenshot, Scroll, Type, Wait>;
+
+        std::optional<std::string> id{};
+        std::optional<std::string> call_id{};
+        std::optional<std::vector<ComputerCall_pending_safety_checks>> pending_safety_checks{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+        std::optional<ComputerAction> action{};
+        std::optional<ComputerActionList> actions{};
+    };
+
+    struct OutputReasoning {
+        struct SummaryTextContent {
+            struct TypeKind : Kind { static constexpr std::string_view value = "summary_text"; };
+
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct Reasoning_content {
+            struct TypeKind : Kind { static constexpr std::string_view value = "reasoning_text"; };
+
+            std::optional<std::string> text{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "reasoning"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        std::optional<std::string> id{};
+        std::optional<std::vector<SummaryTextContent>> summary{};
+        std::optional<TypeKind> type{};
+        std::optional<std::vector<Reasoning_content>> content{};
+        std::optional<std::string> encrypted_content{};
+        std::optional<Status> status{};
+    };
+
+    struct OutputToolSearchCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_call"; };
+
+        enum class Execution { SERVER, CLIENT };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        std::optional<std::string> id{};
+        std::optional<jai::llm::json::Object> arguments{};
+        std::optional<std::string> call_id{};
+        std::optional<Execution> execution{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> created_by{};
+    };
+
+    struct OutputToolSearchOutput {
+        struct Function {
+            struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+            std::optional<std::string> name{};
+            std::optional<std::map<std::string, jai::llm::json::Object>> parameters{};
+            std::optional<bool> strict{};
+            std::optional<TypeKind> type{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+        };
+
+        struct FileSearch {
+            struct FileSearch_ranking_options {
+                struct FileSearch_ranking_options_hybrid_search {
+                    std::optional<double> embedding_weight{};
+                    std::optional<double> text_weight{};
+                };
+
+                enum class Ranker { AUTO, DEFAULT_2024_11_15 };
+
+                std::optional<FileSearch_ranking_options_hybrid_search> hybrid_search{};
+                std::optional<Ranker> ranker{};
+                std::optional<double> score_threshold{};
+            };
+
+            struct ComparisonFilter {
+                enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
+
+                using ValueElement = std::variant<std::string, double>;
+                using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
+
+                std::optional<std::string> key{};
+                std::optional<Type> type{};
+                std::optional<Value> value{};
+            };
+
+            struct CompoundFilter {
+                struct ComparisonFilter {
+                    enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
+
+                    using ValueElement = std::variant<std::string, double>;
+                    using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
+
+                    std::optional<std::string> key{};
+                    std::optional<Type> type{};
+                    std::optional<Value> value{};
+                };
+
+                enum class Type { AND, OR };
+
+                using Filters = std::variant<ComparisonFilter, jai::llm::json::Object>;
+
+                std::optional<std::vector<Filters>> filters{};
+                std::optional<Type> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "file_search"; };
+
+            using Filters = std::variant<ComparisonFilter, CompoundFilter>;
+
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<std::string>> vector_store_ids{};
+            std::optional<Filters> filters{};
+            std::optional<double> max_num_results{};
+            std::optional<FileSearch_ranking_options> ranking_options{};
+        };
+
+        struct Computer {
+            struct TypeKind : Kind { static constexpr std::string_view value = "computer"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct ComputerUsePreview {
+            struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
+
+            enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
+
+            std::optional<double> display_height{};
+            std::optional<double> display_width{};
+            std::optional<Environment> environment{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct WebSearch {
+            struct WebSearch_filters {
+                std::optional<std::vector<std::string>> allowed_domains{};
+            };
+
+            struct WebSearch_user_location {
+                struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
+
+                std::optional<std::string> city{};
+                std::optional<std::string> country{};
+                std::optional<std::string> region{};
+                std::optional<std::string> timezone{};
+                std::optional<TypeKind> type{};
+            };
+
+            enum class Type { WEB_SEARCH, WEB_SEARCH_2025_08_26 };
+            enum class SearchContextSize { LOW, MEDIUM, HIGH };
+
+            std::optional<Type> type{};
+            std::optional<WebSearch_filters> filters{};
+            std::optional<SearchContextSize> search_context_size{};
+            std::optional<WebSearch_user_location> user_location{};
+        };
+
+        struct Mcp {
+            struct McpToolFilter {
+                std::optional<bool> read_only{};
+                std::optional<std::vector<std::string>> tool_names{};
+            };
+
+            struct McpToolApprovalFilter {
+                struct McpToolApprovalFilter_always {
+                    std::optional<bool> read_only{};
+                    std::optional<std::vector<std::string>> tool_names{};
+                };
+
+                struct McpToolApprovalFilter_never {
+                    std::optional<bool> read_only{};
+                    std::optional<std::vector<std::string>> tool_names{};
+                };
+
+                std::optional<McpToolApprovalFilter_always> always{};
+                std::optional<McpToolApprovalFilter_never> never{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "mcp"; };
+
+            enum class ConnectorId { CONNECTOR_DROPBOX, CONNECTOR_GMAIL, CONNECTOR_GOOGLECALENDAR, CONNECTOR_GOOGLEDRIVE, CONNECTOR_MICROSOFTTEAMS, CONNECTOR_OUTLOOKCALENDAR, CONNECTOR_OUTLOOKEMAIL, CONNECTOR_SHAREPOINT };
+
+            using AllowedTools = std::variant<std::vector<std::string>, McpToolFilter>;
+            enum class RequireApprovalValues { ALWAYS, NEVER };
+            using RequireApproval = std::variant<RequireApprovalValues, McpToolApprovalFilter>;
+
+            std::optional<std::string> server_label{};
+            std::optional<TypeKind> type{};
+            std::optional<std::vector<AllowedTools>> allowed_tools{};
+            std::optional<std::string> authorization{};
+            std::optional<ConnectorId> connector_id{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::map<std::string, std::string>> headers{};
+            std::optional<RequireApproval> require_approval{};
+            std::optional<std::string> server_description{};
+            std::optional<std::string> server_url{};
+        };
+
+        struct CodeInterpreter {
+            struct CodeInterpreterToolAuto {
+                struct ContainerNetworkPolicyDisabled {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
+
+                    std::optional<TypeKind> type{};
+                };
+
+                struct ContainerNetworkPolicyAllowlist {
+                    struct ContainerNetworkPolicyDomainSecret {
+                        std::optional<std::string> domain{};
+                        std::optional<std::string> name{};
+                        std::optional<std::string> value{};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "allowlist"; };
+
+                    std::optional<std::vector<std::string>> allowed_domains{};
+                    std::optional<TypeKind> type{};
+                    std::optional<std::vector<ContainerNetworkPolicyDomainSecret>> domain_secrets{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "auto"; };
+
+                enum class MemoryLimit { V_1G, V_4G, V_16G, V_64G };
+
+                enum class NetworkPolicyKind { DISABLED, ALLOWLIST };
+                using NetworkPolicy = std::variant<ContainerNetworkPolicyDisabled, ContainerNetworkPolicyAllowlist>;
+
+                std::optional<TypeKind> type{};
+                std::optional<std::vector<std::string>> file_ids{};
+                std::optional<MemoryLimit> memory_limit{};
+                std::optional<NetworkPolicy> network_policy{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "code_interpreter"; };
+
+            enum class ContainerKind { AUTO };
+            using Container = std::variant<std::string, CodeInterpreterToolAuto>;
+
+            std::optional<Container> container{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ImageGeneration {
+            struct ImageGeneration_input_image_mask {
+                std::optional<std::string> file_id{};
+                std::optional<std::string> image_url{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "image_generation"; };
+
+            enum class Action { GENERATE, EDIT, AUTO };
+            enum class Background { TRANSPARENT, OPAQUE, AUTO };
+            enum class InputFidelity { HIGH, LOW };
+            enum class Moderation { AUTO, LOW };
+            enum class OutputFormat { PNG, WEBP, JPEG };
+            enum class Quality { LOW, MEDIUM, HIGH, AUTO };
+            enum class Size { V_1024X1024, V_1024X1536, V_1536X1024, AUTO };
+
+            enum class ModelValues { GPT_IMAGE_1, GPT_IMAGE_1_MINI, GPT_IMAGE_1_5 };
+            using Model = std::variant<ModelValues, std::string>;
+
+            std::optional<TypeKind> type{};
+            std::optional<Action> action{};
+            std::optional<Background> background{};
+            std::optional<InputFidelity> input_fidelity{};
+            std::optional<ImageGeneration_input_image_mask> input_image_mask{};
+            std::optional<Model> model{};
+            std::optional<Moderation> moderation{};
+            std::optional<double> output_compression{};
+            std::optional<OutputFormat> output_format{};
+            std::optional<double> partial_images{};
+            std::optional<Quality> quality{};
+            std::optional<Size> size{};
+        };
+
+        struct LocalShell {
+            struct TypeKind : Kind { static constexpr std::string_view value = "local_shell"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct Shell {
+            struct ContainerAuto {
+                struct ContainerNetworkPolicyDisabled {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
+
+                    std::optional<TypeKind> type{};
+                };
+
+                struct ContainerNetworkPolicyAllowlist {
+                    struct ContainerNetworkPolicyDomainSecret {
+                        std::optional<std::string> domain{};
+                        std::optional<std::string> name{};
+                        std::optional<std::string> value{};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "allowlist"; };
+
+                    std::optional<std::vector<std::string>> allowed_domains{};
+                    std::optional<TypeKind> type{};
+                    std::optional<std::vector<ContainerNetworkPolicyDomainSecret>> domain_secrets{};
+                };
+
+                struct SkillReference {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "skill_reference"; };
+
+                    std::optional<std::string> skill_id{};
+                    std::optional<TypeKind> type{};
+                    std::optional<std::string> version{};
+                };
+
+                struct InlineSkill {
+                    struct InlineSkillSource {
+                        struct MediaTypeKind : Kind { static constexpr std::string_view value = "application/zip"; };
+                        struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
+
+                        std::optional<std::string> data{};
+                        std::optional<MediaTypeKind> media_type{};
+                        std::optional<TypeKind> type{};
+                    };
+
+                    struct TypeKind : Kind { static constexpr std::string_view value = "inline"; };
+
+                    std::optional<std::string> description{};
+                    std::optional<std::string> name{};
+                    std::optional<InlineSkillSource> source{};
+                    std::optional<TypeKind> type{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_auto"; };
+
+                enum class MemoryLimit { V_1G, V_4G, V_16G, V_64G };
+
+                enum class NetworkPolicyKind { DISABLED, ALLOWLIST };
+                using NetworkPolicy = std::variant<ContainerNetworkPolicyDisabled, ContainerNetworkPolicyAllowlist>;
+                enum class SkillsKind { SKILL_REFERENCE, INLINE };
+                using Skills = std::variant<SkillReference, InlineSkill>;
+
+                std::optional<TypeKind> type{};
+                std::optional<std::vector<std::string>> file_ids{};
+                std::optional<MemoryLimit> memory_limit{};
+                std::optional<NetworkPolicy> network_policy{};
+                std::optional<std::vector<Skills>> skills{};
+            };
+
+            struct LocalEnvironment {
+                struct LocalSkill {
+                    std::optional<std::string> description{};
+                    std::optional<std::string> name{};
+                    std::optional<std::string> path{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "local"; };
+
+                std::optional<TypeKind> type{};
+                std::optional<std::vector<LocalSkill>> skills{};
+            };
+
+            struct ContainerReference {
+                struct TypeKind : Kind { static constexpr std::string_view value = "container_reference"; };
+
+                std::optional<std::string> container_id{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "shell"; };
+
+            enum class EnvironmentKind { CONTAINER_AUTO, LOCAL, CONTAINER_REFERENCE };
+            using Environment = std::variant<ContainerAuto, LocalEnvironment, ContainerReference>;
+
+            std::optional<TypeKind> type{};
+            std::optional<Environment> environment{};
+        };
+
+        struct Custom {
+            struct Text {
+                struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                std::optional<TypeKind> type{};
+            };
+
+            struct Grammar {
+                struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                enum class Syntax { LARK, REGEX };
+
+                std::optional<std::string> definition{};
+                std::optional<Syntax> syntax{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+            enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+            using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+            std::optional<std::string> name{};
+            std::optional<TypeKind> type{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<CustomToolInputFormat> format{};
+        };
+
+        struct Namespace {
+            struct Function {
+                struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+                std::optional<std::string> name{};
+                std::optional<TypeKind> type{};
+                std::optional<bool> defer_loading{};
+                std::optional<std::string> description{};
+                std::optional<jai::llm::json::Object> parameters{};
+                std::optional<bool> strict{};
+            };
+
+            struct Custom {
+                struct Text {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                    std::optional<TypeKind> type{};
+                };
+
+                struct Grammar {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                    enum class Syntax { LARK, REGEX };
+
+                    std::optional<std::string> definition{};
+                    std::optional<Syntax> syntax{};
+                    std::optional<TypeKind> type{};
+                };
+
+                struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+                enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+                using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+                std::optional<std::string> name{};
+                std::optional<TypeKind> type{};
+                std::optional<bool> defer_loading{};
+                std::optional<std::string> description{};
+                std::optional<CustomToolInputFormat> format{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "namespace"; };
+
+            enum class ToolsKind { FUNCTION, CUSTOM };
+            using Tools = std::variant<Function, Custom>;
+
+            std::optional<std::string> description{};
+            std::optional<std::string> name{};
+            std::optional<std::vector<Tools>> tools{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct ToolSearch {
+            struct TypeKind : Kind { static constexpr std::string_view value = "tool_search"; };
+
+            enum class Execution { SERVER, CLIENT };
+
+            std::optional<TypeKind> type{};
+            std::optional<std::string> description{};
+            std::optional<Execution> execution{};
+            std::optional<jai::llm::json::Object> parameters{};
+        };
+
+        struct WebSearchPreview {
+            struct WebSearchPreview_user_location {
+                struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
+
+                std::optional<TypeKind> type{};
+                std::optional<std::string> city{};
+                std::optional<std::string> country{};
+                std::optional<std::string> region{};
+                std::optional<std::string> timezone{};
+            };
+
+            enum class Type { WEB_SEARCH_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11 };
+            enum class SearchContextSize { LOW, MEDIUM, HIGH };
+            enum class SearchContentTypesItem { TEXT, IMAGE };
+
+            std::optional<Type> type{};
+            std::optional<std::vector<SearchContentTypesItem>> search_content_types{};
+            std::optional<SearchContextSize> search_context_size{};
+            std::optional<WebSearchPreview_user_location> user_location{};
+        };
+
+        struct ApplyPatch {
+            struct TypeKind : Kind { static constexpr std::string_view value = "apply_patch"; };
+
+            std::optional<TypeKind> type{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_output"; };
+
+        enum class Execution { SERVER, CLIENT };
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        enum class ToolsKind { FUNCTION, FILE_SEARCH, COMPUTER, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, NAMESPACE, TOOL_SEARCH, APPLY_PATCH };
+        using Tools = std::variant<Function, FileSearch, Computer, ComputerUsePreview, WebSearch, Mcp, CodeInterpreter, ImageGeneration, LocalShell, Shell, Custom, Namespace, ToolSearch, WebSearchPreview, ApplyPatch>;
+
+        std::optional<std::string> id{};
+        std::optional<std::string> call_id{};
+        std::optional<Execution> execution{};
+        std::optional<Status> status{};
+        std::optional<std::vector<Tools>> tools{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> created_by{};
     };
 
     struct ResponseCompactionItem {
@@ -2145,8 +4304,72 @@ struct Response {
         std::optional<std::string> created_by{};
     };
 
-    struct ResponseFunctionShellToolCall {
-        struct ResponseFunctionShellToolCall_action {
+    struct OutputImageGenerationCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "image_generation_call"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, GENERATING, FAILED };
+
+        std::optional<std::string> id{};
+        std::optional<std::string> result{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+    };
+
+    struct OutputCodeInterpreterCall {
+        struct Logs {
+            struct TypeKind : Kind { static constexpr std::string_view value = "logs"; };
+
+            std::optional<std::string> logs{};
+            std::optional<TypeKind> type{};
+        };
+
+        struct Image {
+            struct TypeKind : Kind { static constexpr std::string_view value = "image"; };
+
+            std::optional<TypeKind> type{};
+            std::optional<std::string> url{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "code_interpreter_call"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE, INTERPRETING, FAILED };
+
+        enum class OutputsKind { LOGS, IMAGE };
+        using Outputs = std::variant<Logs, Image>;
+
+        std::optional<std::string> id{};
+        std::optional<std::string> code{};
+        std::optional<std::string> container_id{};
+        std::optional<std::vector<Outputs>> outputs{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+    };
+
+    struct OutputLocalShellCall {
+        struct LocalShellCall_action {
+            struct TypeKind : Kind { static constexpr std::string_view value = "exec"; };
+
+            std::optional<std::vector<std::string>> command{};
+            std::optional<std::map<std::string, std::string>> env{};
+            std::optional<TypeKind> type{};
+            std::optional<double> timeout_ms{};
+            std::optional<std::string> user{};
+            std::optional<std::string> working_directory{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "local_shell_call"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE };
+
+        std::optional<std::string> id{};
+        std::optional<LocalShellCall_action> action{};
+        std::optional<std::string> call_id{};
+        std::optional<Status> status{};
+        std::optional<TypeKind> type{};
+    };
+
+    struct OutputShellCall {
+        struct ShellCall_action {
             std::optional<std::vector<std::string>> commands{};
             std::optional<double> max_output_length{};
             std::optional<double> timeout_ms{};
@@ -2173,7 +4396,7 @@ struct Response {
         using Environment = std::variant<ResponseLocalEnvironment, ResponseContainerReference>;
 
         std::optional<std::string> id{};
-        std::optional<ResponseFunctionShellToolCall_action> action{};
+        std::optional<ShellCall_action> action{};
         std::optional<std::string> call_id{};
         std::optional<Environment> environment{};
         std::optional<Status> status{};
@@ -2181,8 +4404,8 @@ struct Response {
         std::optional<std::string> created_by{};
     };
 
-    struct ResponseFunctionShellToolCallOutput {
-        struct ResponseFunctionShellToolCallOutput_output {
+    struct OutputShellCallOutput {
+        struct ShellCallOutput_output {
             struct Timeout {
                 struct TypeKind : Kind { static constexpr std::string_view value = "timeout"; };
 
@@ -2212,13 +4435,13 @@ struct Response {
         std::optional<std::string> id{};
         std::optional<std::string> call_id{};
         std::optional<double> max_output_length{};
-        std::optional<std::vector<ResponseFunctionShellToolCallOutput_output>> output{};
+        std::optional<std::vector<ShellCallOutput_output>> output{};
         std::optional<Status> status{};
         std::optional<TypeKind> type{};
         std::optional<std::string> created_by{};
     };
 
-    struct ResponseApplyPatchToolCall {
+    struct OutputApplyPatchCall {
         struct CreateFile {
             struct TypeKind : Kind { static constexpr std::string_view value = "create_file"; };
 
@@ -2257,7 +4480,7 @@ struct Response {
         std::optional<std::string> created_by{};
     };
 
-    struct ResponseApplyPatchToolCallOutput {
+    struct OutputApplyPatchCallOutput {
         struct TypeKind : Kind { static constexpr std::string_view value = "apply_patch_call_output"; };
 
         enum class Status { COMPLETED, FAILED };
@@ -2268,6 +4491,60 @@ struct Response {
         std::optional<TypeKind> type{};
         std::optional<std::string> created_by{};
         std::optional<std::string> output{};
+    };
+
+    struct OutputMcpCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "mcp_call"; };
+
+        enum class Status { IN_PROGRESS, COMPLETED, INCOMPLETE, CALLING, FAILED };
+
+        std::optional<std::string> id{};
+        std::optional<std::string> arguments{};
+        std::optional<std::string> name{};
+        std::optional<std::string> server_label{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> approval_request_id{};
+        std::optional<std::string> error{};
+        std::optional<std::string> output{};
+        std::optional<Status> status{};
+    };
+
+    struct OutputMcpListTools {
+        struct McpListTools_tools {
+            std::optional<jai::llm::json::Object> input_schema{};
+            std::optional<std::string> name{};
+            std::optional<jai::llm::json::Object> annotations{};
+            std::optional<std::string> description{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "mcp_list_tools"; };
+
+        std::optional<std::string> id{};
+        std::optional<std::string> server_label{};
+        std::optional<std::vector<McpListTools_tools>> tools{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> error{};
+    };
+
+    struct OutputMcpApprovalRequest {
+        struct TypeKind : Kind { static constexpr std::string_view value = "mcp_approval_request"; };
+
+        std::optional<std::string> id{};
+        std::optional<std::string> arguments{};
+        std::optional<std::string> name{};
+        std::optional<std::string> server_label{};
+        std::optional<TypeKind> type{};
+    };
+
+    struct OutputCustomToolCall {
+        struct TypeKind : Kind { static constexpr std::string_view value = "custom_tool_call"; };
+
+        std::optional<std::string> call_id{};
+        std::optional<std::string> input{};
+        std::optional<std::string> name{};
+        std::optional<TypeKind> type{};
+        std::optional<std::string> id{};
+        std::optional<std::string> namespace_{};
     };
 
     struct ToolChoiceAllowed {
@@ -2281,7 +4558,8 @@ struct Response {
     };
 
     struct ToolChoiceTypes {
-        enum class Type { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER_USE_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11, IMAGE_GENERATION, CODE_INTERPRETER };
+        enum class TypeValues { FILE_SEARCH, WEB_SEARCH_PREVIEW, COMPUTER, COMPUTER_USE_PREVIEW, COMPUTER_USE, WEB_SEARCH_PREVIEW_2025_03_11, IMAGE_GENERATION, CODE_INTERPRETER };
+        using Type = std::variant<TypeValues>;
 
         std::optional<Type> type{};
     };
@@ -2320,19 +4598,33 @@ struct Response {
         std::optional<TypeKind> type{};
     };
 
-    struct FunctionTool {
+    struct Function {
         struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
 
         std::optional<std::string> name{};
         std::optional<std::map<std::string, jai::llm::json::Object>> parameters{};
         std::optional<bool> strict{};
         std::optional<TypeKind> type{};
+        std::optional<bool> defer_loading{};
         std::optional<std::string> description{};
     };
 
-    struct FileSearchTool {
+    struct FileSearch {
+        struct FileSearch_ranking_options {
+            struct FileSearch_ranking_options_hybrid_search {
+                std::optional<double> embedding_weight{};
+                std::optional<double> text_weight{};
+            };
+
+            enum class Ranker { AUTO, DEFAULT_2024_11_15 };
+
+            std::optional<FileSearch_ranking_options_hybrid_search> hybrid_search{};
+            std::optional<Ranker> ranker{};
+            std::optional<double> score_threshold{};
+        };
+
         struct ComparisonFilter {
-            enum class Type { EQ, NE, GT, GTE, LT, LTE };
+            enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
 
             using ValueElement = std::variant<std::string, double>;
             using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
@@ -2344,7 +4636,7 @@ struct Response {
 
         struct CompoundFilter {
             struct ComparisonFilter {
-                enum class Type { EQ, NE, GT, GTE, LT, LTE };
+                enum class Type { EQ, NE, GT, GTE, LT, LTE, IN, NIN };
 
                 using ValueElement = std::variant<std::string, double>;
                 using Value = std::variant<std::string, double, bool, std::vector<ValueElement>>;
@@ -2362,19 +4654,6 @@ struct Response {
             std::optional<Type> type{};
         };
 
-        struct FileSearchTool_ranking_options {
-            struct FileSearchTool_ranking_options_hybrid_search {
-                std::optional<double> embedding_weight{};
-                std::optional<double> text_weight{};
-            };
-
-            enum class Ranker { AUTO, DEFAULT_2024_11_15 };
-
-            std::optional<FileSearchTool_ranking_options_hybrid_search> hybrid_search{};
-            std::optional<Ranker> ranker{};
-            std::optional<double> score_threshold{};
-        };
-
         struct TypeKind : Kind { static constexpr std::string_view value = "file_search"; };
 
         using Filters = std::variant<ComparisonFilter, CompoundFilter>;
@@ -2383,10 +4662,16 @@ struct Response {
         std::optional<std::vector<std::string>> vector_store_ids{};
         std::optional<Filters> filters{};
         std::optional<double> max_num_results{};
-        std::optional<FileSearchTool_ranking_options> ranking_options{};
+        std::optional<FileSearch_ranking_options> ranking_options{};
     };
 
-    struct ComputerTool {
+    struct Computer {
+        struct TypeKind : Kind { static constexpr std::string_view value = "computer"; };
+
+        std::optional<TypeKind> type{};
+    };
+
+    struct ComputerUsePreview {
         struct TypeKind : Kind { static constexpr std::string_view value = "computer_use_preview"; };
 
         enum class Environment { WINDOWS, MAC, LINUX, UBUNTU, BROWSER };
@@ -2397,12 +4682,12 @@ struct Response {
         std::optional<TypeKind> type{};
     };
 
-    struct WebSearchTool {
-        struct WebSearchTool_filters {
+    struct WebSearch {
+        struct WebSearch_filters {
             std::optional<std::vector<std::string>> allowed_domains{};
         };
 
-        struct WebSearchTool_user_location {
+        struct WebSearch_user_location {
             struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
 
             std::optional<std::string> city{};
@@ -2416,9 +4701,9 @@ struct Response {
         enum class SearchContextSize { LOW, MEDIUM, HIGH };
 
         std::optional<Type> type{};
-        std::optional<WebSearchTool_filters> filters{};
+        std::optional<WebSearch_filters> filters{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<WebSearchTool_user_location> user_location{};
+        std::optional<WebSearch_user_location> user_location{};
     };
 
     struct Mcp {
@@ -2455,6 +4740,7 @@ struct Response {
         std::optional<std::vector<AllowedTools>> allowed_tools{};
         std::optional<std::string> authorization{};
         std::optional<ConnectorId> connector_id{};
+        std::optional<bool> defer_loading{};
         std::optional<std::map<std::string, std::string>> headers{};
         std::optional<RequireApproval> require_approval{};
         std::optional<std::string> server_description{};
@@ -2544,7 +4830,7 @@ struct Response {
         std::optional<TypeKind> type{};
     };
 
-    struct FunctionShellTool {
+    struct Shell {
         struct ContainerAuto {
             struct ContainerNetworkPolicyDisabled {
                 struct TypeKind : Kind { static constexpr std::string_view value = "disabled"; };
@@ -2637,7 +4923,7 @@ struct Response {
         std::optional<Environment> environment{};
     };
 
-    struct CustomTool {
+    struct Custom {
         struct Text {
             struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
 
@@ -2661,12 +4947,76 @@ struct Response {
 
         std::optional<std::string> name{};
         std::optional<TypeKind> type{};
+        std::optional<bool> defer_loading{};
         std::optional<std::string> description{};
         std::optional<CustomToolInputFormat> format{};
     };
 
-    struct WebSearchPreviewTool {
-        struct WebSearchPreviewTool_user_location {
+    struct Namespace {
+        struct Function {
+            struct TypeKind : Kind { static constexpr std::string_view value = "function"; };
+
+            std::optional<std::string> name{};
+            std::optional<TypeKind> type{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<jai::llm::json::Object> parameters{};
+            std::optional<bool> strict{};
+        };
+
+        struct Custom {
+            struct Text {
+                struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
+
+                std::optional<TypeKind> type{};
+            };
+
+            struct Grammar {
+                struct TypeKind : Kind { static constexpr std::string_view value = "grammar"; };
+
+                enum class Syntax { LARK, REGEX };
+
+                std::optional<std::string> definition{};
+                std::optional<Syntax> syntax{};
+                std::optional<TypeKind> type{};
+            };
+
+            struct TypeKind : Kind { static constexpr std::string_view value = "custom"; };
+
+            enum class CustomToolInputFormatKind { TEXT, GRAMMAR };
+            using CustomToolInputFormat = std::variant<Text, Grammar>;
+
+            std::optional<std::string> name{};
+            std::optional<TypeKind> type{};
+            std::optional<bool> defer_loading{};
+            std::optional<std::string> description{};
+            std::optional<CustomToolInputFormat> format{};
+        };
+
+        struct TypeKind : Kind { static constexpr std::string_view value = "namespace"; };
+
+        enum class ToolsKind { FUNCTION, CUSTOM };
+        using Tools = std::variant<Function, Custom>;
+
+        std::optional<std::string> description{};
+        std::optional<std::string> name{};
+        std::optional<std::vector<Tools>> tools{};
+        std::optional<TypeKind> type{};
+    };
+
+    struct ToolSearch {
+        struct TypeKind : Kind { static constexpr std::string_view value = "tool_search"; };
+
+        enum class Execution { SERVER, CLIENT };
+
+        std::optional<TypeKind> type{};
+        std::optional<std::string> description{};
+        std::optional<Execution> execution{};
+        std::optional<jai::llm::json::Object> parameters{};
+    };
+
+    struct WebSearchPreview {
+        struct WebSearchPreview_user_location {
             struct TypeKind : Kind { static constexpr std::string_view value = "approximate"; };
 
             std::optional<TypeKind> type{};
@@ -2678,114 +5028,18 @@ struct Response {
 
         enum class Type { WEB_SEARCH_PREVIEW, WEB_SEARCH_PREVIEW_2025_03_11 };
         enum class SearchContextSize { LOW, MEDIUM, HIGH };
+        enum class SearchContentTypesItem { TEXT, IMAGE };
 
         std::optional<Type> type{};
+        std::optional<std::vector<SearchContentTypesItem>> search_content_types{};
         std::optional<SearchContextSize> search_context_size{};
-        std::optional<WebSearchPreviewTool_user_location> user_location{};
+        std::optional<WebSearchPreview_user_location> user_location{};
     };
 
-    struct ApplyPatchTool {
+    struct ApplyPatch {
         struct TypeKind : Kind { static constexpr std::string_view value = "apply_patch"; };
 
         std::optional<TypeKind> type{};
-    };
-
-    struct Response_conversation {
-        std::optional<std::string> id{};
-    };
-
-    struct ResponsePrompt {
-        struct ResponseInputText {
-            struct TypeKind : Kind { static constexpr std::string_view value = "input_text"; };
-
-            std::optional<std::string> text{};
-            std::optional<TypeKind> type{};
-        };
-
-        struct ResponseInputImage {
-            struct TypeKind : Kind { static constexpr std::string_view value = "input_image"; };
-
-            enum class Detail { LOW, HIGH, AUTO };
-
-            std::optional<Detail> detail{};
-            std::optional<TypeKind> type{};
-            std::optional<std::string> file_id{};
-            std::optional<std::string> image_url{};
-        };
-
-        struct ResponseInputFile {
-            struct TypeKind : Kind { static constexpr std::string_view value = "input_file"; };
-
-            std::optional<TypeKind> type{};
-            std::optional<std::string> file_data{};
-            std::optional<std::string> file_id{};
-            std::optional<std::string> file_url{};
-            std::optional<std::string> filename{};
-        };
-
-        using VariablesValue = std::variant<std::string, ResponseInputText, ResponseInputImage, ResponseInputFile>;
-
-        std::optional<std::string> id{};
-        std::optional<std::map<std::string, VariablesValue>> variables{};
-        std::optional<std::string> version{};
-    };
-
-    struct Reasoning {
-        enum class Effort { NONE, MINIMAL, LOW, MEDIUM, HIGH, XHIGH };
-        enum class GenerateSummary { AUTO, CONCISE, DETAILED };
-        enum class Summary { AUTO, CONCISE, DETAILED };
-
-        std::optional<Effort> effort{};
-        std::optional<GenerateSummary> generate_summary{};
-        std::optional<Summary> summary{};
-    };
-
-    struct ResponseTextConfig {
-        struct ResponseFormatText {
-            struct TypeKind : Kind { static constexpr std::string_view value = "text"; };
-
-            std::optional<TypeKind> type{};
-        };
-
-        struct ResponseFormatTextJSONSchemaConfig {
-            struct TypeKind : Kind { static constexpr std::string_view value = "json_schema"; };
-
-            std::optional<std::string> name{};
-            std::optional<std::map<std::string, jai::llm::json::Object>> schema{};
-            std::optional<TypeKind> type{};
-            std::optional<std::string> description{};
-            std::optional<bool> strict{};
-        };
-
-        struct ResponseFormatJSONObject {
-            struct TypeKind : Kind { static constexpr std::string_view value = "json_object"; };
-
-            std::optional<TypeKind> type{};
-        };
-
-        enum class Verbosity { LOW, MEDIUM, HIGH };
-
-        enum class ResponseFormatTextConfigKind { TEXT, JSON_SCHEMA, JSON_OBJECT };
-        using ResponseFormatTextConfig = std::variant<ResponseFormatText, ResponseFormatTextJSONSchemaConfig, ResponseFormatJSONObject>;
-
-        std::optional<ResponseFormatTextConfig> format{};
-        std::optional<Verbosity> verbosity{};
-    };
-
-    struct ResponseUsage {
-        struct ResponseUsage_input_tokens_details {
-            std::optional<double> cached_tokens{};
-        };
-
-        struct ResponseUsage_output_tokens_details {
-            std::optional<double> reasoning_tokens{};
-        };
-
-        std::optional<double> input_tokens{};
-        std::optional<ResponseUsage_input_tokens_details> input_tokens_details{};
-        std::optional<double> output_tokens{};
-        std::optional<ResponseUsage_output_tokens_details> output_tokens_details{};
-        std::optional<double> total_tokens{};
     };
 
     struct ObjectKind : Kind { static constexpr std::string_view value = "response"; };
@@ -2795,18 +5049,18 @@ struct Response {
     enum class Status { COMPLETED, FAILED, IN_PROGRESS, CANCELLED, QUEUED, INCOMPLETE };
     enum class Truncation { AUTO, DISABLED };
 
-    enum class InstructionsItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE };
-    using InstructionsItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, ResponseFileSearchToolCall, ResponseComputerToolCall, ComputerCallOutput, ResponseFunctionWebSearch, ResponseFunctionToolCall, FunctionCallOutput, ResponseReasoningItem, ResponseCompactionItemParam, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, ResponseCustomToolCallOutput, ResponseCustomToolCall, ItemReference>;
+    enum class InstructionsItemKind { EASY_INPUT_MESSAGE, MESSAGE, ASSISTANT, FILE_SEARCH_CALL, COMPUTER_CALL, COMPUTER_CALL_OUTPUT, WEB_SEARCH_CALL, FUNCTION_CALL, FUNCTION_CALL_OUTPUT, TOOL_SEARCH_CALL, TOOL_SEARCH_OUTPUT, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, LOCAL_SHELL_CALL_OUTPUT, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, MCP_APPROVAL_RESPONSE, MCP_CALL, CUSTOM_TOOL_CALL_OUTPUT, CUSTOM_TOOL_CALL, ITEM_REFERENCE };
+    using InstructionsItem = std::variant<EasyInputMessage, Message, ResponseOutputMessage, FileSearchCall, ComputerCall, ComputerCallOutput, WebSearchCall, FunctionCall, FunctionCallOutput, ToolSearchCall, ToolSearchOutput, InstructionsReasoning, Compaction, ImageGenerationCall, CodeInterpreterCall, LocalShellCall, LocalShellCallOutput, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpListTools, McpApprovalRequest, McpApprovalResponse, McpCall, CustomToolCallOutput, CustomToolCall, ItemReference>;
     using Instructions = std::variant<std::string, std::vector<InstructionsItem>>;
-    enum class ResponsesModelValues { GPT_5_2, GPT_5_2_2025_12_11, GPT_5_2_CHAT_LATEST, GPT_5_2_PRO, GPT_5_2_PRO_2025_12_11, GPT_5_1, GPT_5_1_2025_11_13, GPT_5_1_CODEX, GPT_5_1_MINI, GPT_5_1_CHAT_LATEST, GPT_5, GPT_5_MINI, GPT_5_NANO, GPT_5_2025_08_07, GPT_5_MINI_2025_08_07, GPT_5_NANO_2025_08_07, GPT_5_CHAT_LATEST, GPT_4_1, GPT_4_1_MINI, GPT_4_1_NANO, GPT_4_1_2025_04_14, GPT_4_1_MINI_2025_04_14, GPT_4_1_NANO_2025_04_14, O4_MINI, O4_MINI_2025_04_16, O3, O3_2025_04_16, O3_MINI, O3_MINI_2025_01_31, O1, O1_2024_12_17, O1_PREVIEW, O1_PREVIEW_2024_09_12, O1_MINI, O1_MINI_2024_09_12, GPT_4O, GPT_4O_2024_11_20, GPT_4O_2024_08_06, GPT_4O_2024_05_13, GPT_4O_AUDIO_PREVIEW, GPT_4O_AUDIO_PREVIEW_2024_10_01, GPT_4O_AUDIO_PREVIEW_2024_12_17, GPT_4O_AUDIO_PREVIEW_2025_06_03, GPT_4O_MINI_AUDIO_PREVIEW, GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17, GPT_4O_SEARCH_PREVIEW, GPT_4O_MINI_SEARCH_PREVIEW, GPT_4O_SEARCH_PREVIEW_2025_03_11, GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11, CHATGPT_4O_LATEST, CODEX_MINI_LATEST, GPT_4O_MINI, GPT_4O_MINI_2024_07_18, GPT_4_TURBO, GPT_4_TURBO_2024_04_09, GPT_4_0125_PREVIEW, GPT_4_TURBO_PREVIEW, GPT_4_1106_PREVIEW, GPT_4_VISION_PREVIEW, GPT_4, GPT_4_0314, GPT_4_0613, GPT_4_32K, GPT_4_32K_0314, GPT_4_32K_0613, GPT_3_5_TURBO, GPT_3_5_TURBO_16K, GPT_3_5_TURBO_0301, GPT_3_5_TURBO_0613, GPT_3_5_TURBO_1106, GPT_3_5_TURBO_0125, GPT_3_5_TURBO_16K_0613, O1_PRO, O1_PRO_2025_03_19, O3_PRO, O3_PRO_2025_06_10, O3_DEEP_RESEARCH, O3_DEEP_RESEARCH_2025_06_26, O4_MINI_DEEP_RESEARCH, O4_MINI_DEEP_RESEARCH_2025_06_26, COMPUTER_USE_PREVIEW, COMPUTER_USE_PREVIEW_2025_03_11, GPT_5_CODEX, GPT_5_PRO, GPT_5_PRO_2025_10_06, GPT_5_1_CODEX_MAX };
+    enum class ResponsesModelValues { GPT_5_4, GPT_5_4_MINI, GPT_5_4_NANO, GPT_5_4_MINI_2026_03_17, GPT_5_4_NANO_2026_03_17, GPT_5_3_CHAT_LATEST, GPT_5_2, GPT_5_2_2025_12_11, GPT_5_2_CHAT_LATEST, GPT_5_2_PRO, GPT_5_2_PRO_2025_12_11, GPT_5_1, GPT_5_1_2025_11_13, GPT_5_1_CODEX, GPT_5_1_MINI, GPT_5_1_CHAT_LATEST, GPT_5, GPT_5_MINI, GPT_5_NANO, GPT_5_2025_08_07, GPT_5_MINI_2025_08_07, GPT_5_NANO_2025_08_07, GPT_5_CHAT_LATEST, GPT_4_1, GPT_4_1_MINI, GPT_4_1_NANO, GPT_4_1_2025_04_14, GPT_4_1_MINI_2025_04_14, GPT_4_1_NANO_2025_04_14, O4_MINI, O4_MINI_2025_04_16, O3, O3_2025_04_16, O3_MINI, O3_MINI_2025_01_31, O1, O1_2024_12_17, O1_PREVIEW, O1_PREVIEW_2024_09_12, O1_MINI, O1_MINI_2024_09_12, GPT_4O, GPT_4O_2024_11_20, GPT_4O_2024_08_06, GPT_4O_2024_05_13, GPT_4O_AUDIO_PREVIEW, GPT_4O_AUDIO_PREVIEW_2024_10_01, GPT_4O_AUDIO_PREVIEW_2024_12_17, GPT_4O_AUDIO_PREVIEW_2025_06_03, GPT_4O_MINI_AUDIO_PREVIEW, GPT_4O_MINI_AUDIO_PREVIEW_2024_12_17, GPT_4O_SEARCH_PREVIEW, GPT_4O_MINI_SEARCH_PREVIEW, GPT_4O_SEARCH_PREVIEW_2025_03_11, GPT_4O_MINI_SEARCH_PREVIEW_2025_03_11, CHATGPT_4O_LATEST, CODEX_MINI_LATEST, GPT_4O_MINI, GPT_4O_MINI_2024_07_18, GPT_4_TURBO, GPT_4_TURBO_2024_04_09, GPT_4_0125_PREVIEW, GPT_4_TURBO_PREVIEW, GPT_4_1106_PREVIEW, GPT_4_VISION_PREVIEW, GPT_4, GPT_4_0314, GPT_4_0613, GPT_4_32K, GPT_4_32K_0314, GPT_4_32K_0613, GPT_3_5_TURBO, GPT_3_5_TURBO_16K, GPT_3_5_TURBO_0301, GPT_3_5_TURBO_0613, GPT_3_5_TURBO_1106, GPT_3_5_TURBO_0125, GPT_3_5_TURBO_16K_0613, O1_PRO, O1_PRO_2025_03_19, O3_PRO, O3_PRO_2025_06_10, O3_DEEP_RESEARCH, O3_DEEP_RESEARCH_2025_06_26, O4_MINI_DEEP_RESEARCH, O4_MINI_DEEP_RESEARCH_2025_06_26, COMPUTER_USE_PREVIEW, COMPUTER_USE_PREVIEW_2025_03_11, GPT_5_CODEX, GPT_5_PRO, GPT_5_PRO_2025_10_06, GPT_5_1_CODEX_MAX };
     using ResponsesModel = std::variant<std::string, ResponsesModelValues>;
-    enum class ResponseOutputItemKind { MESSAGE, FILE_SEARCH_CALL, FUNCTION_CALL, WEB_SEARCH_CALL, COMPUTER_CALL, REASONING, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_CALL, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, CUSTOM_TOOL_CALL };
-    using ResponseOutputItem = std::variant<ResponseOutputMessage, ResponseFileSearchToolCall, ResponseFunctionToolCall, ResponseFunctionWebSearch, ResponseComputerToolCall, ResponseReasoningItem, ResponseCompactionItem, ImageGenerationCall, ResponseCodeInterpreterToolCall, LocalShellCall, ResponseFunctionShellToolCall, ResponseFunctionShellToolCallOutput, ResponseApplyPatchToolCall, ResponseApplyPatchToolCallOutput, McpCall, McpListTools, McpApprovalRequest, ResponseCustomToolCall>;
+    enum class ResponseOutputItemKind { MESSAGE, FILE_SEARCH_CALL, FUNCTION_CALL, WEB_SEARCH_CALL, COMPUTER_CALL, REASONING, TOOL_SEARCH_CALL, TOOL_SEARCH_OUTPUT, COMPACTION, IMAGE_GENERATION_CALL, CODE_INTERPRETER_CALL, LOCAL_SHELL_CALL, SHELL_CALL, SHELL_CALL_OUTPUT, APPLY_PATCH_CALL, APPLY_PATCH_CALL_OUTPUT, MCP_CALL, MCP_LIST_TOOLS, MCP_APPROVAL_REQUEST, CUSTOM_TOOL_CALL };
+    using ResponseOutputItem = std::variant<ResponseOutputMessage, FileSearchCall, FunctionCall, WebSearchCall, ComputerCall, Reasoning, ToolSearchCall, ToolSearchOutput, ResponseCompactionItem, ImageGenerationCall, CodeInterpreterCall, LocalShellCall, ShellCall, ShellCallOutput, ApplyPatchCall, ApplyPatchCallOutput, McpCall, McpListTools, McpApprovalRequest, CustomToolCall>;
     enum class ToolChoiceValues { NONE, AUTO, REQUIRED };
     enum class ToolChoiceKind { ALLOWED_TOOLS, FUNCTION, MCP, CUSTOM, APPLY_PATCH, SHELL };
     using ToolChoice = std::variant<ToolChoiceValues, ToolChoiceAllowed, ToolChoiceTypes, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom, ToolChoiceApplyPatch, ToolChoiceShell>;
-    enum class ToolKind { FUNCTION, FILE_SEARCH, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, APPLY_PATCH };
-    using Tool = std::variant<FunctionTool, FileSearchTool, ComputerTool, WebSearchTool, Mcp, CodeInterpreter, ImageGeneration, LocalShell, FunctionShellTool, CustomTool, WebSearchPreviewTool, ApplyPatchTool>;
+    enum class ToolsKind { FUNCTION, FILE_SEARCH, COMPUTER, COMPUTER_USE_PREVIEW, MCP, CODE_INTERPRETER, IMAGE_GENERATION, LOCAL_SHELL, SHELL, CUSTOM, NAMESPACE, TOOL_SEARCH, APPLY_PATCH };
+    using Tools = std::variant<Function, FileSearch, Computer, ComputerUsePreview, WebSearch, Mcp, CodeInterpreter, ImageGeneration, LocalShell, Shell, Custom, Namespace, ToolSearch, WebSearchPreview, ApplyPatch>;
 
     std::optional<std::string> id{};
     std::optional<double> created_at{};
@@ -2820,7 +5074,7 @@ struct Response {
     std::optional<bool> parallel_tool_calls{};
     std::optional<double> temperature{};
     std::optional<ToolChoice> tool_choice{};
-    std::optional<std::vector<Tool>> tools{};
+    std::optional<std::vector<Tools>> tools{};
     std::optional<double> top_p{};
     std::optional<bool> background{};
     std::optional<double> completed_at{};

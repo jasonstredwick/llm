@@ -57,6 +57,12 @@ from_string_view<anthropic::Request::MessageParam::TextBlockParam::TypeKind>(std
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::TypeKind::value) return anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::TypeKind{};
@@ -69,15 +75,15 @@ from_string_view<anthropic::Request::MessageParam::ImageBlockParam::URLImageSour
     return std::nullopt;
 }
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::TypeKind{};
-    return std::nullopt;
-}
-template <>
 constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ImageBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ImageBlockParam::TypeKind::value) return anthropic::Request::MessageParam::ImageBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -147,6 +153,12 @@ from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBl
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind{};
@@ -156,12 +168,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -180,12 +186,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::URLPDFSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::URLPDFSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::DocumentBlockParam::URLPDFSource::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::URLPDFSource::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -339,6 +339,12 @@ from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::TextBlo
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::TypeKind{};
@@ -348,12 +354,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::URLImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::URLImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::URLImageSource::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::URLImageSource::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -414,6 +414,12 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::SearchResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::SearchResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::SearchResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::SearchResultBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -483,6 +489,12 @@ from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::Documen
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind{};
@@ -492,12 +504,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -516,12 +522,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::URLPDFSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::URLPDFSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::URLPDFSource::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::URLPDFSource::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -579,6 +579,12 @@ from_string_view<anthropic::Request::MessageParam::ServerToolUseBlockParam::Type
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchResultBlockParam::TypeKind{};
@@ -588,12 +594,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::TypeKind::value) return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -621,9 +621,21 @@ from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchToolResultErrorBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchToolResultErrorBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchToolResultErrorBlockParam::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchToolResultErrorBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -693,6 +705,12 @@ from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam:
     return std::nullopt;
 }
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::TypeKind{};
@@ -702,12 +720,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -729,12 +741,6 @@ from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam:
     return std::nullopt;
 }
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::TypeKind{};
-    return std::nullopt;
-}
-template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::TypeKind{};
@@ -744,12 +750,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -774,6 +774,12 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::WebFetchToolResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -807,15 +813,15 @@ from_string_view<anthropic::Request::MessageParam::CodeExecutionToolResultBlockP
     return std::nullopt;
 }
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind{};
-    return std::nullopt;
-}
-template <>
 constexpr std::optional<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -837,15 +843,15 @@ from_string_view<anthropic::Request::MessageParam::BashCodeExecutionToolResultBl
     return std::nullopt;
 }
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind{};
-    return std::nullopt;
-}
-template <>
 constexpr std::optional<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -873,15 +879,15 @@ from_string_view<anthropic::Request::MessageParam::TextEditorCodeExecutionToolRe
     return std::nullopt;
 }
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::TypeKind{};
-    return std::nullopt;
-}
-template <>
 constexpr std::optional<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -906,12 +912,6 @@ template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::TypeKind>
 from_string_view<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::TypeKind::value) return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::TypeKind{};
-    return std::nullopt;
-}
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>
-from_string_view<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind>(std::string_view sv) {
-    if (sv == anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind::value) return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -1272,6 +1272,24 @@ template <>
 constexpr std::optional<anthropic::Request::WebFetchTool20260209::TypeKind>
 from_string_view<anthropic::Request::WebFetchTool20260209::TypeKind>(std::string_view sv) {
     if (sv == anthropic::Request::WebFetchTool20260209::TypeKind::value) return anthropic::Request::WebFetchTool20260209::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::TypeKind>
+from_string_view<anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::TypeKind::value) return anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::TypeKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20260309::NameKind>
+from_string_view<anthropic::Request::WebFetchTool20260309::NameKind>(std::string_view sv) {
+    if (sv == anthropic::Request::WebFetchTool20260309::NameKind::value) return anthropic::Request::WebFetchTool20260309::NameKind{};
+    return std::nullopt;
+}
+template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20260309::TypeKind>
+from_string_view<anthropic::Request::WebFetchTool20260309::TypeKind>(std::string_view sv) {
+    if (sv == anthropic::Request::WebFetchTool20260309::TypeKind::value) return anthropic::Request::WebFetchTool20260309::TypeKind{};
     return std::nullopt;
 }
 template <>
@@ -1647,6 +1665,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Text
 }
 
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::MediaType>
 from_string_view<anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::MediaType>(std::string_view sv) {
     if (sv == "image/jpeg") return anthropic::Request::MessageParam::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG;
@@ -1667,18 +1701,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Imag
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl val) {
     switch (val) {
-        case anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ImageBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -1699,26 +1733,6 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Docu
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>
-from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>(std::string_view sv) {
-    if (sv == "image/jpeg") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG;
-    if (sv == "image/png") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG;
-    if (sv == "image/gif") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF;
-    if (sv == "image/webp") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType val) {
-    switch (val) {
-        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG: return "image/jpeg";
-        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG: return "image/png";
-        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF: return "image/gif";
-        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP: return "image/webp";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType"};
-    }
-}
-
-template <>
 constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
@@ -1735,18 +1749,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Docu
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>
+from_string_view<anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>(std::string_view sv) {
+    if (sv == "image/jpeg") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG;
+    if (sv == "image/png") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG;
+    if (sv == "image/gif") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF;
+    if (sv == "image/webp") return anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType val) {
     switch (val) {
-        case anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::DocumentBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG: return "image/jpeg";
+        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG: return "image/png";
+        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF: return "image/gif";
+        case anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP: return "image/webp";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType"};
     }
 }
 
@@ -1831,6 +1849,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
 }
 
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::MediaType>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::MediaType>(std::string_view sv) {
     if (sv == "image/jpeg") return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG;
@@ -1847,22 +1881,6 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
         case anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF: return "image/gif";
         case anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP: return "image/webp";
         default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource::MediaType"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl val) {
-    switch (val) {
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -1899,6 +1917,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
 }
 
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl::V_5M;
@@ -1911,26 +1945,6 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
         case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>(std::string_view sv) {
-    if (sv == "image/jpeg") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG;
-    if (sv == "image/png") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG;
-    if (sv == "image/gif") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF;
-    if (sv == "image/webp") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType val) {
-    switch (val) {
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG: return "image/jpeg";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG: return "image/png";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF: return "image/gif";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP: return "image/webp";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType"};
     }
 }
 
@@ -1951,18 +1965,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>
+from_string_view<anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType>(std::string_view sv) {
+    if (sv == "image/jpeg") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG;
+    if (sv == "image/png") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG;
+    if (sv == "image/gif") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF;
+    if (sv == "image/webp") return anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType val) {
     switch (val) {
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_JPEG: return "image/jpeg";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_PNG: return "image/png";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_GIF: return "image/gif";
+        case anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType::IMAGE_WEBP: return "image/webp";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource::MediaType"};
     }
 }
 
@@ -2025,6 +2043,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Serv
 }
 
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::ErrorCode>
 from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::ErrorCode>(std::string_view sv) {
     if (sv == "invalid_tool_input") return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError::ErrorCode::INVALID_TOOL_INPUT;
@@ -2049,18 +2083,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebS
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl val) {
     switch (val) {
-        case anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2093,6 +2127,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebF
 }
 
 template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl::V_5M;
@@ -2105,6 +2155,22 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebF
         case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::TextBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2129,50 +2195,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebF
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl val) {
     switch (val) {
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral::Ttl"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl val) {
-    switch (val) {
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral::Ttl"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl val) {
-    switch (val) {
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2197,18 +2231,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Code
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl val) {
     switch (val) {
-        case anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2235,18 +2269,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Bash
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl val) {
     switch (val) {
-        case anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2291,18 +2325,18 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Text
 }
 
 template <>
-constexpr std::optional<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
+constexpr std::optional<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
     return std::nullopt;
 }
 
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl val) {
+constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl val) {
     switch (val) {
-        case anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral::Ttl"};
+        case anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2339,22 +2373,6 @@ constexpr std::string_view to_string_view(anthropic::Request::MessageParam::Tool
         case anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::ToolReferenceBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::ToolReferenceBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam::ToolReferenceBlockParam::CacheControlEphemeral::Ttl"};
-    }
-}
-
-template <>
-constexpr std::optional<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl>
-from_string_view<anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl>(std::string_view sv) {
-    if (sv == "5m") return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M;
-    if (sv == "1h") return anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl val) {
-    switch (val) {
-        case anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
-        case anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
-        default: throw AnnotatedException{"invalid anthropic::Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral::Ttl"};
     }
 }
 
@@ -2439,6 +2457,38 @@ constexpr std::string_view to_string_view(anthropic::Request::TextBlockParam::Ca
         case anthropic::Request::TextBlockParam::CacheControlEphemeral::Ttl::V_5M: return "5m";
         case anthropic::Request::TextBlockParam::CacheControlEphemeral::Ttl::V_1H: return "1h";
         default: throw AnnotatedException{"invalid anthropic::Request::TextBlockParam::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::ThinkingConfigEnabled::Display>
+from_string_view<anthropic::Request::ThinkingConfigEnabled::Display>(std::string_view sv) {
+    if (sv == "summarized") return anthropic::Request::ThinkingConfigEnabled::Display::SUMMARIZED;
+    if (sv == "omitted") return anthropic::Request::ThinkingConfigEnabled::Display::OMITTED;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ThinkingConfigEnabled::Display val) {
+    switch (val) {
+        case anthropic::Request::ThinkingConfigEnabled::Display::SUMMARIZED: return "summarized";
+        case anthropic::Request::ThinkingConfigEnabled::Display::OMITTED: return "omitted";
+        default: throw AnnotatedException{"invalid anthropic::Request::ThinkingConfigEnabled::Display"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::ThinkingConfigAdaptive::Display>
+from_string_view<anthropic::Request::ThinkingConfigAdaptive::Display>(std::string_view sv) {
+    if (sv == "summarized") return anthropic::Request::ThinkingConfigAdaptive::Display::SUMMARIZED;
+    if (sv == "omitted") return anthropic::Request::ThinkingConfigAdaptive::Display::OMITTED;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::ThinkingConfigAdaptive::Display val) {
+    switch (val) {
+        case anthropic::Request::ThinkingConfigAdaptive::Display::SUMMARIZED: return "summarized";
+        case anthropic::Request::ThinkingConfigAdaptive::Display::OMITTED: return "omitted";
+        default: throw AnnotatedException{"invalid anthropic::Request::ThinkingConfigAdaptive::Display"};
     }
 }
 
@@ -2885,6 +2935,40 @@ constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool202602
 }
 
 template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl>
+from_string_view<anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl>(std::string_view sv) {
+    if (sv == "5m") return anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl::V_5M;
+    if (sv == "1h") return anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl::V_1H;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl val) {
+    switch (val) {
+        case anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl::V_5M: return "5m";
+        case anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl::V_1H: return "1h";
+        default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20260309::CacheControlEphemeral::Ttl"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Request::WebFetchTool20260309::AllowedCallersItem>
+from_string_view<anthropic::Request::WebFetchTool20260309::AllowedCallersItem>(std::string_view sv) {
+    if (sv == "direct") return anthropic::Request::WebFetchTool20260309::AllowedCallersItem::DIRECT;
+    if (sv == "code_execution_20250825") return anthropic::Request::WebFetchTool20260309::AllowedCallersItem::CODE_EXECUTION_20250825;
+    if (sv == "code_execution_20260120") return anthropic::Request::WebFetchTool20260309::AllowedCallersItem::CODE_EXECUTION_20260120;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Request::WebFetchTool20260309::AllowedCallersItem val) {
+    switch (val) {
+        case anthropic::Request::WebFetchTool20260309::AllowedCallersItem::DIRECT: return "direct";
+        case anthropic::Request::WebFetchTool20260309::AllowedCallersItem::CODE_EXECUTION_20250825: return "code_execution_20250825";
+        case anthropic::Request::WebFetchTool20260309::AllowedCallersItem::CODE_EXECUTION_20260120: return "code_execution_20260120";
+        default: throw AnnotatedException{"invalid anthropic::Request::WebFetchTool20260309::AllowedCallersItem"};
+    }
+}
+
+template <>
 constexpr std::optional<anthropic::Request::ToolSearchToolBm25_20251119::CacheControlEphemeral::Ttl>
 from_string_view<anthropic::Request::ToolSearchToolBm25_20251119::CacheControlEphemeral::Ttl>(std::string_view sv) {
     if (sv == "5m") return anthropic::Request::ToolSearchToolBm25_20251119::CacheControlEphemeral::Ttl::V_5M;
@@ -3005,25 +3089,18 @@ constexpr std::optional<anthropic::Request::ModelValues>
 from_string_view<anthropic::Request::ModelValues>(std::string_view sv) {
     if (sv == "claude-opus-4-6") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_6;
     if (sv == "claude-sonnet-4-6") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_6;
-    if (sv == "claude-opus-4-5-20251101") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_5_20251101;
-    if (sv == "claude-opus-4-5") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_5;
-    if (sv == "claude-3-7-sonnet-latest") return anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_LATEST;
-    if (sv == "claude-3-7-sonnet-20250219") return anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_20250219;
-    if (sv == "claude-3-5-haiku-latest") return anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_LATEST;
-    if (sv == "claude-3-5-haiku-20241022") return anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_20241022;
     if (sv == "claude-haiku-4-5") return anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5;
     if (sv == "claude-haiku-4-5-20251001") return anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5_20251001;
-    if (sv == "claude-sonnet-4-20250514") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_20250514;
-    if (sv == "claude-sonnet-4-0") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_0;
-    if (sv == "claude-4-sonnet-20250514") return anthropic::Request::ModelValues::CLAUDE_4_SONNET_20250514;
+    if (sv == "claude-opus-4-5") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_5;
+    if (sv == "claude-opus-4-5-20251101") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_5_20251101;
     if (sv == "claude-sonnet-4-5") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_5;
     if (sv == "claude-sonnet-4-5-20250929") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_5_20250929;
+    if (sv == "claude-opus-4-1") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_1;
+    if (sv == "claude-opus-4-1-20250805") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_1_20250805;
     if (sv == "claude-opus-4-0") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_0;
     if (sv == "claude-opus-4-20250514") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_20250514;
-    if (sv == "claude-4-opus-20250514") return anthropic::Request::ModelValues::CLAUDE_4_OPUS_20250514;
-    if (sv == "claude-opus-4-1-20250805") return anthropic::Request::ModelValues::CLAUDE_OPUS_4_1_20250805;
-    if (sv == "claude-3-opus-latest") return anthropic::Request::ModelValues::CLAUDE_3_OPUS_LATEST;
-    if (sv == "claude-3-opus-20240229") return anthropic::Request::ModelValues::CLAUDE_3_OPUS_20240229;
+    if (sv == "claude-sonnet-4-0") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_0;
+    if (sv == "claude-sonnet-4-20250514") return anthropic::Request::ModelValues::CLAUDE_SONNET_4_20250514;
     if (sv == "claude-3-haiku-20240307") return anthropic::Request::ModelValues::CLAUDE_3_HAIKU_20240307;
     return std::nullopt;
 }
@@ -3032,27 +3109,38 @@ constexpr std::string_view to_string_view(anthropic::Request::ModelValues val) {
     switch (val) {
         case anthropic::Request::ModelValues::CLAUDE_OPUS_4_6: return "claude-opus-4-6";
         case anthropic::Request::ModelValues::CLAUDE_SONNET_4_6: return "claude-sonnet-4-6";
-        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_5_20251101: return "claude-opus-4-5-20251101";
-        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_5: return "claude-opus-4-5";
-        case anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_LATEST: return "claude-3-7-sonnet-latest";
-        case anthropic::Request::ModelValues::CLAUDE_3_7_SONNET_20250219: return "claude-3-7-sonnet-20250219";
-        case anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_LATEST: return "claude-3-5-haiku-latest";
-        case anthropic::Request::ModelValues::CLAUDE_3_5_HAIKU_20241022: return "claude-3-5-haiku-20241022";
         case anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5: return "claude-haiku-4-5";
         case anthropic::Request::ModelValues::CLAUDE_HAIKU_4_5_20251001: return "claude-haiku-4-5-20251001";
-        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_20250514: return "claude-sonnet-4-20250514";
-        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_0: return "claude-sonnet-4-0";
-        case anthropic::Request::ModelValues::CLAUDE_4_SONNET_20250514: return "claude-4-sonnet-20250514";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_5: return "claude-opus-4-5";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_5_20251101: return "claude-opus-4-5-20251101";
         case anthropic::Request::ModelValues::CLAUDE_SONNET_4_5: return "claude-sonnet-4-5";
         case anthropic::Request::ModelValues::CLAUDE_SONNET_4_5_20250929: return "claude-sonnet-4-5-20250929";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_1: return "claude-opus-4-1";
+        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_1_20250805: return "claude-opus-4-1-20250805";
         case anthropic::Request::ModelValues::CLAUDE_OPUS_4_0: return "claude-opus-4-0";
         case anthropic::Request::ModelValues::CLAUDE_OPUS_4_20250514: return "claude-opus-4-20250514";
-        case anthropic::Request::ModelValues::CLAUDE_4_OPUS_20250514: return "claude-4-opus-20250514";
-        case anthropic::Request::ModelValues::CLAUDE_OPUS_4_1_20250805: return "claude-opus-4-1-20250805";
-        case anthropic::Request::ModelValues::CLAUDE_3_OPUS_LATEST: return "claude-3-opus-latest";
-        case anthropic::Request::ModelValues::CLAUDE_3_OPUS_20240229: return "claude-3-opus-20240229";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_0: return "claude-sonnet-4-0";
+        case anthropic::Request::ModelValues::CLAUDE_SONNET_4_20250514: return "claude-sonnet-4-20250514";
         case anthropic::Request::ModelValues::CLAUDE_3_HAIKU_20240307: return "claude-3-haiku-20240307";
         default: throw AnnotatedException{"invalid anthropic::Request::ModelValues"};
+    }
+}
+
+template <>
+constexpr std::optional<anthropic::Message::Usage::ServiceTier>
+from_string_view<anthropic::Message::Usage::ServiceTier>(std::string_view sv) {
+    if (sv == "standard") return anthropic::Message::Usage::ServiceTier::STANDARD;
+    if (sv == "priority") return anthropic::Message::Usage::ServiceTier::PRIORITY;
+    if (sv == "batch") return anthropic::Message::Usage::ServiceTier::BATCH;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(anthropic::Message::Usage::ServiceTier val) {
+    switch (val) {
+        case anthropic::Message::Usage::ServiceTier::STANDARD: return "standard";
+        case anthropic::Message::Usage::ServiceTier::PRIORITY: return "priority";
+        case anthropic::Message::Usage::ServiceTier::BATCH: return "batch";
+        default: throw AnnotatedException{"invalid anthropic::Message::Usage::ServiceTier"};
     }
 }
 
@@ -3237,24 +3325,6 @@ constexpr std::string_view to_string_view(anthropic::Message::ToolSearchToolResu
 }
 
 template <>
-constexpr std::optional<anthropic::Message::Usage::ServiceTier>
-from_string_view<anthropic::Message::Usage::ServiceTier>(std::string_view sv) {
-    if (sv == "standard") return anthropic::Message::Usage::ServiceTier::STANDARD;
-    if (sv == "priority") return anthropic::Message::Usage::ServiceTier::PRIORITY;
-    if (sv == "batch") return anthropic::Message::Usage::ServiceTier::BATCH;
-    return std::nullopt;
-}
-
-constexpr std::string_view to_string_view(anthropic::Message::Usage::ServiceTier val) {
-    switch (val) {
-        case anthropic::Message::Usage::ServiceTier::STANDARD: return "standard";
-        case anthropic::Message::Usage::ServiceTier::PRIORITY: return "priority";
-        case anthropic::Message::Usage::ServiceTier::BATCH: return "batch";
-        default: throw AnnotatedException{"invalid anthropic::Message::Usage::ServiceTier"};
-    }
-}
-
-template <>
 constexpr std::optional<anthropic::Message::StopReason>
 from_string_view<anthropic::Message::StopReason>(std::string_view sv) {
     if (sv == "end_turn") return anthropic::Message::StopReason::END_TURN;
@@ -3283,25 +3353,18 @@ constexpr std::optional<anthropic::Message::ModelValues>
 from_string_view<anthropic::Message::ModelValues>(std::string_view sv) {
     if (sv == "claude-opus-4-6") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_6;
     if (sv == "claude-sonnet-4-6") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_6;
-    if (sv == "claude-opus-4-5-20251101") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_5_20251101;
-    if (sv == "claude-opus-4-5") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_5;
-    if (sv == "claude-3-7-sonnet-latest") return anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_LATEST;
-    if (sv == "claude-3-7-sonnet-20250219") return anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_20250219;
-    if (sv == "claude-3-5-haiku-latest") return anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_LATEST;
-    if (sv == "claude-3-5-haiku-20241022") return anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_20241022;
     if (sv == "claude-haiku-4-5") return anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5;
     if (sv == "claude-haiku-4-5-20251001") return anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5_20251001;
-    if (sv == "claude-sonnet-4-20250514") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_20250514;
-    if (sv == "claude-sonnet-4-0") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_0;
-    if (sv == "claude-4-sonnet-20250514") return anthropic::Message::ModelValues::CLAUDE_4_SONNET_20250514;
+    if (sv == "claude-opus-4-5") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_5;
+    if (sv == "claude-opus-4-5-20251101") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_5_20251101;
     if (sv == "claude-sonnet-4-5") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_5;
     if (sv == "claude-sonnet-4-5-20250929") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_5_20250929;
+    if (sv == "claude-opus-4-1") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_1;
+    if (sv == "claude-opus-4-1-20250805") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_1_20250805;
     if (sv == "claude-opus-4-0") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_0;
     if (sv == "claude-opus-4-20250514") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_20250514;
-    if (sv == "claude-4-opus-20250514") return anthropic::Message::ModelValues::CLAUDE_4_OPUS_20250514;
-    if (sv == "claude-opus-4-1-20250805") return anthropic::Message::ModelValues::CLAUDE_OPUS_4_1_20250805;
-    if (sv == "claude-3-opus-latest") return anthropic::Message::ModelValues::CLAUDE_3_OPUS_LATEST;
-    if (sv == "claude-3-opus-20240229") return anthropic::Message::ModelValues::CLAUDE_3_OPUS_20240229;
+    if (sv == "claude-sonnet-4-0") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_0;
+    if (sv == "claude-sonnet-4-20250514") return anthropic::Message::ModelValues::CLAUDE_SONNET_4_20250514;
     if (sv == "claude-3-haiku-20240307") return anthropic::Message::ModelValues::CLAUDE_3_HAIKU_20240307;
     return std::nullopt;
 }
@@ -3310,25 +3373,18 @@ constexpr std::string_view to_string_view(anthropic::Message::ModelValues val) {
     switch (val) {
         case anthropic::Message::ModelValues::CLAUDE_OPUS_4_6: return "claude-opus-4-6";
         case anthropic::Message::ModelValues::CLAUDE_SONNET_4_6: return "claude-sonnet-4-6";
-        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_5_20251101: return "claude-opus-4-5-20251101";
-        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_5: return "claude-opus-4-5";
-        case anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_LATEST: return "claude-3-7-sonnet-latest";
-        case anthropic::Message::ModelValues::CLAUDE_3_7_SONNET_20250219: return "claude-3-7-sonnet-20250219";
-        case anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_LATEST: return "claude-3-5-haiku-latest";
-        case anthropic::Message::ModelValues::CLAUDE_3_5_HAIKU_20241022: return "claude-3-5-haiku-20241022";
         case anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5: return "claude-haiku-4-5";
         case anthropic::Message::ModelValues::CLAUDE_HAIKU_4_5_20251001: return "claude-haiku-4-5-20251001";
-        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_20250514: return "claude-sonnet-4-20250514";
-        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_0: return "claude-sonnet-4-0";
-        case anthropic::Message::ModelValues::CLAUDE_4_SONNET_20250514: return "claude-4-sonnet-20250514";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_5: return "claude-opus-4-5";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_5_20251101: return "claude-opus-4-5-20251101";
         case anthropic::Message::ModelValues::CLAUDE_SONNET_4_5: return "claude-sonnet-4-5";
         case anthropic::Message::ModelValues::CLAUDE_SONNET_4_5_20250929: return "claude-sonnet-4-5-20250929";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_1: return "claude-opus-4-1";
+        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_1_20250805: return "claude-opus-4-1-20250805";
         case anthropic::Message::ModelValues::CLAUDE_OPUS_4_0: return "claude-opus-4-0";
         case anthropic::Message::ModelValues::CLAUDE_OPUS_4_20250514: return "claude-opus-4-20250514";
-        case anthropic::Message::ModelValues::CLAUDE_4_OPUS_20250514: return "claude-4-opus-20250514";
-        case anthropic::Message::ModelValues::CLAUDE_OPUS_4_1_20250805: return "claude-opus-4-1-20250805";
-        case anthropic::Message::ModelValues::CLAUDE_3_OPUS_LATEST: return "claude-3-opus-latest";
-        case anthropic::Message::ModelValues::CLAUDE_3_OPUS_20240229: return "claude-3-opus-20240229";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_0: return "claude-sonnet-4-0";
+        case anthropic::Message::ModelValues::CLAUDE_SONNET_4_20250514: return "claude-sonnet-4-20250514";
         case anthropic::Message::ModelValues::CLAUDE_3_HAIKU_20240307: return "claude-3-haiku-20240307";
         default: throw AnnotatedException{"invalid anthropic::Message::ModelValues"};
     }
@@ -3991,6 +4047,7 @@ from_string_view<anthropic::Request::ToolUnionKind>(std::string_view sv) {
     if (sv == "web_fetch_20250910") return anthropic::Request::ToolUnionKind::WEB_FETCH_20250910;
     if (sv == "web_search_20260209") return anthropic::Request::ToolUnionKind::WEB_SEARCH_20260209;
     if (sv == "web_fetch_20260209") return anthropic::Request::ToolUnionKind::WEB_FETCH_20260209;
+    if (sv == "web_fetch_20260309") return anthropic::Request::ToolUnionKind::WEB_FETCH_20260309;
     if (sv == "tool_search_tool_bm25") return anthropic::Request::ToolUnionKind::TOOL_SEARCH_TOOL_BM25;
     if (sv == "tool_search_tool_regex") return anthropic::Request::ToolUnionKind::TOOL_SEARCH_TOOL_REGEX;
     return std::nullopt;
@@ -4011,6 +4068,7 @@ constexpr std::string_view to_string_view(anthropic::Request::ToolUnionKind val)
         case anthropic::Request::ToolUnionKind::WEB_FETCH_20250910: return "web_fetch_20250910";
         case anthropic::Request::ToolUnionKind::WEB_SEARCH_20260209: return "web_search_20260209";
         case anthropic::Request::ToolUnionKind::WEB_FETCH_20260209: return "web_fetch_20260209";
+        case anthropic::Request::ToolUnionKind::WEB_FETCH_20260309: return "web_fetch_20260309";
         case anthropic::Request::ToolUnionKind::TOOL_SEARCH_TOOL_BM25: return "tool_search_tool_bm25";
         case anthropic::Request::ToolUnionKind::TOOL_SEARCH_TOOL_REGEX: return "tool_search_tool_regex";
         default: throw AnnotatedException{"invalid anthropic::Request::ToolUnionKind"};

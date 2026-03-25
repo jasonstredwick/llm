@@ -22,7 +22,8 @@ BEGIN_SERIALIZE_EMPTY(CodeExecution)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(CodeExecutionResult)
-    FIELD(obj, outcome, CommaDirection::NONE)
+    FIELD(obj, id, CommaDirection::NONE)
+    FIELD(obj, outcome, CommaDirection::BEFORE)
     FIELD(obj, output, CommaDirection::BEFORE)
 END_SERIALIZE
 
@@ -37,7 +38,8 @@ BEGIN_SERIALIZE(DynamicRetrievalConfig)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(ExecutableCode)
-    FIELD(obj, language, CommaDirection::NONE)
+    FIELD(obj, id, CommaDirection::NONE)
+    FIELD(obj, language, CommaDirection::BEFORE)
     FIELD(obj, code, CommaDirection::BEFORE)
 END_SERIALIZE
 
@@ -138,6 +140,18 @@ BEGIN_SERIALIZE(ThinkingConfig)
     FIELD(obj, thinkingLevel, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(ToolCall)
+    FIELD(obj, id, CommaDirection::NONE)
+    FIELD(obj, toolType, CommaDirection::BEFORE)
+    FIELD(obj, args, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(ToolResponse)
+    FIELD(obj, id, CommaDirection::NONE)
+    FIELD(obj, toolType, CommaDirection::BEFORE)
+    FIELD(obj, response, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE_EMPTY(UrlContext)
 END_SERIALIZE
 
@@ -193,6 +207,7 @@ END_SERIALIZE
 BEGIN_SERIALIZE(ToolConfig)
     FIELD(obj, functionCallingConfig, CommaDirection::NONE)
     FIELD(obj, retrievalConfig, CommaDirection::BEFORE)
+    FIELD(obj, includeServerSideToolInvocations, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(SpeakerVoiceConfig)
@@ -213,6 +228,8 @@ BEGIN_SERIALIZE(Part)
     FIELD(obj, fileData, CommaDirection::BEFORE)
     FIELD(obj, executableCode, CommaDirection::BEFORE)
     FIELD(obj, codeExecutionResult, CommaDirection::BEFORE)
+    FIELD(obj, toolCall, CommaDirection::BEFORE)
+    FIELD(obj, toolResponse, CommaDirection::BEFORE)
     FIELD(obj, thought, CommaDirection::BEFORE)
     FIELD(obj, thoughtSignature, CommaDirection::BEFORE)
     FIELD(obj, partMetadata, CommaDirection::BEFORE)
@@ -279,6 +296,8 @@ BEGIN_SERIALIZE(GenerateContentRequest)
     FIELD(obj, safetySettings, CommaDirection::BEFORE)
     FIELD(obj, generationConfig, CommaDirection::BEFORE)
     FIELD(obj, cachedContent, CommaDirection::BEFORE)
+    FIELD(obj, serviceTier, CommaDirection::BEFORE)
+    FIELD(obj, store, CommaDirection::BEFORE)
 END_SERIALIZE
 
 /***

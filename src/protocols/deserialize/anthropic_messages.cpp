@@ -17,6 +17,27 @@ BEGIN_DESERIALIZE(anthropic::Message::Container)
     FIELD(src, expires_at)
 END_DESERIALIZE
 
+BEGIN_DESERIALIZE(anthropic::Message::Usage::CacheCreation)
+    FIELD(src, ephemeral_1h_input_tokens),
+    FIELD(src, ephemeral_5m_input_tokens)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(anthropic::Message::Usage::ServerToolUsage)
+    FIELD(src, web_fetch_requests),
+    FIELD(src, web_search_requests)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(anthropic::Message::Usage)
+    FIELD(src, cache_creation),
+    FIELD(src, cache_creation_input_tokens),
+    FIELD(src, cache_read_input_tokens),
+    FIELD(src, inference_geo),
+    FIELD(src, input_tokens),
+    FIELD(src, output_tokens),
+    FIELD(src, server_tool_use),
+    FIELD(src, service_tier)
+END_DESERIALIZE
+
 BEGIN_DESERIALIZE(anthropic::Message::TextBlock::CitationCharLocation)
     FIELD(src, cited_text),
     FIELD(src, document_index),
@@ -337,27 +358,6 @@ END_DESERIALIZE
 BEGIN_DESERIALIZE(anthropic::Message::ContainerUploadBlock)
     FIELD(src, file_id),
     FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(anthropic::Message::Usage::CacheCreation)
-    FIELD(src, ephemeral_1h_input_tokens),
-    FIELD(src, ephemeral_5m_input_tokens)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(anthropic::Message::Usage::ServerToolUsage)
-    FIELD(src, web_fetch_requests),
-    FIELD(src, web_search_requests)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(anthropic::Message::Usage)
-    FIELD(src, cache_creation),
-    FIELD(src, cache_creation_input_tokens),
-    FIELD(src, cache_read_input_tokens),
-    FIELD(src, inference_geo),
-    FIELD(src, input_tokens),
-    FIELD(src, output_tokens),
-    FIELD(src, server_tool_use),
-    FIELD(src, service_tier)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(anthropic::Message)

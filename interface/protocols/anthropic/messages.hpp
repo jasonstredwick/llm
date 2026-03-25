@@ -98,6 +98,15 @@ struct Request {
         };
 
         struct ImageBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct Base64ImageSource {
                 struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
 
@@ -115,15 +124,6 @@ struct Request {
                 Required<std::string> url;
             };
 
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
-            };
-
             struct TypeKind : Kind { static constexpr std::string_view value = "image"; };
 
             enum class SourceKind { BASE64, URL };
@@ -135,6 +135,19 @@ struct Request {
         };
 
         struct DocumentBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
+            struct CitationsConfigParam {
+                std::optional<bool> enabled{};
+            };
+
             struct Base64PDFSource {
                 struct MediaTypeKind : Kind { static constexpr std::string_view value = "application/pdf"; };
                 struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
@@ -231,6 +244,15 @@ struct Request {
                 };
 
                 struct ImageBlockParam {
+                    struct CacheControlEphemeral {
+                        struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                        enum class Ttl { V_5M, V_1H };
+
+                        Required<TypeKind> type{{}};
+                        std::optional<Ttl> ttl{};
+                    };
+
                     struct Base64ImageSource {
                         struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
 
@@ -246,15 +268,6 @@ struct Request {
 
                         Required<TypeKind> type{{}};
                         Required<std::string> url;
-                    };
-
-                    struct CacheControlEphemeral {
-                        struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                        enum class Ttl { V_5M, V_1H };
-
-                        Required<TypeKind> type{{}};
-                        std::optional<Ttl> ttl{};
                     };
 
                     struct TypeKind : Kind { static constexpr std::string_view value = "image"; };
@@ -282,19 +295,6 @@ struct Request {
 
                 Required<TypeKind> type{{}};
                 Required<std::string> url;
-            };
-
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
-            };
-
-            struct CitationsConfigParam {
-                std::optional<bool> enabled{};
             };
 
             struct TypeKind : Kind { static constexpr std::string_view value = "document"; };
@@ -555,6 +555,15 @@ struct Request {
             };
 
             struct ImageBlockParam {
+                struct CacheControlEphemeral {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                    enum class Ttl { V_5M, V_1H };
+
+                    Required<TypeKind> type{{}};
+                    std::optional<Ttl> ttl{};
+                };
+
                 struct Base64ImageSource {
                     struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
 
@@ -570,15 +579,6 @@ struct Request {
 
                     Required<TypeKind> type{{}};
                     Required<std::string> url;
-                };
-
-                struct CacheControlEphemeral {
-                    struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                    enum class Ttl { V_5M, V_1H };
-
-                    Required<TypeKind> type{{}};
-                    std::optional<Ttl> ttl{};
                 };
 
                 struct TypeKind : Kind { static constexpr std::string_view value = "image"; };
@@ -692,6 +692,19 @@ struct Request {
             };
 
             struct DocumentBlockParam {
+                struct CacheControlEphemeral {
+                    struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                    enum class Ttl { V_5M, V_1H };
+
+                    Required<TypeKind> type{{}};
+                    std::optional<Ttl> ttl{};
+                };
+
+                struct CitationsConfigParam {
+                    std::optional<bool> enabled{};
+                };
+
                 struct Base64PDFSource {
                     struct MediaTypeKind : Kind { static constexpr std::string_view value = "application/pdf"; };
                     struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
@@ -788,6 +801,15 @@ struct Request {
                     };
 
                     struct ImageBlockParam {
+                        struct CacheControlEphemeral {
+                            struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                            enum class Ttl { V_5M, V_1H };
+
+                            Required<TypeKind> type{{}};
+                            std::optional<Ttl> ttl{};
+                        };
+
                         struct Base64ImageSource {
                             struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
 
@@ -803,15 +825,6 @@ struct Request {
 
                             Required<TypeKind> type{{}};
                             Required<std::string> url;
-                        };
-
-                        struct CacheControlEphemeral {
-                            struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                            enum class Ttl { V_5M, V_1H };
-
-                            Required<TypeKind> type{{}};
-                            std::optional<Ttl> ttl{};
                         };
 
                         struct TypeKind : Kind { static constexpr std::string_view value = "image"; };
@@ -839,19 +852,6 @@ struct Request {
 
                     Required<TypeKind> type{{}};
                     Required<std::string> url;
-                };
-
-                struct CacheControlEphemeral {
-                    struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                    enum class Ttl { V_5M, V_1H };
-
-                    Required<TypeKind> type{{}};
-                    std::optional<Ttl> ttl{};
-                };
-
-                struct CitationsConfigParam {
-                    std::optional<bool> enabled{};
                 };
 
                 struct TypeKind : Kind { static constexpr std::string_view value = "document"; };
@@ -943,6 +943,15 @@ struct Request {
         };
 
         struct WebSearchToolResultBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct WebSearchResultBlockParam {
                 struct TypeKind : Kind { static constexpr std::string_view value = "web_search_result"; };
 
@@ -960,15 +969,6 @@ struct Request {
 
                 Required<ErrorCode> error_code;
                 Required<TypeKind> type{{}};
-            };
-
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
             };
 
             struct DirectCaller {
@@ -1006,6 +1006,15 @@ struct Request {
         };
 
         struct WebFetchToolResultBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct WebFetchToolResultErrorBlockParam {
                 struct TypeKind : Kind { static constexpr std::string_view value = "web_fetch_tool_result_error"; };
 
@@ -1017,6 +1026,19 @@ struct Request {
 
             struct WebFetchBlockParam {
                 struct DocumentBlockParam {
+                    struct CacheControlEphemeral {
+                        struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                        enum class Ttl { V_5M, V_1H };
+
+                        Required<TypeKind> type{{}};
+                        std::optional<Ttl> ttl{};
+                    };
+
+                    struct CitationsConfigParam {
+                        std::optional<bool> enabled{};
+                    };
+
                     struct Base64PDFSource {
                         struct MediaTypeKind : Kind { static constexpr std::string_view value = "application/pdf"; };
                         struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
@@ -1113,6 +1135,15 @@ struct Request {
                         };
 
                         struct ImageBlockParam {
+                            struct CacheControlEphemeral {
+                                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                                enum class Ttl { V_5M, V_1H };
+
+                                Required<TypeKind> type{{}};
+                                std::optional<Ttl> ttl{};
+                            };
+
                             struct Base64ImageSource {
                                 struct TypeKind : Kind { static constexpr std::string_view value = "base64"; };
 
@@ -1128,15 +1159,6 @@ struct Request {
 
                                 Required<TypeKind> type{{}};
                                 Required<std::string> url;
-                            };
-
-                            struct CacheControlEphemeral {
-                                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                                enum class Ttl { V_5M, V_1H };
-
-                                Required<TypeKind> type{{}};
-                                std::optional<Ttl> ttl{};
                             };
 
                             struct TypeKind : Kind { static constexpr std::string_view value = "image"; };
@@ -1166,19 +1188,6 @@ struct Request {
                         Required<std::string> url;
                     };
 
-                    struct CacheControlEphemeral {
-                        struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                        enum class Ttl { V_5M, V_1H };
-
-                        Required<TypeKind> type{{}};
-                        std::optional<Ttl> ttl{};
-                    };
-
-                    struct CitationsConfigParam {
-                        std::optional<bool> enabled{};
-                    };
-
                     struct TypeKind : Kind { static constexpr std::string_view value = "document"; };
 
                     enum class SourceKind { BASE64, TEXT, CONTENT, URL };
@@ -1198,15 +1207,6 @@ struct Request {
                 Required<TypeKind> type{{}};
                 Required<std::string> url;
                 std::optional<std::string> retrieved_at{};
-            };
-
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
             };
 
             struct DirectCaller {
@@ -1244,6 +1244,15 @@ struct Request {
         };
 
         struct CodeExecutionToolResultBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct CodeExecutionToolResultErrorParam {
                 struct TypeKind : Kind { static constexpr std::string_view value = "code_execution_tool_result_error"; };
 
@@ -1287,15 +1296,6 @@ struct Request {
                 Required<TypeKind> type{{}};
             };
 
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
-            };
-
             struct TypeKind : Kind { static constexpr std::string_view value = "code_execution_tool_result"; };
 
             enum class CodeExecutionToolResultBlockParamContentKind { CODE_EXECUTION_TOOL_RESULT_ERROR, CODE_EXECUTION_RESULT, ENCRYPTED_CODE_EXECUTION_RESULT };
@@ -1308,6 +1308,15 @@ struct Request {
         };
 
         struct BashCodeExecutionToolResultBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct BashCodeExecutionToolResultErrorParam {
                 struct TypeKind : Kind { static constexpr std::string_view value = "bash_code_execution_tool_result_error"; };
 
@@ -1334,15 +1343,6 @@ struct Request {
                 Required<TypeKind> type{{}};
             };
 
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
-            };
-
             struct TypeKind : Kind { static constexpr std::string_view value = "bash_code_execution_tool_result"; };
 
             enum class ContentKind { BASH_CODE_EXECUTION_TOOL_RESULT_ERROR, BASH_CODE_EXECUTION_RESULT };
@@ -1355,6 +1355,15 @@ struct Request {
         };
 
         struct TextEditorCodeExecutionToolResultBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct TextEditorCodeExecutionToolResultErrorParam {
                 struct TypeKind : Kind { static constexpr std::string_view value = "text_editor_code_execution_tool_result_error"; };
 
@@ -1396,15 +1405,6 @@ struct Request {
                 std::optional<double> old_start{};
             };
 
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
-            };
-
             struct TypeKind : Kind { static constexpr std::string_view value = "text_editor_code_execution_tool_result"; };
 
             enum class ContentKind { TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT_ERROR, TEXT_EDITOR_CODE_EXECUTION_VIEW_RESULT, TEXT_EDITOR_CODE_EXECUTION_CREATE_RESULT, TEXT_EDITOR_CODE_EXECUTION_STR_REPLACE_RESULT };
@@ -1417,6 +1417,15 @@ struct Request {
         };
 
         struct ToolSearchToolResultBlockParam {
+            struct CacheControlEphemeral {
+                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+                enum class Ttl { V_5M, V_1H };
+
+                Required<TypeKind> type{{}};
+                std::optional<Ttl> ttl{};
+            };
+
             struct ToolSearchToolResultErrorParam {
                 struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_tool_result_error"; };
 
@@ -1448,15 +1457,6 @@ struct Request {
 
                 Required<std::vector<ToolReferenceBlockParam>> tool_references;
                 Required<TypeKind> type{{}};
-            };
-
-            struct CacheControlEphemeral {
-                struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
-
-                enum class Ttl { V_5M, V_1H };
-
-                Required<TypeKind> type{{}};
-                std::optional<Ttl> ttl{};
             };
 
             struct TypeKind : Kind { static constexpr std::string_view value = "tool_search_tool_result"; };
@@ -1603,8 +1603,11 @@ struct Request {
     struct ThinkingConfigEnabled {
         struct TypeKind : Kind { static constexpr std::string_view value = "enabled"; };
 
+        enum class Display { SUMMARIZED, OMITTED };
+
         Required<double> budget_tokens;
         Required<TypeKind> type{{}};
+        std::optional<Display> display{};
     };
 
     struct ThinkingConfigDisabled {
@@ -1616,7 +1619,10 @@ struct Request {
     struct ThinkingConfigAdaptive {
         struct TypeKind : Kind { static constexpr std::string_view value = "adaptive"; };
 
+        enum class Display { SUMMARIZED, OMITTED };
+
         Required<TypeKind> type{{}};
+        std::optional<Display> display{};
     };
 
     struct ToolChoiceAuto {
@@ -2009,6 +2015,39 @@ struct Request {
         std::optional<bool> strict{};
     };
 
+    struct WebFetchTool20260309 {
+        struct CacheControlEphemeral {
+            struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
+
+            enum class Ttl { V_5M, V_1H };
+
+            Required<TypeKind> type{{}};
+            std::optional<Ttl> ttl{};
+        };
+
+        struct CitationsConfigParam {
+            std::optional<bool> enabled{};
+        };
+
+        struct NameKind : Kind { static constexpr std::string_view value = "web_fetch"; };
+        struct TypeKind : Kind { static constexpr std::string_view value = "web_fetch_20260309"; };
+
+        enum class AllowedCallersItem { DIRECT, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120 };
+
+        Required<NameKind> name{{}};
+        Required<TypeKind> type{{}};
+        std::optional<std::vector<AllowedCallersItem>> allowed_callers{};
+        std::optional<std::vector<std::string>> allowed_domains{};
+        std::optional<std::vector<std::string>> blocked_domains{};
+        std::optional<CacheControlEphemeral> cache_control{};
+        std::optional<CitationsConfigParam> citations{};
+        std::optional<bool> defer_loading{};
+        std::optional<double> max_content_tokens{};
+        std::optional<double> max_uses{};
+        std::optional<bool> strict{};
+        std::optional<bool> use_cache{};
+    };
+
     struct ToolSearchToolBm25_20251119 {
         struct CacheControlEphemeral {
             struct TypeKind : Kind { static constexpr std::string_view value = "ephemeral"; };
@@ -2057,15 +2096,15 @@ struct Request {
 
     enum class ServiceTier { AUTO, STANDARD_ONLY };
 
-    enum class ModelValues { CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_OPUS_4_5_20251101, CLAUDE_OPUS_4_5, CLAUDE_3_7_SONNET_LATEST, CLAUDE_3_7_SONNET_20250219, CLAUDE_3_5_HAIKU_LATEST, CLAUDE_3_5_HAIKU_20241022, CLAUDE_HAIKU_4_5, CLAUDE_HAIKU_4_5_20251001, CLAUDE_SONNET_4_20250514, CLAUDE_SONNET_4_0, CLAUDE_4_SONNET_20250514, CLAUDE_SONNET_4_5, CLAUDE_SONNET_4_5_20250929, CLAUDE_OPUS_4_0, CLAUDE_OPUS_4_20250514, CLAUDE_4_OPUS_20250514, CLAUDE_OPUS_4_1_20250805, CLAUDE_3_OPUS_LATEST, CLAUDE_3_OPUS_20240229, CLAUDE_3_HAIKU_20240307 };
+    enum class ModelValues { CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_HAIKU_4_5, CLAUDE_HAIKU_4_5_20251001, CLAUDE_OPUS_4_5, CLAUDE_OPUS_4_5_20251101, CLAUDE_SONNET_4_5, CLAUDE_SONNET_4_5_20250929, CLAUDE_OPUS_4_1, CLAUDE_OPUS_4_1_20250805, CLAUDE_OPUS_4_0, CLAUDE_OPUS_4_20250514, CLAUDE_SONNET_4_0, CLAUDE_SONNET_4_20250514, CLAUDE_3_HAIKU_20240307 };
     using Model = std::variant<ModelValues, std::string>;
     using System = std::variant<std::string, std::vector<TextBlockParam>>;
     enum class ThinkingConfigParamKind { ENABLED, DISABLED, ADAPTIVE };
     using ThinkingConfigParam = std::variant<ThinkingConfigEnabled, ThinkingConfigDisabled, ThinkingConfigAdaptive>;
     enum class ToolChoiceKind { AUTO, ANY, TOOL, NONE };
     using ToolChoice = std::variant<ToolChoiceAuto, ToolChoiceAny, ToolChoiceTool, ToolChoiceNone>;
-    enum class ToolUnionKind { CUSTOM, BASH_20250124, CODE_EXECUTION_20250522, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120, MEMORY_20250818, TEXT_EDITOR_20250124, TEXT_EDITOR_20250429, TEXT_EDITOR_20250728, WEB_SEARCH_20250305, WEB_FETCH_20250910, WEB_SEARCH_20260209, WEB_FETCH_20260209, TOOL_SEARCH_TOOL_BM25, TOOL_SEARCH_TOOL_REGEX };
-    using ToolUnion = std::variant<Tool, ToolBash20250124, CodeExecutionTool20250522, CodeExecutionTool20250825, CodeExecutionTool20260120, MemoryTool20250818, ToolTextEditor20250124, ToolTextEditor20250429, ToolTextEditor20250728, WebSearchTool20250305, WebFetchTool20250910, WebSearchTool20260209, WebFetchTool20260209, ToolSearchToolBm25_20251119, ToolSearchToolRegex20251119>;
+    enum class ToolUnionKind { CUSTOM, BASH_20250124, CODE_EXECUTION_20250522, CODE_EXECUTION_20250825, CODE_EXECUTION_20260120, MEMORY_20250818, TEXT_EDITOR_20250124, TEXT_EDITOR_20250429, TEXT_EDITOR_20250728, WEB_SEARCH_20250305, WEB_FETCH_20250910, WEB_SEARCH_20260209, WEB_FETCH_20260209, WEB_FETCH_20260309, TOOL_SEARCH_TOOL_BM25, TOOL_SEARCH_TOOL_REGEX };
+    using ToolUnion = std::variant<Tool, ToolBash20250124, CodeExecutionTool20250522, CodeExecutionTool20250825, CodeExecutionTool20260120, MemoryTool20250818, ToolTextEditor20250124, ToolTextEditor20250429, ToolTextEditor20250728, WebSearchTool20250305, WebFetchTool20250910, WebSearchTool20260209, WebFetchTool20260209, WebFetchTool20260309, ToolSearchToolBm25_20251119, ToolSearchToolRegex20251119>;
 
     Required<double> max_tokens;
     Required<std::vector<MessageParam>> messages;
@@ -2092,6 +2131,29 @@ struct Message {
     struct Container {
         std::optional<std::string> id{};
         std::optional<std::string> expires_at{};
+    };
+
+    struct Usage {
+        struct CacheCreation {
+            std::optional<double> ephemeral_1h_input_tokens{};
+            std::optional<double> ephemeral_5m_input_tokens{};
+        };
+
+        struct ServerToolUsage {
+            std::optional<double> web_fetch_requests{};
+            std::optional<double> web_search_requests{};
+        };
+
+        enum class ServiceTier { STANDARD, PRIORITY, BATCH };
+
+        std::optional<CacheCreation> cache_creation{};
+        std::optional<double> cache_creation_input_tokens{};
+        std::optional<double> cache_read_input_tokens{};
+        std::optional<std::string> inference_geo{};
+        std::optional<double> input_tokens{};
+        std::optional<double> output_tokens{};
+        std::optional<ServerToolUsage> server_tool_use{};
+        std::optional<ServiceTier> service_tier{};
     };
 
     struct TextBlock {
@@ -2570,29 +2632,6 @@ struct Message {
         std::optional<TypeKind> type{};
     };
 
-    struct Usage {
-        struct CacheCreation {
-            std::optional<double> ephemeral_1h_input_tokens{};
-            std::optional<double> ephemeral_5m_input_tokens{};
-        };
-
-        struct ServerToolUsage {
-            std::optional<double> web_fetch_requests{};
-            std::optional<double> web_search_requests{};
-        };
-
-        enum class ServiceTier { STANDARD, PRIORITY, BATCH };
-
-        std::optional<CacheCreation> cache_creation{};
-        std::optional<double> cache_creation_input_tokens{};
-        std::optional<double> cache_read_input_tokens{};
-        std::optional<std::string> inference_geo{};
-        std::optional<double> input_tokens{};
-        std::optional<double> output_tokens{};
-        std::optional<ServerToolUsage> server_tool_use{};
-        std::optional<ServiceTier> service_tier{};
-    };
-
     struct RoleKind : Kind { static constexpr std::string_view value = "assistant"; };
     struct TypeKind : Kind { static constexpr std::string_view value = "message"; };
 
@@ -2600,7 +2639,7 @@ struct Message {
 
     enum class ContentBlockKind { TEXT, THINKING, REDACTED_THINKING, TOOL_USE, SERVER_TOOL_USE, WEB_SEARCH_TOOL_RESULT, WEB_FETCH_TOOL_RESULT, CODE_EXECUTION_TOOL_RESULT, BASH_CODE_EXECUTION_TOOL_RESULT, TEXT_EDITOR_CODE_EXECUTION_TOOL_RESULT, TOOL_SEARCH_TOOL_RESULT, CONTAINER_UPLOAD };
     using ContentBlock = std::variant<TextBlock, ThinkingBlock, RedactedThinkingBlock, ToolUseBlock, ServerToolUseBlock, WebSearchToolResultBlock, WebFetchToolResultBlock, CodeExecutionToolResultBlock, BashCodeExecutionToolResultBlock, TextEditorCodeExecutionToolResultBlock, ToolSearchToolResultBlock, ContainerUploadBlock>;
-    enum class ModelValues { CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_OPUS_4_5_20251101, CLAUDE_OPUS_4_5, CLAUDE_3_7_SONNET_LATEST, CLAUDE_3_7_SONNET_20250219, CLAUDE_3_5_HAIKU_LATEST, CLAUDE_3_5_HAIKU_20241022, CLAUDE_HAIKU_4_5, CLAUDE_HAIKU_4_5_20251001, CLAUDE_SONNET_4_20250514, CLAUDE_SONNET_4_0, CLAUDE_4_SONNET_20250514, CLAUDE_SONNET_4_5, CLAUDE_SONNET_4_5_20250929, CLAUDE_OPUS_4_0, CLAUDE_OPUS_4_20250514, CLAUDE_4_OPUS_20250514, CLAUDE_OPUS_4_1_20250805, CLAUDE_3_OPUS_LATEST, CLAUDE_3_OPUS_20240229, CLAUDE_3_HAIKU_20240307 };
+    enum class ModelValues { CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_HAIKU_4_5, CLAUDE_HAIKU_4_5_20251001, CLAUDE_OPUS_4_5, CLAUDE_OPUS_4_5_20251101, CLAUDE_SONNET_4_5, CLAUDE_SONNET_4_5_20250929, CLAUDE_OPUS_4_1, CLAUDE_OPUS_4_1_20250805, CLAUDE_OPUS_4_0, CLAUDE_OPUS_4_20250514, CLAUDE_SONNET_4_0, CLAUDE_SONNET_4_20250514, CLAUDE_3_HAIKU_20240307 };
     using Model = std::variant<ModelValues, std::string>;
 
     std::optional<std::string> id{};

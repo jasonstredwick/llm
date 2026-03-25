@@ -348,6 +348,26 @@ constexpr std::string_view to_string_view(gemini::Scheduling val) {
 }
 
 template <>
+constexpr std::optional<gemini::ServiceTier>
+from_string_view<gemini::ServiceTier>(std::string_view sv) {
+    if (sv == "unspecified") return gemini::ServiceTier::UNSPECIFIED;
+    if (sv == "standard") return gemini::ServiceTier::STANDARD;
+    if (sv == "flex") return gemini::ServiceTier::FLEX;
+    if (sv == "priority") return gemini::ServiceTier::PRIORITY;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(gemini::ServiceTier val) {
+    switch (val) {
+        case gemini::ServiceTier::UNSPECIFIED: return "unspecified";
+        case gemini::ServiceTier::STANDARD: return "standard";
+        case gemini::ServiceTier::FLEX: return "flex";
+        case gemini::ServiceTier::PRIORITY: return "priority";
+        default: throw AnnotatedException{"invalid gemini::ServiceTier"};
+    }
+}
+
+template <>
 constexpr std::optional<gemini::ThinkingLevel>
 from_string_view<gemini::ThinkingLevel>(std::string_view sv) {
     if (sv == "THINKING_LEVEL_UNSPECIFIED") return gemini::ThinkingLevel::THINKING_LEVEL_UNSPECIFIED;
@@ -390,6 +410,30 @@ constexpr std::string_view to_string_view(gemini::Threshold val) {
         case gemini::Threshold::BLOCK_NONE: return "BLOCK_NONE";
         case gemini::Threshold::OFF: return "OFF";
         default: throw AnnotatedException{"invalid gemini::Threshold"};
+    }
+}
+
+template <>
+constexpr std::optional<gemini::ToolType>
+from_string_view<gemini::ToolType>(std::string_view sv) {
+    if (sv == "TOOL_TYPE_UNSPECIFIED") return gemini::ToolType::TOOL_TYPE_UNSPECIFIED;
+    if (sv == "GOOGLE_SEARCH_WEB") return gemini::ToolType::GOOGLE_SEARCH_WEB;
+    if (sv == "GOOGLE_SEARCH_IMAGE") return gemini::ToolType::GOOGLE_SEARCH_IMAGE;
+    if (sv == "URL_CONTEXT") return gemini::ToolType::URL_CONTEXT;
+    if (sv == "GOOGLE_MAPS") return gemini::ToolType::GOOGLE_MAPS;
+    if (sv == "FILE_SEARCH") return gemini::ToolType::FILE_SEARCH;
+    return std::nullopt;
+}
+
+constexpr std::string_view to_string_view(gemini::ToolType val) {
+    switch (val) {
+        case gemini::ToolType::TOOL_TYPE_UNSPECIFIED: return "TOOL_TYPE_UNSPECIFIED";
+        case gemini::ToolType::GOOGLE_SEARCH_WEB: return "GOOGLE_SEARCH_WEB";
+        case gemini::ToolType::GOOGLE_SEARCH_IMAGE: return "GOOGLE_SEARCH_IMAGE";
+        case gemini::ToolType::URL_CONTEXT: return "URL_CONTEXT";
+        case gemini::ToolType::GOOGLE_MAPS: return "GOOGLE_MAPS";
+        case gemini::ToolType::FILE_SEARCH: return "FILE_SEARCH";
+        default: throw AnnotatedException{"invalid gemini::ToolType"};
     }
 }
 

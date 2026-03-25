@@ -70,6 +70,11 @@ BEGIN_SERIALIZE(Request::MessageParam::TextBlockParam)
     FIELD(obj, citations, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::ImageBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::ImageBlockParam::Base64ImageSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
@@ -81,15 +86,19 @@ BEGIN_SERIALIZE(Request::MessageParam::ImageBlockParam::URLImageSource)
     FIELD(obj, url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::MessageParam::ImageBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
 BEGIN_SERIALIZE(Request::MessageParam::ImageBlockParam)
     FIELD(obj, source, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, cache_control, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::CitationsConfigParam)
+    FIELD(obj, enabled, CommaDirection::NONE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::Base64PDFSource)
@@ -161,6 +170,11 @@ BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::ContentBlockSource::T
     FIELD(obj, citations, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
@@ -170,11 +184,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam)
@@ -191,15 +200,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::URLPDFSource)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam::CitationsConfigParam)
-    FIELD(obj, enabled, CommaDirection::NONE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::DocumentBlockParam)
@@ -387,6 +387,11 @@ BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::TextBlockParam)
     FIELD(obj, citations, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::ImageBlockParam::Base64ImageSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
@@ -396,11 +401,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::ImageBlockParam::URLImageSource)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::ImageBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::ImageBlockParam)
@@ -484,6 +484,15 @@ BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::SearchResultBlockPa
     FIELD(obj, citations, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CitationsConfigParam)
+    FIELD(obj, enabled, CommaDirection::NONE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::Base64PDFSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
@@ -553,6 +562,11 @@ BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam:
     FIELD(obj, citations, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
@@ -562,11 +576,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam)
@@ -583,15 +592,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::URLPDFSource)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam::CitationsConfigParam)
-    FIELD(obj, enabled, CommaDirection::NONE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::ToolResultBlockParam::DocumentBlockParam)
@@ -650,6 +650,11 @@ BEGIN_SERIALIZE(Request::MessageParam::ServerToolUseBlockParam)
     FIELD(obj, caller, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::WebSearchToolResultBlockParam::WebSearchResultBlockParam)
     FIELD(obj, encrypted_content, CommaDirection::NONE)
     FIELD(obj, title, CommaDirection::BEFORE)
@@ -661,11 +666,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::WebSearchToolResultBlockParam::WebSearchToolRequestError)
     FIELD(obj, error_code, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::WebSearchToolResultBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::WebSearchToolResultBlockParam::DirectCaller)
@@ -690,9 +690,23 @@ BEGIN_SERIALIZE(Request::MessageParam::WebSearchToolResultBlockParam)
     FIELD(obj, caller, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchToolResultErrorBlockParam)
     FIELD(obj, error_code, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CitationsConfigParam)
+    FIELD(obj, enabled, CommaDirection::NONE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::Base64PDFSource)
@@ -764,6 +778,11 @@ BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlo
     FIELD(obj, citations, CommaDirection::BEFORE)
 END_SERIALIZE
 
+BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::Base64ImageSource)
     FIELD(obj, data, CommaDirection::NONE)
     FIELD(obj, media_type, CommaDirection::BEFORE)
@@ -773,11 +792,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::URLImageSource)
     FIELD(obj, type, CommaDirection::NONE)
     FIELD(obj, url, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::ContentBlockSource::ImageBlockParam)
@@ -796,15 +810,6 @@ BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlo
     FIELD(obj, url, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam::CitationsConfigParam)
-    FIELD(obj, enabled, CommaDirection::NONE)
-END_SERIALIZE
-
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlockParam::DocumentBlockParam)
     FIELD(obj, source, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
@@ -819,11 +824,6 @@ BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::WebFetchBlo
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, url, CommaDirection::BEFORE)
     FIELD(obj, retrieved_at, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam::DirectCaller)
@@ -846,6 +846,11 @@ BEGIN_SERIALIZE(Request::MessageParam::WebFetchToolResultBlockParam)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, cache_control, CommaDirection::BEFORE)
     FIELD(obj, caller, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::CodeExecutionToolResultBlockParam::CodeExecutionToolResultErrorParam)
@@ -879,16 +884,16 @@ BEGIN_SERIALIZE(Request::MessageParam::CodeExecutionToolResultBlockParam::Encryp
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::MessageParam::CodeExecutionToolResultBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
 BEGIN_SERIALIZE(Request::MessageParam::CodeExecutionToolResultBlockParam)
     FIELD(obj, content, CommaDirection::NONE)
     FIELD(obj, tool_use_id, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, cache_control, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::BashCodeExecutionToolResultBlockParam::BashCodeExecutionToolResultErrorParam)
@@ -909,16 +914,16 @@ BEGIN_SERIALIZE(Request::MessageParam::BashCodeExecutionToolResultBlockParam::Ba
     FIELD(obj, type, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::MessageParam::BashCodeExecutionToolResultBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
 BEGIN_SERIALIZE(Request::MessageParam::BashCodeExecutionToolResultBlockParam)
     FIELD(obj, content, CommaDirection::NONE)
     FIELD(obj, tool_use_id, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, cache_control, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::TextEditorCodeExecutionToolResultErrorParam)
@@ -950,16 +955,16 @@ BEGIN_SERIALIZE(Request::MessageParam::TextEditorCodeExecutionToolResultBlockPar
     FIELD(obj, old_start, CommaDirection::BEFORE)
 END_SERIALIZE
 
-BEGIN_SERIALIZE(Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
-END_SERIALIZE
-
 BEGIN_SERIALIZE(Request::MessageParam::TextEditorCodeExecutionToolResultBlockParam)
     FIELD(obj, content, CommaDirection::NONE)
     FIELD(obj, tool_use_id, CommaDirection::BEFORE)
     FIELD(obj, type, CommaDirection::BEFORE)
     FIELD(obj, cache_control, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolResultErrorParam)
@@ -981,11 +986,6 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::MessageParam::ToolSearchToolResultBlockParam::ToolSearchToolSearchResultBlockParam)
     FIELD(obj, tool_references, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
-END_SERIALIZE
-
-BEGIN_SERIALIZE(Request::MessageParam::ToolSearchToolResultBlockParam::CacheControlEphemeral)
-    FIELD(obj, type, CommaDirection::NONE)
-    FIELD(obj, ttl, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::MessageParam::ToolSearchToolResultBlockParam)
@@ -1090,6 +1090,7 @@ END_SERIALIZE
 BEGIN_SERIALIZE(Request::ThinkingConfigEnabled)
     FIELD(obj, budget_tokens, CommaDirection::NONE)
     FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, display, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ThinkingConfigDisabled)
@@ -1098,6 +1099,7 @@ END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ThinkingConfigAdaptive)
     FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, display, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ToolChoiceAuto)
@@ -1358,6 +1360,30 @@ BEGIN_SERIALIZE(Request::WebFetchTool20260209)
     FIELD(obj, max_content_tokens, CommaDirection::BEFORE)
     FIELD(obj, max_uses, CommaDirection::BEFORE)
     FIELD(obj, strict, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::WebFetchTool20260309::CacheControlEphemeral)
+    FIELD(obj, type, CommaDirection::NONE)
+    FIELD(obj, ttl, CommaDirection::BEFORE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::WebFetchTool20260309::CitationsConfigParam)
+    FIELD(obj, enabled, CommaDirection::NONE)
+END_SERIALIZE
+
+BEGIN_SERIALIZE(Request::WebFetchTool20260309)
+    FIELD(obj, name, CommaDirection::NONE)
+    FIELD(obj, type, CommaDirection::BEFORE)
+    FIELD(obj, allowed_callers, CommaDirection::BEFORE)
+    FIELD(obj, allowed_domains, CommaDirection::BEFORE)
+    FIELD(obj, blocked_domains, CommaDirection::BEFORE)
+    FIELD(obj, cache_control, CommaDirection::BEFORE)
+    FIELD(obj, citations, CommaDirection::BEFORE)
+    FIELD(obj, defer_loading, CommaDirection::BEFORE)
+    FIELD(obj, max_content_tokens, CommaDirection::BEFORE)
+    FIELD(obj, max_uses, CommaDirection::BEFORE)
+    FIELD(obj, strict, CommaDirection::BEFORE)
+    FIELD(obj, use_cache, CommaDirection::BEFORE)
 END_SERIALIZE
 
 BEGIN_SERIALIZE(Request::ToolSearchToolBm25_20251119::CacheControlEphemeral)

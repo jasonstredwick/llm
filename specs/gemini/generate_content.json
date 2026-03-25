@@ -3,10 +3,10 @@
     "provider": "gemini",
     "endpoint": "generate_content",
     "source_url": "https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta",
-    "fetched_at": "2026-03-03T18:26:39Z",
+    "fetched_at": "2026-03-25T18:05:55Z",
     "parser": "discovery",
     "discovery_version": "v1beta",
-    "discovery_revision": "20260227"
+    "discovery_revision": "20260324"
   },
   "schemas": {
     "AttributionSourceId": {
@@ -225,6 +225,12 @@
       "side": "shared",
       "fields": [
         {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id."
+        },
+        {
           "name": "outcome",
           "type": "enum",
           "values": [
@@ -329,6 +335,12 @@
       "side": "shared",
       "fields": [
         {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`."
+        },
+        {
           "name": "language",
           "type": "enum",
           "values": [
@@ -409,7 +421,7 @@
           "name": "name",
           "type": "string",
           "required": true,
-          "description": "Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64."
+          "description": "Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 128."
         },
         {
           "name": "args",
@@ -461,7 +473,7 @@
           "name": "name",
           "type": "string",
           "required": true,
-          "description": "Required. The name of the function. Must be a-z, A-Z, 0-9, or contain underscores, colons, dots, and dashes, with a maximum length of 64."
+          "description": "Required. The name of the function. Must be a-z, A-Z, 0-9, or contain underscores, colons, dots, and dashes, with a maximum length of 128."
         },
         {
           "name": "description",
@@ -526,7 +538,7 @@
           "name": "name",
           "type": "string",
           "required": true,
-          "description": "Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64."
+          "description": "Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 128."
         },
         {
           "name": "response",
@@ -650,6 +662,30 @@
           "type": "string",
           "required": false,
           "description": "Optional. The name of the content [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to serve the prediction. Format: `cachedContents/{cachedContent}`"
+        },
+        {
+          "name": "serviceTier",
+          "type": "enum",
+          "values": [
+            "unspecified",
+            "standard",
+            "flex",
+            "priority"
+          ],
+          "enum_descriptions": [
+            "Default service tier, which is standard.",
+            "Standard service tier.",
+            "Flex service tier.",
+            "Priority service tier."
+          ],
+          "required": false,
+          "description": "Optional. The service tier of the request."
+        },
+        {
+          "name": "store",
+          "type": "boolean",
+          "required": false,
+          "description": "Optional. Configures the logging behavior for a given request. If set, it takes precedence over the project-level logging config."
         }
       ],
       "description": "Request to generate a completion from the model."
@@ -863,6 +899,12 @@
           "type": "array<float>",
           "required": false,
           "description": "Optional. Confidence score of the support references. Ranges from 0 to 1. 1 is the most confident. This list must have the same size as the grounding_chunk_indices."
+        },
+        {
+          "name": "renderedParts",
+          "type": "array<int32>",
+          "required": false,
+          "description": "Output only. Indices into the `parts` field of the candidate's content. These indices specify which rendered parts are associated with this support source."
         }
       ],
       "description": "Grounding support."
@@ -992,6 +1034,50 @@
         }
       ],
       "description": "A `GroundingChunk` represents a segment of supporting evidence that grounds the model's response. It can be a chunk from the web, a retrieved context from a file, or information from Google Maps."
+    },
+    "GroundingChunkCustomMetadata": {
+      "name": "GroundingChunkCustomMetadata",
+      "side": "response",
+      "fields": [
+        {
+          "name": "stringValue",
+          "type": "string",
+          "required": false,
+          "description": "Optional. The string value of the metadata."
+        },
+        {
+          "name": "stringListValue",
+          "type": "GroundingChunkStringList",
+          "required": false,
+          "description": "Optional. A list of string values for the metadata."
+        },
+        {
+          "name": "numericValue",
+          "type": "float",
+          "required": false,
+          "description": "Optional. The numeric value of the metadata. The expected range for this value depends on the specific `key` used."
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "required": false,
+          "description": "The key of the metadata."
+        }
+      ],
+      "description": "User provided metadata about the GroundingFact."
+    },
+    "GroundingChunkStringList": {
+      "name": "GroundingChunkStringList",
+      "side": "response",
+      "fields": [
+        {
+          "name": "values",
+          "type": "array<string>",
+          "required": false,
+          "description": "The string values of the list."
+        }
+      ],
+      "description": "A list of string values."
     },
     "GroundingMetadata": {
       "name": "GroundingMetadata",
@@ -1401,6 +1487,18 @@
           "description": "Result of executing the `ExecutableCode`."
         },
         {
+          "name": "toolCall",
+          "type": "ToolCall",
+          "required": false,
+          "description": "Server-side tool call. This field is populated when the model predicts a tool invocation that should be executed on the server. The client is expected to echo this message back to the API."
+        },
+        {
+          "name": "toolResponse",
+          "type": "ToolResponse",
+          "required": false,
+          "description": "The output from a server-side `ToolCall` execution. This field is populated by the client with the results of executing the corresponding `ToolCall`."
+        },
+        {
           "name": "thought",
           "type": "boolean",
           "required": false,
@@ -1547,6 +1645,12 @@
           "type": "string",
           "required": false,
           "description": "Optional. Name of the `FileSearchStore` containing the document. Example: `fileSearchStores/123`"
+        },
+        {
+          "name": "customMetadata",
+          "type": "array<GroundingChunkCustomMetadata>",
+          "required": false,
+          "description": "Optional. User-provided metadata about the retrieved context."
         }
       ],
       "description": "Chunk from context retrieved by the file search tool."
@@ -1892,13 +1996,13 @@
           "name": "webSearch",
           "type": "WebSearch",
           "required": false,
-          "description": "Optional. Setting this field enables web search. Only text results are returned."
+          "description": "Optional. Enables web search. Only text results are returned."
         },
         {
           "name": "imageSearch",
           "type": "ImageSearch",
           "required": false,
-          "description": "Optional. Setting this field enables image search. Image bytes are returned."
+          "description": "Optional. Enables image search. Image bytes are returned."
         }
       ],
       "description": "Different types of search that can be enabled on the GoogleSearch tool."
@@ -2103,6 +2207,47 @@
       ],
       "description": "Tool details that the model may use to generate response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model. Next ID: 15"
     },
+    "ToolCall": {
+      "name": "ToolCall",
+      "side": "shared",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Optional. Unique identifier of the tool call. The server returns the tool response with the matching `id`."
+        },
+        {
+          "name": "toolType",
+          "type": "enum",
+          "values": [
+            "TOOL_TYPE_UNSPECIFIED",
+            "GOOGLE_SEARCH_WEB",
+            "GOOGLE_SEARCH_IMAGE",
+            "URL_CONTEXT",
+            "GOOGLE_MAPS",
+            "FILE_SEARCH"
+          ],
+          "enum_descriptions": [
+            "Unspecified tool type.",
+            "Google search tool, maps to Tool.google_search.search_types.web_search.",
+            "Image search tool, maps to Tool.google_search.search_types.image_search.",
+            "URL context tool, maps to Tool.url_context.",
+            "Google maps tool, maps to Tool.google_maps.",
+            "File search tool, maps to Tool.file_search."
+          ],
+          "required": true,
+          "description": "Required. The type of tool that was called."
+        },
+        {
+          "name": "args",
+          "type": "object",
+          "required": false,
+          "description": "Optional. The tool call arguments. Example: {\"arg1\" : \"value1\", \"arg2\" : \"value2\" , ...}"
+        }
+      ],
+      "description": "A predicted server-side `ToolCall` returned from the model. This message contains information about a tool that the model wants to invoke. The client is NOT expected to execute this `ToolCall`. Instead, the client should pass this `ToolCall` back to the API in a subsequent turn within a `Content` message, along with the corresponding `ToolResponse`."
+    },
     "ToolConfig": {
       "name": "ToolConfig",
       "side": "request",
@@ -2118,9 +2263,56 @@
           "type": "RetrievalConfig",
           "required": false,
           "description": "Optional. Retrieval config."
+        },
+        {
+          "name": "includeServerSideToolInvocations",
+          "type": "boolean",
+          "required": false,
+          "description": "Optional. If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool interactions."
         }
       ],
       "description": "The Tool configuration containing parameters for specifying `Tool` use in the request."
+    },
+    "ToolResponse": {
+      "name": "ToolResponse",
+      "side": "shared",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Optional. The identifier of the tool call this response is for."
+        },
+        {
+          "name": "toolType",
+          "type": "enum",
+          "values": [
+            "TOOL_TYPE_UNSPECIFIED",
+            "GOOGLE_SEARCH_WEB",
+            "GOOGLE_SEARCH_IMAGE",
+            "URL_CONTEXT",
+            "GOOGLE_MAPS",
+            "FILE_SEARCH"
+          ],
+          "enum_descriptions": [
+            "Unspecified tool type.",
+            "Google search tool, maps to Tool.google_search.search_types.web_search.",
+            "Image search tool, maps to Tool.google_search.search_types.image_search.",
+            "URL context tool, maps to Tool.url_context.",
+            "Google maps tool, maps to Tool.google_maps.",
+            "File search tool, maps to Tool.file_search."
+          ],
+          "required": true,
+          "description": "Required. The type of tool that was called, matching the `tool_type` in the corresponding `ToolCall`."
+        },
+        {
+          "name": "response",
+          "type": "object",
+          "required": false,
+          "description": "Optional. The tool response."
+        }
+      ],
+      "description": "The output from a server-side `ToolCall` execution. This message contains the results of a tool invocation that was initiated by a `ToolCall` from the model. The client should pass this `ToolResponse` back to the API in a subsequent turn within a `Content` message, along with the corresponding `ToolCall`."
     },
     "TopCandidates": {
       "name": "TopCandidates",

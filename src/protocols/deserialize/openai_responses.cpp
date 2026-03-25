@@ -21,6 +21,79 @@ BEGIN_DESERIALIZE(openai::Response::Response_incomplete_details)
     FIELD(src, reason)
 END_DESERIALIZE
 
+BEGIN_DESERIALIZE(openai::Response::Response_conversation)
+    FIELD(src, id)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponsePrompt::ResponseInputText)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponsePrompt::ResponseInputImage)
+    FIELD(src, detail),
+    FIELD(src, type),
+    FIELD(src, file_id),
+    FIELD(src, image_url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponsePrompt::ResponseInputFile)
+    FIELD(src, type),
+    FIELD(src, file_data),
+    FIELD(src, file_id),
+    FIELD(src, file_url),
+    FIELD(src, filename)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponsePrompt)
+    FIELD(src, id),
+    FIELD(src, variables),
+    FIELD(src, version)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::Reasoning)
+    FIELD(src, effort),
+    FIELD(src, generate_summary),
+    FIELD(src, summary)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig::ResponseFormatText)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig::ResponseFormatTextJSONSchemaConfig)
+    FIELD(src, name),
+    FIELD(src, schema),
+    FIELD(src, type),
+    FIELD(src, description),
+    FIELD(src, strict)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig::ResponseFormatJSONObject)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig)
+    FIELD(src, format),
+    FIELD(src, verbosity)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseUsage::ResponseUsage_input_tokens_details)
+    FIELD(src, cached_tokens)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseUsage::ResponseUsage_output_tokens_details)
+    FIELD(src, reasoning_tokens)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseUsage)
+    FIELD(src, input_tokens),
+    FIELD(src, input_tokens_details),
+    FIELD(src, output_tokens),
+    FIELD(src, output_tokens_details),
+    FIELD(src, total_tokens)
+END_DESERIALIZE
+
 BEGIN_DESERIALIZE(openai::Response::EasyInputMessage::ResponseInputText)
     FIELD(src, text),
     FIELD(src, type)
@@ -75,6 +148,19 @@ BEGIN_DESERIALIZE(openai::Response::Message)
     FIELD(src, type)
 END_DESERIALIZE
 
+BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs::ResponseOutputText_logprobs_top_logprobs)
+    FIELD(src, token),
+    FIELD(src, bytes),
+    FIELD(src, logprob)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs)
+    FIELD(src, token),
+    FIELD(src, bytes),
+    FIELD(src, logprob),
+    FIELD(src, top_logprobs)
+END_DESERIALIZE
+
 BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText::FileCitation)
     FIELD(src, file_id),
     FIELD(src, filename),
@@ -105,19 +191,6 @@ BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText::F
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs::ResponseOutputText_logprobs_top_logprobs)
-    FIELD(src, token),
-    FIELD(src, bytes),
-    FIELD(src, logprob)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs)
-    FIELD(src, token),
-    FIELD(src, bytes),
-    FIELD(src, logprob),
-    FIELD(src, top_logprobs)
-END_DESERIALIZE
-
 BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage::ResponseOutputText)
     FIELD(src, annotations),
     FIELD(src, logprobs),
@@ -139,7 +212,7 @@ BEGIN_DESERIALIZE(openai::Response::ResponseOutputMessage)
     FIELD(src, phase)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFileSearchToolCall::ResponseFileSearchToolCall_results)
+BEGIN_DESERIALIZE(openai::Response::FileSearchCall::FileSearchCall_results)
     FIELD(src, attributes),
     FIELD(src, file_id),
     FIELD(src, filename),
@@ -147,7 +220,7 @@ BEGIN_DESERIALIZE(openai::Response::ResponseFileSearchToolCall::ResponseFileSear
     FIELD(src, text)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFileSearchToolCall)
+BEGIN_DESERIALIZE(openai::Response::FileSearchCall)
     FIELD(src, id),
     FIELD(src, queries),
     FIELD(src, status),
@@ -155,74 +228,140 @@ BEGIN_DESERIALIZE(openai::Response::ResponseFileSearchToolCall)
     FIELD(src, results)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Click)
-    FIELD(src, button),
-    FIELD(src, type),
-    FIELD(src, x),
-    FIELD(src, y)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::DoubleClick)
-    FIELD(src, type),
-    FIELD(src, x),
-    FIELD(src, y)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Drag::Drag_path)
-    FIELD(src, x),
-    FIELD(src, y)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Drag)
-    FIELD(src, path),
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Keypress)
-    FIELD(src, keys),
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Move)
-    FIELD(src, type),
-    FIELD(src, x),
-    FIELD(src, y)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Screenshot)
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Scroll)
-    FIELD(src, scroll_x),
-    FIELD(src, scroll_y),
-    FIELD(src, type),
-    FIELD(src, x),
-    FIELD(src, y)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Type)
-    FIELD(src, text),
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::Wait)
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall::ResponseComputerToolCall_pending_safety_checks)
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ComputerCall_pending_safety_checks)
     FIELD(src, id),
     FIELD(src, code),
     FIELD(src, message)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseComputerToolCall)
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Click)
+    FIELD(src, button),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::DoubleClick)
+    FIELD(src, keys),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Drag::Drag_path)
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Drag)
+    FIELD(src, path),
+    FIELD(src, type),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Keypress)
+    FIELD(src, keys),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Move)
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Screenshot)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Scroll)
+    FIELD(src, scroll_x),
+    FIELD(src, scroll_y),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Type)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::Wait)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsClick)
+    FIELD(src, button),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsDoubleClick)
+    FIELD(src, keys),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsDrag::Drag_path)
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsDrag)
+    FIELD(src, path),
+    FIELD(src, type),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsKeypress)
+    FIELD(src, keys),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsMove)
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsScreenshot)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsScroll)
+    FIELD(src, scroll_x),
+    FIELD(src, scroll_y),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsType)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall::ActionsWait)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerCall)
     FIELD(src, id),
-    FIELD(src, action),
     FIELD(src, call_id),
     FIELD(src, pending_safety_checks),
     FIELD(src, status),
-    FIELD(src, type)
+    FIELD(src, type),
+    FIELD(src, action),
+    FIELD(src, actions)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(openai::Response::ComputerCallOutput::ResponseComputerToolCallOutputScreenshot)
@@ -246,42 +385,43 @@ BEGIN_DESERIALIZE(openai::Response::ComputerCallOutput)
     FIELD(src, status)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionWebSearch::Search::Search_sources)
+BEGIN_DESERIALIZE(openai::Response::WebSearchCall::Search::Search_sources)
     FIELD(src, type),
     FIELD(src, url)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionWebSearch::Search)
+BEGIN_DESERIALIZE(openai::Response::WebSearchCall::Search)
     FIELD(src, query),
     FIELD(src, type),
     FIELD(src, queries),
     FIELD(src, sources)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionWebSearch::OpenPage)
+BEGIN_DESERIALIZE(openai::Response::WebSearchCall::OpenPage)
     FIELD(src, type),
     FIELD(src, url)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionWebSearch::FindInPage)
+BEGIN_DESERIALIZE(openai::Response::WebSearchCall::FindInPage)
     FIELD(src, pattern),
     FIELD(src, type),
     FIELD(src, url)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionWebSearch)
+BEGIN_DESERIALIZE(openai::Response::WebSearchCall)
     FIELD(src, id),
     FIELD(src, action),
     FIELD(src, status),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionToolCall)
+BEGIN_DESERIALIZE(openai::Response::FunctionCall)
     FIELD(src, arguments),
     FIELD(src, call_id),
     FIELD(src, name),
     FIELD(src, type),
     FIELD(src, id),
+    FIELD_ALT(src, namespace_, "namespace"),
     FIELD(src, status)
 END_DESERIALIZE
 
@@ -313,17 +453,337 @@ BEGIN_DESERIALIZE(openai::Response::FunctionCallOutput)
     FIELD(src, status)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseReasoningItem::SummaryTextContent)
+BEGIN_DESERIALIZE(openai::Response::ToolSearchCall)
+    FIELD(src, arguments),
+    FIELD(src, type),
+    FIELD(src, id),
+    FIELD(src, call_id),
+    FIELD(src, execution),
+    FIELD(src, status)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Function)
+    FIELD(src, name),
+    FIELD(src, parameters),
+    FIELD(src, strict),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::FileSearch::FileSearch_ranking_options::FileSearch_ranking_options_hybrid_search)
+    FIELD(src, embedding_weight),
+    FIELD(src, text_weight)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::FileSearch::FileSearch_ranking_options)
+    FIELD(src, hybrid_search),
+    FIELD(src, ranker),
+    FIELD(src, score_threshold)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter)
+    FIELD(src, key),
+    FIELD(src, type),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::FileSearch::CompoundFilter::ComparisonFilter)
+    FIELD(src, key),
+    FIELD(src, type),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::FileSearch::CompoundFilter)
+    FIELD(src, filters),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::FileSearch)
+    FIELD(src, type),
+    FIELD(src, vector_store_ids),
+    FIELD(src, filters),
+    FIELD(src, max_num_results),
+    FIELD(src, ranking_options)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Computer)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::ComputerUsePreview)
+    FIELD(src, display_height),
+    FIELD(src, display_width),
+    FIELD(src, environment),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::WebSearch::WebSearch_filters)
+    FIELD(src, allowed_domains)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::WebSearch::WebSearch_user_location)
+    FIELD(src, city),
+    FIELD(src, country),
+    FIELD(src, region),
+    FIELD(src, timezone),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::WebSearch)
+    FIELD(src, type),
+    FIELD(src, filters),
+    FIELD(src, search_context_size),
+    FIELD(src, user_location)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Mcp::McpToolFilter)
+    FIELD(src, read_only),
+    FIELD(src, tool_names)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Mcp::McpToolApprovalFilter::McpToolApprovalFilter_always)
+    FIELD(src, read_only),
+    FIELD(src, tool_names)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Mcp::McpToolApprovalFilter::McpToolApprovalFilter_never)
+    FIELD(src, read_only),
+    FIELD(src, tool_names)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Mcp::McpToolApprovalFilter)
+    FIELD(src, always),
+    FIELD(src, never)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Mcp)
+    FIELD(src, server_label),
+    FIELD(src, type),
+    FIELD(src, allowed_tools),
+    FIELD(src, authorization),
+    FIELD(src, connector_id),
+    FIELD(src, defer_loading),
+    FIELD(src, headers),
+    FIELD(src, require_approval),
+    FIELD(src, server_description),
+    FIELD(src, server_url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyDisabled)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+    FIELD(src, domain),
+    FIELD(src, name),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist)
+    FIELD(src, allowed_domains),
+    FIELD(src, type),
+    FIELD(src, domain_secrets)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto)
+    FIELD(src, type),
+    FIELD(src, file_ids),
+    FIELD(src, memory_limit),
+    FIELD(src, network_policy)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::CodeInterpreter)
+    FIELD(src, container),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::ImageGeneration::ImageGeneration_input_image_mask)
+    FIELD(src, file_id),
+    FIELD(src, image_url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::ImageGeneration)
+    FIELD(src, type),
+    FIELD(src, action),
+    FIELD(src, background),
+    FIELD(src, input_fidelity),
+    FIELD(src, input_image_mask),
+    FIELD(src, model),
+    FIELD(src, moderation),
+    FIELD(src, output_compression),
+    FIELD(src, output_format),
+    FIELD(src, partial_images),
+    FIELD(src, quality),
+    FIELD(src, size)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::LocalShell)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+    FIELD(src, domain),
+    FIELD(src, name),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
+    FIELD(src, allowed_domains),
+    FIELD(src, type),
+    FIELD(src, domain_secrets)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto::SkillReference)
+    FIELD(src, skill_id),
+    FIELD(src, type),
+    FIELD(src, version)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto::InlineSkill::InlineSkillSource)
+    FIELD(src, data),
+    FIELD(src, media_type),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto::InlineSkill)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, source),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerAuto)
+    FIELD(src, type),
+    FIELD(src, file_ids),
+    FIELD(src, memory_limit),
+    FIELD(src, network_policy),
+    FIELD(src, skills)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::LocalEnvironment::LocalSkill)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, path)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::LocalEnvironment)
+    FIELD(src, type),
+    FIELD(src, skills)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell::ContainerReference)
+    FIELD(src, container_id),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Shell)
+    FIELD(src, type),
+    FIELD(src, environment)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Custom::Text)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Custom::Grammar)
+    FIELD(src, definition),
+    FIELD(src, syntax),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Custom)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, format)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Namespace::Function)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, parameters),
+    FIELD(src, strict)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Namespace::Custom::Text)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Namespace::Custom::Grammar)
+    FIELD(src, definition),
+    FIELD(src, syntax),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Namespace::Custom)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, format)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::Namespace)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, tools),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::ToolSearch)
+    FIELD(src, type),
+    FIELD(src, description),
+    FIELD(src, execution),
+    FIELD(src, parameters)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::WebSearchPreview::WebSearchPreview_user_location)
+    FIELD(src, type),
+    FIELD(src, city),
+    FIELD(src, country),
+    FIELD(src, region),
+    FIELD(src, timezone)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::WebSearchPreview)
+    FIELD(src, type),
+    FIELD(src, search_content_types),
+    FIELD(src, search_context_size),
+    FIELD(src, user_location)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput::ApplyPatch)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearchOutput)
+    FIELD(src, tools),
+    FIELD(src, type),
+    FIELD(src, id),
+    FIELD(src, call_id),
+    FIELD(src, execution),
+    FIELD(src, status)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::InstructionsReasoning::SummaryTextContent)
     FIELD(src, text),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseReasoningItem::ResponseReasoningItem_content)
+BEGIN_DESERIALIZE(openai::Response::InstructionsReasoning::Reasoning_content)
     FIELD(src, text),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseReasoningItem)
+BEGIN_DESERIALIZE(openai::Response::InstructionsReasoning)
     FIELD(src, id),
     FIELD(src, summary),
     FIELD(src, type),
@@ -332,7 +792,7 @@ BEGIN_DESERIALIZE(openai::Response::ResponseReasoningItem)
     FIELD(src, status)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCompactionItemParam)
+BEGIN_DESERIALIZE(openai::Response::Compaction)
     FIELD(src, encrypted_content),
     FIELD(src, type),
     FIELD(src, id)
@@ -345,17 +805,17 @@ BEGIN_DESERIALIZE(openai::Response::ImageGenerationCall)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCodeInterpreterToolCall::Logs)
+BEGIN_DESERIALIZE(openai::Response::CodeInterpreterCall::Logs)
     FIELD(src, logs),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCodeInterpreterToolCall::Image)
+BEGIN_DESERIALIZE(openai::Response::CodeInterpreterCall::Image)
     FIELD(src, type),
     FIELD(src, url)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCodeInterpreterToolCall)
+BEGIN_DESERIALIZE(openai::Response::CodeInterpreterCall)
     FIELD(src, id),
     FIELD(src, code),
     FIELD(src, container_id),
@@ -519,19 +979,19 @@ BEGIN_DESERIALIZE(openai::Response::McpCall)
     FIELD(src, status)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCustomToolCallOutput::ResponseInputText)
+BEGIN_DESERIALIZE(openai::Response::CustomToolCallOutput::ResponseInputText)
     FIELD(src, text),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCustomToolCallOutput::ResponseInputImage)
+BEGIN_DESERIALIZE(openai::Response::CustomToolCallOutput::ResponseInputImage)
     FIELD(src, detail),
     FIELD(src, type),
     FIELD(src, file_id),
     FIELD(src, image_url)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCustomToolCallOutput::ResponseInputFile)
+BEGIN_DESERIALIZE(openai::Response::CustomToolCallOutput::ResponseInputFile)
     FIELD(src, type),
     FIELD(src, file_data),
     FIELD(src, file_id),
@@ -539,24 +999,622 @@ BEGIN_DESERIALIZE(openai::Response::ResponseCustomToolCallOutput::ResponseInputF
     FIELD(src, filename)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCustomToolCallOutput)
+BEGIN_DESERIALIZE(openai::Response::CustomToolCallOutput)
     FIELD(src, call_id),
     FIELD(src, output),
     FIELD(src, type),
     FIELD(src, id)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseCustomToolCall)
+BEGIN_DESERIALIZE(openai::Response::CustomToolCall)
     FIELD(src, call_id),
     FIELD(src, input),
     FIELD(src, name),
     FIELD(src, type),
-    FIELD(src, id)
+    FIELD(src, id),
+    FIELD_ALT(src, namespace_, "namespace")
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(openai::Response::ItemReference)
     FIELD(src, id),
     FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs::ResponseOutputText_logprobs_top_logprobs)
+    FIELD(src, token),
+    FIELD(src, bytes),
+    FIELD(src, logprob)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText::ResponseOutputText_logprobs)
+    FIELD(src, token),
+    FIELD(src, bytes),
+    FIELD(src, logprob),
+    FIELD(src, top_logprobs)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText::FileCitation)
+    FIELD(src, file_id),
+    FIELD(src, filename),
+    FIELD(src, index),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText::URLCitation)
+    FIELD(src, end_index),
+    FIELD(src, start_index),
+    FIELD(src, title),
+    FIELD(src, type),
+    FIELD(src, url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText::ContainerFileCitation)
+    FIELD(src, container_id),
+    FIELD(src, end_index),
+    FIELD(src, file_id),
+    FIELD(src, filename),
+    FIELD(src, start_index),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText::FilePath)
+    FIELD(src, file_id),
+    FIELD(src, index),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputText)
+    FIELD(src, annotations),
+    FIELD(src, logprobs),
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage::ResponseOutputRefusal)
+    FIELD(src, refusal),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputResponseOutputMessage)
+    FIELD(src, id),
+    FIELD(src, content),
+    FIELD(src, role),
+    FIELD(src, status),
+    FIELD(src, type),
+    FIELD(src, phase)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputFileSearchCall::FileSearchCall_results)
+    FIELD(src, attributes),
+    FIELD(src, file_id),
+    FIELD(src, filename),
+    FIELD(src, score),
+    FIELD(src, text)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputFileSearchCall)
+    FIELD(src, id),
+    FIELD(src, queries),
+    FIELD(src, status),
+    FIELD(src, type),
+    FIELD(src, results)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputFunctionCall)
+    FIELD(src, arguments),
+    FIELD(src, call_id),
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, id),
+    FIELD_ALT(src, namespace_, "namespace"),
+    FIELD(src, status)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputWebSearchCall::Search::Search_sources)
+    FIELD(src, type),
+    FIELD(src, url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputWebSearchCall::Search)
+    FIELD(src, query),
+    FIELD(src, type),
+    FIELD(src, queries),
+    FIELD(src, sources)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputWebSearchCall::OpenPage)
+    FIELD(src, type),
+    FIELD(src, url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputWebSearchCall::FindInPage)
+    FIELD(src, pattern),
+    FIELD(src, type),
+    FIELD(src, url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputWebSearchCall)
+    FIELD(src, id),
+    FIELD(src, action),
+    FIELD(src, status),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ComputerCall_pending_safety_checks)
+    FIELD(src, id),
+    FIELD(src, code),
+    FIELD(src, message)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Click)
+    FIELD(src, button),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::DoubleClick)
+    FIELD(src, keys),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Drag::Drag_path)
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Drag)
+    FIELD(src, path),
+    FIELD(src, type),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Keypress)
+    FIELD(src, keys),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Move)
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Screenshot)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Scroll)
+    FIELD(src, scroll_x),
+    FIELD(src, scroll_y),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Type)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::Wait)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsClick)
+    FIELD(src, button),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsDoubleClick)
+    FIELD(src, keys),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsDrag::Drag_path)
+    FIELD(src, x),
+    FIELD(src, y)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsDrag)
+    FIELD(src, path),
+    FIELD(src, type),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsKeypress)
+    FIELD(src, keys),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsMove)
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsScreenshot)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsScroll)
+    FIELD(src, scroll_x),
+    FIELD(src, scroll_y),
+    FIELD(src, type),
+    FIELD(src, x),
+    FIELD(src, y),
+    FIELD(src, keys)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsType)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall::ActionsWait)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputComputerCall)
+    FIELD(src, id),
+    FIELD(src, call_id),
+    FIELD(src, pending_safety_checks),
+    FIELD(src, status),
+    FIELD(src, type),
+    FIELD(src, action),
+    FIELD(src, actions)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputReasoning::SummaryTextContent)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputReasoning::Reasoning_content)
+    FIELD(src, text),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputReasoning)
+    FIELD(src, id),
+    FIELD(src, summary),
+    FIELD(src, type),
+    FIELD(src, content),
+    FIELD(src, encrypted_content),
+    FIELD(src, status)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchCall)
+    FIELD(src, id),
+    FIELD(src, arguments),
+    FIELD(src, call_id),
+    FIELD(src, execution),
+    FIELD(src, status),
+    FIELD(src, type),
+    FIELD(src, created_by)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Function)
+    FIELD(src, name),
+    FIELD(src, parameters),
+    FIELD(src, strict),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::FileSearch::FileSearch_ranking_options::FileSearch_ranking_options_hybrid_search)
+    FIELD(src, embedding_weight),
+    FIELD(src, text_weight)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::FileSearch::FileSearch_ranking_options)
+    FIELD(src, hybrid_search),
+    FIELD(src, ranker),
+    FIELD(src, score_threshold)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::FileSearch::ComparisonFilter)
+    FIELD(src, key),
+    FIELD(src, type),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::FileSearch::CompoundFilter::ComparisonFilter)
+    FIELD(src, key),
+    FIELD(src, type),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::FileSearch::CompoundFilter)
+    FIELD(src, filters),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::FileSearch)
+    FIELD(src, type),
+    FIELD(src, vector_store_ids),
+    FIELD(src, filters),
+    FIELD(src, max_num_results),
+    FIELD(src, ranking_options)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Computer)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::ComputerUsePreview)
+    FIELD(src, display_height),
+    FIELD(src, display_width),
+    FIELD(src, environment),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::WebSearch::WebSearch_filters)
+    FIELD(src, allowed_domains)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::WebSearch::WebSearch_user_location)
+    FIELD(src, city),
+    FIELD(src, country),
+    FIELD(src, region),
+    FIELD(src, timezone),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::WebSearch)
+    FIELD(src, type),
+    FIELD(src, filters),
+    FIELD(src, search_context_size),
+    FIELD(src, user_location)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Mcp::McpToolFilter)
+    FIELD(src, read_only),
+    FIELD(src, tool_names)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Mcp::McpToolApprovalFilter::McpToolApprovalFilter_always)
+    FIELD(src, read_only),
+    FIELD(src, tool_names)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Mcp::McpToolApprovalFilter::McpToolApprovalFilter_never)
+    FIELD(src, read_only),
+    FIELD(src, tool_names)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Mcp::McpToolApprovalFilter)
+    FIELD(src, always),
+    FIELD(src, never)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Mcp)
+    FIELD(src, server_label),
+    FIELD(src, type),
+    FIELD(src, allowed_tools),
+    FIELD(src, authorization),
+    FIELD(src, connector_id),
+    FIELD(src, defer_loading),
+    FIELD(src, headers),
+    FIELD(src, require_approval),
+    FIELD(src, server_description),
+    FIELD(src, server_url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyDisabled)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+    FIELD(src, domain),
+    FIELD(src, name),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist)
+    FIELD(src, allowed_domains),
+    FIELD(src, type),
+    FIELD(src, domain_secrets)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto)
+    FIELD(src, type),
+    FIELD(src, file_ids),
+    FIELD(src, memory_limit),
+    FIELD(src, network_policy)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::CodeInterpreter)
+    FIELD(src, container),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::ImageGeneration::ImageGeneration_input_image_mask)
+    FIELD(src, file_id),
+    FIELD(src, image_url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::ImageGeneration)
+    FIELD(src, type),
+    FIELD(src, action),
+    FIELD(src, background),
+    FIELD(src, input_fidelity),
+    FIELD(src, input_image_mask),
+    FIELD(src, model),
+    FIELD(src, moderation),
+    FIELD(src, output_compression),
+    FIELD(src, output_format),
+    FIELD(src, partial_images),
+    FIELD(src, quality),
+    FIELD(src, size)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::LocalShell)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+    FIELD(src, domain),
+    FIELD(src, name),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
+    FIELD(src, allowed_domains),
+    FIELD(src, type),
+    FIELD(src, domain_secrets)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::SkillReference)
+    FIELD(src, skill_id),
+    FIELD(src, type),
+    FIELD(src, version)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::InlineSkill::InlineSkillSource)
+    FIELD(src, data),
+    FIELD(src, media_type),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::InlineSkill)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, source),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto)
+    FIELD(src, type),
+    FIELD(src, file_ids),
+    FIELD(src, memory_limit),
+    FIELD(src, network_policy),
+    FIELD(src, skills)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::LocalEnvironment::LocalSkill)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, path)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::LocalEnvironment)
+    FIELD(src, type),
+    FIELD(src, skills)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell::ContainerReference)
+    FIELD(src, container_id),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Shell)
+    FIELD(src, type),
+    FIELD(src, environment)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Custom::Text)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Custom::Grammar)
+    FIELD(src, definition),
+    FIELD(src, syntax),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Custom)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, format)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Namespace::Function)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, parameters),
+    FIELD(src, strict)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Namespace::Custom::Text)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Namespace::Custom::Grammar)
+    FIELD(src, definition),
+    FIELD(src, syntax),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Namespace::Custom)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, format)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::Namespace)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, tools),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::ToolSearch)
+    FIELD(src, type),
+    FIELD(src, description),
+    FIELD(src, execution),
+    FIELD(src, parameters)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::WebSearchPreview::WebSearchPreview_user_location)
+    FIELD(src, type),
+    FIELD(src, city),
+    FIELD(src, country),
+    FIELD(src, region),
+    FIELD(src, timezone)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::WebSearchPreview)
+    FIELD(src, type),
+    FIELD(src, search_content_types),
+    FIELD(src, search_context_size),
+    FIELD(src, user_location)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput::ApplyPatch)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputToolSearchOutput)
+    FIELD(src, id),
+    FIELD(src, call_id),
+    FIELD(src, execution),
+    FIELD(src, status),
+    FIELD(src, tools),
+    FIELD(src, type),
+    FIELD(src, created_by)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(openai::Response::ResponseCompactionItem)
@@ -566,22 +1624,65 @@ BEGIN_DESERIALIZE(openai::Response::ResponseCompactionItem)
     FIELD(src, created_by)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCall::ResponseFunctionShellToolCall_action)
+BEGIN_DESERIALIZE(openai::Response::OutputImageGenerationCall)
+    FIELD(src, id),
+    FIELD(src, result),
+    FIELD(src, status),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputCodeInterpreterCall::Logs)
+    FIELD(src, logs),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputCodeInterpreterCall::Image)
+    FIELD(src, type),
+    FIELD(src, url)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputCodeInterpreterCall)
+    FIELD(src, id),
+    FIELD(src, code),
+    FIELD(src, container_id),
+    FIELD(src, outputs),
+    FIELD(src, status),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputLocalShellCall::LocalShellCall_action)
+    FIELD(src, command),
+    FIELD(src, env),
+    FIELD(src, type),
+    FIELD(src, timeout_ms),
+    FIELD(src, user),
+    FIELD(src, working_directory)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputLocalShellCall)
+    FIELD(src, id),
+    FIELD(src, action),
+    FIELD(src, call_id),
+    FIELD(src, status),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputShellCall::ShellCall_action)
     FIELD(src, commands),
     FIELD(src, max_output_length),
     FIELD(src, timeout_ms)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCall::ResponseLocalEnvironment)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCall::ResponseLocalEnvironment)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCall::ResponseContainerReference)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCall::ResponseContainerReference)
     FIELD(src, container_id),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCall)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCall)
     FIELD(src, id),
     FIELD(src, action),
     FIELD(src, call_id),
@@ -591,23 +1692,23 @@ BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCall)
     FIELD(src, created_by)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::Timeout)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCallOutput::ShellCallOutput_output::Timeout)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::Exit)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCallOutput::ShellCallOutput_output::Exit)
     FIELD(src, exit_code),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCallOutput::ShellCallOutput_output)
     FIELD(src, outcome),
     FIELD_ALT(src, stderr_, "stderr"),
     FIELD_ALT(src, stdout_, "stdout"),
     FIELD(src, created_by)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCallOutput)
+BEGIN_DESERIALIZE(openai::Response::OutputShellCallOutput)
     FIELD(src, id),
     FIELD(src, call_id),
     FIELD(src, max_output_length),
@@ -617,24 +1718,24 @@ BEGIN_DESERIALIZE(openai::Response::ResponseFunctionShellToolCallOutput)
     FIELD(src, created_by)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseApplyPatchToolCall::CreateFile)
+BEGIN_DESERIALIZE(openai::Response::OutputApplyPatchCall::CreateFile)
     FIELD(src, diff),
     FIELD(src, path),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseApplyPatchToolCall::DeleteFile)
+BEGIN_DESERIALIZE(openai::Response::OutputApplyPatchCall::DeleteFile)
     FIELD(src, path),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseApplyPatchToolCall::UpdateFile)
+BEGIN_DESERIALIZE(openai::Response::OutputApplyPatchCall::UpdateFile)
     FIELD(src, diff),
     FIELD(src, path),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseApplyPatchToolCall)
+BEGIN_DESERIALIZE(openai::Response::OutputApplyPatchCall)
     FIELD(src, id),
     FIELD(src, call_id),
     FIELD(src, operation),
@@ -643,13 +1744,57 @@ BEGIN_DESERIALIZE(openai::Response::ResponseApplyPatchToolCall)
     FIELD(src, created_by)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ResponseApplyPatchToolCallOutput)
+BEGIN_DESERIALIZE(openai::Response::OutputApplyPatchCallOutput)
     FIELD(src, id),
     FIELD(src, call_id),
     FIELD(src, status),
     FIELD(src, type),
     FIELD(src, created_by),
     FIELD(src, output)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputMcpCall)
+    FIELD(src, id),
+    FIELD(src, arguments),
+    FIELD(src, name),
+    FIELD(src, server_label),
+    FIELD(src, type),
+    FIELD(src, approval_request_id),
+    FIELD(src, error),
+    FIELD(src, output),
+    FIELD(src, status)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputMcpListTools::McpListTools_tools)
+    FIELD(src, input_schema),
+    FIELD(src, name),
+    FIELD(src, annotations),
+    FIELD(src, description)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputMcpListTools)
+    FIELD(src, id),
+    FIELD(src, server_label),
+    FIELD(src, tools),
+    FIELD(src, type),
+    FIELD(src, error)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputMcpApprovalRequest)
+    FIELD(src, id),
+    FIELD(src, arguments),
+    FIELD(src, name),
+    FIELD(src, server_label),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::OutputCustomToolCall)
+    FIELD(src, call_id),
+    FIELD(src, input),
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, id),
+    FIELD_ALT(src, namespace_, "namespace")
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(openai::Response::ToolChoiceAllowed)
@@ -686,43 +1831,44 @@ BEGIN_DESERIALIZE(openai::Response::ToolChoiceShell)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionTool)
+BEGIN_DESERIALIZE(openai::Response::Function)
     FIELD(src, name),
     FIELD(src, parameters),
     FIELD(src, strict),
     FIELD(src, type),
+    FIELD(src, defer_loading),
     FIELD(src, description)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FileSearchTool::ComparisonFilter)
-    FIELD(src, key),
-    FIELD(src, type),
-    FIELD(src, value)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter)
-    FIELD(src, key),
-    FIELD(src, type),
-    FIELD(src, value)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::FileSearchTool::CompoundFilter)
-    FIELD(src, filters),
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::FileSearchTool::FileSearchTool_ranking_options::FileSearchTool_ranking_options_hybrid_search)
+BEGIN_DESERIALIZE(openai::Response::FileSearch::FileSearch_ranking_options::FileSearch_ranking_options_hybrid_search)
     FIELD(src, embedding_weight),
     FIELD(src, text_weight)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FileSearchTool::FileSearchTool_ranking_options)
+BEGIN_DESERIALIZE(openai::Response::FileSearch::FileSearch_ranking_options)
     FIELD(src, hybrid_search),
     FIELD(src, ranker),
     FIELD(src, score_threshold)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FileSearchTool)
+BEGIN_DESERIALIZE(openai::Response::FileSearch::ComparisonFilter)
+    FIELD(src, key),
+    FIELD(src, type),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::FileSearch::CompoundFilter::ComparisonFilter)
+    FIELD(src, key),
+    FIELD(src, type),
+    FIELD(src, value)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::FileSearch::CompoundFilter)
+    FIELD(src, filters),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::FileSearch)
     FIELD(src, type),
     FIELD(src, vector_store_ids),
     FIELD(src, filters),
@@ -730,18 +1876,22 @@ BEGIN_DESERIALIZE(openai::Response::FileSearchTool)
     FIELD(src, ranking_options)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ComputerTool)
+BEGIN_DESERIALIZE(openai::Response::Computer)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ComputerUsePreview)
     FIELD(src, display_height),
     FIELD(src, display_width),
     FIELD(src, environment),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::WebSearchTool::WebSearchTool_filters)
+BEGIN_DESERIALIZE(openai::Response::WebSearch::WebSearch_filters)
     FIELD(src, allowed_domains)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::WebSearchTool::WebSearchTool_user_location)
+BEGIN_DESERIALIZE(openai::Response::WebSearch::WebSearch_user_location)
     FIELD(src, city),
     FIELD(src, country),
     FIELD(src, region),
@@ -749,7 +1899,7 @@ BEGIN_DESERIALIZE(openai::Response::WebSearchTool::WebSearchTool_user_location)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::WebSearchTool)
+BEGIN_DESERIALIZE(openai::Response::WebSearch)
     FIELD(src, type),
     FIELD(src, filters),
     FIELD(src, search_context_size),
@@ -782,6 +1932,7 @@ BEGIN_DESERIALIZE(openai::Response::Mcp)
     FIELD(src, allowed_tools),
     FIELD(src, authorization),
     FIELD(src, connector_id),
+    FIELD(src, defer_loading),
     FIELD(src, headers),
     FIELD(src, require_approval),
     FIELD(src, server_description),
@@ -840,42 +1991,42 @@ BEGIN_DESERIALIZE(openai::Response::LocalShell)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyDisabled)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist::ContainerNetworkPolicyDomainSecret)
     FIELD(src, domain),
     FIELD(src, name),
     FIELD(src, value)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyAllowlist)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
     FIELD(src, allowed_domains),
     FIELD(src, type),
     FIELD(src, domain_secrets)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto::SkillReference)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto::SkillReference)
     FIELD(src, skill_id),
     FIELD(src, type),
     FIELD(src, version)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto::InlineSkill::InlineSkillSource)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto::InlineSkill::InlineSkillSource)
     FIELD(src, data),
     FIELD(src, media_type),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto::InlineSkill)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto::InlineSkill)
     FIELD(src, description),
     FIELD(src, name),
     FIELD(src, source),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerAuto)
     FIELD(src, type),
     FIELD(src, file_ids),
     FIELD(src, memory_limit),
@@ -883,45 +2034,87 @@ BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerAuto)
     FIELD(src, skills)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::LocalEnvironment::LocalSkill)
+BEGIN_DESERIALIZE(openai::Response::Shell::LocalEnvironment::LocalSkill)
     FIELD(src, description),
     FIELD(src, name),
     FIELD(src, path)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::LocalEnvironment)
+BEGIN_DESERIALIZE(openai::Response::Shell::LocalEnvironment)
     FIELD(src, type),
     FIELD(src, skills)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool::ContainerReference)
+BEGIN_DESERIALIZE(openai::Response::Shell::ContainerReference)
     FIELD(src, container_id),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::FunctionShellTool)
+BEGIN_DESERIALIZE(openai::Response::Shell)
     FIELD(src, type),
     FIELD(src, environment)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::CustomTool::Text)
+BEGIN_DESERIALIZE(openai::Response::Custom::Text)
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::CustomTool::Grammar)
+BEGIN_DESERIALIZE(openai::Response::Custom::Grammar)
     FIELD(src, definition),
     FIELD(src, syntax),
     FIELD(src, type)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::CustomTool)
+BEGIN_DESERIALIZE(openai::Response::Custom)
     FIELD(src, name),
     FIELD(src, type),
+    FIELD(src, defer_loading),
     FIELD(src, description),
     FIELD(src, format)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::WebSearchPreviewTool::WebSearchPreviewTool_user_location)
+BEGIN_DESERIALIZE(openai::Response::Namespace::Function)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, parameters),
+    FIELD(src, strict)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::Namespace::Custom::Text)
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::Namespace::Custom::Grammar)
+    FIELD(src, definition),
+    FIELD(src, syntax),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::Namespace::Custom)
+    FIELD(src, name),
+    FIELD(src, type),
+    FIELD(src, defer_loading),
+    FIELD(src, description),
+    FIELD(src, format)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::Namespace)
+    FIELD(src, description),
+    FIELD(src, name),
+    FIELD(src, tools),
+    FIELD(src, type)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::ToolSearch)
+    FIELD(src, type),
+    FIELD(src, description),
+    FIELD(src, execution),
+    FIELD(src, parameters)
+END_DESERIALIZE
+
+BEGIN_DESERIALIZE(openai::Response::WebSearchPreview::WebSearchPreview_user_location)
     FIELD(src, type),
     FIELD(src, city),
     FIELD(src, country),
@@ -929,87 +2122,15 @@ BEGIN_DESERIALIZE(openai::Response::WebSearchPreviewTool::WebSearchPreviewTool_u
     FIELD(src, timezone)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::WebSearchPreviewTool)
+BEGIN_DESERIALIZE(openai::Response::WebSearchPreview)
     FIELD(src, type),
+    FIELD(src, search_content_types),
     FIELD(src, search_context_size),
     FIELD(src, user_location)
 END_DESERIALIZE
 
-BEGIN_DESERIALIZE(openai::Response::ApplyPatchTool)
+BEGIN_DESERIALIZE(openai::Response::ApplyPatch)
     FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::Response_conversation)
-    FIELD(src, id)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponsePrompt::ResponseInputText)
-    FIELD(src, text),
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponsePrompt::ResponseInputImage)
-    FIELD(src, detail),
-    FIELD(src, type),
-    FIELD(src, file_id),
-    FIELD(src, image_url)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponsePrompt::ResponseInputFile)
-    FIELD(src, type),
-    FIELD(src, file_data),
-    FIELD(src, file_id),
-    FIELD(src, file_url),
-    FIELD(src, filename)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponsePrompt)
-    FIELD(src, id),
-    FIELD(src, variables),
-    FIELD(src, version)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::Reasoning)
-    FIELD(src, effort),
-    FIELD(src, generate_summary),
-    FIELD(src, summary)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig::ResponseFormatText)
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig::ResponseFormatTextJSONSchemaConfig)
-    FIELD(src, name),
-    FIELD(src, schema),
-    FIELD(src, type),
-    FIELD(src, description),
-    FIELD(src, strict)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig::ResponseFormatJSONObject)
-    FIELD(src, type)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseTextConfig)
-    FIELD(src, format),
-    FIELD(src, verbosity)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseUsage::ResponseUsage_input_tokens_details)
-    FIELD(src, cached_tokens)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseUsage::ResponseUsage_output_tokens_details)
-    FIELD(src, reasoning_tokens)
-END_DESERIALIZE
-
-BEGIN_DESERIALIZE(openai::Response::ResponseUsage)
-    FIELD(src, input_tokens),
-    FIELD(src, input_tokens_details),
-    FIELD(src, output_tokens),
-    FIELD(src, output_tokens_details),
-    FIELD(src, total_tokens)
 END_DESERIALIZE
 
 BEGIN_DESERIALIZE(openai::Response)
@@ -1048,6 +2169,13 @@ BEGIN_DESERIALIZE(openai::Response)
     FIELD(src, user)
 END_DESERIALIZE
 
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseTextConfig::ResponseFormatTextConfig)
+    auto kind = EXTRACT_KIND(openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::TEXT, openai::Response::ResponseTextConfig::ResponseFormatText)
+    FIELD_KIND(src, kind, openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::JSON_SCHEMA, openai::Response::ResponseTextConfig::ResponseFormatTextJSONSchemaConfig)
+    FIELD_KIND(src, kind, openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::JSON_OBJECT, openai::Response::ResponseTextConfig::ResponseFormatJSONObject)
+END_DESERIALIZE_VARIANT(openai::Response::ResponseTextConfig::ResponseFormatTextConfig)
+
 BEGIN_DESERIALIZE_VARIANT(openai::Response::EasyInputMessage::ContentItem)
     auto kind = EXTRACT_KIND(openai::Response::EasyInputMessage::ContentItemKind, src, "type");
     FIELD_KIND(src, kind, openai::Response::EasyInputMessage::ContentItemKind::INPUT_TEXT, openai::Response::EasyInputMessage::ResponseInputText)
@@ -1085,47 +2213,195 @@ BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseOutputMessage::Content)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputMessage::ContentKind::REFUSAL, openai::Response::ResponseOutputMessage::ResponseOutputRefusal)
 END_DESERIALIZE_VARIANT(openai::Response::ResponseOutputMessage::Content)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseComputerToolCall::Action)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseComputerToolCall::ActionKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::CLICK, openai::Response::ResponseComputerToolCall::Click)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::DOUBLE_CLICK, openai::Response::ResponseComputerToolCall::DoubleClick)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::DRAG, openai::Response::ResponseComputerToolCall::Drag)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::KEYPRESS, openai::Response::ResponseComputerToolCall::Keypress)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::MOVE, openai::Response::ResponseComputerToolCall::Move)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::SCREENSHOT, openai::Response::ResponseComputerToolCall::Screenshot)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::SCROLL, openai::Response::ResponseComputerToolCall::Scroll)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::TYPE, openai::Response::ResponseComputerToolCall::Type)
-    FIELD_KIND(src, kind, openai::Response::ResponseComputerToolCall::ActionKind::WAIT, openai::Response::ResponseComputerToolCall::Wait)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseComputerToolCall::Action)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ComputerCall::ComputerAction)
+    auto kind = EXTRACT_KIND(openai::Response::ComputerCall::ComputerActionKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::CLICK, openai::Response::ComputerCall::Click)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::DOUBLE_CLICK, openai::Response::ComputerCall::DoubleClick)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::DRAG, openai::Response::ComputerCall::Drag)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::KEYPRESS, openai::Response::ComputerCall::Keypress)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::MOVE, openai::Response::ComputerCall::Move)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::SCREENSHOT, openai::Response::ComputerCall::Screenshot)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::SCROLL, openai::Response::ComputerCall::Scroll)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::TYPE, openai::Response::ComputerCall::Type)
+    FIELD_KIND(src, kind, openai::Response::ComputerCall::ComputerActionKind::WAIT, openai::Response::ComputerCall::Wait)
+END_DESERIALIZE_VARIANT(openai::Response::ComputerCall::ComputerAction)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseFunctionWebSearch::Action)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseFunctionWebSearch::ActionKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionWebSearch::ActionKind::SEARCH, openai::Response::ResponseFunctionWebSearch::Search)
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionWebSearch::ActionKind::OPEN_PAGE, openai::Response::ResponseFunctionWebSearch::OpenPage)
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionWebSearch::ActionKind::FIND_IN_PAGE, openai::Response::ResponseFunctionWebSearch::FindInPage)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseFunctionWebSearch::Action)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::WebSearchCall::Action)
+    auto kind = EXTRACT_KIND(openai::Response::WebSearchCall::ActionKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::WebSearchCall::ActionKind::SEARCH, openai::Response::WebSearchCall::Search)
+    FIELD_KIND(src, kind, openai::Response::WebSearchCall::ActionKind::OPEN_PAGE, openai::Response::WebSearchCall::OpenPage)
+    FIELD_KIND(src, kind, openai::Response::WebSearchCall::ActionKind::FIND_IN_PAGE, openai::Response::WebSearchCall::FindInPage)
+END_DESERIALIZE_VARIANT(openai::Response::WebSearchCall::Action)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FunctionCallOutput::OutputItem)
-    auto kind = EXTRACT_KIND(openai::Response::FunctionCallOutput::OutputItemKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::FunctionCallOutput::OutputItemKind::INPUT_TEXT, openai::Response::FunctionCallOutput::ResponseInputTextContent)
-    FIELD_KIND(src, kind, openai::Response::FunctionCallOutput::OutputItemKind::INPUT_IMAGE, openai::Response::FunctionCallOutput::ResponseInputImageContent)
-    FIELD_KIND(src, kind, openai::Response::FunctionCallOutput::OutputItemKind::INPUT_FILE, openai::Response::FunctionCallOutput::ResponseInputFileContent)
-END_DESERIALIZE_VARIANT(openai::Response::FunctionCallOutput::OutputItem)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::FunctionCallOutput::OutputElement)
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::FunctionCallOutput::ResponseInputTextContent>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::FunctionCallOutput::ResponseInputImageContent>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::FunctionCallOutput::ResponseInputFileContent>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::FunctionCallOutput::OutputElement)
 
 BEGIN_DESERIALIZE_VARIANT(openai::Response::FunctionCallOutput::Output)
     if (src.is_string()) {
         return T{DeserializeTo<std::string>(src)};
     }
     if (src.is_array()) {
-        return T{DeserializeTo<std::vector<openai::Response::FunctionCallOutput::OutputItem>>(src)};
+        return T{DeserializeTo<std::vector<openai::Response::FunctionCallOutput::OutputElement>>(src)};
     }
 END_DESERIALIZE_VARIANT(openai::Response::FunctionCallOutput::Output)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseCodeInterpreterToolCall::Outputs)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseCodeInterpreterToolCall::OutputsKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseCodeInterpreterToolCall::OutputsKind::LOGS, openai::Response::ResponseCodeInterpreterToolCall::Logs)
-    FIELD_KIND(src, kind, openai::Response::ResponseCodeInterpreterToolCall::OutputsKind::IMAGE, openai::Response::ResponseCodeInterpreterToolCall::Image)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseCodeInterpreterToolCall::Outputs)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter::ValueElement)
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+    if (src.is_number()) {
+        return T{DeserializeTo<double>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter::ValueElement)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter::Value)
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+    if (src.is_number()) {
+        return T{DeserializeTo<double>(src)};
+    }
+    if (src.is_bool()) {
+        return T{DeserializeTo<bool>(src)};
+    }
+    if (src.is_array()) {
+        return T{DeserializeTo<std::vector<openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter::ValueElement>>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter::Value)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::CompoundFilter::Filters)
+    if (src.is_object()) {
+        return T{DeserializeTo<jai::llm::json::Object>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::FileSearch::CompoundFilter::ComparisonFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::CompoundFilter::Filters)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::Filters)
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::FileSearch::ComparisonFilter>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::FileSearch::CompoundFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::FileSearch::Filters)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Mcp::AllowedTools)
+    if (src.is_array()) {
+        return T{DeserializeTo<std::vector<std::string>>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::Mcp::McpToolFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Mcp::AllowedTools)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Mcp::RequireApproval)
+    if (src.is_string()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::Mcp::RequireApprovalValues>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::Mcp::McpToolApprovalFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Mcp::RequireApproval)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicy)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicyKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicyKind::DISABLED, openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyDisabled)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicyKind::ALLOWLIST, openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicy)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::CodeInterpreter::Container)
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::CodeInterpreter::ContainerKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::CodeInterpreter::ContainerKind::AUTO, openai::Response::ToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::CodeInterpreter::Container)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::ImageGeneration::Model)
+    if (src.is_string()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::ImageGeneration::ModelValues>(src)};
+    }
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::ImageGeneration::Model)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Shell::ContainerAuto::NetworkPolicy)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::Shell::ContainerAuto::NetworkPolicyKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::ContainerAuto::NetworkPolicyKind::DISABLED, openai::Response::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::ContainerAuto::NetworkPolicyKind::ALLOWLIST, openai::Response::ToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Shell::ContainerAuto::NetworkPolicy)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Shell::ContainerAuto::Skills)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::Shell::ContainerAuto::SkillsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::ContainerAuto::SkillsKind::SKILL_REFERENCE, openai::Response::ToolSearchOutput::Shell::ContainerAuto::SkillReference)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::ContainerAuto::SkillsKind::INLINE, openai::Response::ToolSearchOutput::Shell::ContainerAuto::InlineSkill)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Shell::ContainerAuto::Skills)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Shell::Environment)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::Shell::EnvironmentKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::EnvironmentKind::CONTAINER_AUTO, openai::Response::ToolSearchOutput::Shell::ContainerAuto)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::EnvironmentKind::LOCAL, openai::Response::ToolSearchOutput::Shell::LocalEnvironment)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Shell::EnvironmentKind::CONTAINER_REFERENCE, openai::Response::ToolSearchOutput::Shell::ContainerReference)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Shell::Environment)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Custom::CustomToolInputFormat)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::Custom::CustomToolInputFormatKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Custom::CustomToolInputFormatKind::TEXT, openai::Response::ToolSearchOutput::Custom::Text)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Custom::CustomToolInputFormatKind::GRAMMAR, openai::Response::ToolSearchOutput::Custom::Grammar)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Custom::CustomToolInputFormat)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Namespace::Custom::CustomToolInputFormat)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::Namespace::Custom::CustomToolInputFormatKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Namespace::Custom::CustomToolInputFormatKind::TEXT, openai::Response::ToolSearchOutput::Namespace::Custom::Text)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Namespace::Custom::CustomToolInputFormatKind::GRAMMAR, openai::Response::ToolSearchOutput::Namespace::Custom::Grammar)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Namespace::Custom::CustomToolInputFormat)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Namespace::Tools)
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::Namespace::ToolsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Namespace::ToolsKind::FUNCTION, openai::Response::ToolSearchOutput::Namespace::Function)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::Namespace::ToolsKind::CUSTOM, openai::Response::ToolSearchOutput::Namespace::Custom)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Namespace::Tools)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Tools)
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::WebSearch>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::ToolSearchOutput::WebSearchPreview>(src)};
+    }
+    auto kind = EXTRACT_KIND(openai::Response::ToolSearchOutput::ToolsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::FUNCTION, openai::Response::ToolSearchOutput::Function)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::FILE_SEARCH, openai::Response::ToolSearchOutput::FileSearch)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::COMPUTER, openai::Response::ToolSearchOutput::Computer)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::COMPUTER_USE_PREVIEW, openai::Response::ToolSearchOutput::ComputerUsePreview)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::MCP, openai::Response::ToolSearchOutput::Mcp)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::CODE_INTERPRETER, openai::Response::ToolSearchOutput::CodeInterpreter)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::IMAGE_GENERATION, openai::Response::ToolSearchOutput::ImageGeneration)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::LOCAL_SHELL, openai::Response::ToolSearchOutput::LocalShell)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::SHELL, openai::Response::ToolSearchOutput::Shell)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::CUSTOM, openai::Response::ToolSearchOutput::Custom)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::NAMESPACE, openai::Response::ToolSearchOutput::Namespace)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::TOOL_SEARCH, openai::Response::ToolSearchOutput::ToolSearch)
+    FIELD_KIND(src, kind, openai::Response::ToolSearchOutput::ToolsKind::APPLY_PATCH, openai::Response::ToolSearchOutput::ApplyPatch)
+END_DESERIALIZE_VARIANT(openai::Response::ToolSearchOutput::Tools)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::CodeInterpreterCall::Outputs)
+    auto kind = EXTRACT_KIND(openai::Response::CodeInterpreterCall::OutputsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::CodeInterpreterCall::OutputsKind::LOGS, openai::Response::CodeInterpreterCall::Logs)
+    FIELD_KIND(src, kind, openai::Response::CodeInterpreterCall::OutputsKind::IMAGE, openai::Response::CodeInterpreterCall::Image)
+END_DESERIALIZE_VARIANT(openai::Response::CodeInterpreterCall::Outputs)
 
 BEGIN_DESERIALIZE_VARIANT(openai::Response::ShellCall::Environment)
     auto kind = EXTRACT_KIND(openai::Response::ShellCall::EnvironmentKind, src, "type");
@@ -1146,82 +2422,223 @@ BEGIN_DESERIALIZE_VARIANT(openai::Response::ApplyPatchCall::Operation)
     FIELD_KIND(src, kind, openai::Response::ApplyPatchCall::OperationKind::UPDATE_FILE, openai::Response::ApplyPatchCall::UpdateFile)
 END_DESERIALIZE_VARIANT(openai::Response::ApplyPatchCall::Operation)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseCustomToolCallOutput::OutputItem)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseCustomToolCallOutput::OutputItemKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_TEXT, openai::Response::ResponseCustomToolCallOutput::ResponseInputText)
-    FIELD_KIND(src, kind, openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_IMAGE, openai::Response::ResponseCustomToolCallOutput::ResponseInputImage)
-    FIELD_KIND(src, kind, openai::Response::ResponseCustomToolCallOutput::OutputItemKind::INPUT_FILE, openai::Response::ResponseCustomToolCallOutput::ResponseInputFile)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseCustomToolCallOutput::OutputItem)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::CustomToolCallOutput::OutputItem)
+    auto kind = EXTRACT_KIND(openai::Response::CustomToolCallOutput::OutputItemKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::CustomToolCallOutput::OutputItemKind::INPUT_TEXT, openai::Response::CustomToolCallOutput::ResponseInputText)
+    FIELD_KIND(src, kind, openai::Response::CustomToolCallOutput::OutputItemKind::INPUT_IMAGE, openai::Response::CustomToolCallOutput::ResponseInputImage)
+    FIELD_KIND(src, kind, openai::Response::CustomToolCallOutput::OutputItemKind::INPUT_FILE, openai::Response::CustomToolCallOutput::ResponseInputFile)
+END_DESERIALIZE_VARIANT(openai::Response::CustomToolCallOutput::OutputItem)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseCustomToolCallOutput::Output)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::CustomToolCallOutput::Output)
     if (src.is_string()) {
         return T{DeserializeTo<std::string>(src)};
     }
     if (src.is_array()) {
-        return T{DeserializeTo<std::vector<openai::Response::ResponseCustomToolCallOutput::OutputItem>>(src)};
+        return T{DeserializeTo<std::vector<openai::Response::CustomToolCallOutput::OutputItem>>(src)};
     }
-END_DESERIALIZE_VARIANT(openai::Response::ResponseCustomToolCallOutput::Output)
+END_DESERIALIZE_VARIANT(openai::Response::CustomToolCallOutput::Output)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseFunctionShellToolCall::Environment)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseFunctionShellToolCall::EnvironmentKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionShellToolCall::EnvironmentKind::LOCAL, openai::Response::ResponseFunctionShellToolCall::ResponseLocalEnvironment)
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionShellToolCall::EnvironmentKind::CONTAINER_REFERENCE, openai::Response::ResponseFunctionShellToolCall::ResponseContainerReference)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseFunctionShellToolCall::Environment)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputResponseOutputMessage::ResponseOutputText::Annotations)
+    auto kind = EXTRACT_KIND(openai::Response::OutputResponseOutputMessage::ResponseOutputText::AnnotationsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputResponseOutputMessage::ResponseOutputText::AnnotationsKind::FILE_CITATION, openai::Response::OutputResponseOutputMessage::ResponseOutputText::FileCitation)
+    FIELD_KIND(src, kind, openai::Response::OutputResponseOutputMessage::ResponseOutputText::AnnotationsKind::URL_CITATION, openai::Response::OutputResponseOutputMessage::ResponseOutputText::URLCitation)
+    FIELD_KIND(src, kind, openai::Response::OutputResponseOutputMessage::ResponseOutputText::AnnotationsKind::CONTAINER_FILE_CITATION, openai::Response::OutputResponseOutputMessage::ResponseOutputText::ContainerFileCitation)
+    FIELD_KIND(src, kind, openai::Response::OutputResponseOutputMessage::ResponseOutputText::AnnotationsKind::FILE_PATH, openai::Response::OutputResponseOutputMessage::ResponseOutputText::FilePath)
+END_DESERIALIZE_VARIANT(openai::Response::OutputResponseOutputMessage::ResponseOutputText::Annotations)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::Outcome)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::OutcomeKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::OutcomeKind::TIMEOUT, openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::Timeout)
-    FIELD_KIND(src, kind, openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::OutcomeKind::EXIT, openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::Exit)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseFunctionShellToolCallOutput::ResponseFunctionShellToolCallOutput_output::Outcome)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputResponseOutputMessage::Content)
+    auto kind = EXTRACT_KIND(openai::Response::OutputResponseOutputMessage::ContentKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputResponseOutputMessage::ContentKind::OUTPUT_TEXT, openai::Response::OutputResponseOutputMessage::ResponseOutputText)
+    FIELD_KIND(src, kind, openai::Response::OutputResponseOutputMessage::ContentKind::REFUSAL, openai::Response::OutputResponseOutputMessage::ResponseOutputRefusal)
+END_DESERIALIZE_VARIANT(openai::Response::OutputResponseOutputMessage::Content)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseApplyPatchToolCall::Operation)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseApplyPatchToolCall::OperationKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseApplyPatchToolCall::OperationKind::CREATE_FILE, openai::Response::ResponseApplyPatchToolCall::CreateFile)
-    FIELD_KIND(src, kind, openai::Response::ResponseApplyPatchToolCall::OperationKind::DELETE_FILE, openai::Response::ResponseApplyPatchToolCall::DeleteFile)
-    FIELD_KIND(src, kind, openai::Response::ResponseApplyPatchToolCall::OperationKind::UPDATE_FILE, openai::Response::ResponseApplyPatchToolCall::UpdateFile)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseApplyPatchToolCall::Operation)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputWebSearchCall::Action)
+    auto kind = EXTRACT_KIND(openai::Response::OutputWebSearchCall::ActionKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputWebSearchCall::ActionKind::SEARCH, openai::Response::OutputWebSearchCall::Search)
+    FIELD_KIND(src, kind, openai::Response::OutputWebSearchCall::ActionKind::OPEN_PAGE, openai::Response::OutputWebSearchCall::OpenPage)
+    FIELD_KIND(src, kind, openai::Response::OutputWebSearchCall::ActionKind::FIND_IN_PAGE, openai::Response::OutputWebSearchCall::FindInPage)
+END_DESERIALIZE_VARIANT(openai::Response::OutputWebSearchCall::Action)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::ComparisonFilter::ValueElement)
-    if (src.is_string()) {
-        return T{DeserializeTo<std::string>(src)};
-    }
-    if (src.is_number()) {
-        return T{DeserializeTo<double>(src)};
-    }
-END_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::ComparisonFilter::ValueElement)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputComputerCall::ComputerAction)
+    auto kind = EXTRACT_KIND(openai::Response::OutputComputerCall::ComputerActionKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::CLICK, openai::Response::OutputComputerCall::Click)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::DOUBLE_CLICK, openai::Response::OutputComputerCall::DoubleClick)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::DRAG, openai::Response::OutputComputerCall::Drag)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::KEYPRESS, openai::Response::OutputComputerCall::Keypress)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::MOVE, openai::Response::OutputComputerCall::Move)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::SCREENSHOT, openai::Response::OutputComputerCall::Screenshot)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::SCROLL, openai::Response::OutputComputerCall::Scroll)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::TYPE, openai::Response::OutputComputerCall::Type)
+    FIELD_KIND(src, kind, openai::Response::OutputComputerCall::ComputerActionKind::WAIT, openai::Response::OutputComputerCall::Wait)
+END_DESERIALIZE_VARIANT(openai::Response::OutputComputerCall::ComputerAction)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::ComparisonFilter::Value)
-    if (src.is_string()) {
-        return T{DeserializeTo<std::string>(src)};
-    }
-    if (src.is_number()) {
-        return T{DeserializeTo<double>(src)};
-    }
-    if (src.is_bool()) {
-        return T{DeserializeTo<bool>(src)};
-    }
-    if (src.is_array()) {
-        return T{DeserializeTo<std::vector<openai::Response::FileSearchTool::ComparisonFilter::ValueElement>>(src)};
-    }
-END_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::ComparisonFilter::Value)
-
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::CompoundFilter::Filters)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::FileSearch::CompoundFilter::Filters)
     if (src.is_object()) {
         return T{DeserializeTo<jai::llm::json::Object>(src)};
     }
     if (src.is_object()) {
-        return T{DeserializeTo<openai::Response::FileSearchTool::CompoundFilter::ComparisonFilter>(src)};
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::FileSearch::CompoundFilter::ComparisonFilter>(src)};
     }
-END_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::CompoundFilter::Filters)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::FileSearch::CompoundFilter::Filters)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::Filters)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::FileSearch::Filters)
     if (src.is_object()) {
-        return T{DeserializeTo<openai::Response::FileSearchTool::ComparisonFilter>(src)};
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::FileSearch::ComparisonFilter>(src)};
     }
     if (src.is_object()) {
-        return T{DeserializeTo<openai::Response::FileSearchTool::CompoundFilter>(src)};
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::FileSearch::CompoundFilter>(src)};
     }
-END_DESERIALIZE_VARIANT(openai::Response::FileSearchTool::Filters)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::FileSearch::Filters)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Mcp::AllowedTools)
+    if (src.is_array()) {
+        return T{DeserializeTo<std::vector<std::string>>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::Mcp::McpToolFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Mcp::AllowedTools)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Mcp::RequireApproval)
+    if (src.is_string()) {
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::Mcp::RequireApprovalValues>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::Mcp::McpToolApprovalFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Mcp::RequireApproval)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicy)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicyKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicyKind::DISABLED, openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyDisabled)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicyKind::ALLOWLIST, openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::ContainerNetworkPolicyAllowlist)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto::NetworkPolicy)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::CodeInterpreter::Container)
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::CodeInterpreter::ContainerKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::CodeInterpreter::ContainerKind::AUTO, openai::Response::OutputToolSearchOutput::CodeInterpreter::CodeInterpreterToolAuto)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::CodeInterpreter::Container)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::ImageGeneration::Model)
+    if (src.is_string()) {
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::ImageGeneration::ModelValues>(src)};
+    }
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::ImageGeneration::Model)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::NetworkPolicy)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::NetworkPolicyKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::NetworkPolicyKind::DISABLED, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::NetworkPolicyKind::ALLOWLIST, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::NetworkPolicy)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::Skills)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::SkillsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::SkillsKind::SKILL_REFERENCE, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::SkillReference)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::SkillsKind::INLINE, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::InlineSkill)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Shell::ContainerAuto::Skills)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Shell::Environment)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::Shell::EnvironmentKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::EnvironmentKind::CONTAINER_AUTO, openai::Response::OutputToolSearchOutput::Shell::ContainerAuto)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::EnvironmentKind::LOCAL, openai::Response::OutputToolSearchOutput::Shell::LocalEnvironment)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Shell::EnvironmentKind::CONTAINER_REFERENCE, openai::Response::OutputToolSearchOutput::Shell::ContainerReference)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Shell::Environment)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Custom::CustomToolInputFormat)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::Custom::CustomToolInputFormatKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Custom::CustomToolInputFormatKind::TEXT, openai::Response::OutputToolSearchOutput::Custom::Text)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Custom::CustomToolInputFormatKind::GRAMMAR, openai::Response::OutputToolSearchOutput::Custom::Grammar)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Custom::CustomToolInputFormat)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Namespace::Custom::CustomToolInputFormat)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::Namespace::Custom::CustomToolInputFormatKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Namespace::Custom::CustomToolInputFormatKind::TEXT, openai::Response::OutputToolSearchOutput::Namespace::Custom::Text)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Namespace::Custom::CustomToolInputFormatKind::GRAMMAR, openai::Response::OutputToolSearchOutput::Namespace::Custom::Grammar)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Namespace::Custom::CustomToolInputFormat)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Namespace::Tools)
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::Namespace::ToolsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Namespace::ToolsKind::FUNCTION, openai::Response::OutputToolSearchOutput::Namespace::Function)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::Namespace::ToolsKind::CUSTOM, openai::Response::OutputToolSearchOutput::Namespace::Custom)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Namespace::Tools)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Tools)
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::WebSearch>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::OutputToolSearchOutput::WebSearchPreview>(src)};
+    }
+    auto kind = EXTRACT_KIND(openai::Response::OutputToolSearchOutput::ToolsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::FUNCTION, openai::Response::OutputToolSearchOutput::Function)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::FILE_SEARCH, openai::Response::OutputToolSearchOutput::FileSearch)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::COMPUTER, openai::Response::OutputToolSearchOutput::Computer)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::COMPUTER_USE_PREVIEW, openai::Response::OutputToolSearchOutput::ComputerUsePreview)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::MCP, openai::Response::OutputToolSearchOutput::Mcp)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::CODE_INTERPRETER, openai::Response::OutputToolSearchOutput::CodeInterpreter)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::IMAGE_GENERATION, openai::Response::OutputToolSearchOutput::ImageGeneration)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::LOCAL_SHELL, openai::Response::OutputToolSearchOutput::LocalShell)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::SHELL, openai::Response::OutputToolSearchOutput::Shell)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::CUSTOM, openai::Response::OutputToolSearchOutput::Custom)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::NAMESPACE, openai::Response::OutputToolSearchOutput::Namespace)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::TOOL_SEARCH, openai::Response::OutputToolSearchOutput::ToolSearch)
+    FIELD_KIND(src, kind, openai::Response::OutputToolSearchOutput::ToolsKind::APPLY_PATCH, openai::Response::OutputToolSearchOutput::ApplyPatch)
+END_DESERIALIZE_VARIANT(openai::Response::OutputToolSearchOutput::Tools)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputCodeInterpreterCall::Outputs)
+    auto kind = EXTRACT_KIND(openai::Response::OutputCodeInterpreterCall::OutputsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputCodeInterpreterCall::OutputsKind::LOGS, openai::Response::OutputCodeInterpreterCall::Logs)
+    FIELD_KIND(src, kind, openai::Response::OutputCodeInterpreterCall::OutputsKind::IMAGE, openai::Response::OutputCodeInterpreterCall::Image)
+END_DESERIALIZE_VARIANT(openai::Response::OutputCodeInterpreterCall::Outputs)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputShellCall::Environment)
+    auto kind = EXTRACT_KIND(openai::Response::OutputShellCall::EnvironmentKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputShellCall::EnvironmentKind::LOCAL, openai::Response::OutputShellCall::ResponseLocalEnvironment)
+    FIELD_KIND(src, kind, openai::Response::OutputShellCall::EnvironmentKind::CONTAINER_REFERENCE, openai::Response::OutputShellCall::ResponseContainerReference)
+END_DESERIALIZE_VARIANT(openai::Response::OutputShellCall::Environment)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputShellCallOutput::ShellCallOutput_output::Outcome)
+    auto kind = EXTRACT_KIND(openai::Response::OutputShellCallOutput::ShellCallOutput_output::OutcomeKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputShellCallOutput::ShellCallOutput_output::OutcomeKind::TIMEOUT, openai::Response::OutputShellCallOutput::ShellCallOutput_output::Timeout)
+    FIELD_KIND(src, kind, openai::Response::OutputShellCallOutput::ShellCallOutput_output::OutcomeKind::EXIT, openai::Response::OutputShellCallOutput::ShellCallOutput_output::Exit)
+END_DESERIALIZE_VARIANT(openai::Response::OutputShellCallOutput::ShellCallOutput_output::Outcome)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::OutputApplyPatchCall::Operation)
+    auto kind = EXTRACT_KIND(openai::Response::OutputApplyPatchCall::OperationKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::OutputApplyPatchCall::OperationKind::CREATE_FILE, openai::Response::OutputApplyPatchCall::CreateFile)
+    FIELD_KIND(src, kind, openai::Response::OutputApplyPatchCall::OperationKind::DELETE_FILE, openai::Response::OutputApplyPatchCall::DeleteFile)
+    FIELD_KIND(src, kind, openai::Response::OutputApplyPatchCall::OperationKind::UPDATE_FILE, openai::Response::OutputApplyPatchCall::UpdateFile)
+END_DESERIALIZE_VARIANT(openai::Response::OutputApplyPatchCall::Operation)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolChoiceTypes::Type)
+    if (src.is_string()) {
+        return T{DeserializeTo<openai::Response::ToolChoiceTypes::TypeValues>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::ToolChoiceTypes::Type)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearch::CompoundFilter::Filters)
+    if (src.is_object()) {
+        return T{DeserializeTo<jai::llm::json::Object>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::FileSearch::CompoundFilter::ComparisonFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::FileSearch::CompoundFilter::Filters)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearch::Filters)
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::FileSearch::ComparisonFilter>(src)};
+    }
+    if (src.is_object()) {
+        return T{DeserializeTo<openai::Response::FileSearch::CompoundFilter>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::FileSearch::Filters)
 
 BEGIN_DESERIALIZE_VARIANT(openai::Response::Mcp::AllowedTools)
     if (src.is_array()) {
@@ -1264,53 +2681,60 @@ BEGIN_DESERIALIZE_VARIANT(openai::Response::ImageGeneration::Model)
     }
 END_DESERIALIZE_VARIANT(openai::Response::ImageGeneration::Model)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FunctionShellTool::ContainerAuto::NetworkPolicy)
-    auto kind = EXTRACT_KIND(openai::Response::FunctionShellTool::ContainerAuto::NetworkPolicyKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::ContainerAuto::NetworkPolicyKind::DISABLED, openai::Response::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyDisabled)
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::ContainerAuto::NetworkPolicyKind::ALLOWLIST, openai::Response::FunctionShellTool::ContainerAuto::ContainerNetworkPolicyAllowlist)
-END_DESERIALIZE_VARIANT(openai::Response::FunctionShellTool::ContainerAuto::NetworkPolicy)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Shell::ContainerAuto::NetworkPolicy)
+    auto kind = EXTRACT_KIND(openai::Response::Shell::ContainerAuto::NetworkPolicyKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::Shell::ContainerAuto::NetworkPolicyKind::DISABLED, openai::Response::Shell::ContainerAuto::ContainerNetworkPolicyDisabled)
+    FIELD_KIND(src, kind, openai::Response::Shell::ContainerAuto::NetworkPolicyKind::ALLOWLIST, openai::Response::Shell::ContainerAuto::ContainerNetworkPolicyAllowlist)
+END_DESERIALIZE_VARIANT(openai::Response::Shell::ContainerAuto::NetworkPolicy)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FunctionShellTool::ContainerAuto::Skills)
-    auto kind = EXTRACT_KIND(openai::Response::FunctionShellTool::ContainerAuto::SkillsKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::ContainerAuto::SkillsKind::SKILL_REFERENCE, openai::Response::FunctionShellTool::ContainerAuto::SkillReference)
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::ContainerAuto::SkillsKind::INLINE, openai::Response::FunctionShellTool::ContainerAuto::InlineSkill)
-END_DESERIALIZE_VARIANT(openai::Response::FunctionShellTool::ContainerAuto::Skills)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Shell::ContainerAuto::Skills)
+    auto kind = EXTRACT_KIND(openai::Response::Shell::ContainerAuto::SkillsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::Shell::ContainerAuto::SkillsKind::SKILL_REFERENCE, openai::Response::Shell::ContainerAuto::SkillReference)
+    FIELD_KIND(src, kind, openai::Response::Shell::ContainerAuto::SkillsKind::INLINE, openai::Response::Shell::ContainerAuto::InlineSkill)
+END_DESERIALIZE_VARIANT(openai::Response::Shell::ContainerAuto::Skills)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::FunctionShellTool::Environment)
-    auto kind = EXTRACT_KIND(openai::Response::FunctionShellTool::EnvironmentKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::EnvironmentKind::CONTAINER_AUTO, openai::Response::FunctionShellTool::ContainerAuto)
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::EnvironmentKind::LOCAL, openai::Response::FunctionShellTool::LocalEnvironment)
-    FIELD_KIND(src, kind, openai::Response::FunctionShellTool::EnvironmentKind::CONTAINER_REFERENCE, openai::Response::FunctionShellTool::ContainerReference)
-END_DESERIALIZE_VARIANT(openai::Response::FunctionShellTool::Environment)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Shell::Environment)
+    auto kind = EXTRACT_KIND(openai::Response::Shell::EnvironmentKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::Shell::EnvironmentKind::CONTAINER_AUTO, openai::Response::Shell::ContainerAuto)
+    FIELD_KIND(src, kind, openai::Response::Shell::EnvironmentKind::LOCAL, openai::Response::Shell::LocalEnvironment)
+    FIELD_KIND(src, kind, openai::Response::Shell::EnvironmentKind::CONTAINER_REFERENCE, openai::Response::Shell::ContainerReference)
+END_DESERIALIZE_VARIANT(openai::Response::Shell::Environment)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::CustomTool::CustomToolInputFormat)
-    auto kind = EXTRACT_KIND(openai::Response::CustomTool::CustomToolInputFormatKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::CustomTool::CustomToolInputFormatKind::TEXT, openai::Response::CustomTool::Text)
-    FIELD_KIND(src, kind, openai::Response::CustomTool::CustomToolInputFormatKind::GRAMMAR, openai::Response::CustomTool::Grammar)
-END_DESERIALIZE_VARIANT(openai::Response::CustomTool::CustomToolInputFormat)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Custom::CustomToolInputFormat)
+    auto kind = EXTRACT_KIND(openai::Response::Custom::CustomToolInputFormatKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::Custom::CustomToolInputFormatKind::TEXT, openai::Response::Custom::Text)
+    FIELD_KIND(src, kind, openai::Response::Custom::CustomToolInputFormatKind::GRAMMAR, openai::Response::Custom::Grammar)
+END_DESERIALIZE_VARIANT(openai::Response::Custom::CustomToolInputFormat)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseTextConfig::ResponseFormatTextConfig)
-    auto kind = EXTRACT_KIND(openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::TEXT, openai::Response::ResponseTextConfig::ResponseFormatText)
-    FIELD_KIND(src, kind, openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::JSON_SCHEMA, openai::Response::ResponseTextConfig::ResponseFormatTextJSONSchemaConfig)
-    FIELD_KIND(src, kind, openai::Response::ResponseTextConfig::ResponseFormatTextConfigKind::JSON_OBJECT, openai::Response::ResponseTextConfig::ResponseFormatJSONObject)
-END_DESERIALIZE_VARIANT(openai::Response::ResponseTextConfig::ResponseFormatTextConfig)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Namespace::Custom::CustomToolInputFormat)
+    auto kind = EXTRACT_KIND(openai::Response::Namespace::Custom::CustomToolInputFormatKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::Namespace::Custom::CustomToolInputFormatKind::TEXT, openai::Response::Namespace::Custom::Text)
+    FIELD_KIND(src, kind, openai::Response::Namespace::Custom::CustomToolInputFormatKind::GRAMMAR, openai::Response::Namespace::Custom::Grammar)
+END_DESERIALIZE_VARIANT(openai::Response::Namespace::Custom::CustomToolInputFormat)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Namespace::Tools)
+    auto kind = EXTRACT_KIND(openai::Response::Namespace::ToolsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::Namespace::ToolsKind::FUNCTION, openai::Response::Namespace::Function)
+    FIELD_KIND(src, kind, openai::Response::Namespace::ToolsKind::CUSTOM, openai::Response::Namespace::Custom)
+END_DESERIALIZE_VARIANT(openai::Response::Namespace::Tools)
 
 BEGIN_DESERIALIZE_VARIANT(openai::Response::InstructionsItem)
     auto kind = EXTRACT_KIND(openai::Response::InstructionsItemKind, src, "type");
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::EASY_INPUT_MESSAGE, openai::Response::EasyInputMessage)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::MESSAGE, openai::Response::Message)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::ASSISTANT, openai::Response::ResponseOutputMessage)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::FILE_SEARCH_CALL, openai::Response::ResponseFileSearchToolCall)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::COMPUTER_CALL, openai::Response::ResponseComputerToolCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::FILE_SEARCH_CALL, openai::Response::FileSearchCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::COMPUTER_CALL, openai::Response::ComputerCall)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::COMPUTER_CALL_OUTPUT, openai::Response::ComputerCallOutput)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::WEB_SEARCH_CALL, openai::Response::ResponseFunctionWebSearch)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::FUNCTION_CALL, openai::Response::ResponseFunctionToolCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::WEB_SEARCH_CALL, openai::Response::WebSearchCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::FUNCTION_CALL, openai::Response::FunctionCall)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::FUNCTION_CALL_OUTPUT, openai::Response::FunctionCallOutput)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::REASONING, openai::Response::ResponseReasoningItem)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::COMPACTION, openai::Response::ResponseCompactionItemParam)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::TOOL_SEARCH_CALL, openai::Response::ToolSearchCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::TOOL_SEARCH_OUTPUT, openai::Response::ToolSearchOutput)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::REASONING, openai::Response::InstructionsReasoning)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::COMPACTION, openai::Response::Compaction)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::IMAGE_GENERATION_CALL, openai::Response::ImageGenerationCall)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::CODE_INTERPRETER_CALL, openai::Response::ResponseCodeInterpreterToolCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::CODE_INTERPRETER_CALL, openai::Response::CodeInterpreterCall)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::LOCAL_SHELL_CALL, openai::Response::LocalShellCall)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::LOCAL_SHELL_CALL_OUTPUT, openai::Response::LocalShellCallOutput)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::SHELL_CALL, openai::Response::ShellCall)
@@ -1321,8 +2745,8 @@ BEGIN_DESERIALIZE_VARIANT(openai::Response::InstructionsItem)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::MCP_APPROVAL_REQUEST, openai::Response::McpApprovalRequest)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::MCP_APPROVAL_RESPONSE, openai::Response::McpApprovalResponse)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::MCP_CALL, openai::Response::McpCall)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL_OUTPUT, openai::Response::ResponseCustomToolCallOutput)
-    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL, openai::Response::ResponseCustomToolCall)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL_OUTPUT, openai::Response::CustomToolCallOutput)
+    FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::CUSTOM_TOOL_CALL, openai::Response::CustomToolCall)
     FIELD_KIND(src, kind, openai::Response::InstructionsItemKind::ITEM_REFERENCE, openai::Response::ItemReference)
 END_DESERIALIZE_VARIANT(openai::Response::InstructionsItem)
 
@@ -1347,23 +2771,25 @@ END_DESERIALIZE_VARIANT(openai::Response::ResponsesModel)
 BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseOutputItem)
     auto kind = EXTRACT_KIND(openai::Response::ResponseOutputItemKind, src, "type");
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::MESSAGE, openai::Response::ResponseOutputMessage)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::FILE_SEARCH_CALL, openai::Response::ResponseFileSearchToolCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::FUNCTION_CALL, openai::Response::ResponseFunctionToolCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::WEB_SEARCH_CALL, openai::Response::ResponseFunctionWebSearch)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::COMPUTER_CALL, openai::Response::ResponseComputerToolCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::REASONING, openai::Response::ResponseReasoningItem)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::FILE_SEARCH_CALL, openai::Response::FileSearchCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::FUNCTION_CALL, openai::Response::FunctionCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::WEB_SEARCH_CALL, openai::Response::WebSearchCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::COMPUTER_CALL, openai::Response::ComputerCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::REASONING, openai::Response::Reasoning)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::TOOL_SEARCH_CALL, openai::Response::ToolSearchCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::TOOL_SEARCH_OUTPUT, openai::Response::ToolSearchOutput)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::COMPACTION, openai::Response::ResponseCompactionItem)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::IMAGE_GENERATION_CALL, openai::Response::ImageGenerationCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::CODE_INTERPRETER_CALL, openai::Response::ResponseCodeInterpreterToolCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::CODE_INTERPRETER_CALL, openai::Response::CodeInterpreterCall)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::LOCAL_SHELL_CALL, openai::Response::LocalShellCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::SHELL_CALL, openai::Response::ResponseFunctionShellToolCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::SHELL_CALL_OUTPUT, openai::Response::ResponseFunctionShellToolCallOutput)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::APPLY_PATCH_CALL, openai::Response::ResponseApplyPatchToolCall)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::APPLY_PATCH_CALL_OUTPUT, openai::Response::ResponseApplyPatchToolCallOutput)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::SHELL_CALL, openai::Response::ShellCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::SHELL_CALL_OUTPUT, openai::Response::ShellCallOutput)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::APPLY_PATCH_CALL, openai::Response::ApplyPatchCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::APPLY_PATCH_CALL_OUTPUT, openai::Response::ApplyPatchCallOutput)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::MCP_CALL, openai::Response::McpCall)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::MCP_LIST_TOOLS, openai::Response::McpListTools)
     FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::MCP_APPROVAL_REQUEST, openai::Response::McpApprovalRequest)
-    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::CUSTOM_TOOL_CALL, openai::Response::ResponseCustomToolCall)
+    FIELD_KIND(src, kind, openai::Response::ResponseOutputItemKind::CUSTOM_TOOL_CALL, openai::Response::CustomToolCall)
 END_DESERIALIZE_VARIANT(openai::Response::ResponseOutputItem)
 
 BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolChoice)
@@ -1382,37 +2808,28 @@ BEGIN_DESERIALIZE_VARIANT(openai::Response::ToolChoice)
     FIELD_KIND(src, kind, openai::Response::ToolChoiceKind::SHELL, openai::Response::ToolChoiceShell)
 END_DESERIALIZE_VARIANT(openai::Response::ToolChoice)
 
-BEGIN_DESERIALIZE_VARIANT(openai::Response::Tool)
+BEGIN_DESERIALIZE_VARIANT(openai::Response::Tools)
     if (src.is_object()) {
-        return T{DeserializeTo<openai::Response::WebSearchTool>(src)};
+        return T{DeserializeTo<openai::Response::WebSearch>(src)};
     }
     if (src.is_object()) {
-        return T{DeserializeTo<openai::Response::WebSearchPreviewTool>(src)};
+        return T{DeserializeTo<openai::Response::WebSearchPreview>(src)};
     }
-    auto kind = EXTRACT_KIND(openai::Response::ToolKind, src, "type");
-    FIELD_KIND(src, kind, openai::Response::ToolKind::FUNCTION, openai::Response::FunctionTool)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::FILE_SEARCH, openai::Response::FileSearchTool)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::COMPUTER_USE_PREVIEW, openai::Response::ComputerTool)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::MCP, openai::Response::Mcp)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::CODE_INTERPRETER, openai::Response::CodeInterpreter)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::IMAGE_GENERATION, openai::Response::ImageGeneration)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::LOCAL_SHELL, openai::Response::LocalShell)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::SHELL, openai::Response::FunctionShellTool)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::CUSTOM, openai::Response::CustomTool)
-    FIELD_KIND(src, kind, openai::Response::ToolKind::APPLY_PATCH, openai::Response::ApplyPatchTool)
-END_DESERIALIZE_VARIANT(openai::Response::Tool)
-
-BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponseFileSearchToolCall::ResponseFileSearchToolCall_results::AttributesValue)
-    if (src.is_string()) {
-        return T{DeserializeTo<std::string>(src)};
-    }
-    if (src.is_double() || src.is_int64() || src.is_uint64()) {
-        return T{DeserializeTo<double>(src)};
-    }
-    if (src.is_bool()) {
-        return T{DeserializeTo<bool>(src)};
-    }
-END_DESERIALIZE_VARIANT(openai::Response::ResponseFileSearchToolCall::ResponseFileSearchToolCall_results::AttributesValue)
+    auto kind = EXTRACT_KIND(openai::Response::ToolsKind, src, "type");
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::FUNCTION, openai::Response::Function)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::FILE_SEARCH, openai::Response::FileSearch)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::COMPUTER, openai::Response::Computer)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::COMPUTER_USE_PREVIEW, openai::Response::ComputerUsePreview)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::MCP, openai::Response::Mcp)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::CODE_INTERPRETER, openai::Response::CodeInterpreter)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::IMAGE_GENERATION, openai::Response::ImageGeneration)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::LOCAL_SHELL, openai::Response::LocalShell)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::SHELL, openai::Response::Shell)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::CUSTOM, openai::Response::Custom)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::NAMESPACE, openai::Response::Namespace)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::TOOL_SEARCH, openai::Response::ToolSearch)
+    FIELD_KIND(src, kind, openai::Response::ToolsKind::APPLY_PATCH, openai::Response::ApplyPatch)
+END_DESERIALIZE_VARIANT(openai::Response::Tools)
 
 BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponsePrompt::VariablesValue)
     if (src.is_string()) {
@@ -1431,6 +2848,18 @@ BEGIN_DESERIALIZE_VARIANT(openai::Response::ResponsePrompt::VariablesValue)
         }
     }
 END_DESERIALIZE_VARIANT(openai::Response::ResponsePrompt::VariablesValue)
+
+BEGIN_DESERIALIZE_VARIANT(openai::Response::FileSearchCall::FileSearchCall_results::AttributesValue)
+    if (src.is_string()) {
+        return T{DeserializeTo<std::string>(src)};
+    }
+    if (src.is_double() || src.is_int64() || src.is_uint64()) {
+        return T{DeserializeTo<double>(src)};
+    }
+    if (src.is_bool()) {
+        return T{DeserializeTo<bool>(src)};
+    }
+END_DESERIALIZE_VARIANT(openai::Response::FileSearchCall::FileSearchCall_results::AttributesValue)
 
 /***
  * Top-level Deserialize
