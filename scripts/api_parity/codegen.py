@@ -32,6 +32,7 @@ CPP_KEYWORDS = {
     "default": "default_value",
     "class": "class_value",
     "enum": "enum_value",
+    "namespace": "namespace_",
     "operator": "operator_",
     "stderr": "stderr_",
     "stdout": "stdout_",
@@ -332,8 +333,95 @@ class CppCodegen:
         qpath = f"{parent_path}::{name}" if parent_path else name
         kind_val = node.get("kind")
         fields_json = node.get("fields", [])
-        children = node.get("children", [])
-        child_names = {c["name"] for c in children}
+        # Collect node-level children AND field-scoped children (union
+        # member type definitions now live on the field that defines the
+        # union, not on the parent node).
+        #
+        # Merge field-scoped children into a flat list for C++ emission.
+        #
+        # Priority order (highest → lowest):
+        #   1. Node-level children (standalone type definitions in the struct)
+        #   2. Direct type references: fields whose type name matches a
+        #      child name (e.g. ``reasoning: Reasoning`` → ``Reasoning``).
+        #   3. All other field children (union members, array element
+        #      types, etc.).
+        #
+        # Collisions are resolved by prefixing the lower-priority child
+        # with its field name.
+        children = list(node.get("children", []))
+        seen_names = {c["name"] for c in children}
+        _child_renames: dict[str, dict[str, str]] = {}  # field_name -> {old: new}
+        _added: set[int] = {id(c) for c in children}
+
+        # Extract the "canonical" type name each field references.
+        def _field_type_name(fld: dict) -> str | None:
+            """Return the type name the field directly references, if any."""
+            ft = fld.get("type", "")
+            # array<Foo> → Foo
+            m = re.match(r'^array<(.+)>$', ft)
+            if m:
+                return m.group(1)
+            # map<string, Foo> → Foo
+            m = re.match(r'^map<.+,\s*(.+)>$', ft)
+            if m:
+                return m.group(1)
+            # Direct name (starts with uppercase, not a primitive)
+            if ft and ft[0].isupper() and ft not in (
+                    "Required", "UNKNOWN"):
+                return ft
+            return None
+
+        # Pass 1: fields with a direct type reference whose child
+        # matches that type name — these are canonical definitions.
+        for fld in fields_json:
+            ref_name = _field_type_name(fld)
+            if not ref_name:
+                continue
+            for fc in fld.get("children", []):
+                if id(fc) in _added:
+                    continue
+                if fc["name"] == ref_name and fc["name"] not in seen_names:
+                    children.append(fc)
+                    seen_names.add(fc["name"])
+                    _added.add(id(fc))
+
+        # Pass 2: all remaining field children.
+        for fld in fields_json:
+            fld_renames: dict[str, str] = {}
+            for fc in fld.get("children", []):
+                if id(fc) in _added:
+                    continue
+                orig_name = fc["name"]
+                if orig_name in seen_names:
+                    # Name collision — rename with field-name prefix.
+                    new_name = _pascal(fld["name"]) + orig_name
+                    fc["name"] = new_name
+                    fld_renames[orig_name] = new_name
+                children.append(fc)
+                seen_names.add(fc["name"])
+                _added.add(id(fc))
+            if fld_renames:
+                _child_renames[fld["name"]] = fld_renames
+        child_names = seen_names
+
+        # Apply renames to union member refs so that ``using`` declarations
+        # reference the renamed child structs.
+        if _child_renames:
+            for fld in fields_json:
+                renames = _child_renames.get(fld["name"], {})
+                if not renames:
+                    continue
+                for m in fld.get("members", []):
+                    ref = m.get("ref")
+                    if ref and ref in renames:
+                        m["ref"] = renames[ref]
+                # Also patch element_variant_refs if present
+                for m in fld.get("members", []):
+                    evr = m.get("element_variant_refs")
+                    if evr:
+                        m["element_variant_refs"] = [
+                            renames.get(r, r) for r in evr
+                        ]
 
         lines: list[str] = [f"struct {name} {{"]
 

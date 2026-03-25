@@ -42,6 +42,23 @@ _ENUM_VALUE_RE = re.compile(
     r'^(\s*)- `"([^"]+)"`\s*$'
 )
 
+# Match a bare type name: `string`, `number`, `unknown`,
+# `array of string or number`, etc.  These appear as union member
+# children in the spec without the ``UnionMemberN = ...`` wrapper
+# that older spec versions used.
+_BARE_TYPE_RE = re.compile(
+    r'^(\s*)- `([^:`"=]+)`\s*$'
+)
+
+# Match a compound enum value expression:
+#   - `"gpt-5.4" or "gpt-5.4-mini" or "gpt-5.4-nano" or 75 more`
+# These appear in the new spec format where a quoted-value union
+# summary replaces the old ``UnionMember1 = "value" or ...`` pattern.
+# The actual enum values are listed as children underneath.
+_COMPOUND_ENUM_RE = re.compile(
+    r'^(\s*)- `"[^"]*"(?:\s+or\s+.+)*`\s*$'
+)
+
 # Match a section header
 _SECTION_RE = re.compile(r'^###\s+(.+)$')
 
@@ -400,6 +417,8 @@ def _collect_description(ctx: _ParseContext, base_indent: int) -> str:
                         and not _FIELD_RE.match(next_line)
                         and not _NAMED_TYPE_RE.match(next_line)
                         and not _ENUM_VALUE_RE.match(next_line)
+                        and not _BARE_TYPE_RE.match(next_line)
+                        and not _COMPOUND_ENUM_RE.match(next_line)
                         and not _SECTION_RE.match(next_line)):
                     stripped = next_line.lstrip()
                     line_indent = len(next_line) - len(stripped)
@@ -416,6 +435,8 @@ def _collect_description(ctx: _ParseContext, base_indent: int) -> str:
         if (_FIELD_RE.match(line)
                 or _NAMED_TYPE_RE.match(line)
                 or _ENUM_VALUE_RE.match(line)
+                or _BARE_TYPE_RE.match(line)
+                or _COMPOUND_ENUM_RE.match(line)
                 or _SECTION_RE.match(line)):
             break
 
@@ -569,8 +590,9 @@ def _parse_fields(ctx: _ParseContext, parent_indent: int,
                 field["type"] = f"map<string, {first}>"
                 field["map_value_members"] = mvms
                 # Children may define struct types for map values — scan
-                # them so they get attached to the parent node.
-                _scan_for_nested_objects(ctx, indent, parent_node, ancestry)
+                # them so they get attached to the field's scope.
+                field.setdefault("children", [])
+                _scan_for_nested_objects(ctx, indent, field, ancestry)
 
             elif (type_str.startswith('"') and type_str.endswith('"')
                     and not has_or):
@@ -745,6 +767,12 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
     rebuilt_members: list[dict] = []
     collected_enum_values: list[str] = []
 
+    # Union member type definitions (inline structs) belong to the field
+    # that defines the union, NOT to the parent struct.  This preserves
+    # the spec's nesting structure and avoids name collisions when the
+    # parent struct has an unrelated same-named child.
+    field.setdefault("children", [])
+
     while not ctx.at_end():
         line = ctx.peek()
         if not line.strip():
@@ -770,7 +798,7 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
                     child_node["description"] = desc
                 _parse_fields(ctx, indent + 1, child_node,
                               ancestry + [type_name])
-                _attach_child_if_new(parent_node, child_node, ancestry,
+                _attach_child_if_new(field, child_node, ancestry,
                                      ctx.source_line())
                 rebuilt_members.append({"type": "struct", "ref": type_name})
             else:
@@ -785,20 +813,20 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
                     # parent union.  Create the element struct (from inline
                     # fields) or consume object children that form the element
                     # variant.  Either way keep the result as array<X>.
-                    children_before = {c["name"] for c in parent_node.get("children", [])}
+                    children_before = {c["name"] for c in field.get("children", [])}
                     created = _maybe_create_array_element_struct(
-                        ctx, indent, type_expr, parent_node, ancestry)
+                        ctx, indent, type_expr, field, ancestry)
                     if not created:
                         # Children are named object types forming X's variant.
-                        # Consume them (they become children of parent_node)
+                        # Consume them (they become children of field)
                         # but do NOT add them as flat union members.
-                        _scan_for_nested_objects(ctx, indent, parent_node,
+                        _scan_for_nested_objects(ctx, indent, field,
                                                  ancestry)
                     # If multiple kind-bearing children were added, the element
                     # type is a variant of those children — not just the first
                     # name from the inline string.  Record the specific child
                     # refs so the codegen can build the correct variant.
-                    new_children = [c for c in parent_node.get("children", [])
+                    new_children = [c for c in field.get("children", [])
                                     if c["name"] not in children_before
                                     and c.get("kind") is not None]
                     if len(new_children) >= 2:
@@ -813,16 +841,15 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
                         rebuilt_members.append(member)
                 elif normalized.startswith('array<'):
                     # Array whose element type is described by children.
-                    # Consume children (they become children of parent_node
-                    # or are consumed by struct parsing), but produce a
-                    # **single** array member — never flatten into the
-                    # parent union.
+                    # Consume children (they become children of the field)
+                    # but produce a **single** array member — never flatten
+                    # into the parent union.
                     #
                     # First try to create element structs from children.
                     created = _maybe_create_array_element_struct(
-                        ctx, indent, type_expr, parent_node, ancestry)
+                        ctx, indent, type_expr, field, ancestry)
                     if not created:
-                        _scan_for_nested_objects(ctx, indent, parent_node,
+                        _scan_for_nested_objects(ctx, indent, field,
                                                  ancestry)
                     # Check whether the raw expression has ``or``
                     # alternatives for the element type, e.g.
@@ -847,7 +874,7 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
                 else:
                     # Non-array union member — children may define it further
                     child_result = _scan_union_member_children(
-                        ctx, indent, parent_node, ancestry)
+                        ctx, indent, field, ancestry)
                     if child_result.get("members"):
                         rebuilt_members.extend(child_result["members"])
                     elif child_result.get("enum_values"):
@@ -878,10 +905,60 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
                 child_node = _make_struct_node(sub_name)
                 _parse_fields(ctx, child_indent, child_node,
                               ancestry + [sub_name])
-                _attach_child_if_new(parent_node, child_node, ancestry,
+                _attach_child_if_new(field, child_node, ancestry,
                                      ctx.source_line())
                 _update_field_type_ref(field, sub_name)
                 break
+            break
+
+        # Bare type name: `string`, `unknown`, `array of string or number`
+        m_bare = _BARE_TYPE_RE.match(line)
+        if m_bare:
+            indent = _indent_level(m_bare.group(1))
+            if indent >= child_indent:
+                raw_type = m_bare.group(2).strip()
+                normalized = _normalize_type(raw_type)
+                if normalized.startswith('array<'):
+                    # Array with possible ``or`` alternatives in element type
+                    m_arr_raw = re.match(
+                        r'^array\s+of\s+(.+)$', raw_type)
+                    if m_arr_raw and ' or ' in m_arr_raw.group(1):
+                        parts = [_normalize_type(p.strip())
+                                 for p in m_arr_raw.group(1).split(' or ')]
+                        elem_members = [_classify_union_member(p)
+                                        for p in parts]
+                        rebuilt_members.append(
+                            {"type": "array",
+                             "element_members": elem_members})
+                    else:
+                        m_arr = re.match(r'^array<(.+)>$', normalized)
+                        elem = m_arr.group(1) if m_arr else "UNKNOWN"
+                        rebuilt_members.append(
+                            {"type": "array", "element_type": elem})
+                else:
+                    rebuilt_members.extend(
+                        _classify_union_member_multi(normalized))
+                ctx.advance()
+                # Parse children of this bare type — they may contain
+                # inline struct definitions (e.g. array element types)
+                # that need to be attached to the field.
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, raw_type, field, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, field, ancestry)
+                continue
+            break
+
+        # Compound enum expression: `"value1" or "value2" or ... or N more`
+        m_compound = _COMPOUND_ENUM_RE.match(line)
+        if m_compound:
+            indent = _indent_level(m_compound.group(1))
+            if indent >= child_indent:
+                ctx.advance()
+                # The actual enum values are listed as children
+                child_enums = _collect_enum_values(ctx, indent + 1)
+                collected_enum_values.extend(child_enums)
+                continue
             break
 
         # Unrecognized — check indent
@@ -930,11 +1007,14 @@ def _parse_union_children(ctx: _ParseContext, parent_indent: int,
 
 
 def _scan_union_member_children(ctx: _ParseContext, parent_indent: int,
-                                parent_node: dict,
+                                attach_target: dict,
                                 ancestry: list[str]) -> dict:
     """
     Scan children of a UnionMember definition.
     Returns dict with "members" and/or "enum_values".
+
+    *attach_target* is the node whose ``"children"`` list receives any
+    inline struct definitions discovered here (typically the union field).
     """
     child_indent = parent_indent + 1
     result: dict[str, Any] = {"members": [], "enum_values": []}
@@ -966,7 +1046,7 @@ def _scan_union_member_children(ctx: _ParseContext, parent_indent: int,
                     child_node["description"] = desc
                 _parse_fields(ctx, indent + 1, child_node,
                               ancestry + [type_name])
-                _attach_child_if_new(parent_node, child_node, ancestry,
+                _attach_child_if_new(attach_target, child_node, ancestry,
                                      ctx.source_line())
                 result["members"].append({"type": "struct", "ref": type_name})
             else:
@@ -974,16 +1054,16 @@ def _scan_union_member_children(ctx: _ParseContext, parent_indent: int,
                 # expression determines how we classify the member.
                 normalized = _normalize_type(type_expr)
                 child_result = _scan_union_member_children(
-                    ctx, indent, parent_node, ancestry)
+                    ctx, indent, attach_target, ancestry)
                 if child_result["members"]:
                     result["members"].extend(child_result["members"])
                 elif child_result["enum_values"]:
                     result["enum_values"].extend(child_result["enum_values"])
                 else:
                     created = _maybe_create_array_element_struct(
-                        ctx, indent, type_expr, parent_node, ancestry)
+                        ctx, indent, type_expr, attach_target, ancestry)
                     if not created:
-                        _scan_for_nested_objects(ctx, indent, parent_node,
+                        _scan_for_nested_objects(ctx, indent, attach_target,
                                                  ancestry)
                     member = _classify_union_member(normalized)
                     result["members"].append(member)
@@ -995,6 +1075,37 @@ def _scan_union_member_children(ctx: _ParseContext, parent_indent: int,
             if indent >= child_indent:
                 result["enum_values"].append(m_enum.group(2))
                 ctx.advance()
+                continue
+            break
+
+        # Bare type name: `string`, `unknown`, `array of X or Y`
+        m_bare = _BARE_TYPE_RE.match(line)
+        if m_bare:
+            indent = _indent_level(m_bare.group(1))
+            if indent >= child_indent:
+                raw_type = m_bare.group(2).strip()
+                normalized = _normalize_type(raw_type)
+                member = _classify_union_member(normalized)
+                result["members"].append(member)
+                ctx.advance()
+                # Parse children of this bare type — may contain
+                # inline struct definitions.
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, raw_type, attach_target, ancestry)
+                if not created:
+                    _scan_for_nested_objects(
+                        ctx, indent, attach_target, ancestry)
+                continue
+            break
+
+        # Compound enum expression
+        m_compound = _COMPOUND_ENUM_RE.match(line)
+        if m_compound:
+            indent = _indent_level(m_compound.group(1))
+            if indent >= child_indent:
+                ctx.advance()
+                child_enums = _collect_enum_values(ctx, indent + 1)
+                result["enum_values"].extend(child_enums)
                 continue
             break
 
@@ -1016,6 +1127,10 @@ def _parse_field_children(ctx: _ParseContext, parent_indent: int,
     ``union_def`` to the field so the codegen never has to guess.
     """
     child_indent = parent_indent + 1
+
+    # All child type definitions belong to this field's scope — the spec
+    # defines them as aggregates under the field, not shared with siblings.
+    field.setdefault("children", [])
 
     # Determine if this field references a named type that could be a union.
     # Pattern: field type is "FooBar" or "array<FooBar>" where FooBar starts
@@ -1049,7 +1164,7 @@ def _parse_field_children(ctx: _ParseContext, parent_indent: int,
                     child_node["description"] = desc
                 _parse_fields(ctx, indent + 1, child_node,
                               ancestry + [type_name])
-                _attach_child_if_new(parent_node, child_node, ancestry,
+                _attach_child_if_new(field, child_node, ancestry,
                                      ctx.source_line())
                 # Record as a potential union member
                 if union_type_name:
@@ -1074,10 +1189,10 @@ def _parse_field_children(ctx: _ParseContext, parent_indent: int,
                     # Check if this is an array type with inline field
                     # children that define the element struct.
                     created = _maybe_create_array_element_struct(
-                        ctx, indent, type_expr, parent_node, ancestry)
+                        ctx, indent, type_expr, field, ancestry)
                     if not created:
                         _scan_for_nested_objects(
-                            ctx, indent, parent_node, ancestry)
+                            ctx, indent, field, ancestry)
                     # Non-object named types under a union-candidate field
                     if union_type_name:
                         member = _classify_union_member(normalized)
@@ -1095,7 +1210,7 @@ def _parse_field_children(ctx: _ParseContext, parent_indent: int,
                 child_node = _make_struct_node(sub_name)
                 _parse_fields(ctx, child_indent, child_node,
                               ancestry + [sub_name])
-                _attach_child_if_new(parent_node, child_node, ancestry,
+                _attach_child_if_new(field, child_node, ancestry,
                                      ctx.source_line())
                 _update_field_type_ref(field, sub_name)
                 break
@@ -1112,6 +1227,41 @@ def _parse_field_children(ctx: _ParseContext, parent_indent: int,
                 field["type"] = "enum"
                 field["values"] = values
                 break
+            break
+
+        # Bare type name: `string`, `unknown`, etc.
+        m_bare = _BARE_TYPE_RE.match(line)
+        if m_bare:
+            indent = _indent_level(m_bare.group(1))
+            if indent >= child_indent:
+                raw_type = m_bare.group(2).strip()
+                normalized = _normalize_type(raw_type)
+                if union_type_name:
+                    member = _classify_union_member(normalized)
+                    union_members.append(member)
+                ctx.advance()
+                # Parse children of this bare type — may contain
+                # inline struct definitions.
+                created = _maybe_create_array_element_struct(
+                    ctx, indent, raw_type, field, ancestry)
+                if not created:
+                    _scan_for_nested_objects(ctx, indent, field, ancestry)
+                continue
+            break
+
+        # Compound enum expression: `"value1" or "value2" or ... or N more`
+        m_compound = _COMPOUND_ENUM_RE.match(line)
+        if m_compound:
+            indent = _indent_level(m_compound.group(1))
+            if indent >= child_indent:
+                ctx.advance()
+                child_enums = _collect_enum_values(ctx, indent + 1)
+                if child_enums and union_type_name:
+                    union_members.append({
+                        "type": "enum",
+                        "values": child_enums,
+                    })
+                continue
             break
 
         stripped = line.lstrip()
@@ -1307,16 +1457,30 @@ def _enrich_unions(node: dict) -> None:
     children_by_name = {c["name"]: c for c in node.get("children", [])}
 
     for field in node.get("fields", []):
-        # Enrich explicit union fields
-        if field.get("type") == "union" and "members" in field:
-            _enrich_member_list(field["members"], field, children_by_name)
+        # Build lookup that includes field-scoped children (union member
+        # type definitions now live on the field, not the parent node).
+        field_children_by_name = {c["name"]: c
+                                  for c in field.get("children", [])}
 
-        # Enrich union_def (synthesised from _parse_field_children)
+        # Enrich explicit union fields — member structs are in field children
+        if field.get("type") == "union" and "members" in field:
+            # Merge: field-level children take priority (they are the union's
+            # own member types), fall back to node-level children.
+            merged = {**children_by_name, **field_children_by_name}
+            _enrich_member_list(field["members"], field, merged)
+
+        # Enrich union_def (synthesised from _parse_field_children) —
+        # member structs are still at node level for these.
         udef = field.get("union_def")
         if udef and "members" in udef:
-            _enrich_member_list(udef["members"], udef, children_by_name)
+            merged = {**children_by_name, **field_children_by_name}
+            _enrich_member_list(udef["members"], udef, merged)
 
-    # Recurse into children
+        # Recurse into field-level children
+        for child in field.get("children", []):
+            _enrich_unions(child)
+
+    # Recurse into node-level children
     for child in node.get("children", []):
         _enrich_unions(child)
 
